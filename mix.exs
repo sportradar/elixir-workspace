@@ -41,6 +41,14 @@ defmodule Workspace.MixWorkspace do
         [
           dep: {:ex_doc, "~> 0.28", only: :dev, runtime: false},
           ignore: demo_projects()
+        ],
+        [
+          dep: {:credo, "~> 1.6.7", only: [:dev, :test], runtime: false},
+          ignore: demo_projects()
+        ],
+        [
+          dep: {:doctor, "~> 0.21.0", only: :dev, runtime: false},
+          ignore: demo_projects()
         ]
       ]
     ]
