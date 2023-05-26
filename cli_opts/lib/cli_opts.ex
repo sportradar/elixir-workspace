@@ -16,6 +16,69 @@ defmodule CliOpts do
     end
   end
 
+  def docs(opts) do
+    opts
+    |> Enum.reduce([], &maybe_option_doc/2)
+    |> Enum.reverse()
+    |> Enum.join("\n")
+  end
+
+  defp maybe_option_doc({key, schema}, acc) do
+    if schema[:doc] == false do
+      acc
+    else
+      option_doc({key, schema}, acc)
+    end
+  end
+
+  defp option_doc({key, schema}, acc) do
+    doc =
+      """
+      * `#{key_doc(key, schema)}` - #{key_body_doc(schema)}
+      """
+      |> String.trim_trailing()
+
+    [doc | acc]
+  end
+
+  defp key_doc(key, schema) do
+    "--#{key}#{maybe_alias(schema)}"
+    |> maybe_optional(schema)
+    |> maybe_repeating(schema)
+  end
+
+  defp maybe_alias(schema) do
+    case schema[:alias] do
+      nil -> ""
+      alias -> ", -#{alias}"
+    end
+  end
+
+  defp maybe_optional(key, schema) do
+    case schema[:required] do
+      true -> key
+      _ -> "[#{key}]"
+    end
+  end
+
+  defp maybe_repeating(key, schema) do
+    case schema[:keep] do
+      true -> "#{key}..."
+      _ -> key
+    end
+  end
+
+  defp key_body_doc(schema) do
+    "#{schema[:doc]}#{maybe_default(schema)}"
+  end
+
+  defp maybe_default(schema) do
+    case schema[:default] do
+      nil -> ""
+      default -> " [default: `#{default}`]"
+    end
+  end
+
   defp switches(opts) do
     opts
     |> Enum.map(fn {key, config} -> {key, switch_type(config)} end)

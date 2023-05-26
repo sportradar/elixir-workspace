@@ -1,5 +1,12 @@
 defmodule Mix.Tasks.Workspace.Run do
-  @shortdoc "Run a mix command to the given projects"
+  @shortdoc "Run a mix command to all projects"
+
+  @moduledoc """
+
+  ## Command Line Options
+
+  #{CliOpts.docs(Workspace.Cli.global_opts())}
+  """
 
   use Mix.Task
 
