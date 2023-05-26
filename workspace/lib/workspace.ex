@@ -3,9 +3,13 @@ defmodule Workspace do
   Documentation for `WorkspaceEx`.
   """
 
+  # TODO: ensure this is a valid workspace root
+  def root, do: File.cwd!()
+
+  def relative_path(path), do: Path.relative_to(path, root())
+
   def projects do
-    # TODO: ensure this is a valid workspace root
-    workspace_root = File.cwd!()
+    workspace_root = root()
 
     Path.wildcard(workspace_root <> "/**/mix.exs")
     # TODO: better filter out external dependencies

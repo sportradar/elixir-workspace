@@ -43,7 +43,7 @@ defmodule Mix.Tasks.Workspace.Deps.Required do
     |> Keyword.get(:required_deps, [])
   end
 
-  defp check_required_deps({name, path, config}, deps) do
+  defp check_required_deps(%{app: name, path: path, config: config}, deps) do
     project_path =
       path
       |> Path.relative_to_cwd()
@@ -58,12 +58,14 @@ defmodule Mix.Tasks.Workspace.Deps.Required do
 
     if missing_deps != [] do
       """
-        The following required deps are not included in the dependencies of `#{name}`:
 
-            #{inspect(missing_deps)}
+        The following required deps are not included in the dependencies of `#{name}`. Update
+        the dependencies in `#{Workspace.relative_path(path)}`:
+
+      #{format_deps(missing_deps)}
       """
       |> String.trim_trailing()
-      |> Mix.shell().info()
+      |> IO.ANSI.Docs.print("text/markdown")
     end
   end
 
@@ -78,5 +80,11 @@ defmodule Mix.Tasks.Workspace.Deps.Required do
       true ->
         dep[:dep] not in project_deps
     end
+  end
+
+  defp format_deps(deps) do
+    deps
+    |> Enum.map(fn dep -> "     #{inspect(dep)}" end)
+    |> Enum.join(",\n")
   end
 end
