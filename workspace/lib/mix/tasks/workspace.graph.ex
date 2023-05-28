@@ -32,13 +32,24 @@ defmodule Mix.Tasks.Workspace.Graph do
         Warning: this will override any previously generated file.
 
   """
-  @switches [only: :string, target: :string, exclude: :keep, format: :string]
+  @switches [
+    only: :string,
+    target: :string,
+    exclude: :keep,
+    format: :string,
+    workspace_path: :string
+  ]
+
+  @project_flags [:workspace_path]
 
   @impl true
   def run(args) do
     Mix.Project.get!()
-    {_opts, _args, _} = OptionParser.parse(args, switches: @switches)
+    {opts, _args, _} = OptionParser.parse(args, switches: @switches)
 
-    Workspace.Graph.print_tree()
+    opts
+    |> Keyword.take(@project_flags)
+    |> Workspace.projects()
+    |> Workspace.Graph.print_tree()
   end
 end

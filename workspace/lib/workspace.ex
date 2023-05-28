@@ -8,15 +8,17 @@ defmodule Workspace do
 
   def relative_path(path), do: Path.relative_to(path, root())
 
-  def projects do
-    workspace_root = root()
+  def projects(opts \\ []) do
+    workspace_root =
+      Keyword.get(opts, :workspace_path, ".")
+      |> Path.expand()
 
     Path.wildcard(workspace_root <> "/**/mix.exs")
     # TODO: better filter out external dependencies
     |> Enum.filter(fn path ->
       Path.dirname(path) != workspace_root and !String.contains?(path, "deps")
     end)
-    |> Enum.map(fn path -> package(path, workspace_root) end)
+    |> Enum.map(fn path -> package(path, File.cwd!()) end)
   end
 
   defp package(path, root_path) do

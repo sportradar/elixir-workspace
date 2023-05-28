@@ -25,6 +25,10 @@ defmodule Workspace.Cli do
     verbose: [
       type: :boolean,
       doc: "If set enables verbose logging"
+    ],
+    workspace_path: [
+      type: :string,
+      doc: "If set it specifies the root workspace path, defaults to current directory."
     ]
   ]
 

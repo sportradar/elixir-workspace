@@ -42,8 +42,8 @@ defmodule Workspace.Graph do
     end)
   end
 
-  def print_tree() do
-    with_digraph(Workspace.projects(), fn graph ->
+  def print_tree(projects) do
+    with_digraph(projects, fn graph ->
       callback = fn {node, _format} ->
         children =
           :digraph.out_neighbours(graph, node)
