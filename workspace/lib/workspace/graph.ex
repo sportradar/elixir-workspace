@@ -8,13 +8,13 @@ defmodule Workspace.Graph do
 
     try do
       for project <- projects do
-        :digraph.add_vertex(graph, project[:app])
+        :digraph.add_vertex(graph, project.app)
       end
 
       for project <- projects,
-          {dep, dep_config} <- project[:config][:deps],
+          {dep, dep_config} <- project.config[:deps],
           path_dependency?(dep_config) do
-        :digraph.add_edge(graph, project[:app], dep)
+        :digraph.add_edge(graph, project.app, dep)
       end
 
       callback.(graph)
