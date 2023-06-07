@@ -53,11 +53,11 @@ defmodule CliOpts do
   @type argv :: [String.t()]
 
   @type parsed_options :: %{
-    parsed: keyword(),
-    args: [String.t()],
-    invalid: [{String.t(), String.t() | nil}],
-    extra: [String.t()]
-  }
+          parsed: keyword(),
+          args: [String.t()],
+          invalid: [{String.t(), String.t() | nil}],
+          extra: [String.t()]
+        }
 
   @doc """
   Parses `argv` into a keyword list using the given `schema`
@@ -99,7 +99,8 @@ defmodule CliOpts do
       {:error, "the following required options were not provided [:file]"}
 
   """
-  @spec parse(argv :: argv(), schema :: Keyword.t()) :: {:ok, parsed_options()} | {:error, String.t()}
+  @spec parse(argv :: argv(), schema :: Keyword.t()) ::
+          {:ok, parsed_options()} | {:error, String.t()}
   def parse(argv, schema) do
     {argv, extra} = split_argv(argv)
 

@@ -1,6 +1,6 @@
 defmodule Workspace do
   @moduledoc """
-  Documentation for `WorkspaceEx`.
+  Documentation for `Workspace`.
   """
 
   # TODO: ensure this is a valid workspace root
