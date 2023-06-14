@@ -61,7 +61,7 @@ defmodule Workspace.Cli do
   @doc """
   Prints an info (blue) message
 
-  See also `WorkspaceColors.log/4`
+  See also `log/4`
   """
   @spec info(command :: String.t(), message :: IO.ANSI.ansidata(), opts :: Keyword.t()) :: :ok
   def info(command, message, opts \\ []), do: log(:blue, command, message, opts)
@@ -69,7 +69,7 @@ defmodule Workspace.Cli do
   @doc """
   Prints a success (green) message
 
-  See also `WorkspaceColors.log/4`
+  See also `log/4`
   """
   @spec success(command :: String.t(), message :: IO.ANSI.ansidata(), opts :: Keyword.t()) :: :ok
   def success(command, message, opts \\ []), do: log(:green, command, message, opts)
@@ -77,7 +77,7 @@ defmodule Workspace.Cli do
   @doc """
   Prints an error (red) message
 
-  See also `WorkspaceColros.log/4`
+  See also `log/4`
   """
   @spec error(command :: String.t(), message :: IO.ANSI.ansidata(), opts :: Keyword.t()) :: :ok
   def error(command, message, opts \\ []), do: log(:red, command, message, opts)
@@ -85,7 +85,7 @@ defmodule Workspace.Cli do
   @doc """
   Prints a warning (yellow) message
 
-  See also `Mix.Helpers.log/4`
+  See also `log/4`
   """
   @spec warning(command :: String.t(), message :: IO.ANSI.ansidata(), opts :: Keyword.t()) :: :ok
   def warning(command, message, opts \\ []), do: log(:yellow, command, message, opts)

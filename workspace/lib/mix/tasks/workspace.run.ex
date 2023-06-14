@@ -26,7 +26,7 @@ defmodule Mix.Tasks.Workspace.Run do
 
   defp run_in_project(%{skip: true, app: app}, args, _argv) do
     if args[:verbose] do
-      WorkspaceColors.warning("#{args[:task]}", "skipping #{app}")
+      Workspace.Cli.warning("#{args[:task]}", "skipping #{app}")
     end
   end
 

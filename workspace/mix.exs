@@ -22,7 +22,6 @@ defmodule Workspace.MixProject do
   defp deps do
     [
       {:cli_opts, path: "../cli_opts/"},
-      {:workspace_colors, path: "../workspace_colors"},
       {:ex_doc, "~> 0.28", [only: :dev, runtime: false]},
       {:credo, "~> 1.6.7", [only: [:dev, :test], runtime: false]},
       {:doctor, "~> 0.21.0", [only: :dev, runtime: false]}
