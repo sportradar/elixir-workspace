@@ -27,6 +27,7 @@ defmodule Workspace do
   @doc """
   Creates a new `Workspace` from the given workspace path
   """
+  @spec new(path :: binary()) :: t()
   def new(path \\ File.cwd!()) do
     workspace_mix_path = Path.join(path, "mix.exs") |> Path.expand()
     workspace_path = Path.dirname(workspace_mix_path)
@@ -44,21 +45,6 @@ defmodule Workspace do
     }
   end
 
-  @doc """
-  Returns the projects of the given workspace
-  """
-  @spec projects(workspace_path :: binary(), opts :: keyword()) :: [Workspace.Project.t()]
-  def projects(workspace_path, _opts \\ []) do
-    ensure_workspace!(workspace_path)
-
-    Path.wildcard(workspace_path <> "/**/mix.exs")
-    # TODO: better filter out external dependencies
-    |> Enum.filter(fn path ->
-      Path.dirname(path) != workspace_path and !String.contains?(path, "deps")
-    end)
-    |> Enum.map(fn path -> Workspace.Project.new(path, workspace_path) end)
-  end
-
   defp ensure_workspace!(path) do
     if !workspace?(path) do
       Mix.raise("""
@@ -68,6 +54,15 @@ defmodule Workspace do
           workspace: true
       """)
     end
+  end
+
+  defp projects(workspace_path, _opts) do
+    Path.wildcard(workspace_path <> "/**/mix.exs")
+    # TODO: better filter out external dependencies
+    |> Enum.filter(fn path ->
+      Path.dirname(path) != workspace_path and !String.contains?(path, "deps")
+    end)
+    |> Enum.map(fn path -> Workspace.Project.new(path, workspace_path) end)
   end
 
   @doc """

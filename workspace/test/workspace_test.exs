@@ -4,16 +4,17 @@ defmodule WorkspaceTest do
 
   @sample_workspace_path "test/fixtures/sample_workspace"
 
-  describe "projects/1" do
-    test "gets all projects in the given workspace path" do
-      projects = Workspace.projects(workspace_path: @sample_workspace_path)
+  describe "new/1" do
+    test "creates a workspace struct" do
+      workspace = Workspace.new(@sample_workspace_path)
 
-      assert length(projects) == 11
+      assert %Workspace{} = workspace
+      assert length(workspace.projects) == 11
     end
 
-    test "raises if the root is not a workspace" do
+    test "raises if the path is not a workspace" do
       assert_raise Mix.Error, ~r"to be a workspace project", fn ->
-        Workspace.projects(workspace_path: Path.join(@sample_workspace_path, "project_a"))
+        Workspace.new(Path.join(@sample_workspace_path, "project_a"))
       end
     end
   end
