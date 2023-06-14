@@ -14,55 +14,76 @@ defmodule Workspace.Project do
           app: atom(),
           config: keyword(),
           mix_path: String.t(),
-          workspace_path: String.t(),
-          cwd: String.t(),
-          path: String.t()
+          path: String.t(),
+          workspace_path: String.t()
         }
 
-  @enforce_keys [:app, :config, :mix_path, :workspace_path, :cwd, :path]
+  @enforce_keys [:app, :config, :mix_path, :workspace_path, :path]
   defstruct app: nil,
             config: nil,
             mix_path: nil,
             path: nil,
-            workspace_path: nil,
-            cwd: nil
+            workspace_path: nil
 
   @doc """
-  Creates a new project for the given `mix.exs` path
+  Creates a new project for the given project path.
 
-  Notice that the calculated paths are relative to the current working
-  directory, so you should invoke this function in order to generate new
-  project info structure from the root of your workspace.
+  The `path` can be one of the following:
+
+  - A path to a `mix.exs` file
+  - A path to a project containing a `mix.exs` file
+
+  You can pass both absolute and relative paths. All paths will
+  be expanded by default.
+
+  This will raise if the `path` does not correspond to a valid
+  mix project.
   """
   @spec new(mix_path :: String.t(), workspace_path :: String.t()) :: t()
-  def new(mix_path, workspace_path) do
-    cwd = File.cwd!()
+  def new(path, workspace_path) do
+    mix_path =
+      path
+      |> Path.expand()
+      |> mix_path()
 
-    relative_path = Path.relative_to(mix_path, cwd)
+    workspace_path = Path.expand(workspace_path)
 
-    app =
-      relative_path
-      |> Path.dirname()
-      |> Path.basename()
-      |> String.to_atom()
+    ensure_mix_file!(mix_path)
 
-    Mix.Project.in_project(
-      app,
-      Path.dirname(relative_path),
+    in_project(
+      Path.dirname(mix_path),
       fn module ->
         %__MODULE__{
           app: module.project()[:app],
           config: Mix.Project.config(),
           mix_path: mix_path,
           path: Path.dirname(mix_path),
-          workspace_path: workspace_path,
-          cwd: cwd
+          workspace_path: workspace_path
         }
       end
     )
   end
 
-  def relative_path(%__MODULE__{cwd: cwd, path: path}), do: Path.relative_to(path, cwd)
+  defp mix_path(path) do
+    case String.ends_with?(path, "mix.exs") do
+      true -> path
+      false -> Path.join(path, "mix.exs")
+    end
+  end
+
+  def in_project(path, fun) do
+    mix_path = mix_path(path)
+
+    if mix_path == Mix.Project.project_file() do
+      fun.(Mix.Project.get!())
+    else
+      Mix.Project.in_project(
+        app_name(mix_path),
+        Path.dirname(mix_path),
+        fun
+      )
+    end
+  end
 
   @doc """
   Returns the `Mix.Project` config of the given `mix.exs` file.
@@ -71,17 +92,11 @@ defmodule Workspace.Project do
   """
   @spec config(mix_path :: binary()) :: keyword()
   def config(mix_path) do
-    path =
-      mix_path
-      |> Path.expand()
-      |> Path.dirname()
-
-    Mix.Project.in_project(
-      app_name(mix_path),
-      path,
-      fn _module -> Mix.Project.config() end
-    )
+    in_project(mix_path, fn _module -> Mix.Project.config() end)
   end
+
+  def relative_to_workspace(%Project{path: path, workspace_path: workspace_path}),
+    do: Workspace.Utils.relative_path_to(path, workspace_path)
 
   # returns an "app name" for the given mix.exs file, it is the 
   # folder name containing the project. We need a conistent app name
@@ -97,5 +112,22 @@ defmodule Workspace.Project do
     |> Path.dirname()
     |> Path.basename()
     |> String.to_atom()
+  end
+
+  defp ensure_mix_file!(path) do
+    cond do
+      not String.ends_with?(path, "mix.exs") ->
+        raise_no_mix_file(path)
+
+      not File.exists?(path) ->
+        raise_no_mix_file(path)
+
+      true ->
+        :ok
+    end
+  end
+
+  defp raise_no_mix_file(path) do
+    raise ArgumentError, "expected to get a valid path to a `mix.exs` file, got: #{path}"
   end
 end

@@ -57,13 +57,33 @@ defmodule Workspace do
   end
 
   defp projects(workspace_path, _opts) do
-    Path.wildcard(workspace_path <> "/**/mix.exs")
-    # TODO: better filter out external dependencies
-    |> Enum.filter(fn path ->
-      Path.dirname(path) != workspace_path and !String.contains?(path, "deps")
-    end)
-    |> Enum.map(fn path -> Workspace.Project.new(path, workspace_path) end)
+    result =
+      workspace_path
+      |> nested_mix_projects()
+      |> Enum.sort()
+      |> Enum.map(fn path -> Workspace.Project.new(path, workspace_path) end)
+
+    result
   end
+
+  # TODO: add handling of nested workspaces
+  defp nested_mix_projects(path) do
+    subdirs = subdirs(path)
+
+    projects = Enum.filter(subdirs, &mix_project?/1)
+    remaining = subdirs -- projects
+
+    Enum.reduce(remaining, projects, fn project, acc -> acc ++ nested_mix_projects(project) end)
+  end
+
+  defp subdirs(path) do
+    path
+    |> File.ls!()
+    |> Enum.map(fn file -> Path.join(path, file) end)
+    |> Enum.filter(&File.dir?/1)
+  end
+
+  defp mix_project?(path), do: File.exists?(Path.join(path, "mix.exs"))
 
   @doc """
   Returns `true` if the given project is a workspace
@@ -100,11 +120,7 @@ defmodule Workspace do
       """
     end
 
-    if path == Mix.Project.project_file() do
-      workspace?(Mix.Project.config())
-    else
-      workspace?(Workspace.Project.config(path))
-    end
+    workspace?(Workspace.Project.config(path))
   end
 
   def workspace?(config) when is_list(config) do

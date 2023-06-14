@@ -36,7 +36,7 @@ defmodule Mix.Tasks.Workspace.Run do
     task_args = [task | argv]
 
     Cli.info(
-      Workspace.Project.relative_path(project),
+      Workspace.Project.relative_to_workspace(project),
       "- mix #{Enum.join(task_args, " ")}",
       prefix: "==> "
     )
@@ -48,7 +48,7 @@ defmodule Mix.Tasks.Workspace.Run do
       "subtask" ->
         Mix.Project.in_project(
           project.app,
-          Workspace.Project.relative_path(project),
+          project.path,
           fn _mixfile ->
             Mix.Task.run(task, argv)
           end
@@ -104,7 +104,7 @@ defmodule Mix.Tasks.Workspace.Run do
         project = Keyword.get(meta, :project)
 
         Cli.error(
-          Workspace.Project.relative_path(project),
+          Workspace.Project.relative_to_workspace(project),
           "- mix #{Enum.join(args, " ")} failed with #{status}",
           prefix: "==> "
         )
