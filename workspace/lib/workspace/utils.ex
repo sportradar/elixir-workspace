@@ -20,4 +20,28 @@ defmodule Workspace.Utils do
     base = List.duplicate("..", length(l2))
     Path.join(base ++ l1)
   end
+
+  @doc false
+  def digraph_to_mermaid(graph) do
+    vertices =
+      :digraph.vertices(graph)
+      |> Enum.map(fn v -> "  #{v}" end)
+      |> Enum.join("\n")
+
+    edges =
+      :digraph.edges(graph)
+      |> Enum.map(fn edge ->
+        {_e, v1, v2, _l} = :digraph.edge(graph, edge)
+        {v1, v2}
+      end)
+      |> Enum.map(fn {v1, v2} -> "  #{v1} --> #{v2}" end)
+      |> Enum.join("\n")
+
+    """
+    flowchart TD
+    #{vertices}
+
+    #{edges}
+    """
+  end
 end
