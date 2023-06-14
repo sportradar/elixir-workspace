@@ -63,4 +63,39 @@ defmodule Workspace.Project do
   end
 
   def relative_path(%__MODULE__{cwd: cwd, path: path}), do: Path.relative_to(path, cwd)
+
+  @doc """
+  Returns the `Mix.Project` config of the given `mix.exs` file.
+
+  The project will be loaded using `Mix.Project.in_project/4`.
+  """
+  @spec config(mix_path :: binary()) :: keyword()
+  def config(mix_path) do
+    path =
+      mix_path
+      |> Path.expand()
+      |> Path.dirname()
+
+    Mix.Project.in_project(
+      app_name(mix_path),
+      path,
+      fn _module -> Mix.Project.config() end
+    )
+  end
+
+  # returns an "app name" for the given mix.exs file, it is the 
+  # folder name containing the project. We need a conistent app name
+  # for each mix.exs in order to avoid warnings for module redefinitions
+  # when Mix.project.in_project is used. 
+  #
+  # Notice that in some edge cases if multiple projects in your workspace
+  # have the same path this may cause incorrect behaviour. But you can
+  # use the unique name check for avoiding such cases.
+  defp app_name(mix_path) do
+    mix_path
+    |> Path.expand()
+    |> Path.dirname()
+    |> Path.basename()
+    |> String.to_atom()
+  end
 end
