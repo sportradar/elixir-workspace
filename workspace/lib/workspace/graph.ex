@@ -26,16 +26,16 @@ defmodule Workspace.Graph do
   defp path_dependency?(config) when is_binary(config), do: false
   defp path_dependency?(config), do: config[:path] != nil
 
-  def source_projects do
-    with_digraph(Workspace.projects(), fn graph -> :digraph.source_vertices(graph) end)
+  def source_projects(workspace) do
+    with_digraph(workspace.projects, fn graph -> :digraph.source_vertices(graph) end)
   end
 
-  def sink_projects do
-    with_digraph(Workspace.projects(), fn graph -> :digraph.sink_vertices(graph) end)
+  def sink_projects(workspace) do
+    with_digraph(workspace.projects, fn graph -> :digraph.sink_vertices(graph) end)
   end
 
-  def affected(projects) do
-    with_digraph(Workspace.projects(), fn graph ->
+  def affected(workspace, projects) do
+    with_digraph(workspace.projects, fn graph ->
       :digraph_utils.reaching_neighbours(projects, graph)
       |> Enum.concat(projects)
       |> Enum.uniq()

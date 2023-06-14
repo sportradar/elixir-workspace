@@ -18,10 +18,10 @@ defmodule Mix.Tasks.Workspace.Check do
     # %{parsed: parsed, args: args, extra: extra} = CliOpts.parse!(argv, @options_schema)
 
     checks = checks_config()
-    projects = Workspace.projects()
+    workspace = Workspace.new(File.cwd!())
 
     checks
-    |> Enum.map(fn {module, opts} -> module.check(projects, opts) end)
+    |> Enum.map(fn {module, opts} -> module.check(workspace.projects, opts) end)
     |> List.flatten()
     |> Enum.group_by(fn result -> result.project.app end)
     |> Enum.each(fn {app, results} -> print_project_status(app, results) end)

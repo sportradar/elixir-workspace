@@ -10,15 +10,45 @@ defmodule Workspace do
   - It must have a `:workspace` project option
   """
 
+  @type t :: %Workspace{
+          projects: [Workspace.Project.t()],
+          config: [],
+          mix_path: binary(),
+          workspace_path: binary(),
+          cwd: binary()
+        }
+
+  defstruct projects: [],
+            config: [],
+            mix_path: nil,
+            workspace_path: nil,
+            cwd: nil
+
+  @doc """
+  Creates a new `Workspace` from the given workspace path
+  """
+  def new(path \\ File.cwd!()) do
+    workspace_mix_path = Path.join(path, "mix.exs") |> Path.expand()
+    workspace_path = Path.dirname(workspace_mix_path)
+
+    ensure_workspace!(workspace_mix_path)
+
+    workspace_config = Workspace.Project.config(workspace_mix_path)[:workspace]
+
+    %__MODULE__{
+      config: workspace_config,
+      mix_path: workspace_mix_path,
+      workspace_path: workspace_path,
+      cwd: File.cwd!(),
+      projects: projects(workspace_path, workspace_config)
+    }
+  end
+
   @doc """
   Returns the projects of the given workspace
   """
-  @spec projects(opts :: keyword()) :: [Workspace.Project.t()]
-  def projects(opts \\ []) do
-    workspace_path =
-      Keyword.get(opts, :workspace_path, ".")
-      |> Path.expand()
-
+  @spec projects(workspace_path :: binary(), opts :: keyword()) :: [Workspace.Project.t()]
+  def projects(workspace_path, _opts \\ []) do
     ensure_workspace!(workspace_path)
 
     Path.wildcard(workspace_path <> "/**/mix.exs")

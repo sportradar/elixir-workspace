@@ -17,7 +17,9 @@ defmodule Mix.Tasks.Workspace.Run do
   def run(argv) do
     %{parsed: parsed, args: args, extra: extra} = CliOpts.parse!(argv, @options_schema)
 
-    Workspace.projects()
+    workspace = Workspace.new(File.cwd!())
+
+    workspace.projects
     |> Workspace.Cli.filter_projects(parsed, args)
     |> Enum.each(fn project -> run_in_project(project, parsed, extra) end)
   end

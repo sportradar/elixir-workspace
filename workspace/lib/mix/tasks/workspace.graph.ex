@@ -40,16 +40,14 @@ defmodule Mix.Tasks.Workspace.Graph do
     workspace_path: :string
   ]
 
-  @project_flags [:workspace_path]
-
   @impl true
   def run(args) do
     Mix.Project.get!()
     {opts, _args, _} = OptionParser.parse(args, switches: @switches)
 
-    opts
-    |> Keyword.take(@project_flags)
-    |> Workspace.projects()
-    |> Workspace.Graph.print_tree()
+    workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
+    workspace = Workspace.new(workspace_path)
+
+    Workspace.Graph.print_tree(workspace.projects)
   end
 end
