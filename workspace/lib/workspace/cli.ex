@@ -1,4 +1,6 @@
 defmodule Workspace.Cli do
+  @modueldoc false
+
   @global_cli_opts [
     affected: [
       type: :boolean,

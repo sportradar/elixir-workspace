@@ -18,6 +18,7 @@ defmodule Workspace do
           cwd: binary()
         }
 
+  @enforce_keys [:projects, :config, :mix_path, :workspace_path, :cwd]
   defstruct projects: [],
             config: [],
             mix_path: nil,

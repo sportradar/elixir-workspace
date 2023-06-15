@@ -1,0 +1,84 @@
+defmodule Workspace.GraphTest do
+  use ExUnit.Case
+
+  import ExUnit.CaptureIO
+  alias Workspace.Graph
+
+  setup do
+    %{workspace: Workspace.new("test/fixtures/sample_workspace")}
+  end
+
+  describe "digraph/1" do
+    test "graph of sample workspace", %{workspace: workspace} do
+      graph = Graph.digraph(workspace)
+
+      assert length(:digraph.vertices(graph)) == 11
+      assert length(:digraph.edges(graph)) == 9
+
+      :digraph.delete(graph)
+    end
+  end
+
+  describe "with_digraph/2" do
+    test "runs a function on the graph", %{workspace: workspace} do
+      assert Graph.with_digraph(workspace, fn graph -> :digraph.source_vertices(graph) end) == [
+               :project_a,
+               :project_h,
+               :project_i,
+               :project_k
+             ]
+    end
+  end
+
+  test "source_projects/1", %{workspace: workspace} do
+    assert Graph.source_projects(workspace) == [:project_a, :project_h, :project_i, :project_k]
+  end
+
+  test "sink_projects/1", %{workspace: workspace} do
+    assert Graph.sink_projects(workspace) == [
+             :project_d,
+             :project_e,
+             :project_g,
+             :project_j,
+             :project_k
+           ]
+  end
+
+  describe "affected/2" do
+    test "nothing affected with no changes", %{workspace: workspace} do
+      assert Graph.affected(workspace, []) == []
+    end
+
+    test "proper traversing up of the graph", %{workspace: workspace} do
+      assert Graph.affected(workspace, [:project_k, :project_a]) == [:project_k, :project_a]
+
+      assert Graph.affected(workspace, [:project_g]) == [
+               :project_b,
+               :project_a,
+               :project_c,
+               :project_f,
+               :project_g
+             ]
+    end
+  end
+
+  test "print_tree/1", %{workspace: workspace} do
+    expected = """
+    project_a
+    ├── project_b
+    │   └── project_g
+    ├── project_c
+    │   ├── project_e
+    │   └── project_f
+    │       └── project_g
+    └── project_d
+    project_h
+    └── project_d
+    project_i
+    └── project_j
+    project_k
+    """
+
+    assert capture_io(fn -> Graph.print_tree(workspace) end) == expected
+  end
+end

@@ -48,6 +48,6 @@ defmodule Mix.Tasks.Workspace.Graph do
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     workspace = Workspace.new(workspace_path)
 
-    Workspace.Graph.print_tree(workspace.projects)
+    Workspace.Graph.print_tree(workspace)
   end
 end

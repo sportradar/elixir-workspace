@@ -18,7 +18,7 @@ defmodule Workspace.Project do
           workspace_path: String.t()
         }
 
-  @enforce_keys [:app, :config, :mix_path, :workspace_path, :path]
+  @enforce_keys [:app, :config, :mix_path, :path, :workspace_path]
   defstruct app: nil,
             config: nil,
             mix_path: nil,
@@ -41,14 +41,8 @@ defmodule Workspace.Project do
   """
   @spec new(mix_path :: String.t(), workspace_path :: String.t()) :: t()
   def new(path, workspace_path) do
-    mix_path =
-      path
-      |> Path.expand()
-      |> mix_path()
-
+    mix_path = mix_path(path)
     workspace_path = Path.expand(workspace_path)
-
-    ensure_mix_file!(mix_path)
 
     in_project(
       Path.dirname(mix_path),
@@ -64,15 +58,43 @@ defmodule Workspace.Project do
     )
   end
 
+  # Helper utility function that just gives a mix.exs absolute path
+  # from the input path. It does not check if the file actually exists.
   defp mix_path(path) do
+    path = Path.expand(path)
+
     case String.ends_with?(path, "mix.exs") do
       true -> path
       false -> Path.join(path, "mix.exs")
     end
   end
 
+  @doc """
+  Runs the given function inside the given project.
+
+  `path` can be one of the following:
+
+  - a path to a `mix.exs` file
+  - a path to a folder containing a `mix.exs` file
+
+  Both absolute and relative paths are supported.
+
+  This function will delegate to `Mix.Project.in_project/4`. The `app` name is
+  extracted from the project folder name, so it is expected to match the internal
+  defined `:app` name in `mix.exs`.
+
+  The return value of this function is the return value of `fun`
+
+  ## Examples
+
+      Mix.Project.in_project("/path/to/my_app/mix.exs", fn module -> module end)
+      #=> MyApp.MixProject
+  """
+  @spec in_project(path :: Path.t(), fun :: (module() -> result)) :: result when result: term()
   def in_project(path, fun) do
     mix_path = mix_path(path)
+
+    ensure_mix_file!(mix_path)
 
     if mix_path == Mix.Project.project_file() do
       fun.(Mix.Project.get!())
@@ -114,9 +136,14 @@ defmodule Workspace.Project do
     |> String.to_atom()
   end
 
-  defp ensure_mix_file!(path) do
+  @doc """
+  Ensures that the given `path` is an existing `mix.exs` file.
+
+  If the file does not exist or the filename is not `mix.exs` it will raise.
+  """
+  def ensure_mix_file!(path) do
     cond do
-      not String.ends_with?(path, "mix.exs") ->
+      Path.basename(path) != "mix.exs" ->
         raise_no_mix_file(path)
 
       not File.exists?(path) ->
