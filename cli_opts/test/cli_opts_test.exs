@@ -1,4 +1,45 @@
 defmodule CliOptsTest do
   use ExUnit.Case
   doctest CliOpts
+
+  @test_schema [
+    verbose: [
+      type: :boolean
+    ],
+    project: [
+      type: :string,
+      alias: :p,
+      required: true,
+      keep: true
+    ],
+    mode: [
+      type: :string,
+      default: "parallel"
+    ],
+    ignore: [
+      type: :boolean,
+      doc: false
+    ]
+  ]
+
+  describe "parse/1" do
+    test "required attributes" do
+      assert {:ok, _} = CliOpts.parse(["--project", "foo"], @test_schema)
+      assert {:error, _} = CliOpts.parse([], @test_schema)
+    end
+  end
+
+  describe "docs/1" do
+    test "test schema" do
+      expected =
+        """
+        * `[--verbose]` -
+        * `--project, -p...` -
+        * `[--mode]` -  [default: `parallel`]
+        """
+        |> String.trim()
+
+      assert CliOpts.docs(@test_schema) == expected
+    end
+  end
 end
