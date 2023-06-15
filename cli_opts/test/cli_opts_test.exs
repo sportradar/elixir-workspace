@@ -10,6 +10,7 @@ defmodule CliOptsTest do
       type: :string,
       alias: :p,
       required: true,
+      doc: "The project to use",
       keep: true
     ],
     mode: [
@@ -33,9 +34,9 @@ defmodule CliOptsTest do
     test "test schema" do
       expected =
         """
-        * `[--verbose]` -
-        * `--project, -p...` -
-        * `[--mode]` -  [default: `parallel`]
+        * `--verbose` (`boolean`) -
+        * `--project, -p...` (`string`) - Required. The project to use
+        * `--mode` (`string`) -  [default: `parallel`]
         """
         |> String.trim()
 

@@ -172,7 +172,7 @@ defmodule CliOpts do
   defp option_doc({key, schema}, acc) do
     doc =
       """
-      * `#{key_doc(key, schema)}` - #{key_body_doc(schema)}
+      * `#{key_doc(key, schema)}` (`#{schema[:type]}`) - #{maybe_required(schema)}#{key_body_doc(schema)}
       """
       |> String.trim_trailing()
 
@@ -181,7 +181,6 @@ defmodule CliOpts do
 
   defp key_doc(key, schema) do
     "--#{key}#{maybe_alias(schema)}"
-    |> maybe_optional(schema)
     |> maybe_repeating(schema)
   end
 
@@ -192,10 +191,10 @@ defmodule CliOpts do
     end
   end
 
-  defp maybe_optional(key, schema) do
+  defp maybe_required(schema) do
     case schema[:required] do
-      true -> key
-      _ -> "[#{key}]"
+      true -> "Required. "
+      _ -> ""
     end
   end
 
