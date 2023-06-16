@@ -24,3 +24,6 @@ workspace_ex-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# asdf tool versions
+.tool-versions

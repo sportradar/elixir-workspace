@@ -16,7 +16,8 @@ defmodule Mix.Tasks.Workspace.Check do
 
   def run(_argv) do
     # %{parsed: parsed, args: args, extra: extra} = CliOpts.parse!(argv, @options_schema)
-    config = Workspace.Config.load_config_file()
+    # TODO: config path from args
+    config = Workspace.config(".workspace.exs")
 
     ensure_checks(config.checks)
 

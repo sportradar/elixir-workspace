@@ -10,7 +10,7 @@ defmodule Workspace.MixWorkspace do
       elixirc_paths: [],
       deps: deps(),
       aliases: aliases(),
-      workspace: workspace()
+      workspace: true
     ]
   end
 
@@ -30,30 +30,12 @@ defmodule Workspace.MixWorkspace do
 
   defp aliases do
     [
-      format: ["workspace.run -t format"]
+      "workspace.format": [
+        "format",
+        "workspace.run -t format"
+      ],
+      "deps.get": ["workspace.run -t deps.get"],
+      test: ["workspace.run -t test"]
     ]
   end
-
-  # The workspace config
-  defp workspace do
-    [
-      required_deps: [
-        [
-          dep: {:ex_doc, "~> 0.28", only: :dev, runtime: false},
-          ignore: demo_projects()
-        ],
-        [
-          dep: {:credo, "~> 1.6.7", only: [:dev, :test], runtime: false},
-          ignore: demo_projects()
-        ],
-        [
-          dep: {:doctor, "~> 0.21.0", only: :dev, runtime: false},
-          ignore: demo_projects()
-        ]
-      ]
-    ]
-  end
-
-
-  defp demo_projects, do: [:project_a, :project_b, :project_c, :project_d, :project_e, :project_f, :project_g, :project_h, :project_i, :project_j, :project_k]
 end
