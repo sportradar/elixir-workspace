@@ -6,7 +6,7 @@ defmodule CliOpts.MixProject do
       app: :cli_opts,
       version: "0.1.0",
       elixir: "~> 1.14",
-      build_path: "../_build",
+      # build_path: "../_build",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
