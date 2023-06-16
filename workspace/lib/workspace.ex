@@ -12,7 +12,7 @@ defmodule Workspace do
 
   @type t :: %Workspace{
           projects: [Workspace.Project.t()],
-          config: [],
+          config: Workspace.Config.t(),
           mix_path: binary(),
           workspace_path: binary(),
           cwd: binary()
@@ -20,10 +20,47 @@ defmodule Workspace do
 
   @enforce_keys [:projects, :config, :mix_path, :workspace_path, :cwd]
   defstruct projects: [],
-            config: [],
+            config: nil,
             mix_path: nil,
             workspace_path: nil,
             cwd: nil
+
+  @doc """
+  Creates a new `Workspace` from the given workspace path
+
+  `config` can be one of the following:
+
+  * A path relative to the workspace `path` with the workspace config
+  * A loaded config object
+  """
+  @spec new(path :: binary(), config :: Workspace.Config.t() | binary()) :: t()
+  def new(path, config \\ %Workspace.Config{})
+
+  def new(path, config) when is_binary(config) do
+    config_relative_path = Workspace.Utils.relative_path_to(config, Path.expand(path))
+
+    config =
+      Path.join(path, config_relative_path)
+      |> Path.expand()
+      |> config()
+
+    new(path, config)
+  end
+
+  def new(path, %Workspace.Config{} = config) do
+    workspace_mix_path = Path.join(path, "mix.exs") |> Path.expand()
+    workspace_path = Path.dirname(workspace_mix_path)
+
+    ensure_workspace!(workspace_mix_path)
+
+    %__MODULE__{
+      config: config,
+      mix_path: workspace_mix_path,
+      workspace_path: workspace_path,
+      cwd: File.cwd!(),
+      projects: projects(workspace_path, config)
+    }
+  end
 
   @doc """
   Tries to load the workspace config from the given path
@@ -47,27 +84,6 @@ defmodule Workspace do
 
         %Workspace.Config{}
     end
-  end
-
-  @doc """
-  Creates a new `Workspace` from the given workspace path
-
-  `config` is an optional keyword list with the workspace's config.
-  """
-  @spec new(path :: binary(), config :: Workspace.Config.t()) :: t()
-  def new(path, config \\ %Workspace.Config{}) do
-    workspace_mix_path = Path.join(path, "mix.exs") |> Path.expand()
-    workspace_path = Path.dirname(workspace_mix_path)
-
-    ensure_workspace!(workspace_mix_path)
-
-    %__MODULE__{
-      config: config,
-      mix_path: workspace_mix_path,
-      workspace_path: workspace_path,
-      cwd: File.cwd!(),
-      projects: projects(workspace_path, config)
-    }
   end
 
   defp ensure_workspace!(path) do

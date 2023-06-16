@@ -22,26 +22,19 @@ defmodule Workspace.UtilsTest do
     end
 
     test "with relative paths" do
-      assert Utils.relative_path_to("usr/local/foo", "usr/local") == "foo"
-      assert Utils.relative_path_to("usr/local/foo", "etc") == "../usr/local/foo"
+      assert Utils.relative_path_to("usr/local/foo", "usr/local") == "usr/local/foo"
+      assert Utils.relative_path_to("usr/local/foo", "etc") == "usr/local/foo"
 
-      assert Utils.relative_path_to("usr/local/foo", "usr/local") == "foo"
-      assert Utils.relative_path_to(["usr", ?/, 'local/foo'], 'usr/local') == "foo"
+      assert Utils.relative_path_to("usr/local/foo", "usr/local") == "usr/local/foo"
 
       # on cwd
       assert Utils.relative_path_to("foo", File.cwd!()) == "foo"
-      assert Utils.relative_path_to("./foo", File.cwd!()) == "foo"
-      assert Utils.relative_path_to("./foo/.", File.cwd!()) == "foo"
-      assert Utils.relative_path_to("./foo/./bar/.", File.cwd!()) == "foo/bar"
-      assert Utils.relative_path_to("../foo/./bar/.", File.cwd!()) == "../foo/bar"
-      assert Utils.relative_path_to("../foo/./bar/..", File.cwd!()) == "../foo"
-      assert Utils.relative_path_to("../foo/../bar/..", File.cwd!()) == ".."
-      assert Utils.relative_path_to("./foo/../bar/..", File.cwd!()) == "."
+      assert Utils.relative_path_to("./foo", File.cwd!()) == "./foo"
+      assert Utils.relative_path_to("../foo", File.cwd!()) == "../foo"
 
       # both relative
-      assert Utils.relative_path_to("usr/local/foo", "usr/local") == "foo"
-      assert Utils.relative_path_to("usr/local/foo", "etc") == "../usr/local/foo"
-      assert Utils.relative_path_to(~c"usr/local/foo", "etc") == "../usr/local/foo"
+      assert Utils.relative_path_to("usr/local/foo", "usr/local") == "usr/local/foo"
+      assert Utils.relative_path_to("usr/local/foo", "etc") == "usr/local/foo"
     end
   end
 

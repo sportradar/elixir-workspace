@@ -46,7 +46,8 @@ defmodule Mix.Tasks.Workspace.Graph do
     {opts, _args, _} = OptionParser.parse(args, switches: @switches)
 
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
-    workspace = Workspace.new(workspace_path)
+    workspace_config = Keyword.get(opts, :workspace_config, ".workspace.exs")
+    workspace = Workspace.new(workspace_path, workspace_config)
 
     Workspace.Graph.print_tree(workspace)
   end

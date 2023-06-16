@@ -93,7 +93,7 @@ defmodule Workspace.Project do
       Mix.Project.in_project("/path/to/my_app/mix.exs", fn module -> module end)
       #=> MyApp.MixProject
   """
-  @spec in_project(path :: Path.t(), fun :: (module() -> result)) :: result when result: term()
+  @spec in_project(path :: binary(), fun :: (module() -> result)) :: result when result: term()
   def in_project(path, fun) do
     mix_path = mix_path(path)
 

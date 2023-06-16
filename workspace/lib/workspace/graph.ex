@@ -82,7 +82,7 @@ defmodule Workspace.Graph do
 
   Delegates to `Mix.Utils.print_tree`.
   """
-  @spec print_tree(workspace :: Workspace.t()) :: binary()
+  @spec print_tree(workspace :: Workspace.t()) :: :ok
   def print_tree(workspace) do
     with_digraph(workspace, fn graph ->
       callback = fn {node, _format} ->
@@ -102,5 +102,7 @@ defmodule Workspace.Graph do
 
       Mix.Utils.print_tree(root_nodes, callback)
     end)
+
+    :ok
   end
 end

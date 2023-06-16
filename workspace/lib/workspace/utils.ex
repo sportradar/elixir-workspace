@@ -3,12 +3,18 @@ defmodule Workspace.Utils do
 
   # TODO: Remove once we upgrade to elixir 1.16.0
   @doc false
-  @spec relative_path_to(path :: Path.t(), cwd :: Path.t()) :: Path.t()
+  @spec relative_path_to(path :: binary(), cwd :: binary()) :: binary()
   def relative_path_to(path, cwd) do
-    split_path = path |> Path.expand() |> Path.split()
-    split_cwd = cwd |> Path.expand() |> Path.split()
+    cond do
+      relative?(path) ->
+        path
 
-    relative_path_to(split_path, split_cwd, split_path)
+      true ->
+        split_path = path |> Path.expand() |> Path.split()
+        split_cwd = cwd |> Path.expand() |> Path.split()
+
+        relative_path_to(split_path, split_cwd, split_path)
+    end
   end
 
   defp relative_path_to(path, path, _original), do: "."
@@ -18,6 +24,8 @@ defmodule Workspace.Utils do
     base = List.duplicate("..", length(l2))
     Path.join(base ++ l1)
   end
+
+  defp relative?(path), do: Path.type(path) == :relative
 
   @doc false
   @spec digraph_to_mermaid(graph :: :digraph.graph()) :: binary()
