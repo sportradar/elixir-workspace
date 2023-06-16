@@ -13,15 +13,16 @@ defmodule Mix.Tasks.Workspace.Run do
   use Mix.Task
 
   def run(argv) do
-    %{parsed: parsed, args: args, extra: extra} = CliOpts.parse!(argv, @options_schema)
+    %{parsed: opts, args: args, extra: extra} = CliOpts.parse!(argv, @options_schema)
+    workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
+    config_path = Keyword.fetch!(opts, :config_path)
 
-    config = Workspace.Config.load_config_file()
-
-    workspace = Workspace.new(File.cwd!(), config)
+    config = Workspace.config(Path.join(workspace_path, config_path))
+    workspace = Workspace.new(workspace_path, config)
 
     workspace.projects
-    |> Workspace.Cli.filter_projects(parsed, args)
-    |> Enum.each(fn project -> run_in_project(project, parsed, extra) end)
+    |> Workspace.Cli.filter_projects(opts, args)
+    |> Enum.each(fn project -> run_in_project(project, opts, extra) end)
   end
 
   defp run_in_project(%{skip: true, app: app}, args, _argv) do
