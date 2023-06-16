@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Workspace.Check do
-  @options_schema Workspace.Cli.global_opts()
+  @options_schema Workspace.Cli.global_opts() |> Keyword.take([:workspace_path, :config_path])
 
   @shortdoc "Runs configured checkers on the current workspace"
 
@@ -14,14 +14,16 @@ defmodule Mix.Tasks.Workspace.Check do
 
   alias Workspace.Cli
 
-  def run(_argv) do
-    # %{parsed: parsed, args: args, extra: extra} = CliOpts.parse!(argv, @options_schema)
-    # TODO: config path from args
-    config = Workspace.config(".workspace.exs")
+  def run(argv) do
+    %{parsed: opts, args: _args, extra: _extra} = CliOpts.parse!(argv, @options_schema)
+    workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
+    config_path = Keyword.fetch!(opts, :config_path)
+
+    config = Workspace.config(Path.join(workspace_path, config_path))
 
     ensure_checks(config.checks)
 
-    workspace = Workspace.new(File.cwd!(), config)
+    workspace = Workspace.new(workspace_path, config)
 
     config.checks
     |> Enum.map(fn {module, opts} -> module.check(workspace, opts) end)

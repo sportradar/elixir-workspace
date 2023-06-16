@@ -42,6 +42,11 @@ defmodule Workspace.Cli do
     workspace_path: [
       type: :string,
       doc: "If set it specifies the root workspace path, defaults to current directory."
+    ],
+    config_path: [
+      type: :string,
+      doc: "The path to the workspace config to be used, relative to the workspace path",
+      default: ".workspace.exs"
     ]
   ]
 
