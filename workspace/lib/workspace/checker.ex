@@ -4,8 +4,8 @@ defmodule Workspace.Checker do
 
   ## Introduction
 
-  A checker is responsible for validating that the project of a workspace
-  follows the global workspace rules.
+  A checker is responsible for validating that a workspace follows the
+  configured rules.
 
   When your mono-repo grows it is becoming more tedious to keep track with
   all projects and ensure that the same standards apply to all projects. For
@@ -16,5 +16,5 @@ defmodule Workspace.Checker do
   @doc """
   Applies a workspace check on the given projects
   """
-  @callback check(projects :: [Workspace.Project.t()], opts :: keyword()) :: [struct()]
+  @callback check(workspace :: Workspace.t(), opts :: keyword()) :: [struct()]
 end

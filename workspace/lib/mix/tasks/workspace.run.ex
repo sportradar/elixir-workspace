@@ -12,12 +12,12 @@ defmodule Mix.Tasks.Workspace.Run do
 
   use Mix.Task
 
-  alias Workspace.Cli
-
   def run(argv) do
     %{parsed: parsed, args: args, extra: extra} = CliOpts.parse!(argv, @options_schema)
 
-    workspace = Workspace.new(File.cwd!())
+    config = Workspace.Config.load_config_file()
+
+    workspace = Workspace.new(File.cwd!(), config)
 
     workspace.projects
     |> Workspace.Cli.filter_projects(parsed, args)
@@ -35,7 +35,7 @@ defmodule Mix.Tasks.Workspace.Run do
 
     task_args = [task | argv]
 
-    Cli.info(
+    Workspace.Cli.info(
       Workspace.Project.relative_to_workspace(project),
       "- mix #{Enum.join(task_args, " ")}",
       prefix: "==> "
@@ -103,7 +103,7 @@ defmodule Mix.Tasks.Workspace.Run do
         args = Keyword.get(meta, :args)
         project = Keyword.get(meta, :project)
 
-        Cli.error(
+        Workspace.Cli.error(
           Workspace.Project.relative_to_workspace(project),
           "- mix #{Enum.join(args, " ")} failed with #{status}",
           prefix: "==> "

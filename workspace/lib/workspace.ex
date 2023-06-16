@@ -26,6 +26,30 @@ defmodule Workspace do
             cwd: nil
 
   @doc """
+  Tries to load the workspace config from the given path
+
+  If the config cannot be loaded or is not valid, the default config is
+  returned.
+  """
+  @spec config(path :: binary()) :: Workspace.Config.t()
+  def config(path) do
+    case Workspace.Config.load_config_file(path) do
+      {:ok, config} ->
+        config
+
+      {:error, reason} ->
+        IO.warn("""
+        Failed to load a valid workspace configuration from `#{path}`: #{reason}
+
+        Using a default empty configuration. It is advised to create a `.workspace.exs`
+        at the root of your workspace.
+        """)
+
+        %Workspace.Config{}
+    end
+  end
+
+  @doc """
   Creates a new `Workspace` from the given workspace path
 
   `config` is an optional keyword list with the workspace's config.

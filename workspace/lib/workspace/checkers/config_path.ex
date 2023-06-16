@@ -24,11 +24,11 @@ defmodule Workspace.Checkers.ValidatePath do
   @behaviour Workspace.Checker
 
   @impl Workspace.Checker
-  def check(projects, opts) do
+  def check(workspace, opts) do
     config_attribute = Keyword.fetch!(opts, :config_attribute)
     expected_path = Keyword.fetch!(opts, :expected_path)
 
-    Enum.reduce(projects, [], fn project, acc ->
+    Enum.reduce(workspace.projects, [], fn project, acc ->
       status = check_project(project, config_attribute, expected_path)
 
       result =

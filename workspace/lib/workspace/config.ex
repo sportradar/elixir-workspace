@@ -26,18 +26,29 @@ defmodule Workspace.Config do
             ignore_paths: [],
             checks: []
 
-  @spec load_config_file(config_file :: binary()) :: t()
+  @doc """
+  Tries to load the given config file.
+
+  The file should be a valid `Workspace.Config` struct. If the file does
+  not exist or the contents are not valid, an error will be returned.
+  """
+  @spec load_config_file(config_file :: binary()) :: {:ok, t()} | {:error, binary()}
   def load_config_file(config_file \\ @config_file) do
     config_file = Path.expand(config_file)
 
     case File.exists?(config_file) do
       false ->
-        {:error, "workspace config file #{config_file} not found"}
+        {:error, "file not found"}
 
       true ->
-        {%Config{} = config, _bindings} = Code.eval_file(config_file)
+        {config, _bindings} = Code.eval_file(config_file)
 
-        config
+        validate_config_contents(config)
     end
   end
+
+  defp validate_config_contents(%Config{} = config), do: {:ok, config}
+
+  defp validate_config_contents(_config),
+    do: {:error, "invalid contents"}
 end

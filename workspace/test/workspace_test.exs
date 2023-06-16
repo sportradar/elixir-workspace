@@ -1,8 +1,32 @@
 defmodule WorkspaceTest do
   use ExUnit.Case
+  import ExUnit.CaptureIO
   doctest Workspace
 
   @sample_workspace_path "test/fixtures/sample_workspace"
+
+  describe "config/1" do
+    test "warning with invalid file" do
+      assert capture_io(:stderr, fn ->
+               config = Workspace.config("invalid.exs")
+               assert config == %Workspace.Config{}
+             end) =~ "file not found"
+    end
+
+    test "with incorrect contents" do
+      assert capture_io(:stderr, fn ->
+               config = Workspace.config("test/fixtures/configs/invalid_contents.exs")
+               assert config == %Workspace.Config{}
+             end) =~ "invalid contents"
+    end
+
+    test "with valid config" do
+      config = Workspace.config("test/fixtures/configs/valid.exs")
+      assert %Workspace.Config{} = config
+      assert config.ignore_projects == [Dummy.MixProject, Foo.MixProject]
+      assert config.ignore_paths == ["path/to/foo"]
+    end
+  end
 
   describe "new/1" do
     test "creates a workspace struct" do
