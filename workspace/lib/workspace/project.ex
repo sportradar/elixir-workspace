@@ -12,14 +12,16 @@ defmodule Workspace.Project do
   """
   @type t :: %Project{
           app: atom(),
+          module: module(),
           config: keyword(),
           mix_path: String.t(),
           path: String.t(),
           workspace_path: String.t()
         }
 
-  @enforce_keys [:app, :config, :mix_path, :path, :workspace_path]
+  @enforce_keys [:app, :module, :config, :mix_path, :path, :workspace_path]
   defstruct app: nil,
+            module: nil,
             config: nil,
             mix_path: nil,
             path: nil,
@@ -49,6 +51,7 @@ defmodule Workspace.Project do
       fn module ->
         %__MODULE__{
           app: module.project()[:app],
+          module: module,
           config: Mix.Project.config(),
           mix_path: mix_path,
           path: Path.dirname(mix_path),

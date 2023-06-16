@@ -1,5 +1,5 @@
 defmodule Workspace.Cli do
-  @modueldoc false
+  @moduledoc false
 
   @global_cli_opts [
     affected: [

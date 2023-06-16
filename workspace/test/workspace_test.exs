@@ -12,6 +12,35 @@ defmodule WorkspaceTest do
       assert length(workspace.projects) == 11
     end
 
+    test "with ignore_projects set" do
+      config = %Workspace.Config{
+        ignore_projects: [
+          ProjectA.MixProject,
+          ProjectB.MixProject
+        ]
+      }
+
+      workspace = Workspace.new(@sample_workspace_path, config)
+
+      assert %Workspace{} = workspace
+      assert length(workspace.projects) == 9
+    end
+
+    test "with ignore_paths set" do
+      config = %Workspace.Config{
+        ignore_paths: [
+          "project_a",
+          "project_b",
+          "project_c"
+        ]
+      }
+
+      workspace = Workspace.new(@sample_workspace_path, config)
+
+      assert %Workspace{} = workspace
+      assert length(workspace.projects) == 8
+    end
+
     test "raises if the path is not a workspace" do
       assert_raise Mix.Error, ~r"to be a workspace project", fn ->
         Workspace.new(Path.join(@sample_workspace_path, "project_a"))

@@ -27,22 +27,22 @@ defmodule Workspace do
 
   @doc """
   Creates a new `Workspace` from the given workspace path
+
+  `config` is an optional keyword list with the workspace's config.
   """
-  @spec new(path :: binary()) :: t()
-  def new(path \\ File.cwd!()) do
+  @spec new(path :: binary(), config :: Workspace.Config.t()) :: t()
+  def new(path, config \\ %Workspace.Config{}) do
     workspace_mix_path = Path.join(path, "mix.exs") |> Path.expand()
     workspace_path = Path.dirname(workspace_mix_path)
 
     ensure_workspace!(workspace_mix_path)
 
-    workspace_config = Workspace.Project.config(workspace_mix_path)[:workspace]
-
     %__MODULE__{
-      config: workspace_config,
+      config: config,
       mix_path: workspace_mix_path,
       workspace_path: workspace_path,
       cwd: File.cwd!(),
-      projects: projects(workspace_path, workspace_config)
+      projects: projects(workspace_path, config)
     }
   end
 
@@ -57,12 +57,13 @@ defmodule Workspace do
     end
   end
 
-  defp projects(workspace_path, _opts) do
+  defp projects(workspace_path, config) do
     result =
       workspace_path
       |> nested_mix_projects()
       |> Enum.sort()
       |> Enum.map(fn path -> Workspace.Project.new(path, workspace_path) end)
+      |> Enum.filter(&allowed_project?(&1, config))
 
     result
   end
@@ -86,6 +87,25 @@ defmodule Workspace do
 
   defp mix_project?(path), do: File.exists?(Path.join(path, "mix.exs"))
 
+  defp allowed_project?(project, config) do
+    cond do
+      project.module in config.ignore_projects ->
+        false
+
+      ignored_path?(project.mix_path, config.ignore_paths, project.workspace_path) ->
+        false
+
+      true ->
+        true
+    end
+  end
+
+  defp ignored_path?(mix_path, ignore_paths, workspace_path) do
+    ignore_paths
+    |> Enum.map(fn path -> workspace_path |> Path.join(path) |> Path.expand() end)
+    |> Enum.any?(fn path -> String.starts_with?(mix_path, path) end)
+  end
+
   @doc """
   Returns `true` if the given project is a workspace
 
@@ -99,15 +119,10 @@ defmodule Workspace do
 
   If a path is provided then it will be expanded first.
 
-  When called with no arguments, tells whether the current project is a
-  workspace or not.
-
   Raises if a path is provided which does not resolve to a valid `mix.exs`
   file.
   """
   @spec workspace?(config_or_path :: keyword() | binary()) :: boolean()
-  def workspace?(config_or_path \\ Mix.Project.config())
-
   def workspace?(path) when is_binary(path) do
     path =
       path
