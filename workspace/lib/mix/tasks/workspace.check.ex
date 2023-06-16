@@ -12,26 +12,39 @@ defmodule Mix.Tasks.Workspace.Check do
 
   use Mix.Task
 
-  alias Workspace.Cli
-
   def run(argv) do
     %{parsed: opts, args: _args, extra: _extra} = CliOpts.parse!(argv, @options_schema)
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     config_path = Keyword.fetch!(opts, :config_path)
 
+    # TODO: fix paths, it should handle relative paths wrt cwd
     config = Workspace.config(Path.join(workspace_path, config_path))
 
     ensure_checks(config.checks)
 
     workspace = Workspace.new(workspace_path, config)
 
+    Mix.shell().info([
+      :green,
+      "==> ",
+      :reset,
+      "running #{length(config.checks)} workspace checks on the workspace"
+    ])
+
+    Mix.shell().info("")
+
     config.checks
-    |> Enum.map(fn {module, opts} -> module.check(workspace, opts) end)
+    |> Enum.with_index(fn check, index -> Keyword.put(check, :index, index) end)
+    |> Enum.map(fn check -> check[:check].check(workspace, check) end)
     |> List.flatten()
-    |> Enum.group_by(fn result -> result.project.app end)
-    |> Enum.each(fn {app, results} -> print_project_status(app, results) end)
+    |> Enum.group_by(fn result -> result.index end)
+    |> Enum.each(fn {check_index, results} ->
+      print_check_status(check_index, results, config.checks)
+    end)
   end
 
+  # TODO: validate checks are properly defined modules are valid
+  # TODO: make checks a struct
   defp ensure_checks(checks) do
     if checks == [] do
       # TODO: improve the error message, add an example
@@ -39,22 +52,48 @@ defmodule Mix.Tasks.Workspace.Check do
     end
   end
 
-  defp print_project_status(app, results) do
-    Cli.info(
-      "#{app}",
-      "",
-      prefix: "==> "
-    )
+  defp print_check_status(index, results, checks) do
+    check = Enum.at(checks, index)
+    status = check_status(results)
 
-    Enum.each(results, fn result ->
-      case result.status do
-        :ok ->
-          Cli.success("#{result.checker}", "OK", prefix: "\t")
+    Mix.shell().info([
+      status_color(status),
+      status_text(status),
+      :reset,
+      " - ",
+      :blue,
+      "#{strip_elixir_prefix(check[:check])} ",
+      :reset,
+      Keyword.get(check, :description, "")
+    ])
 
-        :error ->
-          Cli.error("#{result.checker}", "ERROR", prefix: "\t")
-          IO.ANSI.Docs.print(result.error, "text/markdown")
-      end
-    end)
+    for result <- results do
+      Mix.shell().info([
+        "  ",
+        status_color(result.status),
+        status_text(result.status),
+        :reset,
+        " - ",
+        :blue,
+        "#{result.project}",
+        :reset
+      ])
+    end
   end
+
+  defp check_status([]), do: :ok
+  defp check_status([%Workspace.CheckResult{status: :error} | _rest]), do: :error
+  defp check_status([_result | rest]), do: check_status(rest)
+
+  defp status_color(:error), do: :red
+  defp status_color(:ok), do: :green
+
+  defp status_text(:error), do: "NOK"
+  defp status_text(:ok), do: "OK "
+
+  defp strip_elixir_prefix(module) when is_atom(module),
+    do: strip_elixir_prefix(Atom.to_string(module))
+
+  defp strip_elixir_prefix("Elixir." <> module), do: module
+  defp strip_elixir_prefix(module), do: module
 end

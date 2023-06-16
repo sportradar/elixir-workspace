@@ -2,7 +2,6 @@ defmodule Mix.Tasks.Workspace.Graph do
   use Mix.Task
 
   @shortdoc "Prints the dependency tree"
-  @recursive true
 
   @moduledoc """
   Prints the dependency tree.

@@ -10,6 +10,11 @@ defmodule Workspace.Checkers.ValidatePath do
 
   ## Configuration
 
+  It expects the following configuration parameters:
+
+  * `:config_attribute` - the configuration attribute to check
+  * `:expected_path` - relative path with respect to the workspace root
+
   In order to configure this checker add the following, under `checkers`,
   in your `workspace.exs`:
 
@@ -24,16 +29,17 @@ defmodule Workspace.Checkers.ValidatePath do
   @behaviour Workspace.Checker
 
   @impl Workspace.Checker
-  def check(workspace, opts) do
-    config_attribute = Keyword.fetch!(opts, :config_attribute)
-    expected_path = Keyword.fetch!(opts, :expected_path)
+  def check(workspace, check) do
+    config_attribute = Keyword.fetch!(check[:opts], :config_attribute)
+    expected_path = Keyword.fetch!(check[:opts], :expected_path)
 
     Enum.reduce(workspace.projects, [], fn project, acc ->
       status = check_project(project, config_attribute, expected_path)
 
       result =
-        Workspace.CheckResult.new(__MODULE__, project)
+        Workspace.CheckResult.new(__MODULE__, project.app)
         |> Workspace.CheckResult.set_status(status)
+        |> Workspace.CheckResult.set_index(check[:index])
 
       [result | acc]
     end)
@@ -53,20 +59,7 @@ defmodule Workspace.Checkers.ValidatePath do
     if expected_path == configured_path do
       :ok
     else
-      {:error,
-       """
-       Invalid `#{config_attribute}` config attribute. Expected:
-
-       ```
-       #{Workspace.Utils.relative_path_to(expected_path, project.path)}
-       ```
-
-       Got:
-
-       ```
-       #{project.config[config_attribute]}
-       ```
-       """}
+      {:error, [expected: expected_path, configured_path: configured_path]}
     end
   end
 end

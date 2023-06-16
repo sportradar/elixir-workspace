@@ -20,6 +20,6 @@ defmodule Mix.Tasks.Workspace.CheckTest do
                "--config-path",
                "../configs/with_checks.exs"
              ])
-           end) =~ "ERROR"
+           end) =~ "NOK"
   end
 end

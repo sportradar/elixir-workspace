@@ -14,7 +14,7 @@ defmodule Workspace.Checker do
   """
 
   @doc """
-  Applies a workspace check on the given projects
+  Applies a workspace check on the given workspace
   """
-  @callback check(workspace :: Workspace.t(), opts :: keyword()) :: [struct()]
+  @callback check(workspace :: Workspace.t(), check :: keyword()) :: [struct()]
 end
