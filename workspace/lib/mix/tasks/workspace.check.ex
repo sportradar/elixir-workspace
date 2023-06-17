@@ -55,6 +55,7 @@ defmodule Mix.Tasks.Workspace.Check do
   defp print_check_status(index, results, checks) do
     check = Enum.at(checks, index)
     status = check_status(results)
+    results = Enum.sort_by(results, & &1.project.app)
 
     Mix.shell().info([
       "==> ",
