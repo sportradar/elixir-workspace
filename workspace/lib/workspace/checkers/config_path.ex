@@ -43,8 +43,13 @@ defmodule Workspace.Checkers.ValidatePath do
     attribute = check[:opts][:config_attribute]
 
     expected = Workspace.Utils.relative_path_to(meta[:expected], project.path)
-    configured = Workspace.Utils.relative_path_to(meta[:configured], project.path)
-    
+
+    configured =
+      case meta[:configured] do
+        nil -> "nil"
+        configured -> Workspace.Utils.relative_path_to(configured, project.path)
+      end
+
     "expected `:#{attribute}` to be #{expected}, got: #{configured}"
   end
 
