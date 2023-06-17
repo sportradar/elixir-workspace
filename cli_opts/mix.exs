@@ -7,6 +7,8 @@ defmodule CliOpts.MixProject do
       version: "0.1.0",
       elixir: "~> 1.14",
       # build_path: "../_build",
+      deps_path: "../artifacts/deps",
+      build_path: "../artifacts/build",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]

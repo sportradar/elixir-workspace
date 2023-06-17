@@ -8,7 +8,8 @@ defmodule Workspace.MixProject do
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      deps_path: "../artifacts/deps"
+      deps_path: "../artifacts/deps",
+      build_path: "../artifacts/build"
     ]
   end
 

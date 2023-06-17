@@ -27,3 +27,5 @@ workspace_ex-*.tar
 
 # asdf tool versions
 .tool-versions
+
+/artifacts/
