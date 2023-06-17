@@ -21,7 +21,7 @@ defmodule Workspace.Checker do
   @doc """
   Formats a check result for display purposes.
   """
-  @callback format_result(result :: Check.Result.t()) :: binary()
+  @callback format_result(result :: Check.Result.t()) :: IO.ANSI.ansidata()
 
   # TODO: add a __using__ macro and document it properly
 

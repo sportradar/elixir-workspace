@@ -70,17 +70,18 @@ defmodule Mix.Tasks.Workspace.Check do
     ])
 
     for result <- results do
-      Mix.shell().info([
-        "    ",
-        status_color(result.status),
-        status_text(result.status),
-        :reset,
-        :cyan,
-        " #{result.project.app}",
-        :reset,
-        " - ",
-        check_message(result)
-      ])
+      Mix.shell().info(
+        [
+          "    ",
+          status_color(result.status),
+          status_text(result.status),
+          :reset,
+          :cyan,
+          " #{result.project.app}",
+          :reset,
+          " - "
+        ] ++ check_message(result)
+      )
     end
   end
 
@@ -100,8 +101,11 @@ defmodule Mix.Tasks.Workspace.Check do
   defp strip_elixir_prefix("Elixir." <> module), do: module
   defp strip_elixir_prefix(module), do: module
 
-  # TODO: color code support for check messages
   defp check_message(result) do
     result.checker.format_result(result)
+    |> maybe_enlist()
   end
+
+  defp maybe_enlist(message) when is_list(message), do: message
+  defp maybe_enlist(message), do: [message]
 end
