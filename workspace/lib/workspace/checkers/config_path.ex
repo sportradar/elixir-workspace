@@ -39,20 +39,25 @@ defmodule Workspace.Checkers.ValidatePath do
   end
 
   defp check_config_path(project, config_attribute, expected_path) do
-    expected_path =
-      project.workspace_path
-      |> Path.join(expected_path)
-      |> Path.expand()
+    expected_path = make_absolute(project.workspace_path, expected_path)
+    configured_path = make_absolute(project.path, project.config[config_attribute])
 
-    configured_path =
-      project.path
-      |> Path.join(project.config[config_attribute])
-      |> Path.expand()
-
-    if expected_path == configured_path do
-      :ok
+    if configured_path == expected_path do
+      {:ok, check_metadata(expected_path, configured_path)}
     else
-      {:error, [expected: expected_path, configured_path: configured_path]}
+      {:error, check_metadata(expected_path, configured_path)}
     end
+  end
+
+  defp make_absolute(_base_path, nil), do: nil
+
+  defp make_absolute(base_path, relative) do
+    base_path
+    |> Path.join(relative)
+    |> Path.expand()
+  end
+
+  defp check_metadata(expected, configured) do
+    [expected: expected, configured: configured]
   end
 end

@@ -9,12 +9,12 @@ defmodule Workspace.CheckResult do
   alias __MODULE__
 
   @type t :: %CheckResult{
-    checker: module(),
-    project: atom(),
-    status: :ok | :error | :skip,
-    meta: keyword(),
-    index: pos_integer()
-  }
+          checker: module(),
+          project: atom(),
+          status: :ok | :error | :skip,
+          meta: keyword(),
+          index: pos_integer()
+        }
 
   defstruct checker: nil,
             project: nil,
@@ -31,10 +31,9 @@ defmodule Workspace.CheckResult do
     }
   end
 
-  def set_status(result, :ok), do: %__MODULE__{result | status: :ok}
+  def set_status(result, status), do: %__MODULE__{result | status: status}
 
-  def set_status(result, {:error, metadata}),
-    do: %__MODULE__{result | status: :error, meta: metadata}
+  def set_metadata(result, metadata), do: %__MODULE__{result | meta: metadata}
 
   def set_index(result, index), do: %__MODULE__{result | index: index}
 end

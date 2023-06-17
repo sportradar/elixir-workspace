@@ -36,11 +36,12 @@ defmodule Workspace.Checker do
         ) :: [Workspace.Check.Result.t()]
   def check_projects(workspace, check, check_fun) do
     Enum.reduce(workspace.projects, [], fn project, acc ->
-      status = check_fun.(project)
+      {status, metadata} = check_fun.(project)
 
       result =
         Workspace.CheckResult.new(__MODULE__, project.app)
         |> Workspace.CheckResult.set_status(status)
+        |> Workspace.CheckResult.set_metadata(metadata)
         |> Workspace.CheckResult.set_index(check[:index])
 
       [result | acc]
