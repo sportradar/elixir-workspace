@@ -57,27 +57,27 @@ defmodule Mix.Tasks.Workspace.Check do
     status = check_status(results)
 
     Mix.shell().info([
-      status_color(status),
-      status_text(status),
+      "==> ",
+      :bright,
+      Keyword.fetch!(check, :description),
       :reset,
       " - ",
-      :blue,
-      "#{strip_elixir_prefix(check[:check])} ",
-      :reset,
-      Keyword.get(check, :description, "")
+      :cyan,
+      status_color(status),
+      status_text(status),
+      :reset
     ])
 
     for result <- results do
       Mix.shell().info([
-        "  ",
+        "    ",
         status_color(result.status),
         status_text(result.status),
         :reset,
-        " - ",
-        :blue,
-        "#{result.project.app}",
+        :cyan,
+        " #{result.project.app}",
         :reset,
-        " ",
+        " - ",
         check_message(result)
       ])
     end
@@ -90,8 +90,8 @@ defmodule Mix.Tasks.Workspace.Check do
   defp status_color(:error), do: :red
   defp status_color(:ok), do: :green
 
-  defp status_text(:error), do: "NOK"
-  defp status_text(:ok), do: "OK "
+  defp status_text(:error), do: "ERROR"
+  defp status_text(:ok), do: "OK"
 
   defp strip_elixir_prefix(module) when is_atom(module),
     do: strip_elixir_prefix(Atom.to_string(module))
