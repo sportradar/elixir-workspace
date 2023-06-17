@@ -10,13 +10,16 @@ defmodule Workspace.CheckResult do
 
   @type t :: %CheckResult{
           checker: module(),
-          project: atom(),
+          check: keyword(),
+          project: Workspace.Project.t(),
           status: :ok | :error | :skip,
           meta: keyword(),
           index: pos_integer()
         }
 
+  # TODO: add enforce keys
   defstruct checker: nil,
+            check: nil,
             project: nil,
             status: nil,
             # should be set by checkers
@@ -24,9 +27,10 @@ defmodule Workspace.CheckResult do
             # TODO: remove instead pass the check to the struct
             index: nil
 
-  def new(checker, project) do
+  def new(check, project) do
     %__MODULE__{
-      checker: checker,
+      checker: check[:check],
+      check: check,
       project: project
     }
   end

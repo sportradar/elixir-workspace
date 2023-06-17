@@ -18,6 +18,11 @@ defmodule Workspace.Checker do
   """
   @callback check(workspace :: Workspace.t(), check :: keyword()) :: [Workspace.Check.Result.t()]
 
+  @doc """
+  Formats a check result for display purposes.
+  """
+  @callback format_result(result :: Check.Result.t()) :: binary()
+
   # TODO: add a __using__ macro and document it properly
 
   @doc """
@@ -39,7 +44,7 @@ defmodule Workspace.Checker do
       {status, metadata} = check_fun.(project)
 
       result =
-        Workspace.CheckResult.new(__MODULE__, project.app)
+        Workspace.CheckResult.new(check, project)
         |> Workspace.CheckResult.set_status(status)
         |> Workspace.CheckResult.set_metadata(metadata)
         |> Workspace.CheckResult.set_index(check[:index])

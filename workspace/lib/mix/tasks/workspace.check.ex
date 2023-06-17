@@ -75,8 +75,10 @@ defmodule Mix.Tasks.Workspace.Check do
         :reset,
         " - ",
         :blue,
-        "#{result.project}",
-        :reset
+        "#{result.project.app}",
+        :reset,
+        " ",
+        check_message(result)
       ])
     end
   end
@@ -96,4 +98,9 @@ defmodule Mix.Tasks.Workspace.Check do
 
   defp strip_elixir_prefix("Elixir." <> module), do: module
   defp strip_elixir_prefix(module), do: module
+
+  # TODO: color code support for check messages
+  defp check_message(result) do
+    result.checker.format_result(result)
+  end
 end
