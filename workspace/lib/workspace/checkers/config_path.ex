@@ -33,19 +33,12 @@ defmodule Workspace.Checkers.ValidatePath do
     config_attribute = Keyword.fetch!(check[:opts], :config_attribute)
     expected_path = Keyword.fetch!(check[:opts], :expected_path)
 
-    Enum.reduce(workspace.projects, [], fn project, acc ->
-      status = check_project(project, config_attribute, expected_path)
-
-      result =
-        Workspace.CheckResult.new(__MODULE__, project.app)
-        |> Workspace.CheckResult.set_status(status)
-        |> Workspace.CheckResult.set_index(check[:index])
-
-      [result | acc]
+    Workspace.Checker.check_projects(workspace, check, fn project ->
+      check_config_path(project, config_attribute, expected_path)
     end)
   end
 
-  defp check_project(project, config_attribute, expected_path) do
+  defp check_config_path(project, config_attribute, expected_path) do
     expected_path =
       project.workspace_path
       |> Path.join(expected_path)

@@ -16,5 +16,34 @@ defmodule Workspace.Checker do
   @doc """
   Applies a workspace check on the given workspace
   """
-  @callback check(workspace :: Workspace.t(), check :: keyword()) :: [struct()]
+  @callback check(workspace :: Workspace.t(), check :: keyword()) :: [Workspace.Check.Result.t()]
+
+  # TODO: add a __using__ macro and document it properly
+
+  @doc """
+  Helper function for running a check on all projects of a workspace.
+
+  The function must return `{:ok, metadata}` or `{:error, metadata}`. It returns
+  a `Check.Result` for each checked preject.
+
+  It takes care of transforming the function output to a `Check.Result` struct
+  and handling ignored projects.
+  """
+  @spec check_projects(
+          workspace :: Workspace.t(),
+          check :: keyword(),
+          check_fun :: (Workspace.Project.t() -> {:ok, keyword()} | {:error, keyword()})
+        ) :: [Workspace.Check.Result.t()]
+  def check_projects(workspace, check, check_fun) do
+    Enum.reduce(workspace.projects, [], fn project, acc ->
+      status = check_fun.(project)
+
+      result =
+        Workspace.CheckResult.new(__MODULE__, project.app)
+        |> Workspace.CheckResult.set_status(status)
+        |> Workspace.CheckResult.set_index(check[:index])
+
+      [result | acc]
+    end)
+  end
 end
