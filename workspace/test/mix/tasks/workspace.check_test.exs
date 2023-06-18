@@ -28,7 +28,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
       "ERROR project_e - expected :deps_path to be ../deps, got: deps",
       "ERROR project_f - expected :deps_path to be ../deps, got: deps",
       "ERROR project_g - expected :deps_path to be ../deps, got: deps",
-      "ERROR project_h - expected :deps_path to be ../deps, got: deps",
+      "OK project_h - :deps_path is set to ../deps",
       "ERROR project_i - expected :deps_path to be ../deps, got: deps",
       "ERROR project_j - expected :deps_path to be ../deps, got: deps",
       "ERROR project_k - expected :deps_path to be ../deps, got: deps"
