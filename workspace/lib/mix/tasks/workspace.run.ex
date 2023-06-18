@@ -45,11 +45,16 @@ defmodule Mix.Tasks.Workspace.Run do
 
     task_args = [task | argv]
 
-    Workspace.Cli.info(
+    Mix.shell().info([
+      :cyan,
+      "==> ",
       Workspace.Project.relative_to_workspace(project),
-      "- mix #{Enum.join(task_args, " ")}",
-      prefix: "==> "
-    )
+      :reset,
+      " - ",
+      :bright,
+      "mix #{Enum.join(task_args, " ")}",
+      :reset
+    ])
 
     case options[:execution_mode] do
       "process" ->
@@ -70,6 +75,7 @@ defmodule Mix.Tasks.Workspace.Run do
   end
 
   defp cmd(task, argv, project) do
+    full_task = ~s'mix #{Enum.join([task | argv], " ")}'
     [command | args] = enable_ansi(["mix", task | argv])
 
     command = System.find_executable(command)
@@ -86,7 +92,7 @@ defmodule Mix.Tasks.Workspace.Run do
         cd: project.path
       ])
 
-    stream_output([args: args, project: project], port)
+    stream_output([args: args, project: project, task: full_task], port)
   end
 
   # elixir tasks are not run in a TTY and will by default not print ANSI
@@ -110,14 +116,21 @@ defmodule Mix.Tasks.Workspace.Run do
         0
 
       {^port, {:exit_status, status}} ->
-        args = Keyword.get(meta, :args)
+        task = Keyword.get(meta, :task)
         project = Keyword.get(meta, :project)
 
-        Workspace.Cli.error(
+        Mix.shell().error([
+          "==> ",
           Workspace.Project.relative_to_workspace(project),
-          "- mix #{Enum.join(args, " ")} failed with #{status}",
-          prefix: "==> "
-        )
+          :reset,
+          " - ",
+          :bright,
+          :light_red,
+          :underline,
+          task,
+          :reset,
+          " failed with #{status}"
+        ])
     end
   end
 end
