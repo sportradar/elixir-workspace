@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Workspace.Check do
-  @options_schema Workspace.Cli.global_opts() |> Keyword.take([:workspace_path, :config_path])
+  @options_schema Workspace.Cli.options([:workspace_path, :config_path])
 
   @shortdoc "Runs configured checkers on the current workspace"
 

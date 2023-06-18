@@ -1,56 +1,18 @@
 defmodule Workspace.Cli do
-  @moduledoc false
+  @moduledoc """
+  Helper functions for the mix tasks
+  """
 
-  @global_cli_opts [
-    affected: [
-      type: :boolean,
-      alias: :a,
-      doc: "Run only on affected projects"
-    ],
-    ignore: [
-      type: :string,
-      alias: :i,
-      keep: true,
-      doc: "Ignore the given projects"
-    ],
-    task: [
-      type: :string,
-      alias: :t,
-      doc: "The task to execute",
-      required: true
-    ],
-    execution_order: [
-      type: :string,
-      default: "serial",
-      doc: "The execution order, one of `serial`, `parallel`, `roots`, `bottom-up`"
-    ],
-    execution_mode: [
-      type: :string,
-      default: "process",
-      doc: """
-      The execution mode. It supports the following values:
-
-        - `process` - every subcommand will be executed as a different process, this
-        is the preferred mode for most mix tasks
-        - `subtask` - invokes `Mix.Task.run` from the workspace in the given project
-      """
-    ],
-    verbose: [
-      type: :boolean,
-      doc: "If set enables verbose logging"
-    ],
-    workspace_path: [
-      type: :string,
-      doc: "If set it specifies the root workspace path, defaults to current directory."
-    ],
-    config_path: [
-      type: :string,
-      doc: "The path to the workspace config to be used, relative to the workspace path",
-      default: ".workspace.exs"
-    ]
-  ]
-
-  def global_opts, do: @global_cli_opts
+  @doc """
+  Merges the common options with the extra
+  """
+  @spec options(common :: [atom()], extra :: keyword()) :: keyword()
+  def options(common, extra \\ []) do
+    common
+    |> Enum.map(fn option -> {option, Workspace.Cli.Options.option(option)} end)
+    |> Keyword.new()
+    |> Keyword.merge(extra)
+  end
 
   def filter_projects(projects, args, argv) do
     ignored = Enum.map(args[:ignore], &String.to_atom/1)

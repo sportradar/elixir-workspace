@@ -1,5 +1,14 @@
 defmodule Mix.Tasks.Workspace.Run do
-  @options_schema Workspace.Cli.global_opts()
+  @options_schema Workspace.Cli.options([
+                    :affected,
+                    :ignore,
+                    :task,
+                    :execution_order,
+                    :execution_mode,
+                    :verbose,
+                    :workspace_path,
+                    :config_path
+                  ])
 
   @shortdoc "Run a mix command to all projects"
 
