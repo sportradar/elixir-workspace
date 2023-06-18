@@ -14,15 +14,15 @@ defmodule Workspace.Project do
           app: atom(),
           module: module(),
           config: keyword(),
-          mix_path: String.t(),
-          path: String.t(),
-          workspace_path: String.t()
+          mix_path: binary(),
+          path: binary(),
+          workspace_path: binary()
         }
 
   @enforce_keys [:app, :module, :config, :mix_path, :path, :workspace_path]
   defstruct app: nil,
             module: nil,
-            config: nil,
+            config: [],
             mix_path: nil,
             path: nil,
             workspace_path: nil
@@ -120,6 +120,10 @@ defmodule Workspace.Project do
     in_project(mix_path, fn _module -> Mix.Project.config() end)
   end
 
+  @doc """
+  Relative path of the project to the workspace
+  """
+  @spec relative_to_workspace(project :: t()) :: binary()
   def relative_to_workspace(%Project{path: path, workspace_path: workspace_path}),
     do: Workspace.Utils.relative_path_to(path, workspace_path)
 
