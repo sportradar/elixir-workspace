@@ -12,8 +12,6 @@ defmodule Workspace.Config do
   * `:checks` - List of configured checks for the workspace.
   """
 
-  @config_file ".workspace.exs"
-
   alias __MODULE__
 
   @type t :: %Config{
@@ -33,7 +31,7 @@ defmodule Workspace.Config do
   not exist or the contents are not valid, an error will be returned.
   """
   @spec load_config_file(config_file :: binary()) :: {:ok, t()} | {:error, binary()}
-  def load_config_file(config_file \\ @config_file) do
+  def load_config_file(config_file) do
     config_file = Path.expand(config_file)
 
     case File.exists?(config_file) do
