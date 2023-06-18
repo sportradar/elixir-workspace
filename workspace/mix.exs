@@ -9,7 +9,8 @@ defmodule Workspace.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       deps_path: "../artifacts/deps",
-      build_path: "../artifacts/build"
+      build_path: "../artifacts/build",
+      dialyzer: [plt_add_apps: [:mix]]
     ]
   end
 
@@ -26,6 +27,7 @@ defmodule Workspace.MixProject do
       {:cli_opts, path: "../cli_opts/"},
       {:ex_doc, "~> 0.28", [only: :dev, runtime: false]},
       {:credo, "~> 1.6.7", [only: [:dev, :test], runtime: false]},
+      {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
       {:doctor, "~> 0.21.0", [only: :dev, runtime: false]}
     ]
   end

@@ -21,7 +21,7 @@ defmodule Workspace.Checker do
   @doc """
   Formats a check result for display purposes.
   """
-  @callback format_result(result :: Check.Result.t()) :: IO.ANSI.ansidata()
+  @callback format_result(result :: Workspace.Check.Result.t()) :: IO.ANSI.ansidata()
 
   # TODO: add a __using__ macro and document it properly
 
@@ -37,7 +37,7 @@ defmodule Workspace.Checker do
   @spec check_projects(
           workspace :: Workspace.t(),
           check :: keyword(),
-          check_fun :: (Workspace.Project.t() -> {:ok, keyword()} | {:error, keyword()})
+          check_fun :: (Workspace.Project.t() -> {atom(), keyword()})
         ) :: [Workspace.Check.Result.t()]
   def check_projects(workspace, check, check_fun) do
     Enum.reduce(workspace.projects, [], fn project, acc ->

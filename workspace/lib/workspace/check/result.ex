@@ -13,9 +13,9 @@ defmodule Workspace.Check.Result do
           checker: module(),
           check: keyword(),
           project: Workspace.Project.t(),
-          status: :ok | :error | :skip,
-          meta: keyword(),
-          index: pos_integer()
+          status: nil | :ok | :error | :skip,
+          meta: nil | keyword(),
+          index: nil | pos_integer()
         }
 
   @enforce_keys [:checker, :check, :project]
@@ -39,8 +39,8 @@ defmodule Workspace.Check.Result do
   @doc """
   Sets the result's status.
   """
-  @spec set_status(result :: t(), status :: :ok | :error) :: t()
-  def set_status(result, status), do: %__MODULE__{result | status: status}
+  @spec set_status(result :: t(), status :: atom()) :: t()
+  def set_status(result, status) when is_atom(status), do: %__MODULE__{result | status: status}
 
   @doc """
   Sets the result's metadata.
