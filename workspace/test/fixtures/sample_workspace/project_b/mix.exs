@@ -21,7 +21,8 @@ defmodule ProjectB.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:project_g, path: "../project_g/"}
+      {:project_g, path: "../project_g/"},
+      {:foo, "~> 1.0"}
     ]
   end
 end
