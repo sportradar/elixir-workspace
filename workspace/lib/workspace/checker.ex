@@ -44,10 +44,10 @@ defmodule Workspace.Checker do
       {status, metadata} = check_fun.(project)
 
       result =
-        Workspace.CheckResult.new(check, project)
-        |> Workspace.CheckResult.set_status(status)
-        |> Workspace.CheckResult.set_metadata(metadata)
-        |> Workspace.CheckResult.set_index(check[:index])
+        Workspace.Check.Result.new(check, project)
+        |> Workspace.Check.Result.set_status(status)
+        |> Workspace.Check.Result.set_metadata(metadata)
+        |> Workspace.Check.Result.set_index(check[:index])
 
       [result | acc]
     end)

@@ -39,7 +39,7 @@ defmodule Workspace.Checkers.ValidateConfigPath do
   end
 
   @impl Workspace.Checker
-  def format_result(%Workspace.CheckResult{
+  def format_result(%Workspace.Check.Result{
         status: :error,
         meta: meta,
         check: check,
@@ -70,7 +70,7 @@ defmodule Workspace.Checkers.ValidateConfigPath do
     ]
   end
 
-  def format_result(%Workspace.CheckResult{
+  def format_result(%Workspace.Check.Result{
         check: check,
         meta: meta,
         project: project,

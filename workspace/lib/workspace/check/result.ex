@@ -1,4 +1,4 @@
-defmodule Workspace.CheckResult do
+defmodule Workspace.Check.Result do
   @moduledoc """
   A checker's result
 
@@ -8,7 +8,7 @@ defmodule Workspace.CheckResult do
 
   alias __MODULE__
 
-  @type t :: %CheckResult{
+  @type t :: %Result{
           checker: module(),
           check: keyword(),
           project: Workspace.Project.t(),

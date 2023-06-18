@@ -86,7 +86,7 @@ defmodule Mix.Tasks.Workspace.Check do
   end
 
   defp check_status([]), do: :ok
-  defp check_status([%Workspace.CheckResult{status: :error} | _rest]), do: :error
+  defp check_status([%Workspace.Check.Result{status: :error} | _rest]), do: :error
   defp check_status([_result | rest]), do: check_status(rest)
 
   defp status_color(:error), do: :red
