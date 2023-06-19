@@ -26,19 +26,19 @@ defmodule Workspace.Checkers.ValidateConfigPath do
   ]
   ```
   """
-  @behaviour Workspace.Checker
+  @behaviour Workspace.Check
 
-  @impl Workspace.Checker
+  @impl Workspace.Check
   def check(workspace, check) do
     config_attribute = Keyword.fetch!(check[:opts], :config_attribute)
     expected_path = Keyword.fetch!(check[:opts], :expected_path)
 
-    Workspace.Checker.check_projects(workspace, check, fn project ->
+    Workspace.Check.check_projects(workspace, check, fn project ->
       check_config_path(project, config_attribute, expected_path)
     end)
   end
 
-  @impl Workspace.Checker
+  @impl Workspace.Check
   def format_result(%Workspace.Check.Result{
         status: :error,
         meta: meta,
