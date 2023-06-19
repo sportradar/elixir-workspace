@@ -102,6 +102,7 @@ defmodule CliOpts do
   @spec parse(argv :: argv(), schema :: Keyword.t()) ::
           {:ok, parsed_options()} | {:error, String.t()}
   def parse(argv, schema) do
+    # TODO: check if this is needed
     {argv, extra} = split_argv(argv)
 
     {parsed, args, invalid} =
@@ -282,4 +283,16 @@ defmodule CliOpts do
       end
     end)
   end
+
+  @doc """
+  Transforms a list of parsed cli options to the binary input.
+
+  Notice that it expects only invalid parsed attributes.
+  """
+  @spec to_list([{binary(), nil | binary()}]) :: [binary()]
+  def to_list(args), do: to_list(args, [])
+
+  defp to_list([], acc), do: acc
+  defp to_list([{arg, nil} | tail], acc), do: to_list(tail, acc ++ [arg])
+  defp to_list([{arg, value} | tail], acc), do: to_list(tail, acc ++ [arg, value])
 end
