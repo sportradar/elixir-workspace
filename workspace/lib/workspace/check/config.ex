@@ -26,10 +26,9 @@ defmodule Workspace.Check.Config do
   @doc """
   Loads a `Config` struct from a keyword list.
   """
-  # TODO: rename to validate
-  @spec from_list(config :: keyword()) ::
+  @spec validate(config :: keyword()) ::
           {:ok, keyword()} | {:error, NimbleOptions.ValidationError.t()}
-  def from_list(config) do
+  def validate(config) do
     NimbleOptions.validate(config, @schema)
   end
 

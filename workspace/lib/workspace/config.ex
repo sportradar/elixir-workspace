@@ -46,7 +46,7 @@ defmodule Workspace.Config do
   defp load_checks([], acc), do: {:ok, :lists.reverse(acc)}
 
   defp load_checks([check | rest], acc) do
-    result = Workspace.Check.Config.from_list(check)
+    result = Workspace.Check.Config.validate(check)
 
     case result do
       {:ok, check} -> load_checks(rest, [check | acc])
