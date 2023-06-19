@@ -10,7 +10,7 @@ defmodule Workspace.Check.Result do
 
   # TODO: add typedoc
   @type t :: %Result{
-          checker: module(),
+          module: module(),
           check: keyword(),
           project: Workspace.Project.t(),
           status: nil | :ok | :error | :skip,
@@ -18,8 +18,8 @@ defmodule Workspace.Check.Result do
           index: nil | pos_integer()
         }
 
-  @enforce_keys [:checker, :check, :project]
-  defstruct checker: nil,
+  @enforce_keys [:module, :check, :project]
+  defstruct module: nil,
             check: nil,
             project: nil,
             status: nil,
@@ -30,7 +30,7 @@ defmodule Workspace.Check.Result do
 
   def new(check, project) do
     %__MODULE__{
-      checker: check[:check],
+      module: check.module,
       check: check,
       project: project
     }

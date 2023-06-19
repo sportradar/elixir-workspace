@@ -30,8 +30,8 @@ defmodule Workspace.Checkers.ValidateConfigPath do
 
   @impl Workspace.Checker
   def check(workspace, check) do
-    config_attribute = Keyword.fetch!(check[:opts], :config_attribute)
-    expected_path = Keyword.fetch!(check[:opts], :expected_path)
+    config_attribute = Keyword.fetch!(check.opts, :config_attribute)
+    expected_path = Keyword.fetch!(check.opts, :expected_path)
 
     Workspace.Checker.check_projects(workspace, check, fn project ->
       check_config_path(project, config_attribute, expected_path)
@@ -45,7 +45,7 @@ defmodule Workspace.Checkers.ValidateConfigPath do
         check: check,
         project: project
       }) do
-    attribute = check[:opts][:config_attribute]
+    attribute = check.opts[:config_attribute]
 
     expected = Workspace.Utils.relative_path_to(meta[:expected], project.path)
 
@@ -76,7 +76,7 @@ defmodule Workspace.Checkers.ValidateConfigPath do
         project: project,
         status: :ok
       }) do
-    attribute = check[:opts][:config_attribute]
+    attribute = check.opts[:config_attribute]
     expected = Workspace.Utils.relative_path_to(meta[:expected], project.path)
 
     [

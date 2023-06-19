@@ -9,8 +9,10 @@ defmodule Workspace.Check.ResultTest do
     project_path = Path.join(@sample_workspace_path, "project_a")
     project = Workspace.Project.new(project_path, @sample_workspace_path)
 
+    {:ok, check} = Workspace.Check.Config.from_list(module: CheckModule)
+
     %{
-      check: [check: CheckModule],
+      check: check,
       project: project
     }
   end
@@ -18,7 +20,7 @@ defmodule Workspace.Check.ResultTest do
   test "new/2", %{check: check, project: project} do
     result = Result.new(check, project)
 
-    assert result.checker == CheckModule
+    assert result.module == CheckModule
     assert result.check == check
     assert result.project == project
     assert result.status == nil

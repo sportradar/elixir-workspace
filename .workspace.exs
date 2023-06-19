@@ -1,4 +1,4 @@
-%Workspace.Config{
+[
   ignore_paths: ["artifacts/deps"],
   # TODO: add a required attribute check
   # TODO: allow check to fail with flag
@@ -6,8 +6,7 @@
   # TODO: print ignored and successful only with verbose
   checks: [
     [
-      # TODO: rename check to module
-      check: Workspace.Checkers.ValidateConfigPath,
+      module: Workspace.Checkers.ValidateConfigPath,
       description: "all projects must have a common dependencies path",
       opts: [
         config_attribute: :deps_path,
@@ -15,7 +14,7 @@
       ]
     ],
     [
-      check: Workspace.Checkers.ValidateConfigPath,
+      module: Workspace.Checkers.ValidateConfigPath,
       description: "all projects must have a common build path",
       opts: [
         config_attribute: :build_path,
@@ -23,4 +22,4 @@
       ]
     ]
   ]
-}
+]

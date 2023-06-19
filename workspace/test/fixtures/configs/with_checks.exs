@@ -1,7 +1,7 @@
-%Workspace.Config{
+[
   checks: [
     [
-      check: Workspace.Checkers.ValidateConfigPath,
+      module: Workspace.Checkers.ValidateConfigPath,
       description: "check deps_path",
       opts: [
         config_attribute: :deps_path,
@@ -9,4 +9,4 @@
       ]
     ]
   ]
-}
+]

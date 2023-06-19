@@ -17,7 +17,7 @@ defmodule WorkspaceTest do
       assert capture_io(:stderr, fn ->
                config = Workspace.config("test/fixtures/configs/invalid_contents.exs")
                assert config == %Workspace.Config{}
-             end) =~ "invalid contents"
+             end) =~ "invalid config options given to workspace config: [:invalid]"
     end
 
     test "with valid config" do

@@ -47,7 +47,7 @@ defmodule Workspace.Checker do
         Workspace.Check.Result.new(check, project)
         |> Workspace.Check.Result.set_status(status)
         |> Workspace.Check.Result.set_metadata(metadata)
-        |> Workspace.Check.Result.set_index(check[:index])
+        |> Workspace.Check.Result.set_index(check.index)
 
       [result | acc]
     end)

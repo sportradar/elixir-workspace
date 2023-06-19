@@ -34,8 +34,8 @@ defmodule Mix.Tasks.Workspace.Check do
     Mix.shell().info("")
 
     config.checks
-    |> Enum.with_index(fn check, index -> Keyword.put(check, :index, index) end)
-    |> Enum.map(fn check -> check[:check].check(workspace, check) end)
+    |> Enum.with_index(fn check, index -> Workspace.Check.Config.set_index(check, index) end)
+    |> Enum.map(fn check -> check.module.check(workspace, check) end)
     |> List.flatten()
     |> Enum.group_by(fn result -> result.index end)
     |> Enum.each(fn {check_index, results} ->
@@ -60,7 +60,7 @@ defmodule Mix.Tasks.Workspace.Check do
     Mix.shell().info([
       "==> ",
       :bright,
-      Keyword.fetch!(check, :description),
+      check.description,
       :reset,
       " - ",
       :cyan,
@@ -102,7 +102,7 @@ defmodule Mix.Tasks.Workspace.Check do
   defp strip_elixir_prefix(module), do: module
 
   defp check_message(result) do
-    result.checker.format_result(result)
+    result.module.format_result(result)
     |> maybe_enlist()
   end
 
