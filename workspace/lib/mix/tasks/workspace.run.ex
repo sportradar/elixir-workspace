@@ -1,14 +1,15 @@
 defmodule Mix.Tasks.Workspace.Run do
   @options_schema Workspace.Cli.options([
-                    :affected,
+                    :workspace_path,
+                    :config_path,
                     :project,
-                    :ignore,
                     :task,
+                    :affected,
+                    :ignore,
                     :execution_order,
                     :execution_mode,
                     :verbose,
-                    :workspace_path,
-                    :config_path
+                    :dry_run
                   ])
 
   @shortdoc "Run a mix command to all projects"
@@ -61,6 +62,12 @@ defmodule Mix.Tasks.Workspace.Run do
       :reset
     ])
 
+    if not options[:dry_run] do
+      run_task(project, task, argv, options)
+    end
+  end
+
+  defp run_task(project, task, argv, options) do
     case options[:execution_mode] do
       "process" ->
         cmd(task, argv, project)

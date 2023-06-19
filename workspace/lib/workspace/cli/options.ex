@@ -74,5 +74,12 @@ defmodule Workspace.Cli.Options do
         "The project name, can be defined multiple times. If not set all projects are considered."
     ]
 
+  def option(:dry_run),
+    do: [
+      type: :boolean,
+      doc: "If set it will not execute the command, useful for testing and debugging.",
+      default: false
+    ]
+
   def option(invalid), do: raise(ArgumentError, "invalid option #{inspect(invalid)}")
 end
