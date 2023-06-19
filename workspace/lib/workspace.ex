@@ -70,7 +70,7 @@ defmodule Workspace do
   """
   @spec config(path :: binary()) :: Workspace.Config.t()
   def config(path) do
-    case Workspace.Config.load_config_file(path) do
+    case load_config_file(path) do
       {:ok, config} ->
         config
 
@@ -83,6 +83,20 @@ defmodule Workspace do
         """)
 
         %Workspace.Config{}
+    end
+  end
+
+  defp load_config_file(config_file) do
+    config_file = Path.expand(config_file)
+
+    case File.exists?(config_file) do
+      false ->
+        {:error, "file not found"}
+
+      true ->
+        {config, _bindings} = Code.eval_file(config_file)
+
+        Workspace.Config.from_list(config)
     end
   end
 

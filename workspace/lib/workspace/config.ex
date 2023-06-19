@@ -24,27 +24,6 @@ defmodule Workspace.Config do
             ignore_paths: [],
             checks: []
 
-  @doc """
-  Tries to load the given config file.
-
-  The file should be a valid `Workspace.Config` struct. If the file does
-  not exist or the contents are not valid, an error will be returned.
-  """
-  @spec load_config_file(config_file :: binary()) :: {:ok, t()} | {:error, binary()}
-  def load_config_file(config_file) do
-    config_file = Path.expand(config_file)
-
-    case File.exists?(config_file) do
-      false ->
-        {:error, "file not found"}
-
-      true ->
-        {config, _bindings} = Code.eval_file(config_file)
-
-        from_list(config)
-    end
-  end
-
   def from_list(config) when is_list(config) do
     with {:ok, config} <- Keyword.validate(config, [:ignore_projects, :ignore_paths, :checks]),
          {:ok, checks} <- load_checks(config[:checks]) do
