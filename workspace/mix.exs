@@ -25,6 +25,7 @@ defmodule Workspace.MixProject do
   defp deps do
     [
       {:cli_opts, path: "../cli_opts/"},
+      {:nimble_options, "~> 0.3.0"},
       {:ex_doc, "~> 0.28", [only: :dev, runtime: false]},
       {:credo, "~> 1.6.7", [only: [:dev, :test], runtime: false]},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},

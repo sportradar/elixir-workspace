@@ -16,7 +16,9 @@ defmodule Workspace.Checker do
   @doc """
   Applies a workspace check on the given workspace
   """
-  @callback check(workspace :: Workspace.t(), check :: keyword()) :: [Workspace.Check.Result.t()]
+  @callback check(workspace :: Workspace.t(), check :: keyword()) :: [
+              Workspace.Check.Result.t()
+            ]
 
   @doc """
   Formats a check result for display purposes.
@@ -47,7 +49,7 @@ defmodule Workspace.Checker do
         Workspace.Check.Result.new(check, project)
         |> Workspace.Check.Result.set_status(status)
         |> Workspace.Check.Result.set_metadata(metadata)
-        |> Workspace.Check.Result.set_index(check.index)
+        |> Workspace.Check.Result.set_index(check[:index])
 
       [result | acc]
     end)

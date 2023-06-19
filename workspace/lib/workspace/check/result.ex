@@ -6,10 +6,8 @@ defmodule Workspace.Check.Result do
   and the check status and metadata.
   """
 
-  alias __MODULE__
-
   # TODO: add typedoc
-  @type t :: %Result{
+  @type t :: %__MODULE__{
           module: module(),
           check: keyword(),
           project: Workspace.Project.t(),
@@ -30,7 +28,7 @@ defmodule Workspace.Check.Result do
 
   def new(check, project) do
     %__MODULE__{
-      module: check.module,
+      module: check[:module],
       check: check,
       project: project
     }
