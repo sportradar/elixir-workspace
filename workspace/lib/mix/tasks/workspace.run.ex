@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Workspace.Run do
     {:ok, opts} = CliOpts.parse(argv, @options_schema)
     %{parsed: opts, args: args, extra: extra, invalid: invalid} = opts
 
-    task_args = CliOpts.to_list(invalid) ++ CliOpts.to_list(extra) ++ args
+    task_args = CliOpts.to_list(invalid) ++ extra ++ args
 
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     config_path = Keyword.fetch!(opts, :config_path)
