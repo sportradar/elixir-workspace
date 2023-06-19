@@ -33,6 +33,7 @@ defmodule Workspace.Utils do
     vertices =
       :digraph.vertices(graph)
       |> Enum.map(fn v -> "  #{v}" end)
+      |> Enum.sort()
       |> Enum.join("\n")
 
     edges =
@@ -42,6 +43,7 @@ defmodule Workspace.Utils do
         {v1, v2}
       end)
       |> Enum.map(fn {v1, v2} -> "  #{v1} --> #{v2}" end)
+      |> Enum.sort()
       |> Enum.join("\n")
 
     """

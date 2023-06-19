@@ -55,15 +55,15 @@ defmodule Workspace.UtilsTest do
 
       expected = """
       flowchart TD
-        d
-        c
-        b
         a
+        b
+        c
+        d
 
+        a --> b
+        a --> c
         b --> d
         d --> a
-        a --> c
-        a --> b
         d --> c\
       """
 
@@ -79,9 +79,9 @@ defmodule Workspace.UtilsTest do
 
       expected = """
       flowchart TD
-        c
+        a
         b
-        a\
+        c\
       """
 
       assert Utils.digraph_to_mermaid(graph) == expected
