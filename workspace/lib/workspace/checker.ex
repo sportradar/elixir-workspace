@@ -32,7 +32,7 @@ defmodule Workspace.Checker do
   a `Check.Result` for each checked preject.
 
   It takes care of transforming the function output to a `Check.Result` struct
-  and handling ignored projects.
+  and handling ignored projects...
   """
   @spec check_projects(
           workspace :: Workspace.t(),

@@ -14,10 +14,9 @@ defmodule Workspace.Cli do
     |> Keyword.merge(extra)
   end
 
-  def filter_projects(projects, args, argv) do
-    ignored = Enum.map(args[:ignore], &String.to_atom/1)
-
-    selected = Enum.map(argv, &String.to_atom/1)
+  def filter_projects(projects, opts) do
+    ignored = Enum.map(opts[:ignore], &String.to_atom/1)
+    selected = Enum.map(opts[:project], &String.to_atom/1)
 
     Enum.map(projects, fn project ->
       Map.put(project, :skip, skippable?(project, selected, ignored))

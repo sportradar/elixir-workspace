@@ -1,6 +1,7 @@
 defmodule Mix.Tasks.Workspace.Run do
   @options_schema Workspace.Cli.options([
                     :affected,
+                    :project,
                     :ignore,
                     :task,
                     :execution_order,
@@ -22,7 +23,11 @@ defmodule Mix.Tasks.Workspace.Run do
   use Mix.Task
 
   def run(argv) do
-    %{parsed: opts, args: args, extra: extra} = CliOpts.parse!(argv, @options_schema)
+    {:ok, opts} = CliOpts.parse(argv, @options_schema)
+    %{parsed: opts, args: args, extra: extra, invalid: invalid} = opts
+
+    task_args = CliOpts.to_list(invalid) ++ CliOpts.to_list(extra) ++ args
+
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     config_path = Keyword.fetch!(opts, :config_path)
 
@@ -30,8 +35,8 @@ defmodule Mix.Tasks.Workspace.Run do
     workspace = Workspace.new(workspace_path, config)
 
     workspace.projects
-    |> Workspace.Cli.filter_projects(opts, args)
-    |> Enum.each(fn project -> run_in_project(project, opts, extra) end)
+    |> Workspace.Cli.filter_projects(opts)
+    |> Enum.each(fn project -> run_in_project(project, opts, task_args) end)
   end
 
   defp run_in_project(%{skip: true, app: app}, args, _argv) do

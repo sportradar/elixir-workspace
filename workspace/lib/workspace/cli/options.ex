@@ -65,5 +65,14 @@ defmodule Workspace.Cli.Options do
       default: ".workspace.exs"
     ]
 
+  def option(:project),
+    do: [
+      type: :string,
+      keep: true,
+      alias: :p,
+      doc:
+        "The project name, can be defined multiple times. If not set all projects are considered."
+    ]
+
   def option(invalid), do: raise(ArgumentError, "invalid option #{inspect(invalid)}")
 end
