@@ -96,7 +96,7 @@ defmodule Workspace do
       true ->
         {config, _bindings} = Code.eval_file(config_file)
 
-        Workspace.Config.from_list(config)
+        Workspace.Config.load(config)
     end
   end
 

@@ -1,4 +1,20 @@
 defmodule Workspace.Check do
+  @schema [
+    module: [
+      type: :atom,
+      required: true,
+      doc: "The `Workspace.Check` module to be used."
+    ],
+    opts: [
+      type: :keyword_list,
+      doc: "The check's custom options."
+    ],
+    description: [
+      type: :string,
+      doc: "An optional description of the check"
+    ]
+  ]
+
   @moduledoc """
   A behaviour for implementing workspace checker.
 
@@ -11,6 +27,30 @@ defmodule Workspace.Check do
   all projects and ensure that the same standards apply to all projects. For
   example you may wish to have common dependencies defined across all your
   projects, or common `deps` paths.
+
+  ## Configuration
+
+  In order to define a `Check` you must add an entry under the `:check` key
+  of your workspace config. The supported options are:
+
+  #{NimbleOptions.docs(@schema)}
+
+  For example:
+
+  ```elixir
+  [
+    checks: [
+      [
+        module: Workspace.Checks.ValidateConfigPath,
+        description: "check deps_path",
+        opts: [
+          config_attribute: :deps_path,
+          expected_path: "deps"
+        ]
+      ]
+    ]
+  ]
+  ```
   """
 
   @doc """
@@ -26,6 +66,15 @@ defmodule Workspace.Check do
   @callback format_result(result :: Workspace.Check.Result.t()) :: IO.ANSI.ansidata()
 
   # TODO: add a __using__ macro and document it properly
+
+  @doc """
+  Validates that the given `config` is a valid `Check` config.
+  """
+  @spec validate(config :: keyword()) ::
+          {:ok, keyword()} | {:error, NimbleOptions.ValidationError.t()}
+  def validate(config) do
+    NimbleOptions.validate(config, @schema)
+  end
 
   @doc """
   Helper function for running a check on all projects of a workspace.

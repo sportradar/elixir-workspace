@@ -34,7 +34,7 @@ defmodule Mix.Tasks.Workspace.Check do
     Mix.shell().info("")
 
     config.checks
-    |> Enum.with_index(fn check, index -> Workspace.Check.Config.set_index(check, index) end)
+    |> Enum.with_index(fn check, index -> Keyword.put(check, :index, index) end)
     |> Enum.map(fn check -> check[:module].check(workspace, check) end)
     |> List.flatten()
     |> Enum.group_by(fn result -> result.index end)

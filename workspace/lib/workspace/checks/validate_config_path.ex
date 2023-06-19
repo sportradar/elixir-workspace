@@ -1,4 +1,4 @@
-defmodule Workspace.Checkers.ValidateConfigPath do
+defmodule Workspace.Checks.ValidateConfigPath do
   @moduledoc """
   Checks that the given path is properly configured
 

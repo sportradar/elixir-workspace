@@ -22,8 +22,8 @@ defmodule Workspace.Config do
             ignore_paths: [],
             checks: []
 
-  @spec from_list(config :: keyword()) :: {:ok, t()} | {:error, binary()}
-  def from_list(config) when is_list(config) do
+  @spec load(config :: keyword()) :: {:ok, t()} | {:error, binary()}
+  def load(config) when is_list(config) do
     with {:ok, _config} <- Keyword.validate(config, [:ignore_projects, :ignore_paths, :checks]),
          {:ok, checks} <- load_checks(Keyword.get(config, :checks, [])) do
       {:ok,
@@ -46,9 +46,7 @@ defmodule Workspace.Config do
   defp load_checks([], acc), do: {:ok, :lists.reverse(acc)}
 
   defp load_checks([check | rest], acc) do
-    result = Workspace.Check.Config.validate(check)
-
-    case result do
+    case Workspace.Check.validate(check) do
       {:ok, check} -> load_checks(rest, [check | acc])
       {:error, %NimbleOptions.ValidationError{message: message}} -> {:error, message}
     end
