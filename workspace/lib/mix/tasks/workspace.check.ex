@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Workspace.Check do
-  @options_schema Workspace.Cli.options([:workspace_path, :config_path])
+  @options_schema Workspace.Cli.options([:workspace_path, :config_path, :verbose])
 
   @shortdoc "Runs configured checkers on the current workspace"
 
@@ -39,7 +39,7 @@ defmodule Mix.Tasks.Workspace.Check do
     |> List.flatten()
     |> Enum.group_by(fn result -> result.index end)
     |> Enum.each(fn {check_index, results} ->
-      print_check_status(check_index, results, config.checks)
+      print_check_status(check_index, results, config.checks, opts)
     end)
   end
 
@@ -52,37 +52,54 @@ defmodule Mix.Tasks.Workspace.Check do
     end
   end
 
-  defp print_check_status(index, results, checks) do
+  defp print_check_status(index, results, checks, opts) do
     check = Enum.at(checks, index)
     status = check_status(results)
     results = Enum.sort_by(results, & &1.project.app)
 
+    display_index = String.pad_leading("#{index}", 3, "0")
+
     Mix.shell().info([
       "==> ",
       :bright,
-      check[:description],
-      :reset,
-      " - ",
-      :cyan,
       status_color(status),
-      status_text(status),
+      "C#{display_index} ",
+      :reset,
+      :bright,
+      check[:description],
       :reset
     ])
 
     for result <- results do
-      Mix.shell().info(
-        [
-          "    ",
-          status_color(result.status),
-          status_text(result.status),
-          :reset,
-          :cyan,
-          " #{result.project.app}",
-          :reset,
-          " - "
-        ] ++ check_message(result)
-      )
+      maybe_print_result(result, opts[:verbose])
     end
+  end
+
+  defp maybe_print_result(result, verbose) do
+    cond do
+      verbose ->
+        print_result(result)
+
+      result.status != :ok ->
+        print_result(result)
+
+      true ->
+        :ok
+    end
+  end
+
+  defp print_result(result) do
+    path = Workspace.Utils.relative_path_to(result.project.path, File.cwd!())
+
+    Mix.shell().info(
+      [
+        "    ",
+        status_color(result.status),
+        ":#{result.project.app}",
+        :reset,
+        " - "
+      ] ++ check_message(result) ++ maybe_mix_project(result.status, path)
+    )
   end
 
   defp check_status([]), do: :ok
@@ -108,4 +125,7 @@ defmodule Mix.Tasks.Workspace.Check do
 
   defp maybe_enlist(message) when is_list(message), do: message
   defp maybe_enlist(message), do: [message]
+
+  defp maybe_mix_project(:ok, _path), do: []
+  defp maybe_mix_project(:error, path), do: [:reset, :faint, " ", path, :reset]
 end

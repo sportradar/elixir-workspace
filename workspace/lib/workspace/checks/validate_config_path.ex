@@ -57,15 +57,15 @@ defmodule Workspace.Checks.ValidateConfigPath do
 
     [
       "expected ",
-      :light_yellow,
+      :light_cyan,
       ":#{attribute} ",
       :reset,
       "to be ",
-      :light_yellow,
+      :light_cyan,
       "#{expected}",
       :reset,
       ", got: ",
-      :light_red,
+      :light_cyan,
       "#{configured}"
     ]
   end
@@ -80,11 +80,11 @@ defmodule Workspace.Checks.ValidateConfigPath do
     expected = Workspace.Utils.relative_path_to(meta[:expected], project.path)
 
     [
-      :light_yellow,
+      :light_cyan,
       ":#{attribute} ",
       :reset,
       "is set to ",
-      :light_yellow,
+      :light_cyan,
       "#{expected}"
     ]
   end

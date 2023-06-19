@@ -65,6 +65,7 @@ defmodule Workspace.Check do
   """
   @callback format_result(result :: Workspace.Check.Result.t()) :: IO.ANSI.ansidata()
 
+  # TODO: add a schema callback
   # TODO: add a __using__ macro and document it properly
 
   @doc """
