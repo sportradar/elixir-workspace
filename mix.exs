@@ -9,6 +9,8 @@ defmodule Workspace.MixWorkspace do
       start_permanent: Mix.env() == :prod,
       elixirc_paths: [],
       deps: deps(),
+      deps_path: "artifacts/deps",
+      builg_path: "artifacts/build",
       aliases: aliases(),
       workspace: true
     ]
