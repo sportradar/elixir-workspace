@@ -89,6 +89,12 @@ defmodule Workspace.Checks.ValidateConfigPath do
     ]
   end
 
+  def format_result(%Workspace.Check.Result{
+        status: :skip
+      }) do
+    []
+  end
+
   defp check_config_path(project, config_attribute, expected_path) do
     expected_path = make_absolute(project.workspace_path, expected_path)
     configured_path = make_absolute(project.path, project.config[config_attribute])

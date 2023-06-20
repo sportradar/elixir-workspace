@@ -80,7 +80,7 @@ defmodule Mix.Tasks.Workspace.Check do
       verbose ->
         print_result(result)
 
-      result.status != :ok ->
+      result.status == :error ->
         print_result(result)
 
       true ->
@@ -95,9 +95,11 @@ defmodule Mix.Tasks.Workspace.Check do
       [
         "    ",
         status_color(result.status),
-        ":#{result.project.app}",
+        status_text(result.status),
         :reset,
-        " - "
+        :cyan,
+        ":#{result.project.app}",
+        :reset
       ] ++ check_message(result) ++ maybe_mix_project(result.status, path)
     )
   end
@@ -108,9 +110,11 @@ defmodule Mix.Tasks.Workspace.Check do
 
   defp status_color(:error), do: :red
   defp status_color(:ok), do: :green
+  defp status_color(:skip), do: :light_magenta
 
-  defp status_text(:error), do: "ERROR"
-  defp status_text(:ok), do: "OK"
+  defp status_text(:error), do: "ERROR "
+  defp status_text(:ok), do: "OK    "
+  defp status_text(:skip), do: "SKIP  "
 
   defp strip_elixir_prefix(module) when is_atom(module),
     do: strip_elixir_prefix(Atom.to_string(module))
@@ -123,9 +127,11 @@ defmodule Mix.Tasks.Workspace.Check do
     |> maybe_enlist()
   end
 
-  defp maybe_enlist(message) when is_list(message), do: message
-  defp maybe_enlist(message), do: [message]
+  defp maybe_enlist([]), do: []
+  defp maybe_enlist(""), do: ""
+  defp maybe_enlist(message) when is_binary(message), do: maybe_enlist([message])
+  defp maybe_enlist(message) when is_list(message), do: [" - " | message]
 
-  defp maybe_mix_project(:ok, _path), do: []
   defp maybe_mix_project(:error, path), do: [:reset, :faint, " ", path, :reset]
+  defp maybe_mix_project(_other, _path), do: []
 end

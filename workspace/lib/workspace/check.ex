@@ -12,6 +12,16 @@ defmodule Workspace.Check do
     description: [
       type: :string,
       doc: "An optional description of the check"
+    ],
+    only: [
+      type: {:list, :atom},
+      doc: "A list of projects. The check will be executed only in the specified projects",
+      default: []
+    ],
+    ignore: [
+      type: {:list, :atom},
+      doc: "A list of projects to be ignored from the check",
+      default: []
     ]
   ]
 
@@ -93,15 +103,39 @@ defmodule Workspace.Check do
         ) :: [Workspace.Check.Result.t()]
   def check_projects(workspace, check, check_fun) do
     Enum.reduce(workspace.projects, [], fn project, acc ->
-      {status, metadata} = check_fun.(project)
-
       result =
-        Workspace.Check.Result.new(check, project)
-        |> Workspace.Check.Result.set_status(status)
-        |> Workspace.Check.Result.set_metadata(metadata)
-        |> Workspace.Check.Result.set_index(check[:index])
+        case applicable?(check, project) do
+          true ->
+            {status, metadata} = check_fun.(project)
+
+            Workspace.Check.Result.new(check, project)
+            |> Workspace.Check.Result.set_status(status)
+            |> Workspace.Check.Result.set_metadata(metadata)
+            |> Workspace.Check.Result.set_index(check[:index])
+
+          false ->
+            Workspace.Check.Result.new(check, project)
+            |> Workspace.Check.Result.set_status(:skip)
+            |> Workspace.Check.Result.set_index(check[:index])
+        end
 
       [result | acc]
     end)
+  end
+
+  defp applicable?(check, project) do
+    cond do
+      # If the project is in ignore, ignore it
+      project.app in check[:ignore] ->
+        false
+
+      # if only is set check if the project is in the only list ->
+      check[:only] != [] ->
+        project.app in check[:only]
+
+      # in any other case the check is applicable
+      true ->
+        true
+    end
   end
 end

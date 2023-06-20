@@ -38,7 +38,8 @@ defmodule Workspace.Check.Result do
   Sets the result's status.
   """
   @spec set_status(result :: t(), status :: atom()) :: t()
-  def set_status(result, status) when is_atom(status), do: %__MODULE__{result | status: status}
+  def set_status(result, status) when status in [:ok, :error, :skip],
+    do: %__MODULE__{result | status: status}
 
   @doc """
   Sets the result's metadata.
