@@ -1,0 +1,3 @@
+%{
+  "nimble_options": {:hex, :nimble_options, "0.3.7", "1e52dd7673d36138b1a5dede183b5d86dff175dc46d104a8e98e396b85b04670", [:mix], [], "hexpm", "2086907e6665c6b6579be54ef5001928df5231f355f71ed258f80a55e9f63633"},
+}

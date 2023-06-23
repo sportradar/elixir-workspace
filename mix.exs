@@ -10,7 +10,7 @@ defmodule Workspace.MixWorkspace do
       elixirc_paths: [],
       deps: deps(),
       deps_path: "artifacts/deps",
-      builg_path: "artifacts/build",
+      build_path: "artifacts/build",
       aliases: aliases(),
       workspace: true
     ]
@@ -36,7 +36,7 @@ defmodule Workspace.MixWorkspace do
         "format",
         "workspace.run -t format"
       ],
-      "deps.get": ["workspace.run -t deps.get"],
+      # "deps.get": ["workspace.run -t deps.get"],
       test: ["workspace.run -t test"]
     ]
   end
