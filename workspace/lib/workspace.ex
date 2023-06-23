@@ -115,6 +115,7 @@ defmodule Workspace do
     result =
       workspace_path
       |> nested_mix_projects()
+      |> Enum.filter(fn path -> not ignored_path?(path, config.ignore_paths, workspace_path) end)
       |> Enum.sort()
       |> Enum.map(fn path -> Workspace.Project.new(path, workspace_path) end)
       |> Enum.filter(&allowed_project?(&1, config))
@@ -144,9 +145,6 @@ defmodule Workspace do
   defp allowed_project?(project, config) do
     cond do
       project.module in config.ignore_projects ->
-        false
-
-      ignored_path?(project.mix_path, config.ignore_paths, project.workspace_path) ->
         false
 
       true ->
