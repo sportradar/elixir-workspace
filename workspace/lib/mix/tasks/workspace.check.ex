@@ -35,12 +35,12 @@ defmodule Mix.Tasks.Workspace.Check do
 
     config.checks
     |> Enum.with_index(fn check, index -> Keyword.put(check, :index, index) end)
-    |> Enum.map(fn check -> check[:module].check(workspace, check) end)
-    |> List.flatten()
-    |> Enum.group_by(fn result -> result.index end)
-    |> Enum.each(fn {check_index, results} ->
-      print_check_status(check_index, results, config.checks, opts)
-    end)
+    |> Enum.each(fn check -> run_check(check, workspace, opts) end)
+  end
+
+  defp run_check(check, workspace, opts) do
+    results = check[:module].check(workspace, check)
+    print_check_status(check, results, opts)
   end
 
   # TODO: validate checks are properly defined modules are valid
@@ -52,8 +52,8 @@ defmodule Mix.Tasks.Workspace.Check do
     end
   end
 
-  defp print_check_status(index, results, checks, opts) do
-    check = Enum.at(checks, index)
+  defp print_check_status(check, results, opts) do
+    index = check[:index]
     status = check_status(results)
     results = Enum.sort_by(results, & &1.project.app)
 
