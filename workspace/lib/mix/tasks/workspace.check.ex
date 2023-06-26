@@ -35,12 +35,14 @@ defmodule Mix.Tasks.Workspace.Check do
 
     config.checks
     |> Enum.with_index(fn check, index -> Keyword.put(check, :index, index) end)
-    |> Enum.each(fn check -> run_check(check, workspace, opts) end)
+    |> Enum.map(fn check -> run_check(check, workspace, opts) end)
+    |> maybe_set_exit_status()
   end
 
   defp run_check(check, workspace, opts) do
     results = check[:module].check(workspace, check)
     print_check_status(check, results, opts)
+    check_status(results)
   end
 
   # TODO: validate checks are properly defined modules are valid
@@ -134,4 +136,10 @@ defmodule Mix.Tasks.Workspace.Check do
 
   defp maybe_mix_project(:error, path), do: [:reset, :faint, " ", path, :reset]
   defp maybe_mix_project(_other, _path), do: []
+
+  defp maybe_set_exit_status(check_results) do
+    if Enum.any?(check_results, fn result -> result == :error end) do
+      System.at_exit(fn _ -> exit({:shutdown, 1}) end)
+    end
+  end
 end
