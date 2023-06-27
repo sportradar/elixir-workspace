@@ -118,11 +118,11 @@ defmodule Mix.Tasks.Workspace.Check do
   defp status_text(:ok), do: "OK    "
   defp status_text(:skip), do: "SKIP  "
 
-  defp strip_elixir_prefix(module) when is_atom(module),
-    do: strip_elixir_prefix(Atom.to_string(module))
-
-  defp strip_elixir_prefix("Elixir." <> module), do: module
-  defp strip_elixir_prefix(module), do: module
+  # defp strip_elixir_prefix(module) when is_atom(module),
+  #   do: strip_elixir_prefix(Atom.to_string(module))
+  #
+  # defp strip_elixir_prefix("Elixir." <> module), do: module
+  # defp strip_elixir_prefix(module), do: module
 
   defp check_message(result) do
     result.module.format_result(result)
@@ -138,8 +138,10 @@ defmodule Mix.Tasks.Workspace.Check do
   defp maybe_mix_project(_other, _path), do: []
 
   defp maybe_set_exit_status(check_results) do
-    if Enum.any?(check_results, fn result -> result == :error end) do
-      System.at_exit(fn _ -> exit({:shutdown, 1}) end)
+    failures = Enum.filter(check_results, fn result -> result == :error end)
+
+    if length(failures) > 0 do
+      Mix.raise("mix workspace.check failed - errors detected in #{length(failures)} checks")
     end
   end
 end
