@@ -37,7 +37,8 @@ defmodule Mix.Tasks.Workspace.Run do
 
     workspace.projects
     |> Workspace.Cli.filter_projects(opts)
-    |> Enum.each(fn project -> run_in_project(project, opts, task_args) end)
+    |> Enum.map(fn project -> run_in_project(project, opts, task_args) end)
+    |> raise_if_any_task_failed()
   end
 
   defp run_in_project(%{skip: true, app: app}, args, _argv) do
@@ -104,7 +105,12 @@ defmodule Mix.Tasks.Workspace.Run do
         cd: project.path
       ])
 
-    stream_output([args: args, project: project, task: full_task], port)
+    status_code = stream_output([args: args, project: project, task: full_task], port)
+
+    case status_code do
+      0 -> :ok
+      _other -> {:error, "#{full_task} failed in #{project.app}"}
+    end
   end
 
   # elixir tasks are not run in a TTY and will by default not print ANSI
@@ -143,6 +149,22 @@ defmodule Mix.Tasks.Workspace.Run do
           :reset,
           " failed with #{status}"
         ])
+
+        status
+    end
+  end
+
+  defp raise_if_any_task_failed(task_results) do
+    failures =
+      Enum.filter(task_results, fn result ->
+        case result do
+          {:error, _reason} -> true
+          _other -> false
+        end
+      end)
+
+    if length(failures) > 0 do
+      Mix.raise("mix workspace.run failed - errors detected in #{length(failures)} executions")
     end
   end
 end
