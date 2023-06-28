@@ -42,7 +42,7 @@ defmodule Workspace.Cli.Options do
 
         - `process` - every subcommand will be executed as a different process, this
         is the preferred mode for most mix tasks
-        - `subtask` - invokes `Mix.Task.run` from the workspace in the given project
+        - `subtask` - invokes `Mix.Task.run` from the workspace in the given project\
       """
     ]
 
@@ -79,6 +79,18 @@ defmodule Workspace.Cli.Options do
       type: :boolean,
       doc: "If set it will not execute the command, useful for testing and debugging.",
       default: false
+    ]
+
+  def option(:env_var),
+    do: [
+      type: :string,
+      doc: """
+      Optional environment variables to be set before command execution. They are
+      expected to be in the form `ENV_VAR_NAME=value`. You can use this multiple times
+      for setting multiple variables.\
+      """,
+      keep: true,
+      alias: :e
     ]
 
   def option(invalid), do: raise(ArgumentError, "invalid option #{inspect(invalid)}")

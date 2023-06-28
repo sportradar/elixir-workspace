@@ -9,7 +9,8 @@ defmodule Mix.Tasks.Workspace.Run do
                     :execution_order,
                     :execution_mode,
                     :verbose,
-                    :dry_run
+                    :dry_run,
+                    :env_var
                   ])
 
   @shortdoc "Run a mix command to all projects"
@@ -52,6 +53,8 @@ defmodule Mix.Tasks.Workspace.Run do
 
     task_args = [task | argv]
 
+    env = parse_environment_variables(options[:env_var])
+
     Mix.shell().info([
       :cyan,
       "==> ",
@@ -64,14 +67,33 @@ defmodule Mix.Tasks.Workspace.Run do
     ])
 
     if not options[:dry_run] do
-      run_task(project, task, argv, options)
+      run_task(project, task, argv, options, env)
     end
   end
 
-  defp run_task(project, task, argv, options) do
+  defp parse_environment_variables(nil), do: []
+
+  defp parse_environment_variables(vars) do
+    Enum.map(vars, &parse_environment_variable/1)
+  end
+
+  defp parse_environment_variable(var) do
+    case String.split(var, "=") do
+      [name, value] when value != "" ->
+        {String.upcase(name) |> String.to_charlist(), String.to_charlist(value)}
+
+      other ->
+        Mix.raise("""
+        Invalid environment variable definition, it should be of the form 
+        ENV_VAR_NAME=value, got: #{other}
+        """)
+    end
+  end
+
+  defp run_task(project, task, argv, options, env) do
     case options[:execution_mode] do
       "process" ->
-        cmd(task, argv, project)
+        cmd(task, argv, project, env)
 
       "subtask" ->
         Mix.Project.in_project(
@@ -87,7 +109,7 @@ defmodule Mix.Tasks.Workspace.Run do
     end
   end
 
-  defp cmd(task, argv, project) do
+  defp cmd(task, argv, project, env) do
     full_task = ~s'mix #{Enum.join([task | argv], " ")}'
     [command | args] = enable_ansi(["mix", task | argv])
 
@@ -102,7 +124,8 @@ defmodule Mix.Tasks.Workspace.Run do
         :binary,
         :exit_status,
         args: args,
-        cd: project.path
+        cd: project.path,
+        env: env
       ])
 
     status_code = stream_output([args: args, project: project, task: full_task], port)
