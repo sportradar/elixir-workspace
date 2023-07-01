@@ -35,8 +35,6 @@ defmodule Workspace.Checks.ValidateConfigTest do
       assert_project_status(results, project.app, :skip)
       assert_formatted_result(results, project.app, [])
     end
-
-
   end
 
   test "raises if the validation function does not return a supported status", %{

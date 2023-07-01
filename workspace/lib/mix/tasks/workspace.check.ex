@@ -12,6 +12,8 @@ defmodule Mix.Tasks.Workspace.Check do
 
   use Mix.Task
 
+  alias Workspace.Cli
+
   def run(argv) do
     %{parsed: opts, args: _args, extra: _extra} = CliOpts.parse!(argv, @options_schema)
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
@@ -25,9 +27,7 @@ defmodule Mix.Tasks.Workspace.Check do
     workspace = Workspace.new(workspace_path, config)
 
     Mix.shell().info([
-      :green,
       "==> ",
-      :reset,
       "running #{length(config.checks)} workspace checks on the workspace"
     ])
 
@@ -63,13 +63,8 @@ defmodule Mix.Tasks.Workspace.Check do
 
     Mix.shell().info([
       "==> ",
-      :bright,
-      status_color(status),
-      "C#{display_index} ",
-      :reset,
-      :bright,
-      check[:description],
-      :reset
+      Cli.highlight("C#{display_index} ", [:bright, status_color(status)]),
+      Cli.highlight(check[:description], :bright)
     ])
 
     for result <- results do
@@ -96,12 +91,8 @@ defmodule Mix.Tasks.Workspace.Check do
     Mix.shell().info(
       [
         "    ",
-        status_color(result.status),
-        status_text(result.status),
-        :reset,
-        :cyan,
-        ":#{result.project.app}",
-        :reset
+        Cli.highlight(status_text(result.status), status_color(result.status)),
+        Cli.highlight(":#{result.project.app}", :cyan),
       ] ++ check_message(result) ++ maybe_mix_project(result.status, path)
     )
   end
@@ -134,7 +125,7 @@ defmodule Mix.Tasks.Workspace.Check do
   defp maybe_enlist(message) when is_binary(message), do: maybe_enlist([message])
   defp maybe_enlist(message) when is_list(message), do: [" - " | message]
 
-  defp maybe_mix_project(:error, path), do: [:reset, :faint, " ", path, :reset]
+  defp maybe_mix_project(:error, path), do: Cli.highlight([" ", path], [:reset, :faint])
   defp maybe_mix_project(_other, _path), do: []
 
   defp maybe_set_exit_status(check_results) do

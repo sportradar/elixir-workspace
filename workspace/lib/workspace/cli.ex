@@ -27,6 +27,29 @@ defmodule Workspace.Cli do
   defp skippable?(%{app: app}, selected, ignored), do: app not in selected || app in ignored
 
   @doc """
+  Highlights the given `text` with the given ansi codes
+
+  ## Examples
+
+      iex> Workspace.Cli.highlight("a blue text", :blue)
+      [:blue, ["a blue text"], :reset]
+
+      iex> Workspace.Cli.highlight(["some ", "text"], :blue)
+      [:blue, ["some ", "text"], :reset]
+
+      iex> Workspace.Cli.highlight("some text", [:bright, :green])
+      [:bright, :green, ["some text"], :reset]
+  """
+  @spec highlight(text :: binary() | [binary()], ansi_codes :: IO.ANSI.ansicode() | [IO.ANSI.ansicode()]) ::
+          IO.ANSI.ansidata()
+  def highlight(text, ansi_code) when is_atom(ansi_code), do: highlight(text, [ansi_code])
+  def highlight(text, ansi_code) when is_binary(text), do: highlight([text], ansi_code)
+
+  def highlight(text, ansi_codes) when is_list(text) and is_list(ansi_codes) do
+    ansi_codes ++ [text, :reset]
+  end
+
+  @doc """
   Prints an info (blue) message
 
   See also `log/4`

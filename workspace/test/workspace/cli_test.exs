@@ -1,6 +1,7 @@
 defmodule Workspace.CliTest do
   use ExUnit.Case
   alias Workspace.Cli
+  doctest Workspace.Cli
 
   @valid_options [
     :affected,
