@@ -29,10 +29,14 @@ defmodule Workspace.Checks.ValidateConfigTest do
     results = ValidateConfig.check(workspace, check)
     assert_project_status(results, :project_a, :error)
     assert_project_meta(results, :project_a, message: "an error detected for project_a")
+    assert_formatted_result(results, :project_a, ["an error detected for project_a"])
 
     for project <- workspace.projects, project.app != :project_a do
       assert_project_status(results, project.app, :skip)
+      assert_formatted_result(results, project.app, [])
     end
+
+
   end
 
   test "raises if the validation function does not return a supported status", %{
@@ -105,5 +109,10 @@ defmodule Workspace.Checks.ValidateConfigTest do
   defp assert_project_meta(results, project, meta) do
     result = project_result(results, project)
     assert result.meta == meta
+  end
+
+  defp assert_formatted_result(results, project, expected) do
+    result = project_result(results, project)
+    assert ValidateConfig.format_result(result) == expected
   end
 end
