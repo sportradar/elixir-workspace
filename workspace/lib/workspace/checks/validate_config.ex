@@ -35,8 +35,26 @@ defmodule Workspace.Checks.ValidateConfig do
     validate_fun = Keyword.fetch!(check[:opts], :validate)
 
     Workspace.Check.check_projects(workspace, check, fn project ->
-      {status, message} = validate_fun.(project.config)
-      {status, [message: message]}
+      case validate_fun.(project.config) do
+        {status, message} when status in [:ok, :error, :skip] and is_binary(message) ->
+          {status, [message: message]}
+
+        {status, message} when is_binary(message) ->
+          raise ArgumentError, """
+          validate function must return a {status, message} tuple where \
+          status one of [:ok, :error, :skip], got: #{status}\
+          """
+
+        {_status, message} ->
+          raise ArgumentError, """
+          validate function must return a {status, message} tuple where \
+          message must be a string, got: #{inspect(message)}\
+          """
+
+        other ->
+          raise ArgumentError,
+                "validate function must return a {status, message} tuple, got #{inspect(other)}"
+      end
     end)
   end
 
