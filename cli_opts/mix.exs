@@ -10,7 +10,11 @@ defmodule CliOpts.MixProject do
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      test_coverage: [
+        export: "cli_opts",
+        output: "../artifacts/cover"
+      ]
     ]
   end
 

@@ -10,14 +10,18 @@ defmodule Workspace.MixProject do
       deps: deps(),
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
-      dialyzer: [plt_add_apps: [:mix]]
+      dialyzer: [plt_add_apps: [:mix]],
+      test_coverage: [
+        export: "workspace",
+        output: "../artifacts/cover"
+      ]
     ]
   end
 
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger, :tools]
     ]
   end
 
