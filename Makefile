@@ -23,5 +23,5 @@ lint: ## Run linters suite on project
 coverage: ## Generates coverage report
 	mix workspace.run -t test -- --cover
 	mix workspace.test.coverage
-	genhtml coverage.lcov -o artifacts/coverage --flat --prefix "$PWD"
+	genhtml coverage.lcov -o artifacts/coverage --flat --prefix ${PWD}
 	open artifacts/coverage/index.html
