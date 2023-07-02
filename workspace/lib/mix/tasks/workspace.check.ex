@@ -92,7 +92,7 @@ defmodule Mix.Tasks.Workspace.Check do
       [
         "    ",
         Cli.highlight(status_text(result.status), status_color(result.status)),
-        Cli.highlight(":#{result.project.app}", :cyan),
+        Cli.highlight(":#{result.project.app}", :cyan)
       ] ++ check_message(result) ++ maybe_mix_project(result.status, path)
     )
   end

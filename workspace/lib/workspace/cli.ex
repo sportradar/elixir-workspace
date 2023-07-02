@@ -40,7 +40,10 @@ defmodule Workspace.Cli do
       iex> Workspace.Cli.highlight("some text", [:bright, :green])
       [:bright, :green, ["some text"], :reset]
   """
-  @spec highlight(text :: binary() | [binary()], ansi_codes :: IO.ANSI.ansicode() | [IO.ANSI.ansicode()]) ::
+  @spec highlight(
+          text :: binary() | [binary()],
+          ansi_codes :: IO.ANSI.ansicode() | [IO.ANSI.ansicode()]
+        ) ::
           IO.ANSI.ansidata()
   def highlight(text, ansi_code) when is_atom(ansi_code), do: highlight(text, [ansi_code])
   def highlight(text, ansi_code) when is_binary(text), do: highlight([text], ansi_code)

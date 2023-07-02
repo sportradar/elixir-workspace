@@ -1,5 +1,5 @@
 defmodule Workspace.Checks.ValidateConfigTest do
-  use ExUnit.Case
+  use CheckTest.Case
   alias Workspace.Checks.ValidateConfig
 
   setup do
@@ -27,12 +27,12 @@ defmodule Workspace.Checks.ValidateConfigTest do
       )
 
     results = ValidateConfig.check(workspace, check)
-    assert_project_status(results, :project_a, :error)
-    assert_project_meta(results, :project_a, message: "an error detected for project_a")
+    assert_check_status(results, :project_a, :error)
+    assert_check_meta(results, :project_a, message: "an error detected for project_a")
     assert_formatted_result(results, :project_a, ["an error detected for project_a"])
 
     for project <- workspace.projects, project.app != :project_a do
-      assert_project_status(results, project.app, :skip)
+      assert_check_status(results, project.app, :skip)
       assert_formatted_result(results, project.app, [])
     end
   end
@@ -93,24 +93,5 @@ defmodule Workspace.Checks.ValidateConfigTest do
       "validate function must return a {status, message} tuple, got {:error, :error, :error}"
 
     assert_raise ArgumentError, message, fn -> ValidateConfig.check(workspace, check) end
-  end
-
-  defp project_result(results, project) do
-    Enum.find(results, fn result -> result.project.app == project end)
-  end
-
-  defp assert_project_status(results, project, status) do
-    result = project_result(results, project)
-    assert result.status == status
-  end
-
-  defp assert_project_meta(results, project, meta) do
-    result = project_result(results, project)
-    assert result.meta == meta
-  end
-
-  defp assert_formatted_result(results, project, expected) do
-    result = project_result(results, project)
-    assert ValidateConfig.format_result(result) == expected
   end
 end
