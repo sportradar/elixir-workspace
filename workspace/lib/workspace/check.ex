@@ -22,6 +22,15 @@ defmodule Workspace.Check do
       type: {:list, :atom},
       doc: "A list of projects to be ignored from the check",
       default: []
+    ],
+    allow_failure: [
+      type: {:or, [:boolean, {:list, :atom}]},
+      doc: """
+      A list of projects (or `true` for all) that are allowed to fail. In case of
+      a failure it will be logged as a warning but the exit code of check will not
+      be set to 1.
+      """,
+      default: false
     ]
   ]
 
@@ -108,6 +117,8 @@ defmodule Workspace.Check do
           true ->
             {status, metadata} = check_fun.(project)
 
+            status = maybe_demote_status(status, project, check)
+
             Workspace.Check.Result.new(check, project)
             |> Workspace.Check.Result.set_status(status)
             |> Workspace.Check.Result.set_metadata(metadata)
@@ -138,4 +149,19 @@ defmodule Workspace.Check do
         true
     end
   end
+
+  defp maybe_demote_status(:error, project, check) do
+    cond do
+      check[:allow_failure] == true ->
+        :warn
+
+      is_list(check[:allow_failure]) and project.app in check[:allow_failure] ->
+        :warn
+
+      true ->
+        :error
+    end
+  end
+
+  defp maybe_demote_status(status, _project, _check), do: status
 end

@@ -6,6 +6,8 @@ defmodule Workspace.Check.Result do
   and the check status and metadata.
   """
 
+  @valid_statuses [:ok, :error, :warn, :skip]
+
   # TODO: add typedoc
   @type t :: %__MODULE__{
           module: module(),
@@ -38,7 +40,7 @@ defmodule Workspace.Check.Result do
   Sets the result's status.
   """
   @spec set_status(result :: t(), status :: atom()) :: t()
-  def set_status(result, status) when status in [:ok, :error, :skip],
+  def set_status(result, status) when status in @valid_statuses,
     do: %__MODULE__{result | status: status}
 
   @doc """

@@ -77,7 +77,7 @@ defmodule Mix.Tasks.Workspace.Check do
       verbose ->
         print_result(result)
 
-      result.status == :error ->
+      result.status in [:error, :warn] ->
         print_result(result)
 
       true ->
@@ -97,17 +97,26 @@ defmodule Mix.Tasks.Workspace.Check do
     )
   end
 
-  defp check_status([]), do: :ok
-  defp check_status([%Workspace.Check.Result{status: :error} | _rest]), do: :error
-  defp check_status([_result | rest]), do: check_status(rest)
+  defp check_status(results) do
+    counts = Enum.group_by(results, fn result -> result.status end)
+
+    cond do
+      counts[:error] != nil -> :error
+      counts[:warn] != nil -> :warn
+      counts[:ok] == nil -> :skip
+      true -> :ok
+    end
+  end
 
   defp status_color(:error), do: :red
   defp status_color(:ok), do: :green
-  defp status_color(:skip), do: :light_magenta
+  defp status_color(:skip), do: :white
+  defp status_color(:warn), do: :yellow
 
   defp status_text(:error), do: "ERROR "
   defp status_text(:ok), do: "OK    "
   defp status_text(:skip), do: "SKIP  "
+  defp status_text(:warn), do: "WARN  "
 
   # defp strip_elixir_prefix(module) when is_atom(module),
   #   do: strip_elixir_prefix(Atom.to_string(module))
