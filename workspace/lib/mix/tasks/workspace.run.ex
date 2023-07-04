@@ -58,7 +58,7 @@ defmodule Mix.Tasks.Workspace.Run do
     env = parse_environment_variables(options[:env_var])
 
     Cli.log(
-      Workspace.Project.relative_to_workspace(project),
+      inspect(project.app),
       "mix #{Enum.join(task_args, " ")}",
       section_style: :cyan,
       style: :bright
@@ -159,7 +159,7 @@ defmodule Mix.Tasks.Workspace.Run do
         project = Keyword.get(meta, :project)
 
         Cli.log(
-          Workspace.Project.relative_to_workspace(project),
+          inspect(project.app),
           [
             Cli.highlight(task, :bright),
             " failed with ",

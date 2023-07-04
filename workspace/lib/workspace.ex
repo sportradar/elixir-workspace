@@ -86,6 +86,15 @@ defmodule Workspace do
     end
   end
 
+  def file_project(workspace, path) do
+    Enum.reduce_while(workspace.projects, nil, fn project, acc ->
+      case String.starts_with?(path, project.path) do
+        true -> {:halt, project}
+        false -> {:cont, nil}
+      end
+    end)
+  end
+
   defp load_config_file(config_file) do
     config_file = Path.expand(config_file)
 

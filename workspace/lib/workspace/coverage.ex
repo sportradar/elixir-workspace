@@ -1,32 +1,42 @@
 defmodule Workspace.Coverage do
   @moduledoc false
+  alias Workspace.Cli
+
+  def project_coverage_stats(coverage, project) do
+    # coverage per project's module
+    project_line_stats =
+      coverage
+      |> Enum.filter(fn {module, app, _function_data, line_data} -> app == project.app end)
+      |> Enum.map(fn {module, _app, _function_data, line_data} ->
+        {total_lines, covered_lines, _line_data} = calculate_line_coverage(module, line_data)
+
+        {module, total_lines, covered_lines, percentage(covered_lines, total_lines)}
+      end)
+
+    # overall coverage
+    project_coverage = coverage_percentage(project_line_stats)
+
+    {project_coverage, project_line_stats}
+  end
 
   def report(coverage, :summary) do
     line_stats =
       coverage
-      |> Enum.map(fn {module, _function_data, line_data} ->
+      |> Enum.map(fn {module, _app, _function_data, line_data} ->
         {total_lines, covered_lines, _line_data} = calculate_line_coverage(module, line_data)
 
         {module, total_lines, covered_lines}
       end)
 
-    total_lines =
-      line_stats
-      |> Enum.map(&elem(&1, 1))
-      |> Enum.sum()
+    percentage = coverage_percentage(line_stats)
 
-    covered_lines =
-      line_stats
-      |> Enum.map(&elem(&1, 2))
-      |> Enum.sum()
-
-    Mix.shell().info(["Coverage ", format_number(percentage(covered_lines, total_lines), 10)])
+    Mix.shell().info(["Coverage ", format_number(percentage, 10)])
   end
 
   def report(coverage, :lcov) do
     lcov =
       coverage
-      |> Enum.map(fn {module, function_data, line_data} ->
+      |> Enum.map(fn {module, _app, function_data, line_data} ->
         path = module.module_info(:compile)[:source]
 
         {total_functions, covered_functions, function_data} =
@@ -48,6 +58,20 @@ defmodule Workspace.Coverage do
 
     # TODO: set the file from cli args
     File.write!("coverage.lcov", lcov, [:write])
+  end
+
+  defp coverage_percentage(line_stats) do
+    total_lines =
+      line_stats
+      |> Enum.map(&elem(&1, 1))
+      |> Enum.sum()
+
+    covered_lines =
+      line_stats
+      |> Enum.map(&elem(&1, 2))
+      |> Enum.sum()
+
+    percentage(covered_lines, total_lines)
   end
 
   @doc false

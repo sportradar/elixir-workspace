@@ -27,7 +27,7 @@ defmodule Workspace.Cli do
   defp skippable?(%{app: app}, selected, ignored), do: app not in selected || app in ignored
 
   def newline, do: Mix.shell().info("")
-  def log(message), do: log("", message, prefix: "==>")
+  def log(message), do: log("", message, prefix: "==>", separator: " ")
 
   @doc """
   Helper function for fancy generic log messages
