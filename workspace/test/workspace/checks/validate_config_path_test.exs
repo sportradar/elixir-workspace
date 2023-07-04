@@ -16,7 +16,8 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
   end
 
   test "error if config variable is not set", %{check: check} do
-    workspace = single_project_workspace(app: :foo)
+    project = project_fixture(app: :foo)
+    workspace = workspace_fixture([project])
     results = ValidateConfigPath.check(workspace, check)
 
     assert_check_status(results, :foo, :error)
@@ -39,7 +40,9 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
   end
 
   test "error if config variable is not correctly configured", %{check: check} do
-    workspace = single_project_workspace(app: :foo, a_path: "foo/bar")
+    project = project_fixture(app: :foo, a_path: "foo/bar")
+    workspace = workspace_fixture([project])
+
     results = ValidateConfigPath.check(workspace, check)
 
     assert_check_status(results, :foo, :error)
@@ -62,7 +65,9 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
   end
 
   test "ok if variable is properly configured", %{check: check} do
-    workspace = single_project_workspace(app: :foo, a_path: "../../artifacts/test")
+    project = project_fixture(app: :foo, a_path: "../../artifacts/test")
+    workspace = workspace_fixture([project])
+
     results = ValidateConfigPath.check(workspace, check)
 
     assert_check_status(results, :foo, :ok)
@@ -77,27 +82,5 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
     ]
 
     assert_formatted_result(results, :foo, expected)
-  end
-
-  defp single_project_workspace(config) do
-    workspace_path = "/usr/local/workspace"
-    project_path = Path.join([workspace_path, "packages", Atom.to_string(config[:app])])
-
-    project = %Workspace.Project{
-      app: config[:app],
-      module: ProjectModule,
-      config: config,
-      mix_path: Path.join(project_path, "mix.exs"),
-      path: project_path,
-      workspace_path: workspace_path
-    }
-
-    %Workspace{
-      projects: [project],
-      config: [],
-      mix_path: Path.join(workspace_path, "mix.exs"),
-      workspace_path: workspace_path,
-      cwd: File.cwd!()
-    }
   end
 end
