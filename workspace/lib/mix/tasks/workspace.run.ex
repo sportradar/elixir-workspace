@@ -24,6 +24,8 @@ defmodule Mix.Tasks.Workspace.Run do
 
   use Mix.Task
 
+  alias Workspace.Cli
+
   def run(argv) do
     {:ok, opts} = CliOpts.parse(argv, @options_schema)
     %{parsed: opts, args: args, extra: extra, invalid: invalid} = opts
@@ -44,7 +46,7 @@ defmodule Mix.Tasks.Workspace.Run do
 
   defp run_in_project(%{skip: true, app: app}, args, _argv) do
     if args[:verbose] do
-      Workspace.Cli.warning("#{args[:task]}", "skipping #{app}")
+      Cli.log("#{args[:task]}", "skipping #{app}", section_style: [:bright, :yellow])
     end
   end
 
@@ -55,16 +57,12 @@ defmodule Mix.Tasks.Workspace.Run do
 
     env = parse_environment_variables(options[:env_var])
 
-    Mix.shell().info([
-      :cyan,
-      "==> ",
+    Cli.log(
       Workspace.Project.relative_to_workspace(project),
-      :reset,
-      " - ",
-      :bright,
       "mix #{Enum.join(task_args, " ")}",
-      :reset
-    ])
+      section_style: :cyan,
+      style: :bright
+    )
 
     if not options[:dry_run] do
       run_task(project, task, argv, options, env)
@@ -160,18 +158,15 @@ defmodule Mix.Tasks.Workspace.Run do
         task = Keyword.get(meta, :task)
         project = Keyword.get(meta, :project)
 
-        Mix.shell().error([
-          "==> ",
+        Cli.log(
           Workspace.Project.relative_to_workspace(project),
-          :reset,
-          " - ",
-          :bright,
-          :light_red,
-          :underline,
-          task,
-          :reset,
-          " failed with #{status}"
-        ])
+          [
+            Cli.highlight(task, :bright),
+            " failed with ",
+            Cli.highlight("#{status}", [:bright, :light_red])
+          ],
+          section_style: [:bright, :red]
+        )
 
         status
     end

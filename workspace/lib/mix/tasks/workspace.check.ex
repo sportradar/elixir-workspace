@@ -26,12 +26,8 @@ defmodule Mix.Tasks.Workspace.Check do
 
     workspace = Workspace.new(workspace_path, config)
 
-    Mix.shell().info([
-      "==> ",
-      "running #{length(config.checks)} workspace checks on the workspace"
-    ])
-
-    Mix.shell().info("")
+    Cli.log("running #{length(config.checks)} workspace checks on the workspace")
+    Cli.newline()
 
     config.checks
     |> Enum.with_index(fn check, index -> Keyword.put(check, :index, index) end)
@@ -61,11 +57,10 @@ defmodule Mix.Tasks.Workspace.Check do
 
     display_index = String.pad_leading("#{index}", 3, "0")
 
-    Mix.shell().info([
-      "==> ",
-      Cli.highlight("C#{display_index} ", [:bright, status_color(status)]),
-      Cli.highlight(check[:description], :bright)
-    ])
+    Cli.log("C#{display_index}", check[:description],
+      section_style: [:bright, status_color(status)],
+      style: :bright
+    )
 
     for result <- results do
       maybe_print_result(result, opts[:verbose])
@@ -88,12 +83,18 @@ defmodule Mix.Tasks.Workspace.Check do
   defp print_result(result) do
     path = Workspace.Utils.relative_path_to(result.project.path, File.cwd!())
 
-    Mix.shell().info(
-      [
-        "    ",
-        Cli.highlight(status_text(result.status), status_color(result.status)),
-        Cli.highlight(":#{result.project.app}", :cyan)
-      ] ++ check_message(result) ++ maybe_mix_project(result.status, path)
+    message = [
+      Cli.highlight(":#{result.project.app}", :cyan),
+      check_message(result),
+      maybe_mix_project(result.status, path)
+    ]
+
+    Cli.log(
+      status_text(result.status),
+      message,
+      prefix: "    ",
+      separator: "",
+      section_style: status_color(result.status)
     )
   end
 
@@ -117,12 +118,6 @@ defmodule Mix.Tasks.Workspace.Check do
   defp status_text(:ok), do: "OK    "
   defp status_text(:skip), do: "SKIP  "
   defp status_text(:warn), do: "WARN  "
-
-  # defp strip_elixir_prefix(module) when is_atom(module),
-  #   do: strip_elixir_prefix(Atom.to_string(module))
-  #
-  # defp strip_elixir_prefix("Elixir." <> module), do: module
-  # defp strip_elixir_prefix(module), do: module
 
   defp check_message(result) do
     result.module.format_result(result)

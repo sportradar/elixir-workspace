@@ -63,7 +63,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     calculate_coverage(workspace_path)
     |> List.flatten()
-    |> Workspace.Coverage.report(:summary)
+    |> Workspace.Coverage.report(:lcov)
   end
 
   defp cover_compile_paths(project) do
