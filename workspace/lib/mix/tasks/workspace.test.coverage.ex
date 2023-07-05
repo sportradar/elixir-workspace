@@ -34,6 +34,10 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   and module coverages that have are below the warning threshold are logged as
   warnings.
 
+  Notice that by default modules that have coverage above the warning threshold are
+  not logged. You can force the logging of all modules by setting the `--verbose`
+  flag.
+
   ## Exporting coverage
 
   This task assumes that `mix test` has been executed with `--cover` and the
@@ -108,31 +112,33 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
         section_style: :cyan
       )
 
-      print_module_coverage_info(module_stats, error_threshold, warning_threshold)
+      print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
     end)
 
     Workspace.Coverage.report(coverage_stats, :summary)
   end
 
-  defp print_module_coverage_info(module_stats, error_threshold, warning_threshold) do
+  defp print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts) do
     module_stats
     |> Enum.sort_by(fn {_module, _total, _covered, percentage} -> percentage end)
     |> Enum.each(fn {module, total, covered, percentage} ->
-      formatted_coverage = :io_lib.format("~.2f", [percentage])
+      if percentage < warning_threshold or opts[:verbose] do
+        formatted_coverage = :io_lib.format("~.2f", [percentage])
 
-      Mix.shell().info([
-        "    ",
-        coverage_color(percentage, error_threshold, warning_threshold),
-        :bright,
-        formatted_coverage,
-        "%",
-        :reset,
-        String.duplicate(" ", 8 - Enum.count(formatted_coverage)),
-        inspect(module),
-        :light_yellow,
-        " (#{covered}/#{total} lines)",
-        :reset
-      ])
+        Mix.shell().info([
+          "    ",
+          coverage_color(percentage, error_threshold, warning_threshold),
+          :bright,
+          formatted_coverage,
+          "%",
+          :reset,
+          String.duplicate(" ", 8 - Enum.count(formatted_coverage)),
+          inspect(module),
+          :light_yellow,
+          " (#{covered}/#{total} lines)",
+          :reset
+        ])
+      end
     end)
   end
 
