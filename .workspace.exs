@@ -1,9 +1,5 @@
 [
   ignore_paths: ["artifacts/deps"],
-  # TODO: add a required attribute check
-  # TODO: allow check to fail with flag
-  # TODO: ignore and only projects options
-  # TODO: print ignored and successful only with verbose
   checks: [
     [
       module: Workspace.Checks.ValidateConfigPath,
@@ -21,6 +17,26 @@
         config_attribute: :build_path,
         expected_path: "artifacts/build"
       ]
+    ],
+    [
+      module: Workspace.Checks.ValidateConfig,
+      description: "all projects must have elixir set to 1.14",
+      allow_failure: [:cli_opts],
+      opts: [
+        validate: fn config ->
+          case config[:elixir] do
+            "~> 1.13" -> {:ok, ""}
+            other -> {:error, "expected :elixir to be ~> 1.13, got #{other}"}
+          end
+        end
+      ]
+    ]
+  ],
+  test_coverage: [
+    exporters: [
+      lcov: fn coverage_stats -> 
+        Workspace.Coverage.export_lcov(coverage_stats, [output_path: "artifacts/coverage"])
+      end
     ]
   ]
 ]
