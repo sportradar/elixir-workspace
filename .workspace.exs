@@ -30,9 +30,23 @@
           end
         end
       ]
-    ]
+    ],
+    [
+      module: Workspace.Checks.ValidateConfig,
+      description: "all projects must have test coverage export option set",
+      opts: [
+        validate: fn config ->
+          coverage_opts = config[:test_coverage] || []
+          case coverage_opts[:export] do
+            nil -> {:error, "export option not defined under :test_coverage settings"}
+            _value -> {:ok, ""}
+          end
+        end
+      ]
+    ],
   ],
   test_coverage: [
+    threshold: 40,
     exporters: [
       lcov: fn coverage_stats -> 
         Workspace.Coverage.export_lcov(coverage_stats, [output_path: "artifacts/coverage"])
