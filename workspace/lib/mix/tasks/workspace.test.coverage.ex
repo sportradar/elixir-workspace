@@ -76,14 +76,14 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     {:ok, string_io} = StringIO.open("")
     Process.group_leader(pid, string_io)
 
-    Cli.log("importing cover results")
+    Cli.log([:bright, "importing cover results"])
 
     Enum.each(paths, fn {app, cover_paths, _compile_paths} ->
       import_cover_results(app, cover_paths, workspace_path)
     end)
 
     Cli.newline()
-    Cli.log("analysing coverage data")
+    Cli.log([:bright, "analysing coverage data"])
 
     coverage_stats =
       workspace
@@ -97,7 +97,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
       {coverage, module_stats} =
         Workspace.Coverage.project_coverage_stats(coverage_stats, project)
 
-      {error_threshold, warning_threshold} = project_coverage_thresholds(project)
+      {error_threshold, warning_threshold} =
+        project_coverage_thresholds(project.config[:test_coverage])
 
       Cli.log(
         inspect(project.app),
@@ -115,8 +116,27 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
       print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
     end)
 
+    {overall_coverage, _module_stats} = Workspace.Coverage.summarize_line_coverage(coverage_stats)
+
+    {error_threshold, warning_threshold} =
+      project_coverage_thresholds(workspace.config.test_coverage)
+
+    Workspace.Cli.newline()
+
+    Workspace.Cli.log([
+      :bright,
+      "workspace coverage ",
+      :reset,
+      Cli.highlight(
+        [:io_lib.format("~.2f", [overall_coverage]), "%"],
+        [:bright, coverage_color(overall_coverage, error_threshold, warning_threshold)]
+      ),
+      " [threshold #{error_threshold}%]"
+    ])
+
     exporters = Keyword.get(workspace.config.test_coverage, :exporters, [])
     export_coverage(coverage_stats, exporters)
+
     # Workspace.Coverage.report(coverage_stats, :summary)
   end
 
@@ -124,7 +144,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   defp export_coverage(coverage_stats, exporters) do
     Cli.newline()
-    Cli.log("exporting coverage data")
+    Cli.log([:bright, "exporting coverage data"])
 
     Enum.each(exporters, fn {_name, exporter} ->
       exporter.(coverage_stats)
@@ -157,8 +177,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   @default_error_threshold 90
 
-  defp project_coverage_thresholds(project) do
-    coverage_opts = project.config[:test_coverage] || []
+  defp project_coverage_thresholds(coverage_opts) do
+    coverage_opts = coverage_opts || []
 
     error_threshold = Keyword.get(coverage_opts, :threshold, @default_error_threshold)
     default_warning_threshold = error_threshold + (100 - error_threshold) / 2

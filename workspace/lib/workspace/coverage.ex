@@ -1,36 +1,28 @@
 defmodule Workspace.Coverage do
   @moduledoc false
-  alias Workspace.Cli
 
   def project_coverage_stats(coverage, project) do
     # coverage per project's module
-    module_line_stats =
+    project_modules =
+      Enum.filter(coverage, fn {_module, app, _function_data, _line_data} ->
+        app == project.app
+      end)
+
+    summarize_line_coverage(project_modules)
+  end
+
+  def summarize_line_coverage(coverage) do
+    line_stats =
       coverage
-      |> Enum.filter(fn {module, app, _function_data, line_data} -> app == project.app end)
       |> Enum.map(fn {module, _app, _function_data, line_data} ->
         {total_lines, covered_lines, _line_data} = calculate_line_coverage(module, line_data)
 
         {module, total_lines, covered_lines, percentage(covered_lines, total_lines)}
       end)
 
-    # overall coverage
-    project_coverage = coverage_percentage(module_line_stats)
-
-    {project_coverage, module_line_stats}
-  end
-
-  def report(coverage, :summary) do
-    line_stats =
-      coverage
-      |> Enum.map(fn {module, _app, _function_data, line_data} ->
-        {total_lines, covered_lines, _line_data} = calculate_line_coverage(module, line_data)
-
-        {module, total_lines, covered_lines}
-      end)
-
     percentage = coverage_percentage(line_stats)
 
-    Mix.shell().info(["Coverage ", format_number(percentage, 10)])
+    {percentage, line_stats}
   end
 
   def export_lcov(coverage, opts \\ []) do
@@ -128,11 +120,6 @@ defmodule Workspace.Coverage do
 
   defp percentage(0, 0), do: 100.0
   defp percentage(covered, total), do: covered / total * 100
-
-  defp format_number(number, length) when is_integer(number),
-    do: format_number(number / 1, length)
-
-  defp format_number(number, length), do: :io_lib.format("~#{length}.2f", [number])
 
   @newline "\n"
 
