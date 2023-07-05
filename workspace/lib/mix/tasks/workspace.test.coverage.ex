@@ -20,6 +20,20 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
       $ mix workspace.test.coverage
 
+  ## Coverage thresholds
+
+  The task supports two coverage thresholds, the error threshold and the warning
+  threshold.
+
+  The error threshold can be configured by setting the `:threshold` option under
+  `:test_coverage` on the project's config. If not set it defaults to `90%`. If
+  any project has a coverage below the error threshold then the command will fail.
+
+  Warning threshold can be configured by setting the `:warning_threshold` option. If
+  not set it defaults to `error_threshold + (100 - error_threshold)/2`. All project
+  and module coverages that have are below the warning threshold are logged as
+  warnings.
+
   ## Exporting coverage
 
   This task assumes that `mix test` has been executed with `--cover` and the
@@ -79,25 +93,28 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
       {coverage, module_stats} =
         Workspace.Coverage.project_coverage_stats(coverage_stats, project)
 
+      {error_threshold, warning_threshold} = project_coverage_thresholds(project)
+
       Cli.log(
         inspect(project.app),
         [
           "total coverage ",
           Cli.highlight(
             [:io_lib.format("~.2f", [coverage]), "%"],
-            [:bright, coverage_color(coverage)]
-          )
+            [:bright, coverage_color(coverage, error_threshold, warning_threshold)]
+          ),
+          " [threshold #{error_threshold}%]"
         ],
         section_style: :cyan
       )
 
-      print_module_coverage_info(module_stats)
+      print_module_coverage_info(module_stats, error_threshold, warning_threshold)
     end)
 
     Workspace.Coverage.report(coverage_stats, :summary)
   end
 
-  defp print_module_coverage_info(module_stats) do
+  defp print_module_coverage_info(module_stats, error_threshold, warning_threshold) do
     module_stats
     |> Enum.sort_by(fn {_module, _total, _covered, percentage} -> percentage end)
     |> Enum.each(fn {module, total, covered, percentage} ->
@@ -105,7 +122,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
       Mix.shell().info([
         "    ",
-        coverage_color(percentage),
+        coverage_color(percentage, error_threshold, warning_threshold),
         :bright,
         formatted_coverage,
         "%",
@@ -119,9 +136,27 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     end)
   end
 
-  defp coverage_color(coverage) when coverage < 50, do: :red
-  defp coverage_color(coverage) when coverage < 75, do: :yellow
-  defp coverage_color(_coverage), do: :green
+  @default_error_threshold 90
+
+  defp project_coverage_thresholds(project) do
+    coverage_opts = project.config[:test_coverage] || []
+
+    error_threshold = Keyword.get(coverage_opts, :threshold, @default_error_threshold)
+    default_warning_threshold = error_threshold + (100 - error_threshold) / 2
+    warning_threshold = Keyword.get(coverage_opts, :warning_threshold, default_warning_threshold)
+
+    {error_threshold, warning_threshold}
+  end
+
+  defp coverage_color(coverage, error_threshold, _warning_threshold)
+       when coverage < error_threshold,
+       do: :red
+
+  defp coverage_color(coverage, _error_threshold, warning_threshold)
+       when coverage < warning_threshold,
+       do: :yellow
+
+  defp coverage_color(_coverage, _error_threshold, _warning_threshold), do: :green
 
   defp cover_compile_paths(project) do
     test_coverage = project.config[:test_coverage] || []
