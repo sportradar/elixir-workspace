@@ -357,6 +357,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     :cover.modules()
     |> Enum.sort()
     |> Enum.map(&calculate_module_coverage(&1, workspace))
+    |> Enum.filter(fn data -> data != nil end)
   end
 
   defp calculate_module_coverage(module, workspace) do
@@ -373,9 +374,24 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     case Path.type(path) do
       :relative ->
         project = Workspace.file_project(workspace, to_string(module_path))
-        {:ok, function_data} = :cover.analyze(module, :calls, :function)
-        {:ok, line_data} = :cover.analyze(module, :calls, :line)
-        {module, project.app, function_data, line_data}
+
+        case project do
+          nil ->
+            Mix.shell().info([
+              "    ",
+              :light_yellow,
+              inspect(module),
+              :reset,
+              " could not find associated project, ignoring from coverage report"
+            ])
+
+            nil
+
+          _other ->
+            {:ok, function_data} = :cover.analyze(module, :calls, :function)
+            {:ok, line_data} = :cover.analyze(module, :calls, :line)
+            {module, project.app, function_data, line_data}
+        end
 
       # ignore non relative paths to the workspace
       _other ->
