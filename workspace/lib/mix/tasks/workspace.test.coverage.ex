@@ -154,36 +154,41 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
       |> calculate_coverage()
       |> List.flatten()
 
-    workspace.projects
-    |> Workspace.Cli.filter_projects(opts)
-    |> Enum.filter(fn project -> !project.skip end)
-    |> Enum.each(fn project ->
-      {coverage, module_stats} =
-        Workspace.Coverage.project_coverage_stats(coverage_stats, project)
+    project_statuses =
+      workspace.projects
+      |> Workspace.Cli.filter_projects(opts)
+      |> Enum.filter(fn project -> !project.skip end)
+      |> Enum.reduce([], fn project, acc ->
+        {coverage, module_stats} =
+          Workspace.Coverage.project_coverage_stats(coverage_stats, project)
 
-      {error_threshold, warning_threshold} =
-        project_coverage_thresholds(project.config[:test_coverage])
+        {error_threshold, warning_threshold} =
+          project_coverage_thresholds(project.config[:test_coverage])
 
-      Cli.log(
-        inspect(project.app),
-        [
-          "total coverage ",
-          Cli.highlight(
-            [:io_lib.format("~.2f", [coverage]), "%"],
-            [:bright, coverage_color(coverage, error_threshold, warning_threshold)]
-          ),
-          " [threshold #{error_threshold}%]"
-        ],
-        section_style: :cyan
-      )
+        Cli.log(
+          inspect(project.app),
+          [
+            "total coverage ",
+            Cli.highlight(
+              [:io_lib.format("~.2f", [coverage]), "%"],
+              [:bright, coverage_color(coverage, error_threshold, warning_threshold)]
+            ),
+            " [threshold #{error_threshold}%]"
+          ],
+          section_style: :cyan
+        )
 
-      print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
-    end)
+        print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
+
+        [coverage < error_threshold | acc]
+      end)
 
     {overall_coverage, _module_stats} = Workspace.Coverage.summarize_line_coverage(coverage_stats)
 
     {error_threshold, warning_threshold} =
       project_coverage_thresholds(workspace.config.test_coverage)
+
+    failed = Enum.any?([overall_coverage < error_threshold | project_statuses])
 
     Workspace.Cli.newline()
 
@@ -201,7 +206,9 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     exporters = Keyword.get(workspace.config.test_coverage, :exporters, [])
     export_coverage(coverage_stats, exporters)
 
-    # Workspace.Coverage.report(coverage_stats, :summary)
+    if failed do
+      Mix.raise("coverage for one or more projects below the required threshold")
+    end
   end
 
   defp export_coverage(_coverage_stats, []), do: :ok
