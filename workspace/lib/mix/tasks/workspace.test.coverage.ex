@@ -20,6 +20,34 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
       $ mix workspace.test.coverage
 
+  ## Invocation requirements
+
+  This task assumes that `mix test` has been executed with `--cover` and the
+  `:export` option under `:test_coverage` set. It is advised to configure a
+  workspace check that ensures that all projects have these options properly
+  set.
+
+  ```elixir
+  [
+    module: Workspace.Checks.ValidateConfig,
+    description: "all projects must have test coverage export option set",
+    opts: [
+      validate: fn config ->
+        coverage_opts = config[:test_coverage] || []
+        case coverage_opts[:export] do
+          nil -> {:error, "export option not defined under :test_coverage settings"}
+          _value -> {:ok, ""}
+        end
+      end
+    ]
+  ]
+  ```
+
+  In order to run the tests with `--cover` enabled for all workspace projects you
+  should run:
+
+      mix workspace.run -t test -- --cover
+
   ## Coverage thresholds
 
   The task supports two coverage thresholds, the error threshold and the warning
@@ -38,10 +66,46 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   not logged. You can force the logging of all modules by setting the `--verbose`
   flag.
 
+  > #### Workspace overall threshold {: .info}
+  >
+  > Similar to the individual project's coverage the overall test coverage is also
+  > calculated on the workspace level.
+  >
+  > In order to specify error and warning thresholds you need to set the corresponding
+  > options under the `:test_coverage` key of the workspace settings, for example:
+  >
+  > ```elixir
+  > test_coverage: [
+  >   threhsold: 70,
+  >   warning_threshold: 95
+  > ]
+  > ```
+  >
+  > Notice that the overall coverage will be reported only for the projects which are
+  > enabled on each invocation of the `mix workspace.test.coverage` task
+
   ## Exporting coverage
 
-  This task assumes that `mix test` has been executed with `--cover` and the
-  `:export` option under `:test_coverage` set. 
+  By default the coverage results are not exported but only logged. You can however specify
+  one or more exporters in your workspace `:test_coverage` config. Each exporter is
+  expected to by a function that accepts as input a list of tuples of the form:
+
+  ```elixir
+  {module :: module(), path :: binary(), function_data, line_data}
+  ```
+
+  processes the coverage data and generates a report in any format. Officially we support
+  only an `lcov` exporter. Sample configuration:
+
+  ```elixir
+  test_coverage: [
+    exporters: [
+      lcov: fn coverage_stats -> 
+        Workspace.Coverage.export_lcov(coverage_stats, [output_path: "artifacts/coverage"])
+      end
+    ]
+  ]
+  ```
 
   ## Command line options
 
