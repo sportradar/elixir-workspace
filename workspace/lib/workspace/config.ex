@@ -10,27 +10,32 @@ defmodule Workspace.Config do
   and any child project will not be added to the workspace. Must be relative
   with respect to the workspace root.
   * `:checks` - List of configured checks for the workspace.
+  * `:test_coverage` - Keyword list of workspace overall test coverage options
   """
 
   @type t :: %__MODULE__{
           ignore_projects: [module()],
           ignore_paths: [binary()],
-          checks: [keyword()]
+          checks: [keyword()],
+          test_coverage: keyword()
         }
 
   defstruct ignore_projects: [],
             ignore_paths: [],
-            checks: []
+            checks: [],
+            test_coverage: []
 
   @spec load(config :: keyword()) :: {:ok, t()} | {:error, binary()}
   def load(config) when is_list(config) do
-    with {:ok, _config} <- Keyword.validate(config, [:ignore_projects, :ignore_paths, :checks]),
+    with {:ok, _config} <-
+           Keyword.validate(config, [:ignore_projects, :ignore_paths, :checks, :test_coverage]),
          {:ok, checks} <- load_checks(Keyword.get(config, :checks, [])) do
       {:ok,
        %__MODULE__{
          ignore_projects: Keyword.get(config, :ignore_projects, []),
          ignore_paths: Keyword.get(config, :ignore_paths, []),
-         checks: checks
+         checks: checks,
+         test_coverage: Keyword.get(config, :test_coverage, [])
        }}
     else
       {:error, invalid} when is_list(invalid) ->

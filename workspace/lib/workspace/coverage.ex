@@ -4,7 +4,7 @@ defmodule Workspace.Coverage do
 
   def project_coverage_stats(coverage, project) do
     # coverage per project's module
-    project_line_stats =
+    module_line_stats =
       coverage
       |> Enum.filter(fn {module, app, _function_data, line_data} -> app == project.app end)
       |> Enum.map(fn {module, _app, _function_data, line_data} ->
@@ -14,9 +14,9 @@ defmodule Workspace.Coverage do
       end)
 
     # overall coverage
-    project_coverage = coverage_percentage(project_line_stats)
+    project_coverage = coverage_percentage(module_line_stats)
 
-    {project_coverage, project_line_stats}
+    {project_coverage, module_line_stats}
   end
 
   def report(coverage, :summary) do
@@ -33,7 +33,7 @@ defmodule Workspace.Coverage do
     Mix.shell().info(["Coverage ", format_number(percentage, 10)])
   end
 
-  def report(coverage, :lcov) do
+  def export_lcov(coverage, opts \\ []) do
     lcov =
       coverage
       |> Enum.map(fn {module, _app, function_data, line_data} ->
@@ -57,7 +57,21 @@ defmodule Workspace.Coverage do
       end)
 
     # TODO: set the file from cli args
-    File.write!("coverage.lcov", lcov, [:write])
+    filename = opts[:filename] || "coverage.lcov"
+    output_path = opts[:output_path] || "cover"
+
+    output_path = Path.join(output_path, filename) |> Path.expand()
+
+    Mix.shell().info([
+      "    ",
+      "saving lcov report to ",
+      :light_yellow,
+      output_path,
+      :reset
+    ])
+
+    File.mkdir_p!(Path.dirname(output_path))
+    File.write!(output_path, lcov, [:write])
   end
 
   defp coverage_percentage(line_stats) do

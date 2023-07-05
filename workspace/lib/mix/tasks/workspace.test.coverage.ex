@@ -83,7 +83,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     end)
 
     Cli.newline()
-    Cli.log("generating coverage report")
+    Cli.log("analysing coverage data")
 
     coverage_stats =
       workspace
@@ -115,7 +115,20 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
       print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
     end)
 
-    Workspace.Coverage.report(coverage_stats, :summary)
+    exporters = Keyword.get(workspace.config.test_coverage, :exporters, [])
+    export_coverage(coverage_stats, exporters)
+    # Workspace.Coverage.report(coverage_stats, :summary)
+  end
+
+  defp export_coverage(_coverage_stats, []), do: :ok
+
+  defp export_coverage(coverage_stats, exporters) do
+    Cli.newline()
+    Cli.log("exporting coverage data")
+
+    Enum.each(exporters, fn {_name, exporter} ->
+      exporter.(coverage_stats)
+    end)
   end
 
   defp print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts) do
