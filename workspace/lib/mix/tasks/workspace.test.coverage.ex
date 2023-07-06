@@ -55,7 +55,28 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   The error threshold can be configured by setting the `:threshold` option under
   `:test_coverage` on the project's config. If not set it defaults to `90%`. If
-  any project has a coverage below the error threshold then the command will fail.
+  any project has a coverage below the error threshold then **the command will fail**.
+
+  > #### Allowing project failures {: .tip}
+  >
+  > When restructuring a large codebase some extracted projects will not have the
+  > desired coverage. Instead of setting a very low threshold or adding tests
+  > directly, you can explicitely allow these projects to fail. In order to do this
+  > you have to set the `:allow_failure` flag of the `:test_coverage` settings. For
+  > example:
+  >
+  > ```elixir
+  > test_coverage: [
+  >   allow_failure: [:project_a, :project_b]
+  >   ...
+  > ]
+  > ```
+  >
+  > In this case the error messages will be normally printed, but the exit code of
+  > the command will not be affected.
+  >
+  > Notice that this does not affect the output and exit code `mix test --cover` if
+  > executed directly in the project.
 
   Warning threshold can be configured by setting the `:warning_threshold` option. If
   not set it defaults to `error_threshold + (100 - error_threshold)/2`. All project
@@ -165,13 +186,22 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
         {error_threshold, warning_threshold} =
           project_coverage_thresholds(project.config[:test_coverage])
 
+        status =
+          coverage_status(
+            project.app,
+            coverage,
+            error_threshold,
+            warning_threshold,
+            workspace.config.test_coverage[:allow_failure] || []
+          )
+
         Cli.log(
           inspect(project.app),
           [
             "total coverage ",
             Cli.highlight(
               [:io_lib.format("~.2f", [coverage]), "%"],
-              [:bright, coverage_color(coverage, error_threshold, warning_threshold)]
+              [:bright, coverage_color(status)]
             ),
             " [threshold #{error_threshold}%]"
           ],
@@ -180,7 +210,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
         print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
 
-        [coverage < error_threshold | acc]
+        [status | acc]
       end)
 
     {overall_coverage, _module_stats} = Workspace.Coverage.summarize_line_coverage(coverage_stats)
@@ -188,7 +218,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     {error_threshold, warning_threshold} =
       project_coverage_thresholds(workspace.config.test_coverage)
 
-    failed = Enum.any?([overall_coverage < error_threshold | project_statuses])
+    status = coverage_status(:workspace, overall_coverage, error_threshold, warning_threshold, [])
+    failed = Enum.any?([status | project_statuses], fn status -> status == :error end)
 
     Workspace.Cli.newline()
 
@@ -198,7 +229,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
       :reset,
       Cli.highlight(
         [:io_lib.format("~.2f", [overall_coverage]), "%"],
-        [:bright, coverage_color(overall_coverage, error_threshold, warning_threshold)]
+        [:bright, coverage_color(status)]
       ),
       " [threshold #{error_threshold}%]"
     ])
@@ -208,6 +239,22 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     if failed do
       Mix.raise("coverage for one or more projects below the required threshold")
+    end
+  end
+
+  defp coverage_status(project, coverage, error_thresold, warning_threshold, allow_failure) do
+    cond do
+      coverage < error_thresold and project in allow_failure ->
+        :error_ignore
+
+      coverage < error_thresold ->
+        :error
+
+      coverage < warning_threshold ->
+        :warn
+
+      true ->
+        :ok
     end
   end
 
@@ -258,15 +305,20 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     {error_threshold, warning_threshold}
   end
 
+  defp coverage_color(:error), do: :red
+  defp coverage_color(:error_ignore), do: :magenta
+  defp coverage_color(:warn), do: :yellow
+  defp coverage_color(:ok), do: :green
+
   defp coverage_color(coverage, error_threshold, _warning_threshold)
        when coverage < error_threshold,
-       do: :red
+       do: coverage_color(:error)
 
   defp coverage_color(coverage, _error_threshold, warning_threshold)
        when coverage < warning_threshold,
-       do: :yellow
+       do: coverage_color(:warn)
 
-  defp coverage_color(_coverage, _error_threshold, _warning_threshold), do: :green
+  defp coverage_color(_coverage, _error_threshold, _warning_threshold), do: coverage_color(:ok)
 
   defp cover_compile_paths(project) do
     test_coverage = project.config[:test_coverage] || []
