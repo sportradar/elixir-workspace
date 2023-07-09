@@ -60,12 +60,7 @@ defmodule Workspace.Checks.ValidateConfig do
 
   @impl Workspace.Check
   def format_result(%Workspace.Check.Result{
-        status: status,
         meta: meta
-      }) do
-    case status do
-      :skip -> []
-      _other -> [meta[:message]]
-    end
-  end
+      }),
+      do: meta[:message]
 end

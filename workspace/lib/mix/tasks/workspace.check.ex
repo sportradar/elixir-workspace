@@ -83,15 +83,13 @@ defmodule Mix.Tasks.Workspace.Check do
   defp print_result(result) do
     path = Workspace.Utils.relative_path_to(result.project.path, File.cwd!())
 
-    message = [
-      Cli.highlight(":#{result.project.app}", :cyan),
-      check_message(result),
-      maybe_mix_project(result.status, path)
-    ]
-
     Cli.log(
       status_text(result.status),
-      message,
+      [
+        Cli.highlight(":#{result.project.app}", :cyan),
+        check_message(result),
+        maybe_mix_project(result.status, path)
+      ],
       prefix: "    ",
       separator: "",
       section_style: status_color(result.status)
@@ -119,15 +117,16 @@ defmodule Mix.Tasks.Workspace.Check do
   defp status_text(:skip), do: "SKIP  "
   defp status_text(:warn), do: "WARN  "
 
-  defp check_message(result) do
-    result.module.format_result(result)
-    |> maybe_enlist()
-  end
+  defp check_message(%Workspace.Check.Result{status: :skip}), do: " - check skipped"
 
-  defp maybe_enlist([]), do: []
-  defp maybe_enlist(""), do: ""
-  defp maybe_enlist(message) when is_binary(message), do: maybe_enlist([message])
-  defp maybe_enlist(message) when is_list(message), do: [" - " | message]
+  defp check_message(result) do
+    case result.module.format_result(result) do
+      [] -> []
+      "" -> []
+      message when is_binary(message) -> [" - ", message]
+      message when is_list(message) -> [" - " | message]
+    end
+  end
 
   defp maybe_mix_project(:error, path), do: Cli.highlight([" ", path], [:reset, :faint])
   defp maybe_mix_project(_other, _path), do: []

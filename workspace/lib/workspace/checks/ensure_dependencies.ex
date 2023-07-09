@@ -65,8 +65,4 @@ defmodule Workspace.Checks.EnsureDependencies do
   def format_result(%Workspace.Check.Result{status: :ok}) do
     ["all required dependencies are present"]
   end
-
-  def format_result(%Workspace.Check.Result{status: :skip}) do
-    []
-  end
 end

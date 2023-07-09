@@ -98,8 +98,4 @@ defmodule Workspace.Checks.DependenciesVersion do
   def format_result(%Workspace.Check.Result{status: :ok}) do
     ["all dependencies versions match the expected ones"]
   end
-
-  def format_result(%Workspace.Check.Result{status: :skip}) do
-    []
-  end
 end
