@@ -134,7 +134,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   """
   use Mix.Task
 
-  alias Workspace.Cli
+  import Workspace.Cli
 
   @impl true
   def run(args) do
@@ -161,14 +161,14 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     {:ok, string_io} = StringIO.open("")
     Process.group_leader(pid, string_io)
 
-    Cli.log([:bright, "importing cover results"])
+    log([:bright, "importing cover results"])
 
     Enum.each(paths, fn {app, cover_paths, _compile_paths} ->
       import_cover_results(app, cover_paths, workspace_path)
     end)
 
-    Cli.newline()
-    Cli.log([:bright, "analysing coverage data"])
+    newline()
+    log([:bright, "analysing coverage data"])
 
     coverage_stats =
       workspace
@@ -195,18 +195,15 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
             workspace.config.test_coverage[:allow_failure] || []
           )
 
-        Cli.log(
-          inspect(project.app),
-          [
-            "total coverage ",
-            Cli.highlight(
-              [:io_lib.format("~.2f", [coverage]), "%"],
-              [:bright, coverage_color(status)]
-            ),
-            " [threshold #{error_threshold}%]"
-          ],
-          section_style: :cyan
-        )
+        log([
+          hl(inspect(project.app), :code),
+          " - total coverage ",
+          highlight(
+            [:io_lib.format("~.2f", [coverage]), "%"],
+            [:bright, status_color(status)]
+          ),
+          " [threshold #{error_threshold}%]"
+        ])
 
         print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
 
@@ -221,15 +218,15 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     status = coverage_status(:workspace, overall_coverage, error_threshold, warning_threshold, [])
     failed = Enum.any?([status | project_statuses], fn status -> status == :error end)
 
-    Workspace.Cli.newline()
+    newline()
 
-    Workspace.Cli.log([
+    log([
       :bright,
       "workspace coverage ",
       :reset,
-      Cli.highlight(
+      highlight(
         [:io_lib.format("~.2f", [overall_coverage]), "%"],
-        [:bright, coverage_color(status)]
+        [:bright, status_color(status)]
       ),
       " [threshold #{error_threshold}%]"
     ])
@@ -261,8 +258,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   defp export_coverage(_coverage_stats, []), do: :ok
 
   defp export_coverage(coverage_stats, exporters) do
-    Cli.newline()
-    Cli.log([:bright, "exporting coverage data"])
+    newline()
+    log([:bright, "exporting coverage data"])
 
     Enum.each(exporters, fn {_name, exporter} ->
       exporter.(coverage_stats)
@@ -305,20 +302,15 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     {error_threshold, warning_threshold}
   end
 
-  defp coverage_color(:error), do: :red
-  defp coverage_color(:error_ignore), do: :magenta
-  defp coverage_color(:warn), do: :yellow
-  defp coverage_color(:ok), do: :green
-
   defp coverage_color(coverage, error_threshold, _warning_threshold)
        when coverage < error_threshold,
-       do: coverage_color(:error)
+       do: status_color(:error)
 
   defp coverage_color(coverage, _error_threshold, warning_threshold)
        when coverage < warning_threshold,
-       do: coverage_color(:warn)
+       do: status_color(:warn)
 
-  defp coverage_color(_coverage, _error_threshold, _warning_threshold), do: coverage_color(:ok)
+  defp coverage_color(_coverage, _error_threshold, _warning_threshold), do: status_color(:ok)
 
   defp cover_compile_paths(project) do
     test_coverage = project.config[:test_coverage] || []
@@ -391,11 +383,11 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
       entries ->
         for entry <- entries, path = Workspace.Utils.relative_path_to(entry, workspace_path) do
-          Cli.log(
+          log(
             inspect(app),
             [
               "importing cover results from ",
-              Cli.highlight(path, [:light_yellow])
+              highlight(path, [:light_yellow])
             ],
             section_style: :cyan
           )

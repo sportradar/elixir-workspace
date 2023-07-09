@@ -70,6 +70,14 @@ defmodule Workspace.Cli do
     ])
   end
 
+  def status_color(:error), do: :red
+  def status_color(:error_ignore), do: :magenta
+  def status_color(:ok), do: :green
+  def status_color(:skip), do: :white
+  def status_color(:warn), do: :yellow
+
+  def hl(text, :code), do: highlight(text, :light_cyan)
+
   @doc """
   Highlights the given `text` with the given ansi codes
 

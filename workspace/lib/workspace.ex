@@ -87,7 +87,7 @@ defmodule Workspace do
   end
 
   def file_project(workspace, path) do
-    Enum.reduce_while(workspace.projects, nil, fn project, acc ->
+    Enum.reduce_while(workspace.projects, nil, fn project, _acc ->
       case String.starts_with?(path, project.path) do
         true -> {:halt, project}
         false -> {:cont, nil}

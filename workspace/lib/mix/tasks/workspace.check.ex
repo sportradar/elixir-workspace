@@ -12,7 +12,7 @@ defmodule Mix.Tasks.Workspace.Check do
 
   use Mix.Task
 
-  alias Workspace.Cli
+  import Workspace.Cli
 
   def run(argv) do
     %{parsed: opts, args: _args, extra: _extra} = CliOpts.parse!(argv, @options_schema)
@@ -26,8 +26,8 @@ defmodule Mix.Tasks.Workspace.Check do
 
     workspace = Workspace.new(workspace_path, config)
 
-    Cli.log("running #{length(config.checks)} workspace checks on the workspace")
-    Cli.newline()
+    log("running #{length(config.checks)} workspace checks on the workspace")
+    newline()
 
     config.checks
     |> Enum.with_index(fn check, index -> Keyword.put(check, :index, index) end)
@@ -57,7 +57,7 @@ defmodule Mix.Tasks.Workspace.Check do
 
     display_index = String.pad_leading("#{index}", 3, "0")
 
-    Cli.log("C#{display_index}", check[:description],
+    log("C#{display_index}", check[:description],
       section_style: [:bright, status_color(status)],
       style: :bright
     )
@@ -83,10 +83,10 @@ defmodule Mix.Tasks.Workspace.Check do
   defp print_result(result) do
     path = Workspace.Utils.relative_path_to(result.project.path, File.cwd!())
 
-    Cli.log(
+    log(
       status_text(result.status),
       [
-        Cli.highlight(":#{result.project.app}", :cyan),
+        hl(":#{result.project.app}", :code),
         check_message(result),
         maybe_mix_project(result.status, path)
       ],
@@ -107,11 +107,6 @@ defmodule Mix.Tasks.Workspace.Check do
     end
   end
 
-  defp status_color(:error), do: :red
-  defp status_color(:ok), do: :green
-  defp status_color(:skip), do: :white
-  defp status_color(:warn), do: :yellow
-
   defp status_text(:error), do: "ERROR "
   defp status_text(:ok), do: "OK    "
   defp status_text(:skip), do: "SKIP  "
@@ -128,7 +123,7 @@ defmodule Mix.Tasks.Workspace.Check do
     end
   end
 
-  defp maybe_mix_project(:error, path), do: Cli.highlight([" ", path], [:reset, :faint])
+  defp maybe_mix_project(:error, path), do: highlight([" ", path], [:reset, :faint])
   defp maybe_mix_project(_other, _path), do: []
 
   defp maybe_set_exit_status(check_results) do
