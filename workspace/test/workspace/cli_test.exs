@@ -1,6 +1,8 @@
 defmodule Workspace.CliTest do
   use ExUnit.Case
   alias Workspace.Cli
+  import ExUnit.CaptureIO
+
   doctest Workspace.Cli
 
   @valid_options [
@@ -47,5 +49,41 @@ defmodule Workspace.CliTest do
       assert options[:verbose] == extra[:verbose]
       assert options[:another_option] == extra[:another_option]
     end
+  end
+
+  describe "log/1" do
+    test "default format" do
+      assert capture_io(fn ->
+               Cli.log("a message")
+             end) =~ format_ansi(["==>", :reset, " ", "a message", :reset])
+    end
+  end
+
+  describe "log/3" do
+    test "with default options" do
+      assert capture_io(fn ->
+               Cli.log("section", "a message")
+             end) =~ format_ansi(["==> ", "section", :reset, " - ", "a message", :reset])
+    end
+
+    test "with options set" do
+      assert capture_io(fn ->
+               Cli.log("section", "a message",
+                 prefix: "~>",
+                 section_style: :red,
+                 style: :bright,
+                 separator: ":"
+               )
+             end) =~
+               format_ansi(["~>", :red, "section", :reset, ":", :bright, "a message", :reset])
+    end
+  end
+
+  test "newline/0" do
+    assert capture_io(fn -> Cli.newline() end) == "\n"
+  end
+
+  defp format_ansi(message) do
+    IO.ANSI.format(message) |> :erlang.iolist_to_binary()
   end
 end
