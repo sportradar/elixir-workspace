@@ -127,10 +127,10 @@ defmodule Workspace.Project do
   def relative_to_workspace(%Project{path: path, workspace_path: workspace_path}),
     do: Workspace.Utils.relative_path_to(path, workspace_path)
 
-  # returns an "app name" for the given mix.exs file, it is the 
+  # returns an "app name" for the given mix.exs file, it is the
   # folder name containing the project. We need a conistent app name
   # for each mix.exs in order to avoid warnings for module redefinitions
-  # when Mix.project.in_project is used. 
+  # when Mix.project.in_project is used.
   #
   # Notice that in some edge cases if multiple projects in your workspace
   # have the same path this may cause incorrect behaviour. But you can

@@ -1,6 +1,7 @@
 defmodule Mix.Tasks.Workspace.CheckTest do
   use ExUnit.Case, async: false
   import ExUnit.CaptureIO
+  alias Mix.Tasks.Workspace.Check, as: CheckTask
 
   # TODO: this is used in many places, add helper function to get
   # fixtures path and project
@@ -16,7 +17,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
 
   test "raises if no checks are defined" do
     assert_raise Mix.Error, ~r/No checkers config found/, fn ->
-      Mix.Tasks.Workspace.Check.run(["--workspace-path", @sample_workspace_path])
+      CheckTask.run(["--workspace-path", @sample_workspace_path])
     end
   end
 
@@ -41,7 +42,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
         Mix.Error,
         ~r"mix workspace.check failed - errors detected in 1 checks",
         fn ->
-          Mix.Tasks.Workspace.Check.run([
+          CheckTask.run([
             "--workspace-path",
             @sample_workspace_path,
             "--config-path",

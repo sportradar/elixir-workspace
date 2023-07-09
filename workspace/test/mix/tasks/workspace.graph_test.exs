@@ -1,6 +1,7 @@
 defmodule Mix.Tasks.Workspace.GraphTest do
   use ExUnit.Case
   import ExUnit.CaptureIO
+  alias Mix.Tasks.Workspace.Graph, as: GraphTask
 
   @sample_workspace_path "test/fixtures/sample_workspace"
 
@@ -22,7 +23,7 @@ defmodule Mix.Tasks.Workspace.GraphTest do
     """
 
     assert capture_io(fn ->
-             Mix.Tasks.Workspace.Graph.run(["--workspace-path", @sample_workspace_path])
+             GraphTask.run(["--workspace-path", @sample_workspace_path])
            end) == expected
   end
 end

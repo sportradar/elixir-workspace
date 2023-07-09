@@ -135,7 +135,7 @@ defmodule Mix.Tasks.Workspace.Run do
   end
 
   # elixir tasks are not run in a TTY and will by default not print ANSI
-  # characters, We explicitely enable ANSI 
+  # characters, We explicitely enable ANSI
   # kudos to `ex_check`: https://github.com/karolsluszniak/ex_check
   defp enable_ansi(["mix" | args]) do
     erl_config = Application.app_dir(:workspace, ~w[priv enable_ansi.config])

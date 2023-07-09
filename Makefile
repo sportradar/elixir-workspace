@@ -14,7 +14,7 @@ format: ## Format the workspace
 lint: ## Run linters suite on project
 	mix workspace.check
 	mix workspace.run -t format -- --check-formatted
-	mix workspace.run -t credo -- --strict
+	mix credo
 	mix workspace.run -t doctor -- --failed
 
 ##@ Testing

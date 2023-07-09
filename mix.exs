@@ -31,10 +31,15 @@ defmodule Workspace.MixWorkspace do
   end
 
   defp aliases do
+    credo_config = Path.join(File.cwd!(), ".credo.exs")
+
     [
       "workspace.format": [
         "format",
         "workspace.run -t format"
+      ],
+      credo: [
+        "workspace.run -t credo -- --config-file #{credo_config} --strict"
       ],
       # "deps.get": ["workspace.run -t deps.get"],
       test: ["workspace.run -t test"]
