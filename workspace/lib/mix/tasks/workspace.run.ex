@@ -39,7 +39,7 @@ defmodule Mix.Tasks.Workspace.Run do
     workspace = Workspace.new(workspace_path, config)
 
     workspace.projects
-    |> Workspace.Cli.filter_projects(opts)
+    |> Workspace.filter_projects(opts)
     |> Enum.map(fn project -> run_in_project(project, opts, task_args) end)
     |> raise_if_any_task_failed()
   end

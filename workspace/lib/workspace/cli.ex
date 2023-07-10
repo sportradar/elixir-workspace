@@ -14,18 +14,6 @@ defmodule Workspace.Cli do
     |> Keyword.merge(extra)
   end
 
-  def filter_projects(projects, opts) do
-    ignored = Enum.map(opts[:ignore], &String.to_atom/1)
-    selected = Enum.map(opts[:project], &String.to_atom/1)
-
-    Enum.map(projects, fn project ->
-      Map.put(project, :skip, skippable?(project, selected, ignored))
-    end)
-  end
-
-  defp skippable?(%{app: app}, [], ignored), do: app in ignored
-  defp skippable?(%{app: app}, selected, ignored), do: app not in selected || app in ignored
-
   def newline, do: Mix.shell().info("")
   def log(message), do: log("", message, prefix: "==>", separator: " ")
 

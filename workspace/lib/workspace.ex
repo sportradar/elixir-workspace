@@ -210,4 +210,36 @@ defmodule Workspace do
       false -> Path.join(path, "mix.exs")
     end
   end
+
+  @doc """
+  Filter a set of `projects` based on the given `opts`
+
+  It will iterate over all projects and wil set the `:skip` to `true` if the
+  project is considered skippable. The decision is made based on the values
+  of the following option keys:
+
+  * `:ignore` - a list of projects to be ignored. This has the highest
+  priority, e.g. if the project is in the `:ignore` list it is always skipped.
+  * `:project` - a list of project to consider, if set all projects that are
+  not included in the list are considered skippable.
+  """
+  @spec filter_projects(projects :: [Workspace.Project.t()], opts :: keyword()) :: [
+          Workspace.Project.t()
+        ]
+  def filter_projects(projects, opts) do
+    ignored = Enum.map(opts[:ignore] || [], &String.to_atom/1)
+    selected = Enum.map(opts[:project] || [], &String.to_atom/1)
+
+    Enum.map(projects, fn project ->
+      Map.put(project, :skip, skippable?(project, selected, ignored))
+    end)
+  end
+
+  defp skippable?(%Workspace.Project{app: app}, selected, ignored) do
+    cond do
+      app in ignored -> true
+      selected != [] and app not in selected -> true
+      true -> false
+    end
+  end
 end

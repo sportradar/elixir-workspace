@@ -149,7 +149,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     paths =
       workspace.projects
-      |> Workspace.Cli.filter_projects(opts)
+      |> Workspace.filter_projects(opts)
       |> Enum.filter(fn project -> !project.skip end)
       |> Enum.map(&cover_compile_paths/1)
 
@@ -177,7 +177,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     project_statuses =
       workspace.projects
-      |> Workspace.Cli.filter_projects(opts)
+      |> Workspace.filter_projects(opts)
       |> Enum.filter(fn project -> !project.skip end)
       |> Enum.reduce([], fn project, acc ->
         {coverage, module_stats} =
