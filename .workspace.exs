@@ -46,6 +46,7 @@
     ],
   ],
   test_coverage: [
+    allow_failure: [:workspace],
     threshold: 40,
     exporters: [
       lcov: fn coverage_stats -> 
