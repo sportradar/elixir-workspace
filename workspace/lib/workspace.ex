@@ -214,18 +214,31 @@ defmodule Workspace do
   @doc """
   Filter a set of `projects` based on the given `opts`
 
+  The input can be either a list of `Workspace.Project` or a `Workspace`. In
+  the latter case the workspace projects will be updated with the filtered
+  ones.
+
   It will iterate over all projects and wil set the `:skip` to `true` if the
-  project is considered skippable. The decision is made based on the values
-  of the following option keys:
+  project is considered skippable. The decision is made based on the passed
+  options.
+
+  ## Options
 
   * `:ignore` - a list of projects to be ignored. This has the highest
   priority, e.g. if the project is in the `:ignore` list it is always skipped.
   * `:project` - a list of project to consider, if set all projects that are
   not included in the list are considered skippable.
   """
-  @spec filter_projects(projects :: [Workspace.Project.t()], opts :: keyword()) :: [
-          Workspace.Project.t()
-        ]
+  @spec filter_projects(projects :: [Workspace.Project.t()] | Workspace.t(), opts :: keyword()) ::
+          [
+            Workspace.Project.t()
+          ]
+  def filter_projects(%Workspace{} = workspace, opts) do
+    projects = filter_projects(workspace.projects, opts)
+
+    %Workspace{workspace | projects: projects}
+  end
+
   def filter_projects(projects, opts) do
     ignored = Enum.map(opts[:ignore] || [], &maybe_to_atom/1)
     selected = Enum.map(opts[:project] || [], &maybe_to_atom/1)
