@@ -25,9 +25,9 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
     expected = [
       "expected ",
       :light_cyan,
-      ":a_path ",
+      ":a_path",
       :reset,
-      "to be ",
+      " to be ",
       :light_cyan,
       "../../artifacts/test",
       :reset,
@@ -50,15 +50,40 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
     expected = [
       "expected ",
       :light_cyan,
-      ":a_path ",
+      ":a_path",
       :reset,
-      "to be ",
+      " to be ",
       :light_cyan,
       "../../artifacts/test",
       :reset,
       ", got: ",
       :light_cyan,
       "foo/bar"
+    ]
+
+    assert_formatted_result(results, :foo, expected)
+  end
+
+  test "error if config variable is not a proper path", %{check: check} do
+    project = project_fixture(app: :foo, a_path: [1, 2, 3])
+    workspace = workspace_fixture([project])
+
+    results = ValidateConfigPath.check(workspace, check)
+
+    assert_check_status(results, :foo, :error)
+
+    expected = [
+      "expected ",
+      :light_cyan,
+      ":a_path",
+      :reset,
+      " to be ",
+      :light_cyan,
+      "../../artifacts/test",
+      :reset,
+      ", got: ",
+      :light_cyan,
+      "[1, 2, 3]"
     ]
 
     assert_formatted_result(results, :foo, expected)
@@ -74,11 +99,74 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
 
     expected = [
       :light_cyan,
-      ":a_path ",
+      ":a_path",
       :reset,
-      "is set to ",
+      " is set to ",
       :light_cyan,
       "../../artifacts/test"
+    ]
+
+    assert_formatted_result(results, :foo, expected)
+  end
+
+  test "works with nested keys" do
+    {:ok, check} =
+      Workspace.Check.validate(
+        module: ValidateConfigPath,
+        opts: [
+          config_attribute: [:deep, :config, :path],
+          expected_path: "artifacts/test"
+        ]
+      )
+
+    project = project_fixture(app: :foo, deep: [config: [path: "../../artifacts/test"]])
+    workspace = workspace_fixture([project])
+
+    results = ValidateConfigPath.check(workspace, check)
+
+    assert_check_status(results, :foo, :ok)
+
+    expected = [
+      :light_cyan,
+      "[:deep, :config, :path]",
+      :reset,
+      " is set to ",
+      :light_cyan,
+      "../../artifacts/test"
+    ]
+
+    assert_formatted_result(results, :foo, expected)
+  end
+
+  test "error if not proper nested config" do
+    {:ok, check} =
+      Workspace.Check.validate(
+        module: ValidateConfigPath,
+        opts: [
+          config_attribute: [:deep, :config, :path],
+          expected_path: "artifacts/test"
+        ]
+      )
+
+    project = project_fixture(app: :foo, deep: 12)
+    workspace = workspace_fixture([project])
+
+    results = ValidateConfigPath.check(workspace, check)
+
+    assert_check_status(results, :foo, :error)
+
+    expected = [
+      "expected ",
+      :light_cyan,
+      "[:deep, :config, :path]",
+      :reset,
+      " to be ",
+      :light_cyan,
+      "../../artifacts/test",
+      :reset,
+      ", got: ",
+      :light_cyan,
+      "nil"
     ]
 
     assert_formatted_result(results, :foo, expected)

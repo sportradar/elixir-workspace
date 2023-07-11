@@ -12,7 +12,8 @@ defmodule Workspace.Checks.ValidateConfigPath do
 
   It expects the following configuration parameters:
 
-  * `:config_attribute` - the configuration attribute to check
+  * `:config_attribute` - the configuration attribute to check, this can
+  either be a single atom or a list of atoms for nested config options.
   * `:expected_path` - relative path with respect to the workspace root
 
   In order to configure this checker add the following, under `checkers`,
@@ -38,6 +39,37 @@ defmodule Workspace.Checks.ValidateConfigPath do
     end)
   end
 
+  defp check_config_path(project, config_attribute, expected_path) when is_atom(config_attribute),
+    do: check_config_path(project, [config_attribute], expected_path)
+
+  defp check_config_path(project, config_attribute, expected_path)
+       when is_list(config_attribute) do
+    expected_path = make_absolute(project.workspace_path, expected_path)
+    configured_path = make_absolute(project.path, safe_get(project.config, config_attribute))
+
+    if configured_path == expected_path do
+      {:ok, check_metadata(expected_path, configured_path)}
+    else
+      {:error, check_metadata(expected_path, configured_path)}
+    end
+  end
+
+  defp safe_get(nil, _), do: nil
+  defp safe_get(value, []), do: value
+  defp safe_get(container, _) when not is_list(container), do: nil
+
+  defp safe_get(container, [next_key | keys]) when is_list(container),
+    do: safe_get(Keyword.get(container, next_key, nil), keys)
+
+  defp make_absolute(_base_path, nil), do: nil
+  defp make_absolute(_base_path, path) when not is_binary(path), do: inspect(path)
+
+  defp make_absolute(base_path, relative) do
+    base_path
+    |> Path.join(relative)
+    |> Path.expand()
+  end
+
   @impl Workspace.Check
   def format_result(%Workspace.Check.Result{
         status: :error,
@@ -58,9 +90,9 @@ defmodule Workspace.Checks.ValidateConfigPath do
     [
       "expected ",
       :light_cyan,
-      ":#{attribute} ",
+      inspect(attribute),
       :reset,
-      "to be ",
+      " to be ",
       :light_cyan,
       "#{expected}",
       :reset,
@@ -81,31 +113,12 @@ defmodule Workspace.Checks.ValidateConfigPath do
 
     [
       :light_cyan,
-      ":#{attribute} ",
+      inspect(attribute),
       :reset,
-      "is set to ",
+      " is set to ",
       :light_cyan,
       "#{expected}"
     ]
-  end
-
-  defp check_config_path(project, config_attribute, expected_path) do
-    expected_path = make_absolute(project.workspace_path, expected_path)
-    configured_path = make_absolute(project.path, project.config[config_attribute])
-
-    if configured_path == expected_path do
-      {:ok, check_metadata(expected_path, configured_path)}
-    else
-      {:error, check_metadata(expected_path, configured_path)}
-    end
-  end
-
-  defp make_absolute(_base_path, nil), do: nil
-
-  defp make_absolute(base_path, relative) do
-    base_path
-    |> Path.join(relative)
-    |> Path.expand()
   end
 
   defp check_metadata(expected, configured) do
