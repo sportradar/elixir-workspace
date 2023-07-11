@@ -11,6 +11,7 @@ defmodule Workspace.MixProject do
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
       dialyzer: [plt_add_apps: [:mix]],
+      elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [
         export: "workspace",
         output: "../artifacts/cover"
@@ -36,4 +37,7 @@ defmodule Workspace.MixProject do
       {:doctor, "~> 0.21.0", [only: :dev, runtime: false]}
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
 end

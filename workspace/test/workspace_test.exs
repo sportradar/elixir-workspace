@@ -1,9 +1,19 @@
 defmodule WorkspaceTest do
   use ExUnit.Case
   import ExUnit.CaptureIO
+  import TestUtils
   doctest Workspace
 
   @sample_workspace_path "test/fixtures/sample_workspace"
+
+  setup do
+    project_a = project_fixture(app: :foo)
+    project_b = project_fixture(app: :bar)
+
+    workspace = workspace_fixture([project_a, project_b])
+
+    %{workspace: workspace}
+  end
 
   describe "config/1" do
     test "warning with invalid file" do
@@ -99,6 +109,33 @@ defmodule WorkspaceTest do
 
       assert Workspace.workspace?(workspace_config)
       refute Workspace.workspace?(project_config)
+    end
+  end
+
+  describe "filter_projects/2" do
+    test "if app in ignore skips the project", %{workspace: workspace} do
+      projects = Workspace.filter_projects(workspace.projects, ignore: ["bar"])
+
+      assert project_by_name(projects, :bar).skip
+      refute project_by_name(projects, :foo).skip
+    end
+
+    test "if app in selected it is not skipped - everything else is skipped", %{
+      workspace: workspace
+    } do
+      projects = Workspace.filter_projects(workspace.projects, project: ["bar"])
+
+      refute project_by_name(projects, :bar).skip
+      assert project_by_name(projects, :foo).skip
+    end
+
+    test "ignore has priority over project", %{
+      workspace: workspace
+    } do
+      projects = Workspace.filter_projects(workspace.projects, ignore: [:bar], project: [:bar])
+
+      assert project_by_name(projects, :bar).skip
+      assert project_by_name(projects, :foo).skip
     end
   end
 end

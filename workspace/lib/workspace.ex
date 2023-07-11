@@ -227,8 +227,8 @@ defmodule Workspace do
           Workspace.Project.t()
         ]
   def filter_projects(projects, opts) do
-    ignored = Enum.map(opts[:ignore] || [], &String.to_atom/1)
-    selected = Enum.map(opts[:project] || [], &String.to_atom/1)
+    ignored = Enum.map(opts[:ignore] || [], &maybe_to_atom/1)
+    selected = Enum.map(opts[:project] || [], &maybe_to_atom/1)
 
     Enum.map(projects, fn project ->
       Map.put(project, :skip, skippable?(project, selected, ignored))
@@ -242,4 +242,7 @@ defmodule Workspace do
       true -> false
     end
   end
+
+  defp maybe_to_atom(value) when is_atom(value), do: value
+  defp maybe_to_atom(value) when is_binary(value), do: String.to_atom(value)
 end
