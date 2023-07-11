@@ -12,7 +12,10 @@ defmodule Workspace.MixWorkspace do
       deps_path: "artifacts/deps",
       build_path: "artifacts/build",
       aliases: aliases(),
-      workspace: true
+      workspace: true,
+      preferred_cli_env: [
+        "workspace.test.coverage": :test
+      ]
     ]
   end
 

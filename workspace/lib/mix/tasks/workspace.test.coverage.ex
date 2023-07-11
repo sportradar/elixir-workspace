@@ -136,6 +136,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   import Workspace.Cli
 
+  @preferred_cli_env :test
+
   @impl true
   def run(args) do
     {:ok, opts} = CliOpts.parse(args, @options_schema)
@@ -321,6 +323,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
         project.app,
         project.path,
         fn _mixfile ->
+          Mix.env(:test)
           Mix.Project.compile_path()
         end
       )
