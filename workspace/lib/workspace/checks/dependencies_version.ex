@@ -11,6 +11,37 @@ defmodule Workspace.Checks.DependenciesVersion do
 
   * `:deps` - a list of expected dependencies tuples. 
 
+  ## Custom deps options
+
+  Except the standard deps options supported by mix you can also set the
+  following options which specify how the check will be applied on a
+  dependency level:
+
+  * `:no_options_check` - can either be a `boolean` or a list of atoms
+  corresponding to projects. If set to `false` only the version and not the
+  rest of the options will be checked. If set to a list the options will be
+  checked for all projects except of those in the list.
+
+  For example:
+
+  ```elixir
+  [
+    module: Workspace.Checks.EnsureDependencies,
+    opts: [
+      deps: [
+        # checks both version and options
+        {:ex_doc, "== 0.28.3", only: :dev, runtime: false}
+        # checks only version for all projects
+        {:ex_doc, "== 0.28.3", no_options_check: true}
+        # checks only version for :foo, both version and options
+        # for the other projects
+        {:ex_doc, "== 0.28.3", only: :dev, runtime: false, no_options_check: [:foo]}
+      ]
+    ]
+  ]
+  ```
+
+
   ## Example
 
   # TODO: fix it
@@ -26,19 +57,20 @@ defmodule Workspace.Checks.DependenciesVersion do
   ]
   ```
   """
-  # TODO: add a strict option for matching both options and version
   # TODO: handle path dependencies specially
-  # TODO: return multiple lines with detailed mismatch info if verbose is set
-  # TODO: sort keyword lists before checking
-  # TODO: deps_to_keyword -> sort keyword
   @behaviour Workspace.Check
+
+  @check_deps_keys [:no_options_check]
 
   @impl Workspace.Check
   def check(workspace, check) do
     expected_deps =
       Keyword.fetch!(check[:opts], :deps)
       |> parse_deps()
-      |> Enum.map(fn {dep, version, opts} -> {dep, {version, opts}} end)
+      |> Enum.map(fn {dep, {version, opts}} ->
+        {check_opts, opts} = Keyword.split(opts, @check_deps_keys)
+        {dep, {version, opts, check_opts}}
+      end)
 
     Workspace.Check.check_projects(workspace, check, fn project ->
       check_dependencies_versions(project, expected_deps)
@@ -50,14 +82,14 @@ defmodule Workspace.Checks.DependenciesVersion do
 
     mismatches =
       configured_deps
-      |> Enum.map(fn dep -> check_dependency_version(dep, expected_deps) end)
+      |> Enum.map(fn dep -> check_dependency_version(project.app, dep, expected_deps) end)
       |> Enum.filter(fn result ->
         case result do
-          {:error, _dep, _message} -> true
+          {:error, _dep} -> true
           :ok -> false
         end
       end)
-      |> Enum.map(fn {:error, dep, message} -> {dep, message} end)
+      |> Enum.map(fn {:error, dep} -> dep end)
 
     case mismatches do
       [] -> {:ok, check_metadata(mismatches, configured_deps, expected_deps)}
@@ -65,7 +97,11 @@ defmodule Workspace.Checks.DependenciesVersion do
     end
   end
 
-  defp parse_deps(deps), do: Enum.map(deps, &split_dep_tuple/1)
+  defp parse_deps(deps) do
+    deps
+    |> Enum.map(&split_dep_tuple/1)
+    |> Enum.map(fn {dep, version, opts} -> {dep, {version, Enum.sort(opts)}} end)
+  end
 
   defp split_dep_tuple(dep) do
     dep_name = elem(dep, 0)
@@ -83,19 +119,28 @@ defmodule Workspace.Checks.DependenciesVersion do
     end
   end
 
-  defp check_dependency_version({dep, version, options}, expected) do
+  defp check_dependency_version(app, {dep, {version, options}}, expected) do
     if Keyword.has_key?(expected, dep) do
-      {expected_version, expected_options} = expected[dep]
+      {expected_version, expected_options, check_opts} = expected[dep]
 
       cond do
+        # if we have a version mismatch it is an error
         expected_version != version ->
-          {:error, dep,
-           "#{inspect(dep)} - expected version: #{expected_version}, got: #{version}"}
+          {:error, dep}
 
+        # if no_options_check is set we are fine
+        check_opts[:no_options_check] == true ->
+          :ok
+
+        # if no_options_check is set for this project we are fine
+        app in Keyword.get(check_opts, :no_options_check, []) ->
+          :ok
+
+        # options must match if we haven't returned already
         expected_options != options ->
-          {:error, dep,
-           "#{inspect(dep)} - expected options: #{inspect(expected_options)}, got: #{inspect(options)}"}
+          {:error, dep}
 
+        # in any other case we have a match
         true ->
           :ok
       end
@@ -105,13 +150,10 @@ defmodule Workspace.Checks.DependenciesVersion do
   end
 
   defp check_metadata(mismatches, configured, expected) do
-    mismatched_deps = Enum.map(mismatches, fn {dep, _message} -> dep end)
-    configured = Enum.map(configured, fn {dep, version, opts} -> {dep, {version, opts}} end)
-
     [
-      mismatches: mismatched_deps,
-      configured: Keyword.take(configured, mismatched_deps),
-      expected: Keyword.take(expected, mismatched_deps)
+      mismatches: mismatches,
+      configured: Keyword.take(configured, mismatches),
+      expected: Keyword.take(expected, mismatches)
     ]
   end
 
@@ -132,7 +174,7 @@ defmodule Workspace.Checks.DependenciesVersion do
       |> Enum.map(fn dep ->
         [
           "\n",
-          "     ",
+          "    → ",
           :yellow,
           inspect(dep),
           :reset,
