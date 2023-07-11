@@ -136,6 +136,10 @@ defmodule Workspace.Check do
 
   defp applicable?(check, project) do
     cond do
+      # project is set to skip
+      project.skip ->
+        false
+
       # If the project is in ignore, ignore it
       project.app in check[:ignore] ->
         false

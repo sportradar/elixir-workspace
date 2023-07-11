@@ -1,5 +1,11 @@
 defmodule Mix.Tasks.Workspace.Check do
-  @options_schema Workspace.Cli.options([:workspace_path, :config_path, :verbose])
+  @options_schema Workspace.Cli.options([
+                    :workspace_path,
+                    :config_path,
+                    :verbose,
+                    :project,
+                    :ignore
+                  ])
 
   @shortdoc "Runs configured checkers on the current workspace"
 
@@ -24,7 +30,9 @@ defmodule Mix.Tasks.Workspace.Check do
 
     ensure_checks(config.checks)
 
-    workspace = Workspace.new(workspace_path, config)
+    workspace =
+      Workspace.new(workspace_path, config)
+      |> Workspace.filter_projects(opts)
 
     log("running #{length(config.checks)} workspace checks on the workspace")
     newline()

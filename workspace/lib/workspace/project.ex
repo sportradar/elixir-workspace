@@ -25,7 +25,8 @@ defmodule Workspace.Project do
             config: [],
             mix_path: nil,
             path: nil,
-            workspace_path: nil
+            workspace_path: nil,
+            skip: false
 
   @doc """
   Creates a new project for the given project path.
