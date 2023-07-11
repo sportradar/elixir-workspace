@@ -37,7 +37,8 @@ defmodule Workspace.Checks.EnsureDependencies do
   defp ensure_dependencies(project, deps) do
     configured_deps = Enum.map(project.config[:deps], &elem(&1, 0))
 
-    missing_deps = Enum.filter(deps, fn dep -> dep not in configured_deps end)
+    missing_deps =
+      Enum.filter(deps, fn dep -> dep != project.app and dep not in configured_deps end)
 
     case missing_deps do
       [] -> {:ok, check_metadata(missing_deps)}
