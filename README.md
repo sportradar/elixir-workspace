@@ -7,7 +7,6 @@
 - cli_opts handle invalid arguments and raise early
 - validate config check - support colored returned messages
 - validate config check - refactor error handling
-- add workspace.list command
 - workspace.list support json output
 - add a template library
 - support generators using template library

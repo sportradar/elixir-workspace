@@ -6,6 +6,7 @@ defmodule ProjectB.MixProject do
       app: :project_b,
       version: "0.1.0",
       elixir: "~> 1.14",
+      description: "a dummy project",
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
