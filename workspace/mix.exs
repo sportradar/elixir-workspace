@@ -14,7 +14,11 @@ defmodule Workspace.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [
         export: "workspace",
-        output: "../artifacts/cover"
+        output: "../artifacts/coverdata"
+      ],
+      docs: [
+        output: "../artifacts/docs/workspace",
+        formatters: ["html"]
       ]
     ]
   end

@@ -5,7 +5,7 @@ defmodule CliOpts.MixProject do
     [
       app: :cli_opts,
       version: "0.1.0",
-      elixir: "~> 1.14",
+      elixir: "~> 1.13",
       # build_path: "../_build",
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
@@ -13,7 +13,11 @@ defmodule CliOpts.MixProject do
       deps: deps(),
       test_coverage: [
         export: "cli_opts",
-        output: "../artifacts/cover"
+        output: "../artifacts/coverdata"
+      ],
+      docs: [
+        output: "../artifacts/docs/cli_opts",
+        formatters: ["html"]
       ]
     ]
   end
