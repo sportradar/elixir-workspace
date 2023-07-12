@@ -17,6 +17,12 @@ lint: ## Run linters suite on project
 	mix credo
 	mix workspace.run -t doctor -- --failed
 
+##@ Documentation
+
+.PHONY: docs
+docs: ## Generates docs for the complete workspace
+	mix workspace.run -t docs
+
 ##@ Testing
 
 .PHONY: coverage
