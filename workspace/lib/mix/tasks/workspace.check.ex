@@ -32,7 +32,7 @@ defmodule Mix.Tasks.Workspace.Check do
 
     workspace =
       Workspace.new(workspace_path, config)
-      |> Workspace.filter_projects(opts)
+      |> Workspace.filter_workspace(opts)
 
     log("running #{length(config.checks)} workspace checks on the workspace")
     newline()

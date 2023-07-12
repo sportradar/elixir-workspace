@@ -137,9 +137,11 @@ defmodule WorkspaceTest do
       assert project_by_name(projects, :bar).skip
       assert project_by_name(projects, :foo).skip
     end
+  end
 
-    test "with workspace as input", %{workspace: workspace} do
-      workspace = Workspace.filter_projects(workspace, ignore: [:bar])
+  describe "filter_workspace/2" do
+    test "filters and updates the given workspace", %{workspace: workspace} do
+      workspace = Workspace.filter_workspace(workspace, ignore: [:bar])
 
       assert project_by_name(workspace.projects, :bar).skip
       refute project_by_name(workspace.projects, :foo).skip
