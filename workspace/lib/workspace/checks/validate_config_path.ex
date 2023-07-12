@@ -14,7 +14,10 @@ defmodule Workspace.Checks.ValidateConfigPath do
 
   * `:config_attribute` - the configuration attribute to check, this can
   either be a single atom or a list of atoms for nested config options.
-  * `:expected_path` - relative path with respect to the workspace root
+  * `:expected_path` - relative path with respect to the workspace root. This
+  can either be a relative path with respect to workspace root or an
+  anonymous function taking as input a `Workspace.Project` and returning
+  a dynamic expected path.
 
   In order to configure this checker add the following, under `checkers`,
   in your `workspace.exs`:
@@ -44,6 +47,7 @@ defmodule Workspace.Checks.ValidateConfigPath do
 
   defp check_config_path(project, config_attribute, expected_path)
        when is_list(config_attribute) do
+    expected_path = maybe_evaluate(expected_path, project)
     expected_path = make_absolute(project.workspace_path, expected_path)
     configured_path = make_absolute(project.path, safe_get(project.config, config_attribute))
 
@@ -53,6 +57,11 @@ defmodule Workspace.Checks.ValidateConfigPath do
       {:error, check_metadata(expected_path, configured_path)}
     end
   end
+
+  defp maybe_evaluate(expected_path, project) when is_function(expected_path),
+    do: expected_path.(project)
+
+  defp maybe_evaluate(expected_path, _project) when is_binary(expected_path), do: expected_path
 
   defp safe_get(nil, _), do: nil
   defp safe_get(value, []), do: value
