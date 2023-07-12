@@ -1,7 +1,9 @@
 defmodule Mix.Tasks.Workspace.List do
   @options_schema Workspace.Cli.options([
                     :workspace_path,
-                    :config_path
+                    :config_path,
+                    :project,
+                    :ignore
                   ])
 
   @shortdoc "Display info about the workspace projects"
@@ -31,9 +33,10 @@ defmodule Mix.Tasks.Workspace.List do
 
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     workspace_config = Keyword.get(opts, :workspace_config, ".workspace.exs")
-    workspace = Workspace.new(workspace_path, workspace_config)
 
-    list_workspace_projects(workspace)
+    Workspace.new(workspace_path, workspace_config)
+    |> Workspace.filter_workspace(opts)
+    |> list_workspace_projects()
   end
 
   defp list_workspace_projects(workspace) do
@@ -44,6 +47,8 @@ defmodule Mix.Tasks.Workspace.List do
 
     Enum.each(workspace.projects, &print_project_info(&1, max_project_length))
   end
+
+  defp print_project_info(%Workspace.Project{skip: true}, _length), do: :ok
 
   defp print_project_info(project, max_project_length) do
     indent_size = max_project_length - String.length(inspect(project.app))
