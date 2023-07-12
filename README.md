@@ -16,7 +16,6 @@
 - add workspace.help task with all projects
 - add workspace aliases with docs
 - boundaries check support through tags
-- add a forbidden deps check
 - refactor highlight for consistency - introduce helpers
 - run - partition support
 - run - affected support
