@@ -5,6 +5,14 @@ defmodule Mix.Tasks.Workspace.ListTest do
 
   @sample_workspace_path "test/fixtures/sample_workspace"
 
+  setup do
+    Application.put_env(:elixir, :ansi_enabled, false)
+
+    # on_exit(fn ->
+    #   Application.put_env(:elixir, :ansi_enabled, true)
+    # end)
+  end
+
   test "prints the tree of the workspace" do
     expected = """
       * :project_a project_a

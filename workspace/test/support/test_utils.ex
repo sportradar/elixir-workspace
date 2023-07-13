@@ -24,12 +24,13 @@ defmodule TestUtils do
     workspace_path = Keyword.get(opts, :workspace_path, "/usr/local/workspace")
 
     %Workspace{
-      projects: projects,
+      projects: %{},
       config: [],
       mix_path: Path.join(workspace_path, "mix.exs"),
       workspace_path: workspace_path,
       cwd: File.cwd!()
     }
+    |> Workspace.set_projects(projects)
   end
 
   defp project_module(app) do

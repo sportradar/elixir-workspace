@@ -150,7 +150,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     workspace = Workspace.new(workspace_path, config)
 
     paths =
-      workspace.projects
+      workspace
+      |> Workspace.projects()
       |> Workspace.filter_projects(opts)
       |> Enum.filter(fn project -> !project.skip end)
       |> Enum.map(&cover_compile_paths/1)
@@ -163,14 +164,14 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     {:ok, string_io} = StringIO.open("")
     Process.group_leader(pid, string_io)
 
-    log([:bright, "importing cover results"])
+    log_header(highlight("importing cover results", :bright))
 
     Enum.each(paths, fn {app, cover_paths, _compile_paths} ->
       import_cover_results(app, cover_paths, workspace_path)
     end)
 
     newline()
-    log([:bright, "analysing coverage data"])
+    log_header(highlight("analysing coverage data", :bright))
 
     coverage_stats =
       workspace
@@ -178,7 +179,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
       |> List.flatten()
 
     project_statuses =
-      workspace.projects
+      workspace
+      |> Workspace.projects()
       |> Workspace.filter_projects(opts)
       |> Enum.filter(fn project -> !project.skip end)
       |> Enum.reduce([], fn project, acc ->
@@ -197,8 +199,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
             workspace.config.test_coverage[:allow_failure] || []
           )
 
-        log([
-          hl(inspect(project.app), :code),
+        log_header([
+          highlight(inspect(project.app), :cyan),
           " - total coverage ",
           highlight(
             [:io_lib.format("~.2f", [coverage]), "%"],
@@ -222,10 +224,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     newline()
 
-    log([
-      :bright,
-      "workspace coverage ",
-      :reset,
+    log_header([
+      highlight("workspace coverage ", :bright),
       highlight(
         [:io_lib.format("~.2f", [overall_coverage]), "%"],
         [:bright, status_color(status)]
@@ -261,7 +261,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   defp export_coverage(coverage_stats, exporters) do
     newline()
-    log([:bright, "exporting coverage data"])
+    log_header([:bright, "exporting coverage data"])
 
     Enum.each(exporters, fn {_name, exporter} ->
       exporter.(coverage_stats)
@@ -384,20 +384,24 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
             Enum.join(cover_paths, ", ")
         )
 
-      entries ->
-        for entry <- entries, path = Workspace.Utils.relative_path_to(entry, workspace_path) do
-          log(
-            inspect(app),
-            [
-              "importing cover results from ",
-              highlight(path, [:light_yellow])
-            ],
-            section_style: :cyan
-          )
-
-          :ok = :cover.import(String.to_charlist(entry))
+      cover_paths ->
+        for cover_path <- cover_paths do
+          import_cover_result(workspace_path, cover_path, app)
         end
     end
+  end
+
+  defp import_cover_result(workspace_path, cover_path, app) do
+    path = Workspace.Utils.relative_path_to(cover_path, workspace_path)
+
+    Mix.shell().info([
+      "==> ",
+      highlight(inspect(app), :cyan),
+      " - importing cover results from ",
+      highlight(path, [:light_yellow])
+    ])
+
+    :ok = :cover.import(String.to_charlist(cover_path))
   end
 
   defp calculate_coverage(workspace) do

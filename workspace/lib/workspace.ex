@@ -7,19 +7,19 @@ defmodule Workspace do
   A workspace is a normal `Mix.Project` with some tweaks:
 
   - No actual code is expected, so `:elixirc_paths` is set to `[]`
-  - It must have a `:workspace` project option
+  - It must have a `:workspace` project option set to `true`
   """
 
   @type t :: %Workspace{
-          projects: [Workspace.Project.t()],
+          projects: %{atom() => Workspace.Project.t()},
           config: Workspace.Config.t(),
           mix_path: binary(),
           workspace_path: binary(),
           cwd: binary()
         }
 
-  @enforce_keys [:projects, :config, :mix_path, :workspace_path, :cwd]
-  defstruct projects: [],
+  @enforce_keys [:config, :mix_path, :workspace_path, :cwd]
+  defstruct projects: %{},
             config: nil,
             mix_path: nil,
             workspace_path: nil,
@@ -53,14 +53,31 @@ defmodule Workspace do
 
     ensure_workspace!(workspace_mix_path)
 
+    projects = projects(workspace_path, config)
+
     %__MODULE__{
       config: config,
       mix_path: workspace_mix_path,
       workspace_path: workspace_path,
-      cwd: File.cwd!(),
-      projects: projects(workspace_path, config)
+      cwd: File.cwd!()
     }
+    |> set_projects(projects)
   end
+
+  def set_projects(workspace, projects) when is_list(projects) do
+    projects =
+      projects
+      |> Enum.map(fn project -> {project.app, project} end)
+      |> Enum.into(%{})
+
+    %__MODULE__{workspace | projects: projects}
+  end
+
+  @doc """
+  Get a list of the workspace projects
+  """
+  @spec projects(workspace :: Workspace.t()) :: [Workspace.Project.t()]
+  def projects(workspace), do: Map.values(workspace.projects)
 
   @doc """
   Tries to load the workspace config from the given path
@@ -229,9 +246,12 @@ defmodule Workspace do
   """
   @spec filter_workspace(workspace :: Workspace.t(), opts :: keyword()) :: Workspace.t()
   def filter_workspace(%Workspace{} = workspace, opts) do
-    projects = filter_projects(workspace.projects, opts)
+    projects =
+      workspace
+      |> projects()
+      |> filter_projects(opts)
 
-    %Workspace{workspace | projects: projects}
+    set_projects(workspace, projects)
   end
 
   @doc """
@@ -310,7 +330,7 @@ defmodule Workspace do
   """
   @spec which_project(workspace :: Workspace.t(), path :: Path.t()) :: Workspace.Project.t() | nil
   def which_project(workspace, path) do
-    Enum.reduce_while(workspace.projects, nil, fn project, _acc ->
+    Enum.reduce_while(Workspace.projects(workspace), nil, fn project, _acc ->
       case String.starts_with?(path, project.path) do
         true -> {:halt, project}
         false -> {:cont, nil}

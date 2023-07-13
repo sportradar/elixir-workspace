@@ -43,7 +43,7 @@ defmodule WorkspaceTest do
       workspace = Workspace.new(@sample_workspace_path)
 
       assert %Workspace{} = workspace
-      assert length(workspace.projects) == 11
+      assert map_size(workspace.projects) == 11
     end
 
     test "with ignore_projects set" do
@@ -57,7 +57,7 @@ defmodule WorkspaceTest do
       workspace = Workspace.new(@sample_workspace_path, config)
 
       assert %Workspace{} = workspace
-      assert length(workspace.projects) == 9
+      assert map_size(workspace.projects) == 9
     end
 
     test "with ignore_paths set" do
@@ -72,7 +72,7 @@ defmodule WorkspaceTest do
       workspace = Workspace.new(@sample_workspace_path, config)
 
       assert %Workspace{} = workspace
-      assert length(workspace.projects) == 8
+      assert map_size(workspace.projects) == 8
     end
 
     test "raises if the path is not a workspace" do
@@ -114,7 +114,7 @@ defmodule WorkspaceTest do
 
   describe "filter_projects/2" do
     test "if app in ignore skips the project", %{workspace: workspace} do
-      projects = Workspace.filter_projects(workspace.projects, ignore: ["bar"])
+      projects = Workspace.filter_projects(Workspace.projects(workspace), ignore: ["bar"])
 
       assert project_by_name(projects, :bar).skip
       refute project_by_name(projects, :foo).skip
@@ -123,7 +123,7 @@ defmodule WorkspaceTest do
     test "if app in selected it is not skipped - everything else is skipped", %{
       workspace: workspace
     } do
-      projects = Workspace.filter_projects(workspace.projects, project: ["bar"])
+      projects = Workspace.filter_projects(Workspace.projects(workspace), project: ["bar"])
 
       refute project_by_name(projects, :bar).skip
       assert project_by_name(projects, :foo).skip
@@ -132,7 +132,8 @@ defmodule WorkspaceTest do
     test "ignore has priority over project", %{
       workspace: workspace
     } do
-      projects = Workspace.filter_projects(workspace.projects, ignore: [:bar], project: [:bar])
+      projects =
+        Workspace.filter_projects(Workspace.projects(workspace), ignore: [:bar], project: [:bar])
 
       assert project_by_name(projects, :bar).skip
       assert project_by_name(projects, :foo).skip
@@ -143,8 +144,8 @@ defmodule WorkspaceTest do
     test "filters and updates the given workspace", %{workspace: workspace} do
       workspace = Workspace.filter_workspace(workspace, ignore: [:bar])
 
-      assert project_by_name(workspace.projects, :bar).skip
-      refute project_by_name(workspace.projects, :foo).skip
+      assert workspace.projects[:bar].skip
+      refute workspace.projects[:foo].skip
     end
   end
 end

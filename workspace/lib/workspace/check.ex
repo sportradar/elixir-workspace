@@ -111,7 +111,7 @@ defmodule Workspace.Check do
           check_fun :: (Workspace.Project.t() -> {atom(), keyword()})
         ) :: [Workspace.Check.Result.t()]
   def check_projects(workspace, check, check_fun) do
-    Enum.reduce(workspace.projects, [], fn project, acc ->
+    Enum.reduce(Workspace.projects(workspace), [], fn project, acc ->
       result =
         case applicable?(check, project) do
           true ->

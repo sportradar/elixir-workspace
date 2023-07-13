@@ -15,46 +15,55 @@ defmodule Workspace.Cli do
   end
 
   def newline, do: Mix.shell().info("")
-  def log(message), do: log("", message, prefix: "==>", separator: " ")
 
-  @doc """
-  Helper function for fancy generic log messages
+  # @spec log(message :: IO.ANSI.ansidata()) :: :ok
+  # def log(message), do: log("", message, prefix: "==>", separator: " ")
+  #
+  # @doc """
+  # Helper function for fancy generic log messages
+  #
+  # Each log message conists of the following sections:
+  #
+  # - `prefix` a prefix for each log message, defaults to "==> ". Can be
+  # configured through the `prefix` option.
+  # - `section` a string representing the section of the log message, e.g.
+  # an application name, a command or a log level. 
+  # - `separator` separator between the section and the main message, defaults
+  # to a space.
+  # - `message` the message to be printed, can be any text
+  #
+  # The following options are supported:
+  #
+  # - `prefix` - the prefix to be used, defaults to `==> `
+  # - `separator` - the separator to be used, defaults to ` - `
+  # - `section_style` - the style to be applied for highlighting the section,
+  # no styling is applied if not set
+  # - `style` - a highlight style to be applied to the complete message.
+  # """
+  # @spec log(
+  #         section :: IO.ANSI.ansidata(),
+  #         message :: IO.ANSI.ansidata(),
+  #         opts :: Keyword.t()
+  #       ) ::
+  #         :ok
+  # def log(section, message, opts \\ []) do
+  #   prefix = opts[:prefix] || "==> "
+  #   separator = opts[:separator] || " - "
+  #   section_style = opts[:section_style] || []
+  #   style = opts[:style] || []
+  #
+  #   Mix.shell().info([
+  #     prefix,
+  #     highlight(section, section_style),
+  #     separator,
+  #     highlight(message, style)
+  #   ])
+  # end
 
-  Each log message conists of the following sections:
-
-  - `prefix` a prefix for each log message, defaults to "==> ". Can be
-  configured through the `prefix` option.
-  - `section` a string representing the section of the log message, e.g.
-  an application name, a command or a log level. 
-  - `separator` separator between the section and the main message, defaults
-  to a space.
-  - `message` the message to be printed, can be any text
-
-  The following options are supported:
-
-  - `prefix` - the prefix to be used, defaults to `==> `
-  - `separator` - the separator to be used, defaults to ` - `
-  - `section_style` - the style to be applied for highlighting the section,
-  no styling is applied if not set
-  - `style` - a highlight style to be applied to the complete message.
-  """
-  @spec log(
-          section :: IO.ANSI.ansidata(),
-          message :: IO.ANSI.ansidata(),
-          opts :: Keyword.t()
-        ) ::
-          :ok
-  def log(section, message, opts \\ []) do
-    prefix = opts[:prefix] || "==> "
-    separator = opts[:separator] || " - "
-    section_style = opts[:section_style] || []
-    style = opts[:style] || []
-
+  def log_header(message) do
     Mix.shell().info([
-      prefix,
-      highlight(section, section_style),
-      separator,
-      highlight(message, style)
+      "==> ",
+      message
     ])
   end
 
@@ -81,7 +90,7 @@ defmodule Workspace.Cli do
       [:bright, :green, ["some text"], :reset]
   """
   @spec highlight(
-          text :: binary() | [binary()],
+          text :: IO.ANSI.ansidata(),
           ansi_codes :: IO.ANSI.ansicode() | [IO.ANSI.ansicode()]
         ) ::
           IO.ANSI.ansidata()

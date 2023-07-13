@@ -51,33 +51,33 @@ defmodule Workspace.CliTest do
     end
   end
 
-  describe "log/1" do
-    test "default format" do
-      assert capture_io(fn ->
-               Cli.log("a message")
-             end) =~ format_ansi(["==>", :reset, " ", "a message", :reset])
-    end
-  end
-
-  describe "log/3" do
-    test "with default options" do
-      assert capture_io(fn ->
-               Cli.log("section", "a message")
-             end) =~ format_ansi(["==> ", "section", :reset, " - ", "a message", :reset])
-    end
-
-    test "with options set" do
-      assert capture_io(fn ->
-               Cli.log("section", "a message",
-                 prefix: "~>",
-                 section_style: :red,
-                 style: :bright,
-                 separator: ":"
-               )
-             end) =~
-               format_ansi(["~>", :red, "section", :reset, ":", :bright, "a message", :reset])
-    end
-  end
+  # describe "log/1" do
+  #   test "default format" do
+  #     assert capture_io(fn ->
+  #              Cli.log("a message")
+  #            end) =~ format_ansi(["==>", :reset, " ", "a message", :reset])
+  #   end
+  # end
+  #
+  # describe "log/3" do
+  #   test "with default options" do
+  #     assert capture_io(fn ->
+  #              Cli.log("section", "a message")
+  #            end) =~ format_ansi(["==> ", "section", :reset, " - ", "a message", :reset])
+  #   end
+  #
+  #   test "with options set" do
+  #     assert capture_io(fn ->
+  #              Cli.log("section", "a message",
+  #                prefix: "~>",
+  #                section_style: :red,
+  #                style: :bright,
+  #                separator: ":"
+  #              )
+  #            end) =~
+  #              format_ansi(["~>", :red, "section", :reset, ":", :bright, "a message", :reset])
+  #   end
+  # end
 
   test "newline/0" do
     assert capture_io(fn -> Cli.newline() end) == "\n"

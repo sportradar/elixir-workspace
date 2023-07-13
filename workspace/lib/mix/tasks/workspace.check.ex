@@ -34,7 +34,7 @@ defmodule Mix.Tasks.Workspace.Check do
       Workspace.new(workspace_path, config)
       |> Workspace.filter_workspace(opts)
 
-    log("running #{length(config.checks)} workspace checks on the workspace")
+    log_header("running #{length(config.checks)} workspace checks on the workspace")
     newline()
 
     config.checks
@@ -65,10 +65,11 @@ defmodule Mix.Tasks.Workspace.Check do
 
     display_index = String.pad_leading("#{index}", 3, "0")
 
-    log("C#{display_index}", check[:description],
-      section_style: [:bright, status_color(status)],
-      style: :bright
-    )
+    log_header([
+      highlight("C#{display_index}", [:bright, status_color(status)]),
+      " ",
+      highlight(check[:description], :bright)
+    ])
 
     for result <- results do
       maybe_print_result(result, opts[:verbose])
@@ -91,17 +92,12 @@ defmodule Mix.Tasks.Workspace.Check do
   defp print_result(result) do
     path = Workspace.Utils.relative_path_to(result.project.path, File.cwd!())
 
-    log(
-      status_text(result.status),
-      [
-        hl(":#{result.project.app}", :code),
-        check_message(result),
-        maybe_mix_project(result.status, path)
-      ],
-      prefix: "    ",
-      separator: "",
-      section_style: status_color(result.status)
-    )
+    Mix.shell().info([
+      highlight(status_text(result.status), status_color(result.status)),
+      hl(":#{result.project.app}", :code),
+      check_message(result),
+      maybe_mix_project(result.status, path)
+    ])
   end
 
   defp check_status(results) do

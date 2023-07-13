@@ -24,7 +24,7 @@ defmodule Mix.Tasks.Workspace.Run do
 
   use Mix.Task
 
-  alias Workspace.Cli
+  import Workspace.Cli
 
   def run(argv) do
     {:ok, opts} = CliOpts.parse(argv, @options_schema)
@@ -38,7 +38,8 @@ defmodule Mix.Tasks.Workspace.Run do
     config = Workspace.config(Path.join(workspace_path, config_path))
     workspace = Workspace.new(workspace_path, config)
 
-    workspace.projects
+    workspace
+    |> Workspace.projects()
     |> Workspace.filter_projects(opts)
     |> Enum.map(fn project -> run_in_project(project, opts, task_args) end)
     |> raise_if_any_task_failed()
@@ -46,7 +47,10 @@ defmodule Mix.Tasks.Workspace.Run do
 
   defp run_in_project(%{skip: true, app: app}, args, _argv) do
     if args[:verbose] do
-      Cli.log("#{args[:task]}", "skipping #{app}", section_style: [:bright, :yellow])
+      log_header([
+        highlight("#{args[:task]}", [:bright, :yellow]),
+        "skipping #{app}"
+      ])
     end
   end
 
@@ -57,12 +61,11 @@ defmodule Mix.Tasks.Workspace.Run do
 
     env = parse_environment_variables(options[:env_var])
 
-    Cli.log(
-      inspect(project.app),
-      "mix #{Enum.join(task_args, " ")}",
-      section_style: :cyan,
-      style: :bright
-    )
+    log_header([
+      hl(inspect(project.app), :code),
+      " - ",
+      highlight("mix #{Enum.join(task_args, " ")}", :bright)
+    ])
 
     if not options[:dry_run] do
       run_task(project, task, argv, options, env)
@@ -158,15 +161,13 @@ defmodule Mix.Tasks.Workspace.Run do
         task = Keyword.get(meta, :task)
         project = Keyword.get(meta, :project)
 
-        Cli.log(
-          inspect(project.app),
-          [
-            Cli.highlight(task, :bright),
-            " failed with ",
-            Cli.highlight("#{status}", [:bright, :light_red])
-          ],
-          section_style: [:bright, :red]
-        )
+        Mix.shell().info([
+          highlight(inspect(project.app), [:bright, :red]),
+          " ",
+          highlight(task, :bright),
+          " failed with ",
+          highlight("#{status}", [:bright, :light_red])
+        ])
 
         status
     end
