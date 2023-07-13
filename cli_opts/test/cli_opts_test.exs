@@ -20,6 +20,10 @@ defmodule CliOptsTest do
     ignore: [
       type: :boolean,
       doc: false
+    ],
+    with_dash: [
+      type: :boolean,
+      doc: "a key with a dash"
     ]
   ]
 
@@ -37,6 +41,7 @@ defmodule CliOptsTest do
         * `--verbose` (`boolean`) -
         * `--project, -p...` (`string`) - Required. The project to use
         * `--mode` (`string`) -  [default: `parallel`]
+        * `--with-dash` (`boolean`) - a key with a dash
         """
         |> String.trim()
 

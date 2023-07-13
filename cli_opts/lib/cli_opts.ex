@@ -181,9 +181,11 @@ defmodule CliOpts do
   end
 
   defp key_doc(key, schema) do
-    "--#{key}#{maybe_alias(schema)}"
+    "--#{format_key(key)}#{maybe_alias(schema)}"
     |> maybe_repeating(schema)
   end
+
+  defp format_key(key), do: String.replace("#{key}", "_", "-")
 
   defp maybe_alias(schema) do
     case schema[:alias] do
