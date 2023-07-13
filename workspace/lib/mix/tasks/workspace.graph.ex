@@ -1,5 +1,8 @@
 defmodule Mix.Tasks.Workspace.Graph do
-  use Mix.Task
+  @options_schema Workspace.Cli.options([
+                    :workspace_path,
+                    :config_path
+                  ])
 
   @shortdoc "Prints the dependency tree"
 
@@ -10,39 +13,16 @@ defmodule Mix.Tasks.Workspace.Graph do
 
   If no dependency is given, it uses the tree defined in the `mix.exs` file.
 
-  ## Command line options
+  ## Command Line Options
 
-    * `--only` - the environment to show dependencies for
-
-    * `--target` - the target to show dependencies for
-
-    * `--exclude` - exclude dependencies which you do not want to see printed.
-
-    * `--format` - Can be set to one of either:
-
-      * `pretty` - uses Unicode code points for formatting the tree.
-        This is the default except on Windows.
-
-      * `plain` - does not use Unicode code points for formatting the tree.
-        This is the default on Windows.
-
-      * `dot` - produces a DOT graph description of the dependency tree
-        in `deps_tree.dot` in the current directory.
-        Warning: this will override any previously generated file.
-
+  #{CliOpts.docs(@options_schema)}
   """
-  @switches [
-    only: :string,
-    target: :string,
-    exclude: :keep,
-    format: :string,
-    workspace_path: :string
-  ]
+  use Mix.Task
 
-  @impl true
+  @impl Mix.Task
   def run(args) do
-    Mix.Project.get!()
-    {opts, _args, _} = OptionParser.parse(args, switches: @switches)
+    {:ok, opts} = CliOpts.parse(args, @options_schema)
+    %{parsed: opts} = opts
 
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     workspace_config = Keyword.get(opts, :workspace_config, ".workspace.exs")

@@ -10,6 +10,7 @@ defmodule Mix.Tasks.Workspace.Check do
   @shortdoc "Runs configured checkers on the current workspace"
 
   @moduledoc """
+  Check the workspace using the configured checks.
 
   ## Command Line Options
 

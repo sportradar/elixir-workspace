@@ -16,6 +16,7 @@ defmodule Mix.Tasks.Workspace.Run do
   @shortdoc "Run a mix command to all projects"
 
   @moduledoc """
+  Run a mix task on one or more workspace projects
 
   ## Command Line Options
 
@@ -26,8 +27,8 @@ defmodule Mix.Tasks.Workspace.Run do
 
   import Workspace.Cli
 
-  def run(argv) do
-    {:ok, opts} = CliOpts.parse(argv, @options_schema)
+  def run(args) do
+    {:ok, opts} = CliOpts.parse(args, @options_schema)
     %{parsed: opts, args: args, extra: extra, invalid: invalid} = opts
 
     task_args = CliOpts.to_list(invalid) ++ extra ++ args
