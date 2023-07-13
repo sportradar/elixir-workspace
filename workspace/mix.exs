@@ -19,7 +19,27 @@ defmodule Workspace.MixProject do
       docs: [
         output: "../artifacts/docs/workspace",
         formatters: ["html"],
-        before_closing_body_tag: &before_closing_body_tag/1
+        before_closing_body_tag: &before_closing_body_tag/1,
+        groups_for_modules: [
+          Workspace: [
+            Workspace,
+            Workspace.Config,
+            Workspace.Graph,
+            Workspace.Project
+          ],
+          "Check APIs": [
+            Workspace.Check,
+            Workspace.Check.Result
+          ],
+          Checks: [
+            ~r"Workspace.Checks.*"
+          ],
+          Utilities: [
+            Workspace.Cli,
+            Workspace.Git,
+            Workspace.Utils
+          ]
+        ]
       ]
     ]
   end
