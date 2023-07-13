@@ -24,7 +24,6 @@ defmodule TestUtils do
     workspace_path = Keyword.get(opts, :workspace_path, "/usr/local/workspace")
 
     %Workspace{
-      projects: %{},
       config: [],
       mix_path: Path.join(workspace_path, "mix.exs"),
       workspace_path: workspace_path,
@@ -44,5 +43,9 @@ defmodule TestUtils do
       [project] -> project
       _ -> raise ArgumentError, "no project with the given name #{name}"
     end
+  end
+
+  def format_ansi(message) do
+    IO.ANSI.format(message) |> :erlang.iolist_to_binary()
   end
 end

@@ -82,8 +82,4 @@ defmodule Workspace.CliTest do
   test "newline/0" do
     assert capture_io(fn -> Cli.newline() end) == "\n"
   end
-
-  defp format_ansi(message) do
-    IO.ANSI.format(message) |> :erlang.iolist_to_binary()
-  end
 end
