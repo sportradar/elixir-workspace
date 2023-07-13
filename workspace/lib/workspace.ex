@@ -1,13 +1,180 @@
 defmodule Workspace do
   @moduledoc """
-  Documentation for `Workspace`.
+  A `Workspace` is a collection of mix projects under the same git repo.
 
-  ## Defining a workspace
+  `Workspace` provides a set of tools for working with multiple projects under
+  the same git repo. Using path dependencies between the projects and the
+  provided tools you can effectively work on massive codebases properly
+  splitted into reusable packages.
+
+  ## The `%Workspace{}` structure
+
+  Every workspace is stored internally as a struct containing the following
+  fields:
+
+  * `projects` - a map of the form `%{atom => Workspace.Project.t()}` where
+  the key is the defined project name. It includes all detected workpsace
+  projects excluding any ignored ones.
+  * `cwd` - the directory from which the generation of the workspace struct
+  occurred.
+  * `mix_path` - absolute path to the workspace's root `mix.exs` file.
+  * `workspace_path` - absolute path of the workspace, this is by default the
+  folder containing the workspace mix file.
+  * `config` - the workspace's config, check `Workspace.Config` and the
+  following sections for more details.
+
+  ## Workspace projects
+
+  A mix project is considered a workspace project if:
+
+  - it is located in a subfolder of the workspace root path
+  - it is not included in the ignored projects or ignored paths in the
+  workspace config
+
+  Assuming the folder stucture:
+
+  ```
+  my_workspace
+  ├── apps
+  │   ├── api         # an API app 
+  │   └── ui          # the UI project
+  ├── mix.exs         # this is the workspace root definition
+  ├── .workspace.exs  # the workspace config
+  └── packages        # various reusable packages under packages
+      ├── package_a 
+      ├── package_b
+      └── package_c
+  ```
+
+  - We have defined a `Workspace` under `my_workspace` folder
+  - All mix projects under `my_workspace` are by default considered
+  workspace packages. In the above example it will include the
+  `:api`, `:ui`, `:package_a`, `:package_b` and `:package_c`
+  packages.
+
+  > #### Ignoring a package or a path {: .info}
+  >
+  > Assume you want to exclude `package_c` from the workspace. You
+  > can add it to the `:ignore_projects` configuration option in
+  > `.workspace.exs`:
+  >
+  > ```elixir
+  > ignore_projects: [:package_a]
+  > ```
+  >
+  > If you wanted to ignore all projects under an `other` folder
+  > you could set the `:ignore_paths` option:
+  >
+  > ```elixir
+  > ignore_paths: ["other"]
+  > ```
+  >
+  > Notice that in the latter case the path is assumed to be relative to
+  > the workspace root.
+  >
+  > For more details check the `Workspace.Config` documentation.
+
+  > #### Duplicate package names {: .warning}
+  >
+  > Notice that duplicate package names are not allowed. If upon initialization
+  > of a workspace two projects with the same `:name` are detected then
+  > an exception will be raised.
+  >
+  > For example the following workspace:
+  > 
+  > ```
+  > my_workspace
+  > ├── apps
+  > │   └── api
+  > ├── mix.exs
+  > ├── packages
+  > │   ├── package_a  # package_a project defined under packages
+  > │   └── package_b
+  > └── shared
+  >     └── package_a  # redefinition of package_a
+  > ```
+  >
+  > would fail to initialize since `:package_a` is defined twice.
+
+  ## Structuring a folder as a workspace root
 
   A workspace is a normal `Mix.Project` with some tweaks:
 
   - No actual code is expected, so `:elixirc_paths` is set to `[]`
   - It must have a `:workspace` project option set to `true`
+
+  **TODO**: Once implemented add info about the generator
+
+  ## Loading a workspace
+
+  A `Workspace` can be constructed by calling the `new/2` function. It
+  will use the given path and config object in order to load and validate
+  all internal projects.
+
+  ## The workspace graph
+
+  The most important concept of the `Workspace` is the projects graph. The
+  project graph must be a directed acyclic graph where each vertex is
+  a project and each edge a dependency between the two projects.
+
+  The workspace graph is constructed implicitely upon workspace's creation
+  in order to ensure that all path dependencies are valid and decorate
+  each project with graph metadata.
+
+  > #### Inspecting the graph {: .tip}
+  > 
+  > You can use the `workspace.graph` command in order to see the
+  > graph of the given `workspace`. For example:
+  >
+  > ```bash
+  > mix workspace.graph --workspace-path test/fixtures/sample_workspace
+  > ```
+  >
+  > on a test fixture would produce:
+  >
+  > ```
+  > project_a
+  > ├── project_b
+  > │   └── project_g
+  > ├── project_c
+  > │   ├── project_e
+  > │   └── project_f
+  > │       └── project_g
+  > └── project_d
+  > project_h
+  > └── project_d
+  > project_i
+  > └── project_j
+  > project_k
+  > ```
+  >
+  > You can additionally plot is as mermaid graph by specifying the
+  > `--format mermaid` flag:
+  >
+  > ```mermaid
+  > flowchart TD
+  > project_a
+  > project_b
+  > project_c
+  > project_d
+  > project_e
+  > project_f
+  > project_g
+  > project_h
+  > project_i
+  > project_j
+  > project_k
+  >
+  > project_a --> project_b
+  > project_a --> project_c
+  > project_a --> project_d
+  > project_b --> project_g
+  > project_c --> project_e
+  > project_c --> project_f
+  > project_f --> project_g
+  > project_h --> project_d
+  > project_i --> project_j
+  > ```
   """
 
   @type t :: %Workspace{
