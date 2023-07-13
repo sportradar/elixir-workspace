@@ -33,11 +33,11 @@ defmodule Workspace.Graph do
   def digraph(workspace) do
     graph = :digraph.new()
 
-    for project <- Workspace.projects(workspace) do
-      :digraph.add_vertex(graph, project.app)
+    for {app, _project} <- workspace.projects do
+      :digraph.add_vertex(graph, app)
     end
 
-    for project <- Workspace.projects(workspace),
+    for {_app, project} <- workspace.projects,
         {dep, dep_config} <- project.config[:deps],
         # TODO fixup create a workspace_project? instead and use it
         path_dependency?(dep_config) do
