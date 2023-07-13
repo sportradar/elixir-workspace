@@ -86,15 +86,6 @@ defmodule Workspace do
     end
   end
 
-  def file_project(workspace, path) do
-    Enum.reduce_while(workspace.projects, nil, fn project, _acc ->
-      case String.starts_with?(path, project.path) do
-        true -> {:halt, project}
-        false -> {:cont, nil}
-      end
-    end)
-  end
-
   defp load_config_file(config_file) do
     config_file = Path.expand(config_file)
 
@@ -211,6 +202,26 @@ defmodule Workspace do
     end
   end
 
+  def apps_to_projects(workspace, apps) when is_list(apps) do
+    Enum.map(apps, &project_by_app_name(workspace, &1))
+  end
+
+  def project_by_app_name(workspace, app) when is_atom(app) do
+    project =
+      Enum.reduce_while(workspace.projects, nil, fn project, acc ->
+        if project.app == app do
+          {:halt, project}
+        else
+          {:cont, acc}
+        end
+      end)
+
+    case project do
+      nil -> raise ArgumentError, "no workspace project with app name #{inspect(app)}"
+      project -> project
+    end
+  end
+
   @doc """
   Similar to `filter_projects/2` but filters the workspace projects
 
@@ -259,4 +270,51 @@ defmodule Workspace do
 
   defp maybe_to_atom(value) when is_atom(value), do: value
   defp maybe_to_atom(value) when is_binary(value), do: String.to_atom(value)
+
+  @doc """
+  Returns the modified projects
+
+  A workspace project is considered modified if any of it's files has
+  changed with respect to the `base` branch.
+  """
+  @spec modified(workspace :: Workspace.t()) :: [Workspace.Project.t()]
+  def modified(workspace) do
+    with {:ok, changed_files} <- Workspace.Git.changed_files(cd: workspace.workspace_path) do
+      changed_files
+      |> Enum.map(fn file -> Path.join(workspace.workspace_path, file) |> Path.expand() end)
+      |> Enum.map(fn file -> which_project(workspace, file) end)
+      |> Enum.filter(fn project -> project != nil end)
+      |> Enum.uniq_by(fn project -> project.app end)
+    else
+      {:error, reason} -> raise ArgumentError, "failed to get modified files: #{reason}"
+    end
+  end
+
+  @doc """
+  Returns the affected projects
+
+  A project is considered affected if it has changed or any of it's children has
+  changed.
+  """
+  @spec affected(workspace :: Workspace.t()) :: [atom()]
+  def affected(workspace) do
+    modified_apps = modified(workspace) |> Enum.map(& &1.app)
+
+    affected = Workspace.Graph.affected(workspace, modified_apps)
+
+    affected
+  end
+
+  @doc """
+  Returns the project the file belongs to, or `nil` in case of error.
+  """
+  @spec which_project(workspace :: Workspace.t(), path :: Path.t()) :: Workspace.Project.t() | nil
+  def which_project(workspace, path) do
+    Enum.reduce_while(workspace.projects, nil, fn project, _acc ->
+      case String.starts_with?(path, project.path) do
+        true -> {:halt, project}
+        false -> {:cont, nil}
+      end
+    end)
+  end
 end

@@ -420,7 +420,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     # - ignored by configuration
     case Path.type(path) do
       :relative ->
-        project = Workspace.file_project(workspace, to_string(module_path))
+        project = Workspace.which_project(workspace, to_string(module_path))
 
         case project do
           nil ->
