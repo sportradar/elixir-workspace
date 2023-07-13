@@ -39,6 +39,7 @@ defmodule Workspace.Graph do
 
     for project <- workspace.projects,
         {dep, dep_config} <- project.config[:deps],
+        # TODO fixup create a workspace_project? instead and use it
         path_dependency?(dep_config) do
       :digraph.add_edge(graph, project.app, dep)
     end
@@ -51,24 +52,33 @@ defmodule Workspace.Graph do
 
   @doc """
   Return the source projects of the workspace
+
+  Notice that the project names are returned, you can use `Workspace.apps_to_projects/2`
+  to map them back into projects.
   """
-  @spec source_projects(workspace :: Workspace.t()) :: vertices()
+  @spec source_projects(workspace :: Workspace.t()) :: [atom()]
   def source_projects(workspace) do
     with_digraph(workspace, fn graph -> :digraph.source_vertices(graph) end)
   end
 
   @doc """
   Return the sink projects of the workspace
+
+  Notice that the project names are returned, you can use `Workspace.apps_to_projects/2`
+  to map them back into projects.
   """
-  @spec sink_projects(workspace :: Workspace.t()) :: vertices()
+  @spec sink_projects(workspace :: Workspace.t()) :: [atom()]
   def sink_projects(workspace) do
     with_digraph(workspace, fn graph -> :digraph.sink_vertices(graph) end)
   end
 
   @doc """
   Get the affected workspace's projects given the changed projects
+
+  Notice that the project names are returned, you can use `Workspace.apps_to_projects/2`
+  to map them back into projects.
   """
-  @spec affected(workspace :: Workspace.t(), projects :: vertices()) :: vertices()
+  @spec affected(workspace :: Workspace.t(), projects :: [atom()]) :: [atom()]
   def affected(workspace, projects) do
     with_digraph(workspace, fn graph ->
       :digraph_utils.reaching_neighbours(projects, graph)
