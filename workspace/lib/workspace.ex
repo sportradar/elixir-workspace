@@ -471,7 +471,8 @@ defmodule Workspace do
       |> Enum.map(fn file -> Path.join(workspace.workspace_path, file) |> Path.expand() end)
       |> Enum.map(fn file -> which_project(workspace, file) end)
       |> Enum.filter(fn project -> project != nil end)
-      |> Enum.uniq_by(fn project -> project.app end)
+      |> Enum.map(& &1.app)
+      |> Enum.uniq()
     else
       {:error, reason} -> raise ArgumentError, "failed to get modified files: #{reason}"
     end
@@ -485,11 +486,11 @@ defmodule Workspace do
   """
   @spec affected(workspace :: Workspace.t()) :: [atom()]
   def affected(workspace) do
-    modified_apps = modified(workspace) |> Enum.map(& &1.app)
+    modified = modified(workspace)
 
-    affected = Workspace.Graph.affected(workspace, modified_apps)
+    affected = Workspace.Graph.affected(workspace, modified)
 
-    affected
+    affected -- modified
   end
 
   @doc """
@@ -503,5 +504,14 @@ defmodule Workspace do
         false -> {:cont, nil}
       end
     end)
+  end
+
+  def update_project_status(workspace, name, status) do
+    projects =
+      Map.update!(workspace.projects, name, fn project ->
+        Workspace.Project.set_status(project, status)
+      end)
+
+    %Workspace{workspace | projects: projects}
   end
 end

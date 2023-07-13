@@ -101,7 +101,9 @@ defmodule Workspace.Graph do
           |> Enum.map(fn node -> {node, nil} end)
           |> Enum.sort()
 
-        {{Atom.to_string(node), nil}, children}
+        project = Map.fetch!(workspace.projects, node)
+
+        {{node_format(project), nil}, children}
       end
 
       root_nodes =
@@ -114,5 +116,26 @@ defmodule Workspace.Graph do
     end)
 
     :ok
+  end
+
+  defp node_format(project) do
+    format_ansi([
+      status_style(project.status),
+      inspect(project.app),
+      :reset,
+      status_suffix(project.status)
+    ])
+  end
+
+  defp status_style(:affected), do: [:yellow]
+  defp status_style(:modified), do: [:bright, :red]
+  defp status_style(_other), do: []
+
+  defp status_suffix(:modified), do: [:bright, :red, " ✚", :reset]
+  defp status_suffix(:affected), do: [:bright, :yellow, " ●", :reset]
+  defp status_suffix(_other), do: [:bright, :green, " ✔", :reset]
+
+  def format_ansi(message) do
+    IO.ANSI.format(message) |> :erlang.iolist_to_binary()
   end
 end

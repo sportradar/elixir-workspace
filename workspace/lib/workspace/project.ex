@@ -16,7 +16,8 @@ defmodule Workspace.Project do
           config: keyword(),
           mix_path: binary(),
           path: binary(),
-          workspace_path: binary()
+          workspace_path: binary(),
+          status: :undefined | :unaffected | :modified | :affected
         }
 
   @enforce_keys [:app, :module, :config, :mix_path, :path, :workspace_path]
@@ -26,7 +27,8 @@ defmodule Workspace.Project do
             mix_path: nil,
             path: nil,
             workspace_path: nil,
-            skip: false
+            skip: false,
+            status: :undefined
 
   @doc """
   Creates a new project for the given project path.
@@ -61,6 +63,11 @@ defmodule Workspace.Project do
       end
     )
   end
+
+  @valid_statuses [:undefined, :modified, :affected, :unaffected]
+
+  def set_status(project, status) when status in @valid_statuses,
+    do: %Workspace.Project{project | status: status}
 
   # Helper utility function that just gives a mix.exs absolute path
   # from the input path. It does not check if the file actually exists.
