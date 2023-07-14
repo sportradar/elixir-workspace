@@ -4,6 +4,7 @@ defmodule Workspace.MixProject do
   def project do
     [
       app: :workspace,
+      description: "tooling for managing elixir mono-repos",
       version: "0.1.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,

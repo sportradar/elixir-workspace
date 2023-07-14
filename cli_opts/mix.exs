@@ -4,6 +4,7 @@ defmodule CliOpts.MixProject do
   def project do
     [
       app: :cli_opts,
+      description: "parse and validate cli options",
       version: "0.1.0",
       elixir: "~> 1.13",
       # build_path: "../_build",
