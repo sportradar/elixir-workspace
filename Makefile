@@ -25,6 +25,10 @@ docs: ## Generates docs for the complete workspace
 
 ##@ Testing
 
+.PHONY: test
+test: ## Test the complete codebase
+	mix workspace.run -t test
+
 .PHONY: coverage
 coverage: ## Generates coverage report
 	mix workspace.run -t test -- --cover
