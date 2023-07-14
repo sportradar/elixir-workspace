@@ -333,8 +333,20 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   end
 
   defp cover_compile(compile_paths) do
-    _ = :cover.stop()
-    {:ok, pid} = :cover.start()
+    # experimental: we want to be able to cover test the test coverage
+    # since :cover is a singleton the previous implementation
+    #
+    # :cover.stop()
+    # :cover.start()
+    #
+    # would cause problems to the cover process started by mix test.
+    #
+    # this seems to work without issues for now
+    pid =
+      case :cover.start() do
+        {:ok, pid} -> pid
+        {:error, {:already_started, pid}} -> pid
+      end
 
     for compile_path <- compile_paths do
       case :cover.compile_beam(beams(compile_path)) do
