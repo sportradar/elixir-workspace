@@ -1,6 +1,8 @@
 defmodule Mix.Tasks.Workspace.CheckTest do
   use ExUnit.Case, async: false
   import ExUnit.CaptureIO
+  import TestUtils
+
   alias Mix.Tasks.Workspace.Check, as: CheckTask
 
   # TODO: this is used in many places, add helper function to get
@@ -52,19 +54,6 @@ defmodule Mix.Tasks.Workspace.CheckTest do
       )
 
     assert_cli_output_match(captured, expected)
-  end
-
-  defp assert_cli_output_match(captured, expected) do
-    captured =
-      captured
-      |> String.split("\n")
-      |> Enum.map(&String.trim/1)
-      |> Enum.filter(fn line -> line != "" end)
-
-    assert length(expected) == length(captured)
-
-    Enum.zip(captured, expected)
-    |> Enum.each(fn {captured_line, expected_line} -> captured_line =~ expected_line end)
   end
 
   defp assert_raise_and_capture_io(exception, message, fun) do

@@ -1,6 +1,9 @@
 defmodule TestUtils do
   @moduledoc false
 
+  import ExUnit.Assertions
+  require ExUnit.Assertions
+
   ## Working with fixtures
 
   def fixture_path, do: Path.expand("../fixtures", __DIR__)
@@ -126,5 +129,26 @@ defmodule TestUtils do
       System.cmd("git", ~w[commit -m "commit"])
       System.cmd("git", ~w[symbolic-ref HEAD refs/heads/main])
     end)
+  end
+
+  # compares the captured output with the expected one
+  # 
+  # notice that empty lines are removed from the captures
+  # and it is transformed to a list of lines
+  def assert_cli_output_match(captured, expected) do
+    captured =
+      captured
+      |> String.split("\n")
+      |> Enum.map(&String.trim/1)
+      |> Enum.filter(fn line -> line != "" end)
+
+    # if the lengths are not the same print the full lists for
+    # debugging
+    if length(expected) != length(captured) do
+      assert expected == captured
+    end
+
+    Enum.zip(captured, expected)
+    |> Enum.each(fn {captured_line, expected_line} -> captured_line =~ expected_line end)
   end
 end
