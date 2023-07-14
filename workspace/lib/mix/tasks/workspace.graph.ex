@@ -1,18 +1,9 @@
 defmodule Mix.Tasks.Workspace.Graph do
-  @custom_options_schema [
-    show_status: [
-      type: :boolean,
-      default: false,
-      doc: "If set the status of each project will be included in the output graph"
-    ]
-  ]
-  @options_schema Workspace.Cli.options(
-                    [
-                      :workspace_path,
-                      :config_path
-                    ],
-                    @custom_options_schema
-                  )
+  @options_schema Workspace.Cli.options([
+                    :workspace_path,
+                    :config_path,
+                    :show_status
+                  ])
 
   @shortdoc "Prints the dependency tree"
 
@@ -45,20 +36,7 @@ defmodule Mix.Tasks.Workspace.Graph do
   end
 
   defp maybe_include_status(workspace, false), do: workspace
-
-  defp maybe_include_status(workspace, true) do
-    modified =
-      Workspace.modified(workspace)
-      |> Enum.map(fn app -> {app, :modified} end)
-
-    affected =
-      Workspace.affected(workspace)
-      |> Enum.map(fn app -> {app, :affected} end)
-
-    Enum.reduce(modified ++ affected, workspace, fn {app, status}, workspace ->
-      Workspace.update_project_status(workspace, app, status)
-    end)
-  end
+  defp maybe_include_status(workspace, true), do: Workspace.update_projects_statuses(workspace)
 
   defp print_tree(workspace, show_status) do
     Workspace.Graph.with_digraph(workspace, fn graph ->

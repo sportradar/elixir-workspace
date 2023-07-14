@@ -3,7 +3,8 @@ defmodule Mix.Tasks.Workspace.List do
                     :workspace_path,
                     :config_path,
                     :project,
-                    :ignore
+                    :ignore,
+                    :show_status
                   ])
 
   @shortdoc "Display info about the workspace projects"

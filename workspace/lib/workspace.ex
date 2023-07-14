@@ -237,6 +237,10 @@ defmodule Workspace do
       |> Enum.map(fn project -> {project.app, project} end)
       |> Enum.into(%{})
 
+    set_projects(workspace, projects)
+  end
+
+  def set_projects(workspace, projects) when is_map(projects) do
     %__MODULE__{workspace | projects: projects}
   end
 
@@ -506,12 +510,28 @@ defmodule Workspace do
     end)
   end
 
-  def update_project_status(workspace, name, status) do
+  def update_projects_statuses(workspace) do
+    modified =
+      workspace
+      |> modified()
+      |> Enum.map(fn app -> {app, :modified} end)
+
+    affected =
+      workspace
+      |> affected()
+      |> Enum.map(fn app -> {app, :affected} end)
+
+    Enum.reduce(modified ++ affected, workspace, fn {app, status}, workspace ->
+      set_project_status(workspace, app, status)
+    end)
+  end
+
+  defp set_project_status(workspace, name, status) do
     projects =
       Map.update!(workspace.projects, name, fn project ->
         Workspace.Project.set_status(project, status)
       end)
 
-    %Workspace{workspace | projects: projects}
+    set_projects(workspace, projects)
   end
 end

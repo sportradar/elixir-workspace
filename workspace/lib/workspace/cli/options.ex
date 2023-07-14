@@ -93,5 +93,12 @@ defmodule Workspace.Cli.Options do
       alias: :e
     ]
 
+  def option(:show_status),
+    do: [
+      type: :boolean,
+      default: false,
+      doc: "If set the status of each project will be included in the output graph"
+    ]
+
   def option(invalid), do: raise(ArgumentError, "invalid option #{inspect(invalid)}")
 end
