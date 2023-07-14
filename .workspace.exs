@@ -50,6 +50,19 @@
       ]
     ],
     [
+      module: Workspace.Checks.ValidateConfig,
+      description: "all projects must have a description set",
+      opts: [
+        validate: fn config ->
+          case config[:description] do
+            nil -> {:error, "no :description set"}
+            description when is_binary(description) -> {:ok, ""}
+            other -> {:error, "description must be binary, got: #{inspect(other)}"}
+          end
+        end
+      ]
+    ],
+    [
       module: Workspace.Checks.ValidateConfigPath,
       description: "all projects must have a common coverage output path",
       opts: [
