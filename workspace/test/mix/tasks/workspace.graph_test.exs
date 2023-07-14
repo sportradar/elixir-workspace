@@ -7,19 +7,19 @@ defmodule Mix.Tasks.Workspace.GraphTest do
 
   test "prints the tree of the workspace" do
     expected = """
-    project_a
-    ├── project_b
-    │   └── project_g
-    ├── project_c
-    │   ├── project_e
-    │   └── project_f
-    │       └── project_g
-    └── project_d
-    project_h
-    └── project_d
-    project_i
-    └── project_j
-    project_k
+    :project_a
+    ├── :project_b
+    │   └── :project_g
+    ├── :project_c
+    │   ├── :project_e
+    │   └── :project_f
+    │       └── :project_g
+    └── :project_d
+    :project_h
+    └── :project_d
+    :project_i
+    └── :project_j
+    :project_k
     """
 
     assert capture_io(fn ->

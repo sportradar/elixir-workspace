@@ -41,7 +41,7 @@ defmodule Mix.Tasks.Workspace.Graph do
       Workspace.new(workspace_path, workspace_config)
       |> maybe_include_status(opts[:show_status])
 
-    Workspace.Graph.print_tree(workspace)
+    print_tree(workspace, opts[:show_status])
   end
 
   defp maybe_include_status(workspace, false), do: workspace
@@ -58,5 +58,53 @@ defmodule Mix.Tasks.Workspace.Graph do
     Enum.reduce(modified ++ affected, workspace, fn {app, status}, workspace ->
       Workspace.update_project_status(workspace, app, status)
     end)
+  end
+
+  defp print_tree(workspace, show_status) do
+    Workspace.Graph.with_digraph(workspace, fn graph ->
+      callback = fn {node, _format} ->
+        children =
+          :digraph.out_neighbours(graph, node)
+          |> Enum.map(fn node -> {node, nil} end)
+          |> Enum.sort()
+
+        project = Map.fetch!(workspace.projects, node)
+
+        {{node_format(project, show_status), nil}, children}
+      end
+
+      root_nodes =
+        graph
+        |> :digraph.source_vertices()
+        |> Enum.map(fn node -> {node, nil} end)
+        |> Enum.sort()
+
+      Mix.Utils.print_tree(root_nodes, callback)
+    end)
+
+    :ok
+  end
+
+  defp node_format(project, false), do: inspect(project.app)
+
+  defp node_format(project, true) do
+    format_ansi([
+      status_style(project.status),
+      inspect(project.app),
+      :reset,
+      status_suffix(project.status)
+    ])
+  end
+
+  defp status_style(:affected), do: [:yellow]
+  defp status_style(:modified), do: [:bright, :red]
+  defp status_style(_other), do: []
+
+  defp status_suffix(:modified), do: [:bright, :red, " ✚", :reset]
+  defp status_suffix(:affected), do: [:bright, :yellow, " ●", :reset]
+  defp status_suffix(_other), do: [:bright, :green, " ✔", :reset]
+
+  def format_ansi(message) do
+    IO.ANSI.format(message) |> :erlang.iolist_to_binary()
   end
 end

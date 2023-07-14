@@ -1,7 +1,6 @@
 defmodule Workspace.GraphTest do
   use ExUnit.Case
 
-  import ExUnit.CaptureIO
   alias Workspace.Graph
 
   setup do
@@ -60,25 +59,5 @@ defmodule Workspace.GraphTest do
                :project_g
              ]
     end
-  end
-
-  test "print_tree/1", %{workspace: workspace} do
-    expected = """
-    project_a
-    ├── project_b
-    │   └── project_g
-    ├── project_c
-    │   ├── project_e
-    │   └── project_f
-    │       └── project_g
-    └── project_d
-    project_h
-    └── project_d
-    project_i
-    └── project_j
-    project_k
-    """
-
-    assert capture_io(fn -> Graph.print_tree(workspace) end) == expected
   end
 end
