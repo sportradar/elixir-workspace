@@ -63,24 +63,10 @@ defmodule Mix.Tasks.Workspace.Graph do
     :ok
   end
 
-  defp node_format(project, false), do: inspect(project.app)
-
-  defp node_format(project, true) do
-    format_ansi([
-      status_style(project.status),
-      inspect(project.app),
-      :reset,
-      status_suffix(project.status)
-    ])
+  defp node_format(project, show_status) do
+    Workspace.Cli.project_name(project, show_status: show_status, default_style: [])
+    |> format_ansi()
   end
-
-  defp status_style(:affected), do: [:yellow]
-  defp status_style(:modified), do: [:bright, :red]
-  defp status_style(_other), do: []
-
-  defp status_suffix(:modified), do: [:bright, :red, " ✚", :reset]
-  defp status_suffix(:affected), do: [:bright, :yellow, " ●", :reset]
-  defp status_suffix(_other), do: [:bright, :green, " ✔", :reset]
 
   def format_ansi(message) do
     IO.ANSI.format(message) |> :erlang.iolist_to_binary()

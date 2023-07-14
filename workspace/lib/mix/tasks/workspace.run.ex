@@ -10,7 +10,8 @@ defmodule Mix.Tasks.Workspace.Run do
                     :execution_mode,
                     :verbose,
                     :dry_run,
-                    :env_var
+                    :env_var,
+                    :show_status
                   ])
 
   @shortdoc "Run a mix command to all projects"
@@ -40,11 +41,15 @@ defmodule Mix.Tasks.Workspace.Run do
     workspace = Workspace.new(workspace_path, config)
 
     workspace
+    |> Workspace.filter_workspace(opts)
+    |> maybe_include_status(opts[:show_status])
     |> Workspace.projects()
-    |> Workspace.filter_projects(opts)
     |> Enum.map(fn project -> run_in_project(project, opts, task_args) end)
     |> raise_if_any_task_failed()
   end
+
+  defp maybe_include_status(workspace, false), do: workspace
+  defp maybe_include_status(workspace, true), do: Workspace.update_projects_statuses(workspace)
 
   defp run_in_project(%{skip: true, app: app}, args, _argv) do
     if args[:verbose] do
@@ -63,7 +68,7 @@ defmodule Mix.Tasks.Workspace.Run do
     env = parse_environment_variables(options[:env_var])
 
     log_header([
-      hl(inspect(project.app), :code),
+      project_name(project, show_status: options[:show_status]),
       " - ",
       highlight("mix #{Enum.join(task_args, " ")}", :bright)
     ])

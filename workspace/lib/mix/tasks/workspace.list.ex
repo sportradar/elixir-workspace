@@ -37,28 +37,35 @@ defmodule Mix.Tasks.Workspace.List do
 
     Workspace.new(workspace_path, workspace_config)
     |> Workspace.filter_workspace(opts)
-    |> list_workspace_projects()
+    |> maybe_include_status(opts[:show_status])
+    |> list_workspace_projects(opts[:show_status])
   end
 
-  defp list_workspace_projects(workspace) do
+  defp maybe_include_status(workspace, false), do: workspace
+  defp maybe_include_status(workspace, true), do: Workspace.update_projects_statuses(workspace)
+
+  defp list_workspace_projects(workspace, show_status) do
     max_project_length =
       workspace
       |> Workspace.projects()
       |> Enum.map(fn project -> inspect(project.app) |> String.length() end)
       |> Enum.max()
 
-    Enum.each(Workspace.projects(workspace), &print_project_info(&1, max_project_length))
+    Enum.each(
+      Workspace.projects(workspace),
+      &print_project_info(&1, max_project_length, show_status)
+    )
   end
 
-  defp print_project_info(%Workspace.Project{skip: true}, _length), do: :ok
+  defp print_project_info(%Workspace.Project{skip: true}, _length, _show_status), do: :ok
 
-  defp print_project_info(project, max_project_length) do
+  defp print_project_info(project, max_project_length, show_status) do
     indent_size = max_project_length - String.length(inspect(project.app))
     indent = String.duplicate(" ", indent_size)
 
     Mix.shell().info([
       "  * ",
-      Cli.hl(inspect(project.app), :code),
+      Cli.project_name(project, show_status: show_status, pretty: true),
       indent,
       description(project.config[:description]),
       :light_yellow,

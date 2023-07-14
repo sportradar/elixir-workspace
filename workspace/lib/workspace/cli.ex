@@ -100,4 +100,28 @@ defmodule Workspace.Cli do
   def highlight(text, ansi_codes) when is_list(text) and is_list(ansi_codes) do
     ansi_codes ++ [text, :reset]
   end
+
+  def project_name(project, opts) do
+    show_status = opts[:show_status] || false
+    default_style = opts[:default_style] || [:light_cyan]
+
+    cond do
+      show_status ->
+        [
+          highlight(inspect(project.app), project_status_style(project.status, default_style)),
+          project_status_suffix(project.status)
+        ]
+
+      true ->
+        highlight(inspect(project.app), default_style)
+    end
+  end
+
+  defp project_status_style(:affected, _default_style), do: [:yellow]
+  defp project_status_style(:modified, _default_style), do: [:bright, :red]
+  defp project_status_style(_other, default_style), do: default_style
+
+  defp project_status_suffix(:modified), do: [:bright, :red, " ✚", :reset]
+  defp project_status_suffix(:affected), do: [:bright, :yellow, " ●", :reset]
+  defp project_status_suffix(_other), do: [:bright, :green, " ✔", :reset]
 end
