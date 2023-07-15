@@ -151,8 +151,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     paths =
       workspace
+      |> Workspace.filter_workspace(opts)
       |> Workspace.projects()
-      |> Workspace.filter_projects(opts)
       |> Enum.filter(fn project -> !project.skip end)
       |> Enum.map(&cover_compile_paths/1)
 
