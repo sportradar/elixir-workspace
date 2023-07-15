@@ -1,8 +1,9 @@
 defmodule TestUtils do
   @moduledoc false
 
-  import ExUnit.Assertions
   require ExUnit.Assertions
+  import ExUnit.Assertions
+  import ExUnit.CaptureIO
 
   ## Working with fixtures
 
@@ -65,6 +66,14 @@ defmodule TestUtils do
     after
       :ok
     end
+  end
+
+  def purge(modules) do
+    Enum.each(modules, fn m ->
+      IO.puts("purging #{m}")
+      :code.purge(m)
+      :code.delete(m)
+    end)
   end
 
   # creates a simple project fixture in memory
@@ -148,7 +157,20 @@ defmodule TestUtils do
       assert expected == captured
     end
 
-    Enum.zip(captured, expected)
-    |> Enum.each(fn {captured_line, expected_line} -> captured_line =~ expected_line end)
+    mismatches =
+      Enum.zip(captured, expected)
+      |> Enum.map(fn {captured_line, expected_line} ->
+        captured_line =~ expected_line
+      end)
+      |> Enum.filter(fn status -> status == false end)
+
+    case mismatches do
+      [] -> assert true
+      _errors -> assert expected == captured
+    end
+  end
+
+  def assert_raise_and_capture_io(exception, message, fun) do
+    capture_io(fn -> assert_raise exception, message, fn -> fun.() end end)
   end
 end

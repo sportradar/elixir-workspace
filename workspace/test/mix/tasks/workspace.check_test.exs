@@ -1,6 +1,5 @@
 defmodule Mix.Tasks.Workspace.CheckTest do
   use ExUnit.Case, async: false
-  import ExUnit.CaptureIO
   import TestUtils
 
   alias Mix.Tasks.Workspace.Check, as: CheckTask
@@ -27,16 +26,16 @@ defmodule Mix.Tasks.Workspace.CheckTest do
     expected = [
       "==> running 1 workspace checks on the workspace",
       "==> C000 check deps_path",
-      "ERROR project_a - expected :deps_path to be ../deps, got: deps",
-      "ERROR project_b - expected :deps_path to be ../deps, got: deps",
-      "ERROR project_c - expected :deps_path to be ../deps, got: deps",
-      "ERROR project_d - expected :deps_path to be ../deps, got: deps",
-      "ERROR project_e - expected :deps_path to be ../deps, got: deps",
-      "ERROR project_f - expected :deps_path to be ../deps, got: deps",
-      "ERROR project_g - expected :deps_path to be ../deps, got: deps",
-      "ERROR project_i - expected :deps_path to be ../deps, got: deps",
-      "ERROR project_j - expected :deps_path to be ../deps, got: deps",
-      "ERROR project_k - expected :deps_path to be ../deps, got: deps"
+      "ERROR :project_a - expected :deps_path to be ../deps, got: deps",
+      "ERROR :project_b - expected :deps_path to be ../deps, got: deps",
+      "ERROR :project_c - expected :deps_path to be ../deps, got: deps",
+      "ERROR :project_d - expected :deps_path to be ../deps, got: deps",
+      "ERROR :project_e - expected :deps_path to be ../deps, got: deps",
+      "ERROR :project_f - expected :deps_path to be ../deps, got: deps",
+      "ERROR :project_g - expected :deps_path to be ../deps, got: deps",
+      "ERROR :project_i - expected :deps_path to be ../deps, got: deps",
+      "ERROR :project_j - expected :deps_path to be ../deps, got: deps",
+      "ERROR :project_k - expected :deps_path to be ../deps, got: deps"
     ]
 
     captured =
@@ -54,9 +53,5 @@ defmodule Mix.Tasks.Workspace.CheckTest do
       )
 
     assert_cli_output_match(captured, expected)
-  end
-
-  defp assert_raise_and_capture_io(exception, message, fun) do
-    capture_io(fn -> assert_raise exception, message, fn -> fun.() end end)
   end
 end
