@@ -3,16 +3,5 @@ defmodule PackageA do
   Documentation for `PackageA`.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> PackageA.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
+  def hello, do: :world
 end

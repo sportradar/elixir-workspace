@@ -3,16 +3,9 @@ defmodule PackageC do
   Documentation for `PackageC`.
   """
 
-  @doc """
-  Hello world.
+  def hello, do: :world
 
-  ## Examples
-
-      iex> PackageC.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
+  def hello(:foo), do: :bar
+  def hello(:bar), do: :foo
+  def hello(name), do: name
 end

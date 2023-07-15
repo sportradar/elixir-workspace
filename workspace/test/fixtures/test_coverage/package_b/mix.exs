@@ -8,7 +8,7 @@ defmodule PackageB.MixProject do
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      test_pattern: "*_test_workspace.exs",
+      test_pattern: "*_test_fixture.exs",
       test_coverage: [
         export: "package_b"
       ]
