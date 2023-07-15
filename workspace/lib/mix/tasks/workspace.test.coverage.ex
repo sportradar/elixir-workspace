@@ -391,8 +391,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   defp import_cover_results(app, cover_paths, workspace_path) do
     case Enum.flat_map(cover_paths, &Path.wildcard(Path.join(&1, "#{app}*.coverdata"))) do
       [] ->
-        Mix.shell().error(
-          "#{app} - could not find .coverdata file in any of the paths: " <>
+        Mix.shell().info(
+          "#{inspect(app)} - could not find .coverdata file in any of the paths: " <>
             Enum.join(cover_paths, ", ")
         )
 

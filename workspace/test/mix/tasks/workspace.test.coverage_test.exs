@@ -72,7 +72,6 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
     # TODO: create another helper macro like create_fixture
     in_fixture("test_coverage", fn ->
       make_fixture_unique(fixture_path, 1)
-      # make_modules_unique(1)
     end)
 
     # first run the tests with --cover flag set
@@ -106,30 +105,102 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
     assert_cli_output_match(captured, expected)
   end
 
-  #
-  # test "temp" do
-  #   # # with an ignore project set
-  #   # captured =
-  #   #   assert_raise_and_capture_io(
-  #   #     Mix.Error,
-  #   #     ~r"coverage for one or more projects below the required threshold",
-  #   #     fn ->
-  #   #       TestCoverageTask.run(["--workspace-path", fixture_path, "--ignore", "package_a"])
-  #   #     end
-  #   #   )
-  #   #
-  #   # expected = [
-  #   #   "==> importing cover results",
-  #   #   "==> :package_b - importing cover results from package_b/cover/package_b.coverdata",
-  #   #   "==> :package_c - importing cover results from package_c/cover/package_c.coverdata",
-  #   #   "==> analysing coverage data",
-  #   #   "==> :package_b - total coverage 100.00% [threshold 90%]",
-  #   #   "==> :package_c - total coverage 100.00% [threshold 90%]",
-  #   #   "==> workspace coverage 100.00% [threshold 90%]"
-  #   # ]
-  #   #
-  #   # assert_cli_output_match(captured, expected)
-  # end
+  test "with verbose flag set" do
+    fixture_path = test_fixture_path()
+
+    # TODO: create another helper macro like create_fixture
+    in_fixture("test_coverage", fn ->
+      make_fixture_unique(fixture_path, 2)
+    end)
+
+    # first run the tests with --cover flag set
+    capture_io(fn ->
+      RunTask.run([
+        "-t",
+        "test",
+        "--workspace-path",
+        fixture_path,
+        "-p",
+        "package_2a",
+        "--",
+        "--cover"
+      ])
+    end)
+
+    # with a single project param set
+    captured =
+      capture_io(fn ->
+        TestCoverageTask.run([
+          "--workspace-path",
+          fixture_path,
+          "--project",
+          "package_2a",
+          "--verbose"
+        ])
+      end)
+
+    expected =
+      [
+        "==> importing cover results",
+        "==> :package_a - importing cover results from package_a/cover/package_a.coverdata",
+        "==> analysing coverage data",
+        "==> :package_a - total coverage 100.00% [threshold 90%]",
+        "100.00%  PackageA (1/1 lines)",
+        "==> workspace coverage 100.00% [threshold 90%]"
+      ]
+      |> add_index_to_output(2)
+
+    assert_cli_output_match(captured, expected)
+  end
+
+  test "with missing coverdata files" do
+    fixture_path = test_fixture_path()
+
+    in_fixture("test_coverage", fn ->
+      make_fixture_unique(fixture_path, 3)
+    end)
+
+    # run test task to generate beams
+    # TODO: handle missing beam files
+    capture_io(fn ->
+      RunTask.run([
+        "-t",
+        "test",
+        "--workspace-path",
+        fixture_path
+      ])
+    end)
+
+    captured =
+      assert_raise_and_capture_io(
+        Mix.Error,
+        ~r"coverage for one or more projects below the required threshold",
+        fn ->
+          TestCoverageTask.run(["--workspace-path", fixture_path])
+        end
+      )
+
+    # TODO change format of missing coverdata
+    # make it a warning and add warnings-as-arrors flag
+    expected =
+      [
+        "==> importing cover results",
+        "package_a - could not find .coverdata file in any of the paths:",
+        "package_b - could not find .coverdata file in any of the paths:",
+        "package_c - could not find .coverdata file in any of the paths:",
+        "==> analysing coverage data",
+        "==> :package_a - total coverage 0.00% [threshold 90%]",
+        "0.00%    PackageA (0/1 lines)",
+        "==> :package_b - total coverage 0.00% [threshold 90%]",
+        "0.00%    PackageB (0/2 lines)",
+        "==> :package_c - total coverage 0.00% [threshold 90%]",
+        "0.00%    PackageC (0/4 lines)",
+        "==> workspace coverage 0.00% [threshold 90%]"
+      ]
+      |> add_index_to_output(3)
+
+    assert_cli_output_match(captured, expected)
+  end
 
   defp make_fixture_unique(fixture_path, index) do
     # replace the content of all ex and exs files
