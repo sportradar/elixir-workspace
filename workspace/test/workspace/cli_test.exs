@@ -2,6 +2,7 @@ defmodule Workspace.CliTest do
   use ExUnit.Case
   alias Workspace.Cli
   import ExUnit.CaptureIO
+  import TestUtils
 
   doctest Workspace.Cli
 
@@ -51,35 +52,113 @@ defmodule Workspace.CliTest do
     end
   end
 
-  # describe "log/1" do
-  #   test "default format" do
-  #     assert capture_io(fn ->
-  #              Cli.log("a message")
-  #            end) =~ format_ansi(["==>", :reset, " ", "a message", :reset])
-  #   end
-  # end
-  #
-  # describe "log/3" do
-  #   test "with default options" do
-  #     assert capture_io(fn ->
-  #              Cli.log("section", "a message")
-  #            end) =~ format_ansi(["==> ", "section", :reset, " - ", "a message", :reset])
-  #   end
-  #
-  #   test "with options set" do
-  #     assert capture_io(fn ->
-  #              Cli.log("section", "a message",
-  #                prefix: "~>",
-  #                section_style: :red,
-  #                style: :bright,
-  #                separator: ":"
-  #              )
-  #            end) =~
-  #              format_ansi(["~>", :red, "section", :reset, ":", :bright, "a message", :reset])
-  #   end
-  # end
+  describe "log/2" do
+    test "with default options" do
+      assert capture_io(fn ->
+               Cli.log("a message")
+             end) =~ format_ansi(["==> ", "a message"])
+    end
+
+    test "with prefix set" do
+      assert capture_io(fn ->
+               Cli.log("a message", prefix: "++> ")
+             end) =~ format_ansi(["++> ", "a message"])
+
+      assert capture_io(fn ->
+               Cli.log("a message", prefix: false)
+             end) =~ "a message"
+    end
+
+    test "with a highlighted message" do
+      assert capture_io(fn ->
+               Cli.log([:bright, :red, "a message"], prefix: "--> ")
+             end) =~ format_ansi(["--> ", :bright, :red, "a message"])
+    end
+  end
+
+  describe "log_with_title/3" do
+    test "with default options" do
+      assert capture_io(fn ->
+               Cli.log_with_title("section", "a message")
+             end) =~ format_ansi(["==> ", "section", " - ", "a message"])
+    end
+
+    test "with options set" do
+      assert capture_io(fn ->
+               Cli.log_with_title(
+                 Cli.highlight("section", :red),
+                 Cli.highlight("a message", :bright),
+                 prefix: "~>",
+                 separator: ":"
+               )
+             end) =~
+               format_ansi(["~>", :red, "section", :reset, ":", :bright, "a message", :reset])
+    end
+  end
+
+  describe "project_name/2" do
+    test "with show_status set to true" do
+      opts = [show_status: true]
+      project = project_fixture(app: :foo)
+
+      # default status
+      assert_ansi_lists(Cli.project_name(project, opts), [
+        :light_cyan,
+        ":foo",
+        :reset,
+        :bright,
+        :green,
+        " ✔",
+        :reset
+      ])
+
+      # affected
+      project = Workspace.Project.set_status(project, :affected)
+
+      assert_ansi_lists(Cli.project_name(project, opts), [
+        :yellow,
+        ":foo",
+        :reset,
+        :bright,
+        :yellow,
+        " ●",
+        :reset
+      ])
+
+      # modified
+      project = Workspace.Project.set_status(project, :modified)
+
+      assert_ansi_lists(Cli.project_name(project, opts), [
+        :bright,
+        :red,
+        ":foo",
+        :reset,
+        :bright,
+        :red,
+        " ✚",
+        :reset
+      ])
+    end
+
+    test "with default options" do
+      project = project_fixture(app: :foo)
+
+      assert_ansi_lists(Cli.project_name(project, []), [:light_cyan, ":foo", :reset])
+    end
+
+    test "with a default_style set" do
+      project = project_fixture(app: :foo)
+      opts = [default_style: [:bright, :green]]
+
+      assert_ansi_lists(Cli.project_name(project, opts), [:bright, :green, ":foo", :reset])
+    end
+  end
 
   test "newline/0" do
     assert capture_io(fn -> Cli.newline() end) == "\n"
+  end
+
+  defp assert_ansi_lists(output, expected) do
+    assert List.flatten(output) == List.flatten(expected)
   end
 end

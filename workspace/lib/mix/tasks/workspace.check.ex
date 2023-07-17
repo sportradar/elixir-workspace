@@ -35,7 +35,7 @@ defmodule Mix.Tasks.Workspace.Check do
       Workspace.new(workspace_path, config)
       |> Workspace.filter_workspace(opts)
 
-    log_header("running #{length(config.checks)} workspace checks on the workspace")
+    log("running #{length(config.checks)} workspace checks on the workspace")
     newline()
 
     config.checks
@@ -66,11 +66,11 @@ defmodule Mix.Tasks.Workspace.Check do
 
     display_index = String.pad_leading("#{index}", 3, "0")
 
-    log_header([
+    log_with_title(
       highlight("C#{display_index}", [:bright, status_color(status)]),
-      " ",
-      highlight(check[:description], :bright)
-    ])
+      highlight(check[:description], :bright),
+      separator: " "
+    )
 
     for result <- results do
       maybe_print_result(result, opts[:verbose])

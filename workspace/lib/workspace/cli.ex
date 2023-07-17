@@ -16,55 +16,76 @@ defmodule Workspace.Cli do
 
   def newline, do: Mix.shell().info("")
 
-  # @spec log(message :: IO.ANSI.ansidata()) :: :ok
-  # def log(message), do: log("", message, prefix: "==>", separator: " ")
-  #
-  # @doc """
-  # Helper function for fancy generic log messages
-  #
-  # Each log message conists of the following sections:
-  #
-  # - `prefix` a prefix for each log message, defaults to "==> ". Can be
-  # configured through the `prefix` option.
-  # - `section` a string representing the section of the log message, e.g.
-  # an application name, a command or a log level. 
-  # - `separator` separator between the section and the main message, defaults
-  # to a space.
-  # - `message` the message to be printed, can be any text
-  #
-  # The following options are supported:
-  #
-  # - `prefix` - the prefix to be used, defaults to `==> `
-  # - `separator` - the separator to be used, defaults to ` - `
-  # - `section_style` - the style to be applied for highlighting the section,
-  # no styling is applied if not set
-  # - `style` - a highlight style to be applied to the complete message.
-  # """
-  # @spec log(
-  #         section :: IO.ANSI.ansidata(),
-  #         message :: IO.ANSI.ansidata(),
-  #         opts :: Keyword.t()
-  #       ) ::
-  #         :ok
-  # def log(section, message, opts \\ []) do
-  #   prefix = opts[:prefix] || "==> "
-  #   separator = opts[:separator] || " - "
-  #   section_style = opts[:section_style] || []
-  #   style = opts[:style] || []
-  #
-  #   Mix.shell().info([
-  #     prefix,
-  #     highlight(section, section_style),
-  #     separator,
-  #     highlight(message, style)
-  #   ])
-  # end
+  @doc """
+  Helper function for console log messages
 
-  def log_header(message) do
-    Mix.shell().info([
-      "==> ",
-      message
-    ])
+  ## Options
+
+  - `:prefix` the prefix to be used, defaults to "==> ". If set to `false`
+  no prefix is applied.
+  """
+  @spec log(
+          message :: IO.ANSI.ansidata(),
+          opts :: Keyword.t()
+        ) ::
+          :ok
+  def log(message, opts \\ []) do
+    prefix =
+      case opts[:prefix] do
+        nil -> "==> "
+        false -> ""
+        other when is_binary(other) -> other
+      end
+
+    Mix.shell().info([prefix, message])
+  end
+
+  @doc """
+  Helper function for logging a message with a title
+
+  Each log message conists of the following sections:
+
+  - `prefix` a prefix for each log message, defaults to "==> ". Can be
+  configured through the `prefix` option. If set to `false` no prefix
+  is applied.
+  - `title` a string representing the title of the log message, e.g.
+  an application name, a command or a log level. 
+  - `separator` separator between the title and the main message, defaults
+  to a space.
+  - `message` the message to be printed, can be any text
+
+  ## Options
+
+  - `:prefix` - the prefix to be used, defaults to `==> `
+  - `:separator` - the separator to be used between title and message, defaults
+  to ` - `
+
+  ## Examples
+
+  You can combine it with other helper CLI functions like `highlight` for
+  rich text log messages.
+
+  ```elixir
+  # Default invocation
+  Cli.log(":foo", "a message") ##> ==> :foo - a message
+
+  # with a different prefix
+  Cli.log(":foo", "a message", prefix: "> ") ##> > :foo - a message
+
+  # with highlighted sections
+  Cli.log(project_name(project, show_status: true), highlight(message, [:bright, :red]))
+  ```
+  """
+  @spec log_with_title(
+          section :: IO.ANSI.ansidata(),
+          message :: IO.ANSI.ansidata(),
+          opts :: Keyword.t()
+        ) ::
+          :ok
+  def log_with_title(title, message, opts \\ []) do
+    separator = opts[:separator] || " - "
+
+    log([title, separator, message], opts)
   end
 
   def status_color(:error), do: :red
@@ -101,7 +122,20 @@ defmodule Workspace.Cli do
     ansi_codes ++ [text, :reset]
   end
 
-  def project_name(project, opts) do
+  @doc """
+  Format the project name with the default styling and status info if needed.
+
+  ## Options
+
+  * `:show_status` - if set to `true` it color codes the name based on the status
+  of the project and appends status icons as following:
+    * `:modified` - `✚` (bright red)
+    * `:affected` - `●` (bright yellow)
+    * `:unaffected` - `✔` (:bright green)
+  * `:defaule_style` - can be used to change the default style (`:light_cyan`)
+  """
+  @spec project_name(project :: Workspace.Project.t(), opts :: keyword()) :: IO.ANSI.ansidata()
+  def project_name(project, opts \\ []) do
     show_status = opts[:show_status] || false
     default_style = opts[:default_style] || [:light_cyan]
 

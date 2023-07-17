@@ -164,14 +164,14 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     {:ok, string_io} = StringIO.open("")
     Process.group_leader(pid, string_io)
 
-    log_header(highlight("importing cover results", :bright))
+    log(highlight("importing cover results", :bright))
 
     Enum.each(paths, fn {app, cover_paths, _compile_paths} ->
       import_cover_results(app, cover_paths, workspace_path)
     end)
 
     newline()
-    log_header(highlight("analysing coverage data", :bright))
+    log(highlight("analysing coverage data", :bright))
 
     coverage_stats =
       workspace
@@ -199,15 +199,17 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
             workspace.config.test_coverage[:allow_failure] || []
           )
 
-        log_header([
-          highlight(inspect(project.app), :cyan),
-          " - total coverage ",
-          highlight(
-            [:io_lib.format("~.2f", [coverage]), "%"],
-            [:bright, status_color(status)]
-          ),
-          " [threshold #{error_threshold}%]"
-        ])
+        log_with_title(
+          project_name(project),
+          [
+            "total coverage ",
+            highlight(
+              [:io_lib.format("~.2f", [coverage]), "%"],
+              [:bright, status_color(status)]
+            ),
+            " [threshold #{error_threshold}%]"
+          ]
+        )
 
         print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
 
@@ -224,7 +226,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     newline()
 
-    log_header([
+    log([
       highlight("workspace coverage ", :bright),
       highlight(
         [:io_lib.format("~.2f", [overall_coverage]), "%"],
@@ -261,7 +263,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   defp export_coverage(coverage_stats, exporters) do
     newline()
-    log_header([:bright, "exporting coverage data"])
+    log([:bright, "exporting coverage data"])
 
     Enum.each(exporters, fn {_name, exporter} ->
       exporter.(coverage_stats)

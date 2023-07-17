@@ -53,7 +53,7 @@ defmodule Mix.Tasks.Workspace.Run do
 
   defp run_in_project(%{skip: true, app: app}, args, _argv) do
     if args[:verbose] do
-      log_header([
+      log([
         highlight("#{args[:task]}", [:bright, :yellow]),
         "skipping #{app}"
       ])
@@ -67,11 +67,10 @@ defmodule Mix.Tasks.Workspace.Run do
 
     env = parse_environment_variables(options[:env_var])
 
-    log_header([
+    log_with_title(
       project_name(project, show_status: options[:show_status]),
-      " - ",
       highlight("mix #{Enum.join(task_args, " ")}", :bright)
-    ])
+    )
 
     if not options[:dry_run] do
       run_task(project, task, argv, options, env)
