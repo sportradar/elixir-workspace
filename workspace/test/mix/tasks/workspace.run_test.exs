@@ -16,7 +16,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
     "-t",
     "format",
     "--workspace-path",
-    Path.join(tmp_path(), "sample_workspace_run"),
+    Path.join(tmp_path(), "sample_workspace_default"),
     "--",
     "--check-formatted",
     "mix.exs"
@@ -24,7 +24,13 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
   describe "sanity checks of common cli arguments" do
     test "runs only on the selected projects" do
-      args = ["-p", "package_default_a", "-p", "package_default_b", "--dry-run" | @default_run_task]
+      args = [
+        "-p",
+        "package_default_a",
+        "-p",
+        "package_default_b",
+        "--dry-run" | @default_run_task
+      ]
 
       captured =
         capture_io(fn ->
@@ -36,7 +42,13 @@ defmodule Mix.Tasks.Workspace.RunTest do
         "==> :package_default_b - mix format --check-formatted mix.exs"
       ])
 
-      args = ["-i", "package_default_a", "-i", "package_default_b", "--dry-run" | @default_run_task]
+      args = [
+        "-i",
+        "package_default_a",
+        "-i",
+        "package_default_b",
+        "--dry-run" | @default_run_task
+      ]
 
       captured =
         capture_io(fn ->
@@ -119,7 +131,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         "-t",
         "cmd",
         "--workspace-path",
-        Path.join(tmp_path(), "sample_workspace_run"),
+        Path.join(tmp_path(), "sample_workspace_default"),
         "-e",
         "FOO=bar",
         "--",
@@ -151,7 +163,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         "-t",
         "cmd",
         "--workspace-path",
-        Path.join(tmp_path(), "sample_workspace_run"),
+        Path.join(tmp_path(), "sample_workspace_default"),
         "--",
         "exit",
         "1"

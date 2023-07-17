@@ -69,6 +69,8 @@ defmodule TestUtils do
     after
       :ok
     end
+
+    path
   end
 
   # Copies the given fixture to the given dirname under the tmp folder
