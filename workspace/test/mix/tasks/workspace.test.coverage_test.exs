@@ -153,6 +153,57 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
     assert_cli_output_match(captured, expected)
   end
 
+  test "with lcov exporter set and allow failures set" do
+    fixture_path = test_fixture_path()
+
+    in_fixture("test_coverage", fn ->
+      make_fixture_unique(fixture_path, 4)
+    end)
+
+    capture_io(fn ->
+      RunTask.run([
+        "-t",
+        "test",
+        "--workspace-path",
+        fixture_path,
+        "--",
+        "--cover"
+      ])
+    end)
+
+    # with a single project param set
+    captured =
+      capture_io(fn ->
+        TestCoverageTask.run([
+          "--workspace-path",
+          fixture_path,
+          "--config-path",
+          "workspace_with_lcov_exporter.exs"
+        ])
+      end)
+
+    expected =
+      [
+        "==> importing cover results",
+        "==> :package_a - importing cover results from package_a/cover/package_a.coverdata",
+        "==> :package_b - importing cover results from package_b/cover/package_b.coverdata",
+        "==> :package_c - importing cover results from package_c/cover/package_c.coverdata",
+        "==> analysing coverage data",
+        "==> :package_a - total coverage 100.00% [threshold 90%]",
+        "==> :package_b - total coverage 50.00% [threshold 90%]",
+        "50.00%   PackageB (1/2 lines)",
+        "==> :package_c - total coverage 25.00% [threshold 90%]",
+        "25.00%   PackageC (1/4 lines)",
+        "==> workspace coverage 42.86% [threshold 40%]",
+        "==> exporting coverage data",
+        "saving lcov report to #{fixture_path}/coverage/coverage.lcov"
+      ]
+      |> add_index_to_output(4)
+
+    assert_cli_output_match(captured, expected)
+    assert File.exists?(Path.join(fixture_path, "coverage/coverage.lcov"))
+  end
+
   test "with missing coverdata files" do
     fixture_path = test_fixture_path()
 
@@ -231,7 +282,7 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
     content = File.read!(path)
 
     content =
-      ["Workspace", "_workspace", "Package", "package_"]
+      ["MixWorkspace", "_workspace", "Package", "package_"]
       |> Enum.reduce(content, fn pattern, content ->
         String.replace(content, pattern, "#{pattern}#{index}")
       end)

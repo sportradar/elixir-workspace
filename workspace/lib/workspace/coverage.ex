@@ -25,7 +25,7 @@ defmodule Workspace.Coverage do
     {percentage, line_stats}
   end
 
-  def export_lcov(coverage, opts \\ []) do
+  def export_lcov(workspace, coverage, opts \\ []) do
     lcov =
       coverage
       |> Enum.map(fn {module, _app, function_data, line_data} ->
@@ -52,7 +52,15 @@ defmodule Workspace.Coverage do
     filename = opts[:filename] || "coverage.lcov"
     output_path = opts[:output_path] || "cover"
 
-    output_path = Path.join(output_path, filename) |> Path.expand()
+    output_path =
+      case Path.type(output_path) do
+        # if it's relative it is considered relative to the workspace root
+        :relative ->
+          Path.join([workspace.workspace_path, output_path, filename]) |> Path.expand()
+
+        :absolute ->
+          Path.join(output_path, filename)
+      end
 
     Mix.shell().info([
       "    ",

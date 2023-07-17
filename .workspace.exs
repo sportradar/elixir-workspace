@@ -89,8 +89,8 @@
     allow_failure: [:workspace],
     threshold: 40,
     exporters: [
-      lcov: fn coverage_stats ->
-        Workspace.Coverage.export_lcov(coverage_stats, output_path: "artifacts/coverage")
+      lcov: fn workspace, coverage_stats ->
+        Workspace.Coverage.export_lcov(workspace, coverage_stats, output_path: "artifacts/coverage")
       end
     ]
   ]

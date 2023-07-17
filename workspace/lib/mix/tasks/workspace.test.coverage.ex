@@ -109,24 +109,34 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   By default the coverage results are not exported but only logged. You can however specify
   one or more exporters in your workspace `:test_coverage` config. Each exporter is
-  expected to by a function that accepts as input a list of tuples of the form:
+  expected to by a function that accepts as input a workspace and a list of tuples of the form:
 
   ```elixir
   {module :: module(), path :: binary(), function_data, line_data}
   ```
 
-  processes the coverage data and generates a report in any format. Officially we support
-  only an `lcov` exporter. Sample configuration:
+  It is responsible for processing the coverage data and generating a report in any format.
+  Officially we support the following exporters
 
-  ```elixir
-  test_coverage: [
-    exporters: [
-      lcov: fn coverage_stats -> 
-        Workspace.Coverage.export_lcov(coverage_stats, [output_path: "artifacts/coverage"])
-      end
-    ]
-  ]
-  ```
+  ### `lcov` exporter 
+
+  Generates an lcov file with both line and function coverage stats
+
+  > #### Sample config {: .info}
+  >  
+  > ```elixir
+  > test_coverage: [
+  >   exporters: [
+  >     lcov: fn workspace, coverage_stats -> 
+  >       Workspace.Coverage.export_lcov(
+  >         workspace,
+  >         coverage_stats,
+  >         [output_path: "artifacts/coverage"]
+  >       )
+  >     end
+  >   ]
+  > ]
+  > ```
 
   ## Command line options
 
@@ -235,8 +245,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
       " [threshold #{error_threshold}%]"
     ])
 
-    exporters = Keyword.get(workspace.config.test_coverage, :exporters, [])
-    export_coverage(coverage_stats, exporters)
+    export_coverage(workspace, coverage_stats)
 
     if failed do
       Mix.raise("coverage for one or more projects below the required threshold")
@@ -259,14 +268,16 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     end
   end
 
-  defp export_coverage(_coverage_stats, []), do: :ok
+  defp export_coverage(workspace, coverage_stats) do
+    exporters = Keyword.get(workspace.config.test_coverage, :exporters, [])
 
-  defp export_coverage(coverage_stats, exporters) do
-    newline()
-    log([:bright, "exporting coverage data"])
+    if exporters != [] do
+      newline()
+      log([:bright, "exporting coverage data"])
+    end
 
     Enum.each(exporters, fn {_name, exporter} ->
-      exporter.(coverage_stats)
+      exporter.(workspace, coverage_stats)
     end)
   end
 
