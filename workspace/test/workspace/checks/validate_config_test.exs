@@ -10,7 +10,7 @@ defmodule Workspace.Checks.ValidateConfigTest do
     check = [
       module: ValidateConfig,
       opts: [],
-      only: [:project_a]
+      only: [:package_a]
     ]
 
     assert_raise KeyError, fn -> ValidateConfig.check(workspace, check) end
@@ -23,15 +23,15 @@ defmodule Workspace.Checks.ValidateConfigTest do
         opts: [
           validate: fn config -> {:error, "an error detected for #{config[:app]}"} end
         ],
-        only: [:project_a]
+        only: [:package_a]
       )
 
     results = ValidateConfig.check(workspace, check)
-    assert_check_status(results, :project_a, :error)
-    assert_check_meta(results, :project_a, message: "an error detected for project_a")
-    assert_formatted_result(results, :project_a, "an error detected for project_a")
+    assert_check_status(results, :package_a, :error)
+    assert_check_meta(results, :package_a, message: "an error detected for package_a")
+    assert_formatted_result(results, :package_a, "an error detected for package_a")
 
-    for {app, project} <- workspace.projects, app != :project_a do
+    for {app, project} <- workspace.projects, app != :package_a do
       assert_check_status(results, project.app, :skip)
       assert_formatted_result(results, project.app, nil)
     end
@@ -46,7 +46,7 @@ defmodule Workspace.Checks.ValidateConfigTest do
         opts: [
           validate: fn _config -> {:invalid, "invalid"} end
         ],
-        only: [:project_a]
+        only: [:package_a]
       )
 
     message = """
@@ -66,7 +66,7 @@ defmodule Workspace.Checks.ValidateConfigTest do
         opts: [
           validate: fn _config -> {:error, :error} end
         ],
-        only: [:project_a]
+        only: [:package_a]
       )
 
     message = """
@@ -86,7 +86,7 @@ defmodule Workspace.Checks.ValidateConfigTest do
         opts: [
           validate: fn _config -> {:error, :error, :error} end
         ],
-        only: [:project_a]
+        only: [:package_a]
       )
 
     message =

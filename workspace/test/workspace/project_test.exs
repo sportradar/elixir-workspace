@@ -8,10 +8,10 @@ defmodule Workspace.ProjectTest do
 
   describe "new/2" do
     test "creates a valid project" do
-      project_path = Path.join(@sample_workspace_path, "project_a")
+      project_path = Path.join(@sample_workspace_path, "package_a")
       project = Project.new(project_path, @sample_workspace_path)
 
-      assert project.module == ProjectA.MixProject
+      assert project.module == PackageA.MixProject
     end
 
     # dummy test just for test coverage
@@ -40,17 +40,17 @@ defmodule Workspace.ProjectTest do
     end
 
     test "another valid project" do
-      relative_path = Path.join(@sample_workspace_path, "project_a")
+      relative_path = Path.join(@sample_workspace_path, "package_a")
       relative_mix_path = Path.join(relative_path, "mix.exs")
 
-      assert Project.in_project(relative_path, fn module -> module end) == ProjectA.MixProject
-      assert Project.in_project(relative_mix_path, fn module -> module end) == ProjectA.MixProject
+      assert Project.in_project(relative_path, fn module -> module end) == PackageA.MixProject
+      assert Project.in_project(relative_mix_path, fn module -> module end) == PackageA.MixProject
 
       assert Project.in_project(Path.expand(relative_path), fn module -> module end) ==
-               ProjectA.MixProject
+               PackageA.MixProject
 
       assert Project.in_project(Path.expand(relative_mix_path), fn module -> module end) ==
-               ProjectA.MixProject
+               PackageA.MixProject
     end
 
     test "raises if invalid project or mix file" do
@@ -82,9 +82,9 @@ defmodule Workspace.ProjectTest do
   end
 
   test "relative_to_workspace/1" do
-    project_path = Path.join(@sample_workspace_path, "project_a")
+    project_path = Path.join(@sample_workspace_path, "package_a")
     project = Project.new(project_path, @sample_workspace_path)
 
-    assert Project.relative_to_workspace(project) == "project_a"
+    assert Project.relative_to_workspace(project) == "package_a"
   end
 end

@@ -26,16 +26,16 @@ defmodule Mix.Tasks.Workspace.CheckTest do
     expected = [
       "==> running 1 workspace checks on the workspace",
       "==> C000 check deps_path",
-      "ERROR :project_a - expected :deps_path to be ../deps, got: deps",
-      "ERROR :project_b - expected :deps_path to be ../deps, got: deps",
-      "ERROR :project_c - expected :deps_path to be ../deps, got: deps",
-      "ERROR :project_d - expected :deps_path to be ../deps, got: deps",
-      "ERROR :project_e - expected :deps_path to be ../deps, got: deps",
-      "ERROR :project_f - expected :deps_path to be ../deps, got: deps",
-      "ERROR :project_g - expected :deps_path to be ../deps, got: deps",
-      "ERROR :project_i - expected :deps_path to be ../deps, got: deps",
-      "ERROR :project_j - expected :deps_path to be ../deps, got: deps",
-      "ERROR :project_k - expected :deps_path to be ../deps, got: deps"
+      "ERROR :package_a - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_b - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_c - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_d - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_e - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_f - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_g - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_i - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_j - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_k - expected :deps_path to be ../deps, got: deps"
     ]
 
     captured =

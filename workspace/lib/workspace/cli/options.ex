@@ -42,7 +42,9 @@ defmodule Workspace.Cli.Options do
 
         - `process` - every subcommand will be executed as a different process, this
         is the preferred mode for most mix tasks
-        - `subtask` - invokes `Mix.Task.run` from the workspace in the given project\
+        - `in-project` - invokes `Mix.Task.run` from the workspace in the given project
+        without creating a new process (**notice that this is experimental and may not work properly
+        for some commands**)
       """
     ]
 

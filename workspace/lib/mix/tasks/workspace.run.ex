@@ -37,8 +37,7 @@ defmodule Mix.Tasks.Workspace.Run do
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     config_path = Keyword.fetch!(opts, :config_path)
 
-    config = Workspace.config(Path.join(workspace_path, config_path))
-    workspace = Workspace.new(workspace_path, config)
+    workspace = Workspace.new(workspace_path, config_path)
 
     workspace
     |> Workspace.filter_workspace(opts)
@@ -89,10 +88,10 @@ defmodule Mix.Tasks.Workspace.Run do
         {String.upcase(name) |> String.to_charlist(), String.to_charlist(value)}
 
       other ->
-        Mix.raise("""
-        Invalid environment variable definition, it should be of the form 
-        ENV_VAR_NAME=value, got: #{other}
-        """)
+        Mix.raise(
+          "invalid environment variable definition, it should be of the form " <>
+            "ENV_VAR_NAME=value, got: #{other}"
+        )
     end
   end
 
@@ -101,7 +100,7 @@ defmodule Mix.Tasks.Workspace.Run do
       "process" ->
         cmd(task, argv, project, env)
 
-      "subtask" ->
+      "in-project" ->
         Mix.Project.in_project(
           project.app,
           project.path,
@@ -111,7 +110,9 @@ defmodule Mix.Tasks.Workspace.Run do
         )
 
       other ->
-        Mix.raise("invalid execution mode #{other}, only `process` and `subtask` are supported")
+        Mix.raise(
+          "invalid execution mode #{other}, only `process` and `in-project` are supported"
+        )
     end
   end
 

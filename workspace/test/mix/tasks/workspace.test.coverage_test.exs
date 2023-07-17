@@ -253,43 +253,6 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
     assert_cli_output_match(captured, expected)
   end
 
-  defp make_fixture_unique(fixture_path, index) do
-    # replace the content of all ex and exs files
-    Path.join(fixture_path, "**/*.{exs,ex}")
-    |> Path.wildcard()
-    |> Enum.each(&add_index_to_module(&1, index))
-
-    # rename all package folders
-    Path.join(fixture_path, "**/package_*")
-    |> Path.wildcard()
-    |> Enum.filter(&File.dir?/1)
-    |> Enum.each(fn path ->
-      new_folder_name =
-        path
-        |> Path.basename()
-        |> String.replace("package_", "package_#{index}")
-
-      new_path =
-        path
-        |> Path.dirname()
-        |> Path.join(new_folder_name)
-
-      File.rename(path, new_path)
-    end)
-  end
-
-  defp add_index_to_module(path, index) do
-    content = File.read!(path)
-
-    content =
-      ["MixWorkspace", "_workspace", "Package", "package_"]
-      |> Enum.reduce(content, fn pattern, content ->
-        String.replace(content, pattern, "#{pattern}#{index}")
-      end)
-
-    File.write(path, content)
-  end
-
   defp add_index_to_output(lines, index) do
     Enum.map(lines, fn line ->
       line

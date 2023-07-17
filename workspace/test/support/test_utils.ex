@@ -28,7 +28,7 @@ defmodule TestUtils do
   def delete_tmp_dirs, do: File.rm_rf!(tmp_path())
 
   defmacro test_fixture_path do
-    tmp_path = test_fixture_path(__CALLER__)
+    tmp_path = test_fixture_path(__CALLER__) |> tmp_path()
 
     quote do
       unquote(tmp_path)
@@ -39,7 +39,7 @@ defmodule TestUtils do
     module = inspect(caller.module)
     function = Atom.to_string(elem(caller.function, 0))
 
-    Path.join(module, function) |> String.replace(":", "_") |> tmp_path()
+    Path.join(module, function) |> String.replace(":", "_")
   end
 
   # Runs the block code in a temporary folder where the contents of
@@ -50,22 +50,80 @@ defmodule TestUtils do
     tmp_path = test_fixture_path(__CALLER__)
 
     quote do
-      unquote(__MODULE__).in_fixture(unquote(fixture), unquote(tmp_path), unquote(block))
+      unquote(__MODULE__)._in_fixture(unquote(fixture), unquote(tmp_path), unquote(block))
     end
   end
 
-  def in_fixture(which, dest, function) do
-    src = fixture_path(which)
+  # similar to in_fixture/2 but specify a default name for it
+  defmacro in_fixture(fixture, dirname, block) do
+    quote do
+      unquote(__MODULE__)._in_fixture(unquote(fixture), unquote(dirname), unquote(block))
+    end
+  end
 
-    File.rm_rf!(dest)
-    File.mkdir_p!(dest)
-    File.cp_r!(src, dest)
+  def _in_fixture(which, dest, function) do
+    path = create_fixture(which, dest)
 
     try do
-      File.cd!(dest, function)
+      File.cd!(path, function)
     after
       :ok
     end
+  end
+
+  # Copies the given fixture to the given dirname under the tmp folder
+  # Useful in case you need to use the same fixture in multiple
+  # tests.
+  #
+  # You should initialize such fixtures in test_helper.exs
+  def create_fixture(fixture, dirname) do
+    tmp_path = tmp_path(dirname)
+
+    src = fixture_path(fixture)
+
+    File.rm_rf!(tmp_path)
+    File.mkdir_p!(tmp_path)
+    File.cp_r!(src, tmp_path)
+
+    tmp_path
+  end
+
+  def make_fixture_unique(fixture_path, suffix) do
+    # replace the content of all ex and exs files
+    Path.join(fixture_path, "**/*.{exs,ex}")
+    |> Path.wildcard()
+    |> Enum.each(&add_suffix_to_module(&1, suffix))
+
+    # rename all package folders
+    Path.join(fixture_path, "**/{package,project}_*")
+    |> Path.wildcard()
+    |> Enum.filter(&File.dir?/1)
+    |> Enum.each(fn path ->
+      new_folder_name =
+        path
+        |> Path.basename()
+        |> String.replace("package_", "package_#{suffix}")
+        |> String.replace("project_", "project_#{suffix}")
+
+      new_path =
+        path
+        |> Path.dirname()
+        |> Path.join(new_folder_name)
+
+      File.rename(path, new_path)
+    end)
+  end
+
+  defp add_suffix_to_module(path, suffix) do
+    content = File.read!(path)
+
+    content =
+      ["MixWorkspace", "_workspace", "Package", "package_"]
+      |> Enum.reduce(content, fn pattern, content ->
+        String.replace(content, pattern, "#{pattern}#{suffix}")
+      end)
+
+    File.write(path, content)
   end
 
   def purge(modules) do

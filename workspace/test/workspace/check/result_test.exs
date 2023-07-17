@@ -6,8 +6,8 @@ defmodule Workspace.Check.ResultTest do
   @sample_workspace_path "test/fixtures/sample_workspace"
 
   setup do
-    project_path = Path.join(@sample_workspace_path, "project_a")
-    project = Workspace.Project.new(project_path, @sample_workspace_path)
+    package_path = Path.join(@sample_workspace_path, "package_a")
+    project = Workspace.Project.new(package_path, @sample_workspace_path)
 
     {:ok, check} = Workspace.Check.validate(module: CheckModule)
 

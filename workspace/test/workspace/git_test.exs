@@ -11,7 +11,7 @@ defmodule Workspace.GitTest do
         assert Workspace.Git.root() == {:ok, fixture_path}
 
         # should return the same from subfolders
-        File.cd!("project_a")
+        File.cd!("package_a")
         assert Workspace.Git.root() == {:ok, fixture_path}
       end)
 
@@ -39,22 +39,22 @@ defmodule Workspace.GitTest do
         assert Workspace.Git.untracked_files() == {:ok, []}
 
         # add a new file/modify an existing, it should be untracked
-        File.touch!("project_a/tmp.exs")
-        File.touch!("project_b/file.ex")
+        File.touch!("package_a/tmp.exs")
+        File.touch!("package_b/file.ex")
 
-        assert Workspace.Git.changed_files() == {:ok, ["project_a/tmp.exs", "project_b/file.ex"]}
+        assert Workspace.Git.changed_files() == {:ok, ["package_a/tmp.exs", "package_b/file.ex"]}
         assert Workspace.Git.uncommitted_files() == {:ok, []}
 
         assert Workspace.Git.untracked_files() ==
-                 {:ok, ["project_a/tmp.exs", "project_b/file.ex"]}
+                 {:ok, ["package_a/tmp.exs", "package_b/file.ex"]}
 
         # git add a file
-        System.cmd("git", ~w[add project_a/tmp.exs])
+        System.cmd("git", ~w[add package_a/tmp.exs])
 
-        assert Workspace.Git.changed_files() == {:ok, ["project_a/tmp.exs", "project_b/file.ex"]}
-        assert Workspace.Git.uncommitted_files() == {:ok, ["project_a/tmp.exs"]}
+        assert Workspace.Git.changed_files() == {:ok, ["package_a/tmp.exs", "package_b/file.ex"]}
+        assert Workspace.Git.uncommitted_files() == {:ok, ["package_a/tmp.exs"]}
 
-        assert Workspace.Git.untracked_files() == {:ok, ["project_b/file.ex"]}
+        assert Workspace.Git.untracked_files() == {:ok, ["package_b/file.ex"]}
       end)
     end
   end

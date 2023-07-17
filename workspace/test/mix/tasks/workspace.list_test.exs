@@ -15,17 +15,17 @@ defmodule Mix.Tasks.Workspace.ListTest do
 
   test "prints the tree of the workspace" do
     expected = """
-      * :project_a project_a
-      * :project_b a dummy project project_b
-      * :project_c project_c
-      * :project_d project_d
-      * :project_e project_e
-      * :project_f project_f
-      * :project_g project_g
-      * :project_h project_h
-      * :project_i project_i
-      * :project_j project_j
-      * :project_k project_k
+      * :package_a package_a
+      * :package_b a dummy project package_b
+      * :package_c package_c
+      * :package_d package_d
+      * :package_e package_e
+      * :package_f package_f
+      * :package_g package_g
+      * :package_h package_h
+      * :package_i package_i
+      * :package_j package_j
+      * :package_k package_k
     """
 
     assert capture_io(fn ->
@@ -35,8 +35,8 @@ defmodule Mix.Tasks.Workspace.ListTest do
 
   test "with --project option set" do
     expected = """
-      * :project_a project_a
-      * :project_b a dummy project project_b
+      * :package_a package_a
+      * :package_b a dummy project package_b
     """
 
     assert capture_io(fn ->
@@ -44,16 +44,16 @@ defmodule Mix.Tasks.Workspace.ListTest do
                "--workspace-path",
                @sample_workspace_path,
                "-p",
-               "project_a",
+               "package_a",
                "-p",
-               "project_b"
+               "package_b"
              ])
            end) == expected
   end
 
   test "with --ignore option set" do
     expected = """
-      * :project_b a dummy project project_b
+      * :package_b a dummy project package_b
     """
 
     assert capture_io(fn ->
@@ -61,11 +61,11 @@ defmodule Mix.Tasks.Workspace.ListTest do
                "--workspace-path",
                @sample_workspace_path,
                "-p",
-               "project_a",
+               "package_a",
                "-p",
-               "project_b",
+               "package_b",
                "-i",
-               "project_a"
+               "package_a"
              ])
            end) == expected
   end

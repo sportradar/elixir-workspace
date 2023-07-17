@@ -49,8 +49,8 @@ defmodule WorkspaceTest do
     test "with ignore_projects set" do
       config = %Workspace.Config{
         ignore_projects: [
-          ProjectA.MixProject,
-          ProjectB.MixProject
+          PackageA.MixProject,
+          PackageB.MixProject
         ]
       }
 
@@ -63,9 +63,9 @@ defmodule WorkspaceTest do
     test "with ignore_paths set" do
       config = %Workspace.Config{
         ignore_paths: [
-          "project_a",
-          "project_b",
-          "project_c"
+          "package_a",
+          "package_b",
+          "package_c"
         ]
       }
 
@@ -77,7 +77,7 @@ defmodule WorkspaceTest do
 
     test "raises if the path is not a workspace" do
       assert_raise Mix.Error, ~r"to be a workspace project", fn ->
-        Workspace.new(Path.join(@sample_workspace_path, "project_a"))
+        Workspace.new(Path.join(@sample_workspace_path, "package_a"))
       end
     end
   end
@@ -90,8 +90,8 @@ defmodule WorkspaceTest do
       assert Workspace.workspace?(Path.join(@sample_workspace_path, "mix.exs"))
       assert Workspace.workspace?(Path.join(@sample_workspace_path, "mix.exs") |> Path.expand())
 
-      refute Workspace.workspace?(Path.join(@sample_workspace_path, "project_a"))
-      refute Workspace.workspace?(Path.join(@sample_workspace_path, "project_a") |> Path.expand())
+      refute Workspace.workspace?(Path.join(@sample_workspace_path, "package_a"))
+      refute Workspace.workspace?(Path.join(@sample_workspace_path, "package_a") |> Path.expand())
     end
 
     test "raises if not valid project" do
@@ -105,7 +105,7 @@ defmodule WorkspaceTest do
         Path.join(@sample_workspace_path, "mix.exs") |> Workspace.Project.config()
 
       project_config =
-        Path.join([@sample_workspace_path, "project_a", "mix.exs"]) |> Workspace.Project.config()
+        Path.join([@sample_workspace_path, "package_a", "mix.exs"]) |> Workspace.Project.config()
 
       assert Workspace.workspace?(workspace_config)
       refute Workspace.workspace?(project_config)

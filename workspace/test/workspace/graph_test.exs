@@ -21,25 +21,25 @@ defmodule Workspace.GraphTest do
   describe "with_digraph/2" do
     test "runs a function on the graph", %{workspace: workspace} do
       assert Graph.with_digraph(workspace, fn graph -> :digraph.source_vertices(graph) end) == [
-               :project_a,
-               :project_h,
-               :project_i,
-               :project_k
+               :package_a,
+               :package_h,
+               :package_i,
+               :package_k
              ]
     end
   end
 
   test "source_projects/1", %{workspace: workspace} do
-    assert Graph.source_projects(workspace) == [:project_a, :project_h, :project_i, :project_k]
+    assert Graph.source_projects(workspace) == [:package_a, :package_h, :package_i, :package_k]
   end
 
   test "sink_projects/1", %{workspace: workspace} do
     assert Graph.sink_projects(workspace) == [
-             :project_d,
-             :project_e,
-             :project_g,
-             :project_j,
-             :project_k
+             :package_d,
+             :package_e,
+             :package_g,
+             :package_j,
+             :package_k
            ]
   end
 
@@ -49,14 +49,14 @@ defmodule Workspace.GraphTest do
     end
 
     test "proper traversing up of the graph", %{workspace: workspace} do
-      assert Graph.affected(workspace, [:project_k, :project_a]) == [:project_k, :project_a]
+      assert Graph.affected(workspace, [:package_k, :package_a]) == [:package_k, :package_a]
 
-      assert Graph.affected(workspace, [:project_g]) == [
-               :project_b,
-               :project_a,
-               :project_c,
-               :project_f,
-               :project_g
+      assert Graph.affected(workspace, [:package_g]) == [
+               :package_b,
+               :package_a,
+               :package_c,
+               :package_f,
+               :package_g
              ]
     end
   end
