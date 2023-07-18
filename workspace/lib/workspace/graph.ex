@@ -38,7 +38,7 @@ defmodule Workspace.Graph do
     end
 
     for {_app, project} <- workspace.projects,
-        {dep, dep_config} <- project.config[:deps],
+        {dep, dep_config} <- project.config[:deps] || [],
         # TODO fixup create a workspace_project? instead and use it
         path_dependency?(dep_config) do
       :digraph.add_edge(graph, project.app, dep)
