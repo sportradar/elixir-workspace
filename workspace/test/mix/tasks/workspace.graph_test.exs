@@ -10,7 +10,6 @@ defmodule Mix.Tasks.Workspace.GraphTest do
     Application.put_env(:elixir, :ansi_enabled, false)
   end
 
-
   test "prints the tree of the workspace" do
     expected = """
     :package_default_a

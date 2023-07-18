@@ -48,7 +48,6 @@ defmodule Mix.Tasks.Workspace.ListTest do
     assert capture_io(fn ->
              ListTask.run(["--workspace-path", @sample_workspace_changed_path, "--show-status"])
            end) == expected
-
   end
 
   test "with --project option set" do

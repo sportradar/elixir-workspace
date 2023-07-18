@@ -22,12 +22,16 @@ defmodule Workspace.CliTest do
       options = Cli.options(@valid_options)
 
       for option <- @valid_options do
-        assert options[option] == Workspace.Cli.Options.option(option)
+        assert options[option] == Workspace.CliOptions.default_options()[option]
       end
     end
 
     test "raises if invalid option" do
-      assert_raise ArgumentError, "invalid option :invalid", fn -> Cli.options([:invalid]) end
+      error = assert_raise KeyError, fn -> Cli.options([:invalid]) end
+      assert Exception.message(error) =~ "key [:invalid] not found in"
+
+      error = assert_raise KeyError, fn -> Cli.options([:invalid, :foo, :bar]) end
+      assert Exception.message(error) =~ "key [:bar, :foo, :invalid] not found in"
     end
 
     test "merges with extras and overrides" do
@@ -45,8 +49,8 @@ defmodule Workspace.CliTest do
 
       options = Cli.options([:verbose, :affected], extra)
 
-      assert options[:affected] == Cli.Options.option(:affected)
-      refute options[:verbose] == Cli.Options.option(:verbose)
+      assert options[:affected] == Workspace.CliOptions.option(:affected)
+      refute options[:verbose] == Workspace.CliOptions.option(:verbose)
       assert options[:verbose] == extra[:verbose]
       assert options[:another_option] == extra[:another_option]
     end

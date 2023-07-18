@@ -8,9 +8,8 @@ defmodule Workspace.Cli do
   """
   @spec options(common :: [atom()], extra :: keyword()) :: keyword()
   def options(common, extra \\ []) do
-    common
-    |> Enum.map(fn option -> {option, Workspace.Cli.Options.option(option)} end)
-    |> Keyword.new()
+    Workspace.CliOptions.default_options()
+    |> Workspace.Utils.keyword_take!(common)
     |> Keyword.merge(extra)
   end
 

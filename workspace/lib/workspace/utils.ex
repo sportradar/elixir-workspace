@@ -1,6 +1,24 @@
 defmodule Workspace.Utils do
   @moduledoc false
 
+  @doc false
+  @spec keyword_take!(keywords :: keyword(), keys :: [atom()]) :: keyword()
+  def keyword_take!(keywords, keys) when is_list(keywords) and is_list(keys) do
+    {take, missing} =
+      Enum.reduce(keys, {[], []}, fn key, {take, missing} ->
+        case Keyword.has_key?(keywords, key) do
+          true -> {[{key, keywords[key]} | take], missing}
+          false -> {take, [key | missing]}
+        end
+      end)
+
+    if missing != [] do
+      raise KeyError, key: missing, term: keywords
+    end
+
+    take
+  end
+
   # TODO: Remove once we upgrade to elixir 1.16.0
   @doc false
   @spec relative_path_to(path :: binary(), cwd :: binary()) :: binary()
