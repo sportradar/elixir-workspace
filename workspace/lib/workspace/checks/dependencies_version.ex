@@ -26,7 +26,7 @@ defmodule Workspace.Checks.DependenciesVersion do
 
   ```elixir
   [
-    module: Workspace.Checks.EnsureDependencies,
+    module: Workspace.Checks.DependenciesVersion,
     opts: [
       deps: [
         # checks both version and options
@@ -37,22 +37,6 @@ defmodule Workspace.Checks.DependenciesVersion do
         # for the other projects
         {:ex_doc, "== 0.28.3", only: :dev, runtime: false, no_options_check: [:foo]}
       ]
-    ]
-  ]
-  ```
-
-
-  ## Example
-
-  # TODO: fix it
-  In order to configure this checker add the following, under `checkers`,
-  in your `workspace.exs`:
-
-  ```elixir
-  [
-    module: Workspace.Checks.EnsureDependencies,
-    opts: [
-      deps: [:ex_doc, :credo]
     ]
   ]
   ```
