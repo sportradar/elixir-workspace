@@ -2,29 +2,58 @@
 
 **TODO: Add description**
 
-## TODO
+## TODO by priority
 
-- cli_opts handle invalid arguments and raise early
-- validate config check - support colored returned messages
-- validate config check - refactor error handling
-- workspace.list support json output
-- add a template library
-- support generators using template library
-- run - support custom options per app
-- run - allow apps to fail
-- add workspace.help task with all projects
-- add workspace aliases with docs
-- boundaries check support through tags
-- refactor highlight for consistency - introduce helpers
-- run - partition support
-- run - affected support
+### Cleanup
+
+we need to cleanup first in order to make our lifes easier later
+
+- move test helpers under lib (only on test env initially) and document them
+  properly
+- refactor all existing tests and improve test coverage
+- document all modules
+- make sure lint passes (credo, doctor, dialyzer)
+
+### New features
+
+requirement for each new feature is to be properly documented and
+tested
+
+#### Base functionality
+
 - graph - dot output
 - graph - include external deps
-- graph - color code output
-- add a global no-color flag, create helper Cli.info that handles it
+- run - partition support
+- run - support custom options per app
+- run - allow apps to fail
+- workspace.list support json output
+- add workspace.help task with all projects
+- add workspace aliases with docs
 - coverage - summary output per app
 - coverage - json exporter
 - coverage - explain module issues
+
+#### cli_opts
+
+- cli_opts handle invalid arguments and raise early
+- cli_opts support sections in docs, and update docs function to accept a
+  second opts list which will include sections docs
+
+#### checks
+
+- validate config check - support colored returned messages
+- validate config check - refactor error handling
+- boundaries check support through tags
+
+#### generators - templates
+
+- add a template library
+- support generators using template library
+
+#### house keeping - refactoring
+
+- refactor highlight for consistency - introduce helpers
+- add a global no-color flag, create helper Cli.info that handles it
 
 ## Installation
 
