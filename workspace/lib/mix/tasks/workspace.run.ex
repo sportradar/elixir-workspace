@@ -5,6 +5,7 @@ defmodule Mix.Tasks.Workspace.Run do
                     :project,
                     :task,
                     :affected,
+                    :modified,
                     :ignore,
                     :execution_order,
                     :execution_mode,

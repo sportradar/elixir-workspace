@@ -8,6 +8,11 @@ defmodule Workspace.CliOptions do
       alias: :a,
       doc: "Run only on affected projects"
     ],
+    modified: [
+      type: :boolean,
+      alias: :m,
+      doc: "Run only on modified projects"
+    ],
     ignore: [
       type: :string,
       alias: :i,

@@ -112,9 +112,6 @@ defmodule WorkspaceTest do
     end
   end
 
-  describe "filter_projects/2" do
-  end
-
   describe "filter_workspace/2" do
     test "filters and updates the given workspace", %{workspace: workspace} do
       workspace = Workspace.filter_workspace(workspace, ignore: [:bar])

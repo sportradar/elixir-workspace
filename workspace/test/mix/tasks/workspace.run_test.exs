@@ -122,6 +122,18 @@ defmodule Mix.Tasks.Workspace.RunTest do
     end
 
     test "with modified flag only modified flags are executed" do
+      # in a codebase with no changes
+      captured = capture_io(fn -> RunTask.run(["--modified" | @default_run_task]) end)
+
+      assert_cli_output_match(captured, [])
+
+      # runs only on affected projects
+      captured = capture_io(fn -> RunTask.run(["--modified" | @changed_run_task]) end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_changed_d - mix format --check-formatted mix.exs",
+        "==> :package_changed_e - mix format --check-formatted mix.exs"
+      ])
     end
 
     test "with root-only flag only roots are triggered" do

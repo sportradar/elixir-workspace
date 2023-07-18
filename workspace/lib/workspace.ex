@@ -436,6 +436,7 @@ defmodule Workspace do
     ignored = Enum.map(opts[:ignore] || [], &maybe_to_atom/1)
     selected = Enum.map(opts[:project] || [], &maybe_to_atom/1)
     affected = opts[:affected] || false
+    modified = opts[:modified] || false
 
     affected_projects =
       case affected do
@@ -443,21 +444,42 @@ defmodule Workspace do
         true -> affected(workspace)
       end
 
+    modified_projects =
+      case modified do
+        false -> nil
+        true -> modified(workspace)
+      end
+
     Enum.map(workspace.projects, fn {_name, project} ->
-      Map.put(project, :skip, skippable?(project, selected, ignored, affected_projects))
+      Map.put(
+        project,
+        :skip,
+        skippable?(project, selected, ignored, affected_projects, modified_projects)
+      )
     end)
   end
 
-  defp skippable?(%Workspace.Project{app: app}, selected, ignored, affected_projects) do
+  defp skippable?(%Workspace.Project{app: app}, selected, ignored, affected, modified) do
     cond do
       # first we check if the project is in the ignore list
-      app in ignored -> true
+      app in ignored ->
+        true
+
       # next we check if the project is not selected
-      selected != [] and app not in selected -> true
+      selected != [] and app not in selected ->
+        true
+
       # next we check if affected is set and the project is not affected
-      is_list(affected_projects) and app not in affected_projects -> true
+      is_list(affected) and app not in affected ->
+        true
+
+      # next we check if modified is set and the project is not modified
+      is_list(modified) and app not in modified ->
+        true
+
       # in any other case it is not skippable
-      true -> false
+      true ->
+        false
     end
   end
 
