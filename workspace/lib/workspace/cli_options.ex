@@ -19,30 +19,6 @@ defmodule Workspace.CliOptions do
       keep: true,
       doc: "Ignore the given projects"
     ],
-    task: [
-      type: :string,
-      alias: :t,
-      doc: "The task to execute",
-      required: true
-    ],
-    execution_order: [
-      type: :string,
-      default: "serial",
-      doc: "The execution order, one of `serial`, `parallel`, `roots`, `bottom-up`"
-    ],
-    execution_mode: [
-      type: :string,
-      default: "process",
-      doc: """
-      The execution mode. It supports the following values:
-
-        - `process` - every subcommand will be executed as a different process, this
-        is the preferred mode for most mix tasks
-        - `in-project` - invokes `Mix.Task.run` from the workspace in the given project
-        without creating a new process (**notice that this is experimental and may not work properly
-        for some commands**)
-      """
-    ],
     verbose: [
       type: :boolean,
       doc: "If set enables verbose logging"
@@ -62,21 +38,6 @@ defmodule Workspace.CliOptions do
       alias: :p,
       doc:
         "The project name, can be defined multiple times. If not set all projects are considered."
-    ],
-    dry_run: [
-      type: :boolean,
-      doc: "If set it will not execute the command, useful for testing and debugging.",
-      default: false
-    ],
-    env_var: [
-      type: :string,
-      doc: """
-      Optional environment variables to be set before command execution. They are
-      expected to be in the form `ENV_VAR_NAME=value`. You can use this multiple times
-      for setting multiple variables.\
-      """,
-      keep: true,
-      alias: :e
     ],
     show_status: [
       type: :boolean,

@@ -4,6 +4,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
                     :config_path,
                     :project,
                     :affected,
+                    :modified,
                     :ignore,
                     :verbose
                   ])

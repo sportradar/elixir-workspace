@@ -1,19 +1,55 @@
 defmodule Mix.Tasks.Workspace.Run do
-  @options_schema Workspace.Cli.options([
-                    :workspace_path,
-                    :config_path,
-                    :project,
-                    :task,
-                    :affected,
-                    :modified,
-                    :ignore,
-                    :execution_order,
-                    :execution_mode,
-                    :verbose,
-                    :dry_run,
-                    :env_var,
-                    :show_status
-                  ])
+  @task_options [
+    task: [
+      type: :string,
+      alias: :t,
+      doc: "The task to execute",
+      required: true
+    ],
+    execution_mode: [
+      type: :string,
+      default: "process",
+      doc: """
+      The execution mode. It supports the following values:
+
+        - `process` - every subcommand will be executed as a different process, this
+        is the preferred mode for most mix tasks
+        - `in-project` - invokes `Mix.Task.run` from the workspace in the given project
+        without creating a new process (**notice that this is experimental and may not work properly
+        for some commands**)
+
+      """
+    ],
+    dry_run: [
+      type: :boolean,
+      doc: "If set it will not execute the command, useful for testing and debugging.",
+      default: false
+    ],
+    env_var: [
+      type: :string,
+      doc: """
+      Optional environment variables to be set before command execution. They are
+      expected to be in the form `ENV_VAR_NAME=value`. You can use this multiple times
+      for setting multiple variables.\
+      """,
+      keep: true,
+      alias: :e
+    ]
+  ]
+
+  @options_schema Workspace.Cli.options(
+                    [
+                      :workspace_path,
+                      :config_path,
+                      :project,
+                      :ignore,
+                      :affected,
+                      :modified,
+                      :verbose,
+                      :show_status
+                    ],
+                    @task_options
+                  )
 
   @shortdoc "Run a mix command to all projects"
 

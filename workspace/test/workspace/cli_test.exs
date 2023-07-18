@@ -1,21 +1,32 @@
 defmodule Workspace.CliTest do
   use ExUnit.Case
-  alias Workspace.Cli
+
   import ExUnit.CaptureIO
   import TestUtils
+
+  alias Workspace.Cli
 
   doctest Workspace.Cli
 
   @valid_options [
     :affected,
+    :modified,
     :ignore,
-    :task,
-    :execution_order,
-    :execution_mode,
     :verbose,
     :workspace_path,
-    :config_path
+    :config_path,
+    :project,
+    :show_status
   ]
+
+  test "valid options sanity check" do
+    default_options =
+      Workspace.CliOptions.default_options()
+      |> Keyword.keys()
+      |> Enum.sort()
+
+    assert Enum.sort(@valid_options) == default_options
+  end
 
   describe "options/2" do
     test "with no extra options" do
