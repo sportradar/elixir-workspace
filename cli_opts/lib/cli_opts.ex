@@ -26,6 +26,7 @@ defmodule CliOpts do
   - `:doc` (`String.t()`) - A short description of the option item
   - `:keep` (`boolean/0`) - If set this option can be used multiple times. The
   default value is `false`
+  - `:allowed` (`[String.t()]`) - If set a list of allowed values.
 
   ## Example
 
@@ -110,7 +111,8 @@ defmodule CliOpts do
 
     with {:ok, parsed} <- check_required(parsed, schema),
          parsed <- set_defaults(parsed, schema),
-         parsed <- update_multiples(parsed, schema) do
+         parsed <- update_multiples(parsed, schema),
+         {:ok, parsed} <- check_allowed(parsed, schema) do
       {:ok,
        %{
          parsed: parsed,
@@ -209,13 +211,25 @@ defmodule CliOpts do
   end
 
   defp key_body_doc(schema) do
-    "#{schema[:doc]}#{maybe_default(schema)}"
+    [
+      schema[:doc],
+      maybe_allowed(schema),
+      maybe_default(schema)
+    ]
+    |> Enum.join("")
   end
 
   defp maybe_default(schema) do
     case schema[:default] do
       nil -> ""
       default -> " [default: `#{default}`]"
+    end
+  end
+
+  defp maybe_allowed(schema) do
+    case schema[:allowed] do
+      nil -> ""
+      allowed -> " Allowed values: `#{inspect(allowed)}`."
     end
   end
 
@@ -284,6 +298,32 @@ defmodule CliOpts do
         false -> acc
       end
     end)
+  end
+
+  defp check_allowed(args, schema) do
+    errors =
+      Enum.reduce(args, [], fn {key, value}, errors ->
+        allowed = schema[key][:allowed]
+
+        cond do
+          is_nil(allowed) ->
+            errors
+
+          value not in allowed ->
+            [
+              "not allowed value #{value} for #{key}, expected one of: #{inspect(allowed)}"
+              | errors
+            ]
+
+          true ->
+            errors
+        end
+      end)
+
+    case errors do
+      [] -> {:ok, args}
+      errors -> {:error, Enum.join(errors, "\n")}
+    end
   end
 
   @doc """

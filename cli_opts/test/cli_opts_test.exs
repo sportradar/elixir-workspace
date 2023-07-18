@@ -15,7 +15,8 @@ defmodule CliOptsTest do
     ],
     mode: [
       type: :string,
-      default: "parallel"
+      default: "parallel",
+      allowed: ["parallel", "serial"]
     ],
     ignore: [
       type: :boolean,
@@ -32,6 +33,12 @@ defmodule CliOptsTest do
       assert {:ok, _} = CliOpts.parse(["--project", "foo"], @test_schema)
       assert {:error, _} = CliOpts.parse([], @test_schema)
     end
+
+    test "allowed values" do
+      assert {:ok, _} = CliOpts.parse(["--project", "foo", "--mode", "serial"], @test_schema)
+      assert {:error, message} = CliOpts.parse(["--project", "foo", "--mode", "invalid"], @test_schema)
+      assert message == ~s'not allowed value invalid for mode, expected one of: ["parallel", "serial"]'
+    end
   end
 
   describe "docs/1" do
@@ -40,7 +47,7 @@ defmodule CliOptsTest do
         """
         * `--verbose` (`boolean`) -
         * `--project, -p...` (`string`) - Required. The project to use
-        * `--mode` (`string`) -  [default: `parallel`]
+        * `--mode` (`string`) -  Allowed values: `["parallel", "serial"]`. [default: `parallel`]
         * `--with-dash` (`boolean`) - a key with a dash
         """
         |> String.trim()
