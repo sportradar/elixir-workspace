@@ -137,9 +137,26 @@ defmodule Mix.Tasks.Workspace.RunTest do
     end
 
     test "with root-only flag only roots are triggered" do
+      # runs only on affected projects
+      captured = capture_io(fn -> RunTask.run(["--only-roots" | @changed_run_task]) end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_changed_a - mix format --check-formatted mix.exs",
+        "==> :package_changed_h - mix format --check-formatted mix.exs",
+        "==> :package_changed_i - mix format --check-formatted mix.exs",
+        "==> :package_changed_k - mix format --check-formatted mix.exs"
+      ])
     end
 
     test "with root-only and affected only affected roots are triggered" do
+      # runs only on affected projects
+      captured =
+        capture_io(fn -> RunTask.run(["--affected", "--only-roots" | @changed_run_task]) end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_changed_a - mix format --check-formatted mix.exs",
+        "==> :package_changed_h - mix format --check-formatted mix.exs"
+      ])
     end
 
     test "with show-status displays the status of each project" do

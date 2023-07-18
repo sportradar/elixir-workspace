@@ -20,6 +20,10 @@ defmodule Mix.Tasks.Workspace.Run do
 
       """
     ],
+    only_roots: [
+      type: :boolean,
+      doc: "If set, the task will be executed only on graph's root nodes."
+    ],
     dry_run: [
       type: :boolean,
       doc: "If set it will not execute the command, useful for testing and debugging.",

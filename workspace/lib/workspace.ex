@@ -242,6 +242,7 @@ defmodule Workspace do
 
   def set_projects(workspace, projects) when is_map(projects) do
     %__MODULE__{workspace | projects: projects}
+    |> update_projects_topology()
   end
 
   @doc """
@@ -437,6 +438,7 @@ defmodule Workspace do
     selected = Enum.map(opts[:project] || [], &maybe_to_atom/1)
     affected = opts[:affected] || false
     modified = opts[:modified] || false
+    only_roots = opts[:only_roots] || false
 
     affected_projects =
       case affected do
@@ -454,12 +456,19 @@ defmodule Workspace do
       Map.put(
         project,
         :skip,
-        skippable?(project, selected, ignored, affected_projects, modified_projects)
+        skippable?(project, selected, ignored, affected_projects, modified_projects, only_roots)
       )
     end)
   end
 
-  defp skippable?(%Workspace.Project{app: app}, selected, ignored, affected, modified) do
+  defp skippable?(
+         %Workspace.Project{app: app, root?: root?},
+         selected,
+         ignored,
+         affected,
+         modified,
+         only_roots
+       ) do
     cond do
       # first we check if the project is in the ignore list
       app in ignored ->
@@ -467,6 +476,10 @@ defmodule Workspace do
 
       # next we check if the project is not selected
       selected != [] and app not in selected ->
+        true
+
+      # if only_roots is set and the project is not a root skip it
+      only_roots and not root? ->
         true
 
       # next we check if affected is set and the project is not affected
@@ -530,6 +543,19 @@ defmodule Workspace do
         false -> {:cont, nil}
       end
     end)
+  end
+
+  def update_projects_topology(workspace) do
+    roots = Workspace.Graph.source_projects(workspace)
+
+    projects =
+      Enum.reduce(workspace.projects, %{}, fn {name, project}, acc ->
+        project = Workspace.Project.set_root?(project, name in roots)
+
+        Map.put_new(acc, name, project)
+      end)
+
+    %Workspace{workspace | projects: projects}
   end
 
   def update_projects_statuses(workspace) do
