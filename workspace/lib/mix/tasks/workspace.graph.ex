@@ -1,9 +1,25 @@
 defmodule Mix.Tasks.Workspace.Graph do
-  @options_schema Workspace.Cli.options([
-                    :workspace_path,
-                    :config_path,
-                    :show_status
-                  ])
+  @task_options [
+    format: [
+      type: :string,
+      default: "pretty",
+      doc: """
+      The output format of the graph. It can be one of the following:
+        * `pretty` - pretty prints the graph as a tree
+        * `mermaid` - exports the graph as a mermaid graph
+
+      """,
+      allowed: ["pretty", "mermaid"]
+    ]
+  ]
+  @options_schema Workspace.Cli.options(
+                    [
+                      :workspace_path,
+                      :config_path,
+                      :show_status
+                    ],
+                    @task_options
+                  )
 
   @shortdoc "Prints the dependency tree"
 
@@ -32,7 +48,10 @@ defmodule Mix.Tasks.Workspace.Graph do
       Workspace.new(workspace_path, workspace_config)
       |> maybe_include_status(opts[:show_status])
 
-    print_tree(workspace, opts[:show_status])
+    case opts[:format] do
+      "pretty" -> print_tree(workspace, opts[:show_status])
+      "mermaid" -> mermaid_graph(workspace, opts[:show_status])
+    end
   end
 
   defp maybe_include_status(workspace, false), do: workspace
@@ -70,5 +89,53 @@ defmodule Mix.Tasks.Workspace.Graph do
 
   def format_ansi(message) do
     IO.ANSI.format(message) |> :erlang.iolist_to_binary()
+  end
+
+  defp mermaid_graph(workspace, show_status) do
+    Workspace.Graph.with_digraph(workspace, fn graph ->
+      vertices =
+        :digraph.vertices(graph)
+        |> Enum.map(fn v -> "  #{v}" end)
+        |> Enum.sort()
+        |> Enum.join("\n")
+
+      edges =
+        :digraph.edges(graph)
+        |> Enum.map(fn edge ->
+          {_e, v1, v2, _l} = :digraph.edge(graph, edge)
+          {v1, v2}
+        end)
+        |> Enum.map(fn {v1, v2} -> "  #{v1} --> #{v2}" end)
+        |> Enum.sort()
+        |> Enum.join("\n")
+
+      """
+      flowchart TD
+      #{vertices}
+
+      #{edges}
+      #{maybe_mermaid_node_format(workspace, show_status)}
+      """
+      |> String.trim()
+      |> IO.puts()
+    end)
+  end
+
+  defp maybe_mermaid_node_format(_worksapce, false), do: ""
+
+  defp maybe_mermaid_node_format(workspace, true) do
+    node_styles =
+      Workspace.projects(workspace)
+      |> Enum.filter(fn project -> project.status in [:modified, :affected] end)
+      |> Enum.map(fn project -> "  class #{project.app} #{project.status};" end)
+      |> Enum.join("\n")
+
+    """
+
+    #{node_styles}
+
+      classDef affected fill:#FA6,color:#FFF;
+      classDef modified fill:#F33,color:#FFF;
+    """
   end
 end

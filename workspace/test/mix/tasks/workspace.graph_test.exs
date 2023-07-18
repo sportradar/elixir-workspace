@@ -53,4 +53,65 @@ defmodule Mix.Tasks.Workspace.GraphTest do
              GraphTask.run(["--workspace-path", @sample_workspace_changed_path, "--show-status"])
            end) == expected
   end
+
+  test "mermaid output format" do
+    expected = """
+    flowchart TD
+      package_changed_a
+      package_changed_b
+      package_changed_c
+      package_changed_d
+      package_changed_e
+      package_changed_f
+      package_changed_g
+      package_changed_h
+      package_changed_i
+      package_changed_j
+      package_changed_k
+
+      package_changed_a --> package_changed_b
+      package_changed_a --> package_changed_c
+      package_changed_a --> package_changed_d
+      package_changed_b --> package_changed_g
+      package_changed_c --> package_changed_e
+      package_changed_c --> package_changed_f
+      package_changed_f --> package_changed_g
+      package_changed_h --> package_changed_d
+      package_changed_i --> package_changed_j
+    """
+
+    assert capture_io(fn ->
+             GraphTask.run([
+               "--workspace-path",
+               @sample_workspace_changed_path,
+               "--format",
+               "mermaid"
+             ])
+           end) == expected
+
+    # with show status flag
+    expected =
+      expected <>
+        """
+
+          class package_changed_a affected;
+          class package_changed_c affected;
+          class package_changed_d modified;
+          class package_changed_e modified;
+          class package_changed_h affected;
+
+          classDef affected fill:#FA6,color:#FFF;
+          classDef modified fill:#F33,color:#FFF;
+        """
+
+    assert capture_io(fn ->
+             GraphTask.run([
+               "--workspace-path",
+               @sample_workspace_changed_path,
+               "--format",
+               "mermaid",
+               "--show-status"
+             ])
+           end) == expected
+  end
 end
