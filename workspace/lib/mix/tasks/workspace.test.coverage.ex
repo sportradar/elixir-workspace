@@ -190,8 +190,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     project_statuses =
       workspace
+      |> Workspace.filter_workspace(opts)
       |> Workspace.projects()
-      |> Workspace.filter_projects(opts)
       |> Enum.filter(fn project -> !project.skip end)
       |> Enum.reduce([], fn project, acc ->
         {coverage, module_stats} =

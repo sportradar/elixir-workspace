@@ -12,6 +12,7 @@ require TestUtils
 
 path = TestUtils.create_fixture("sample_workspace", "sample_workspace_default")
 TestUtils.make_fixture_unique(path, "default_")
+TestUtils.init_git_project(path)
 
 path = TestUtils.create_fixture("sample_workspace", "sample_workspace_changed")
 TestUtils.make_fixture_unique(path, "changed_")

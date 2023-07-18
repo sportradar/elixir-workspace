@@ -22,6 +22,16 @@ defmodule Mix.Tasks.Workspace.RunTest do
     "mix.exs"
   ]
 
+  @changed_run_task [
+    "-t",
+    "format",
+    "--workspace-path",
+    Path.join(tmp_path(), "sample_workspace_changed"),
+    "--",
+    "--check-formatted",
+    "mix.exs"
+  ]
+
   describe "sanity checks of common cli arguments" do
     test "runs only on the selected projects" do
       args = [
@@ -94,6 +104,21 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
   describe "codebase changes flags" do
     test "with affected flag only affected projects are executed" do
+      # in a codebase with no changes
+      captured = capture_io(fn -> RunTask.run(["--affected" | @default_run_task]) end)
+
+      assert_cli_output_match(captured, [])
+
+      # runs only on affected projects
+      captured = capture_io(fn -> RunTask.run(["--affected" | @changed_run_task]) end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_changed_a - mix format --check-formatted mix.exs",
+        "==> :package_changed_c - mix format --check-formatted mix.exs",
+        "==> :package_changed_d - mix format --check-formatted mix.exs",
+        "==> :package_changed_e - mix format --check-formatted mix.exs",
+        "==> :package_changed_h - mix format --check-formatted mix.exs"
+      ])
     end
 
     test "with modified flag only modified flags are executed" do

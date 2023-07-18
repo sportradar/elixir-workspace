@@ -395,66 +395,68 @@ defmodule Workspace do
   end
 
   def project_by_app_name(workspace, app) when is_atom(app) do
-    project =
-      Enum.reduce_while(workspace.projects, nil, fn project, acc ->
-        if project.app == app do
-          {:halt, project}
-        else
-          {:cont, acc}
-        end
-      end)
-
-    case project do
-      nil -> raise ArgumentError, "no workspace project with app name #{inspect(app)}"
-      project -> project
+    case Map.has_key?(workspace.projects, app) do
+      true -> workspace.projects[app]
+      false -> raise KeyError, "no workspace project with app name #{inspect(app)}"
     end
   end
 
   @doc """
-  Similar to `filter_projects/2` but filters the workspace projects
-
-  An updated workspace with the projects properly filtered is returned.
-  """
-  @spec filter_workspace(workspace :: Workspace.t(), opts :: keyword()) :: Workspace.t()
-  def filter_workspace(%Workspace{} = workspace, opts) do
-    projects =
-      workspace
-      |> projects()
-      |> filter_projects(opts)
-
-    set_projects(workspace, projects)
-  end
-
-  @doc """
-  Filter a set of `projects` based on the given `opts`
+  Filter the `workspace` projects based on the given `opts`
 
   It will iterate over all projects and wil set the `:skip` to `true` if the
   project is considered skippable. The decision is made based on the passed
   options.
 
+  A `Workspace` is returned with the projects statuses updated.
+
   ## Options
 
-  * `:ignore` - a list of projects to be ignored. This has the highest
+  * `:ignore` (`[atom]`) - a list of projects to be ignored. This has the highest
   priority, e.g. if the project is in the `:ignore` list it is always skipped.
-  * `:project` - a list of project to consider, if set all projects that are
+  * `:project` (`[atom]`) - a list of project to consider, if set all projects that are
   not included in the list are considered skippable.
+  * `:affected` (`boolean`) - if set only the affected projects will be included and
+  everything else will be skipped, defaults to `false`
+
+  Notice that projects are filtered using the following precedence:
+
+  - `:ignore`
+  - `:selected`
+  - `:affected`
   """
-  @spec filter_projects(projects :: [Workspace.Project.t()], opts :: keyword()) :: [
-          Workspace.Project.t()
-        ]
-  def filter_projects(projects, opts) do
+  @spec filter_workspace(workspace :: Workspace.t(), opts :: keyword()) :: Workspace.t()
+  def filter_workspace(%Workspace{} = workspace, opts) do
+    projects = filter_projects(workspace, opts)
+
+    set_projects(workspace, projects)
+  end
+
+  defp filter_projects(workspace, opts) do
     ignored = Enum.map(opts[:ignore] || [], &maybe_to_atom/1)
     selected = Enum.map(opts[:project] || [], &maybe_to_atom/1)
+    affected = opts[:affected] || false
 
-    Enum.map(projects, fn project ->
-      Map.put(project, :skip, skippable?(project, selected, ignored))
+    affected_projects =
+      case affected do
+        false -> nil
+        true -> affected(workspace)
+      end
+
+    Enum.map(workspace.projects, fn {_name, project} ->
+      Map.put(project, :skip, skippable?(project, selected, ignored, affected_projects))
     end)
   end
 
-  defp skippable?(%Workspace.Project{app: app}, selected, ignored) do
+  defp skippable?(%Workspace.Project{app: app}, selected, ignored, affected_projects) do
     cond do
+      # first we check if the project is in the ignore list
       app in ignored -> true
+      # next we check if the project is not selected
       selected != [] and app not in selected -> true
+      # next we check if affected is set and the project is not affected
+      is_list(affected_projects) and app not in affected_projects -> true
+      # in any other case it is not skippable
       true -> false
     end
   end
@@ -492,9 +494,7 @@ defmodule Workspace do
   def affected(workspace) do
     modified = modified(workspace)
 
-    affected = Workspace.Graph.affected(workspace, modified)
-
-    affected -- modified
+    Workspace.Graph.affected(workspace, modified)
   end
 
   @doc """
@@ -511,17 +511,19 @@ defmodule Workspace do
   end
 
   def update_projects_statuses(workspace) do
-    modified =
-      workspace
-      |> modified()
-      |> Enum.map(fn app -> {app, :modified} end)
-
     affected =
       workspace
       |> affected()
       |> Enum.map(fn app -> {app, :affected} end)
 
-    Enum.reduce(modified ++ affected, workspace, fn {app, status}, workspace ->
+    modified =
+      workspace
+      |> modified()
+      |> Enum.map(fn app -> {app, :modified} end)
+
+    # we must first check the affected since the modified may update the
+    # status
+    Enum.reduce(affected ++ modified, workspace, fn {app, status}, workspace ->
       set_project_status(workspace, app, status)
     end)
   end
