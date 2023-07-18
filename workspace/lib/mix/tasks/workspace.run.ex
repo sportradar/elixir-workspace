@@ -64,7 +64,7 @@ defmodule Mix.Tasks.Workspace.Run do
 
     task_args = [task | argv]
 
-    env = parse_environment_variables(options[:env_var])
+    env = parse_environment_variables(options[:env_var] || [])
 
     log_with_title(
       project_name(project, show_status: options[:show_status]),
@@ -75,8 +75,6 @@ defmodule Mix.Tasks.Workspace.Run do
       run_task(project, task, argv, options, env)
     end
   end
-
-  defp parse_environment_variables(nil), do: []
 
   defp parse_environment_variables(vars) do
     Enum.map(vars, &parse_environment_variable/1)
@@ -151,8 +149,6 @@ defmodule Mix.Tasks.Workspace.Run do
 
     ["elixir", "--erl-config", erl_config, "-S", "mix" | args]
   end
-
-  defp enable_ansi(cmd), do: cmd
 
   defp stream_output(meta, port) do
     receive do
