@@ -131,6 +131,21 @@ defmodule Mix.Tasks.Workspace.RunTest do
     end
 
     test "with show-status displays the status of each project" do
+      captured = capture_io(fn -> RunTask.run(["--show-status" | @changed_run_task]) end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_changed_a ● - mix format --check-formatted mix.exs",
+        "==> :package_changed_b ✔ - mix format --check-formatted mix.exs",
+        "==> :package_changed_c ● - mix format --check-formatted mix.exs",
+        "==> :package_changed_d ✚ - mix format --check-formatted mix.exs",
+        "==> :package_changed_e ✚ - mix format --check-formatted mix.exs",
+        "==> :package_changed_f ✔ - mix format --check-formatted mix.exs",
+        "==> :package_changed_g ✔ - mix format --check-formatted mix.exs",
+        "==> :package_changed_h ● - mix format --check-formatted mix.exs",
+        "==> :package_changed_i ✔ - mix format --check-formatted mix.exs",
+        "==> :package_changed_j ✔ - mix format --check-formatted mix.exs",
+        "==> :package_changed_k ✔ - mix format --check-formatted mix.exs"
+      ])
     end
   end
 
