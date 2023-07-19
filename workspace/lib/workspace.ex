@@ -303,8 +303,7 @@ defmodule Workspace do
   defp projects(workspace_path, config) do
     result =
       workspace_path
-      |> nested_mix_projects()
-      |> Enum.filter(fn path -> not ignored_path?(path, config.ignore_paths, workspace_path) end)
+      |> nested_mix_projects(config.ignore_paths, workspace_path)
       |> Enum.sort()
       |> Enum.map(fn path -> Workspace.Project.new(path, workspace_path) end)
       |> Enum.filter(&allowed_project?(&1, config))
@@ -313,20 +312,24 @@ defmodule Workspace do
   end
 
   # TODO: add handling of nested workspaces
-  defp nested_mix_projects(path) do
-    subdirs = subdirs(path)
+  defp nested_mix_projects(path, ignore_paths, workspace_path) do
+    subdirs = subdirs(path, ignore_paths, workspace_path)
 
     projects = Enum.filter(subdirs, &mix_project?/1)
     remaining = subdirs -- projects
 
-    Enum.reduce(remaining, projects, fn project, acc -> acc ++ nested_mix_projects(project) end)
+    Enum.reduce(remaining, projects, fn project, acc ->
+      acc ++ nested_mix_projects(project, ignore_paths, workspace_path)
+    end)
   end
 
-  defp subdirs(path) do
+  defp subdirs(path, ignore_paths, workspace_path) do
     path
     |> File.ls!()
     |> Enum.map(fn file -> Path.join(path, file) end)
-    |> Enum.filter(&File.dir?/1)
+    |> Enum.filter(fn path ->
+      File.dir?(path) and not ignored_path?(path, ignore_paths, workspace_path)
+    end)
   end
 
   defp mix_project?(path), do: File.exists?(Path.join(path, "mix.exs"))
