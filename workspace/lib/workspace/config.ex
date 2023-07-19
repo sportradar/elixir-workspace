@@ -1,4 +1,39 @@
 defmodule Workspace.Config do
+  @test_coverage_schema [
+    threshold: [
+      type: :non_neg_integer,
+      doc: """
+      The overall coverage thresdold for the workspace. If the overall test coverage is below this
+      value then the `workspace.test.coverage` command is considered failed. Notice
+      that the overall test coverage percentage is calculated only on the enabled projects.
+      """,
+      default: 90
+    ],
+    warning_threshold: [
+      type: :non_neg_integer,
+      doc: """
+      If set it specifies an overall warning threshold under which a warning will be
+      raised. If not set it is implied to be the mid value between `threshold` and `100`.
+      """
+    ],
+    exporters: [
+      type: :keyword_list,
+      doc: """
+      Definition of exporters to be used. Each defined exporter must be an anonymous
+      function taking as input the `workspace` and the `coverage_stats`. For more
+      details check the `Mix.Tasks.Workspace.Test.Coverage` task.
+      """
+    ],
+    allow_failure: [
+      type: {:list, :atom},
+      doc: """
+      A list of projects for which the test coverage is allowed to fail without affecting
+      the overall status.
+      """,
+      default: []
+    ]
+  ]
+
   @options_schema NimbleOptions.new!(
                     ignore_projects: [
                       type: {:list, :atom},
@@ -33,6 +68,7 @@ defmodule Workspace.Config do
                       applied in the aggregate coverage and except thresholds you can
                       also configure coverage exporters.
                       """,
+                      keys: @test_coverage_schema,
                       default: []
                     ]
                   )
