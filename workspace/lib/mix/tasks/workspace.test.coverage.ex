@@ -207,7 +207,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
             coverage,
             error_threshold,
             warning_threshold,
-            workspace.config.test_coverage[:allow_failure] || []
+            workspace.config[:test_coverage][:allow_failure] || []
           )
 
         log_with_title(
@@ -230,7 +230,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     {overall_coverage, _module_stats} = Workspace.Coverage.summarize_line_coverage(coverage_stats)
 
     {error_threshold, warning_threshold} =
-      project_coverage_thresholds(workspace.config.test_coverage)
+      project_coverage_thresholds(workspace.config[:test_coverage])
 
     status = coverage_status(:workspace, overall_coverage, error_threshold, warning_threshold, [])
     failed = Enum.any?([status | project_statuses], fn status -> status == :error end)
@@ -270,7 +270,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   end
 
   defp export_coverage(workspace, coverage_stats) do
-    exporters = Keyword.get(workspace.config.test_coverage, :exporters, [])
+    exporters = Keyword.get(workspace.config[:test_coverage], :exporters, [])
 
     if exporters != [] do
       newline()

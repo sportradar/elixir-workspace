@@ -179,7 +179,7 @@ defmodule Workspace do
 
   @type t :: %Workspace{
           projects: %{atom() => Workspace.Project.t()},
-          config: Workspace.Config.t(),
+          config: keyword(),
           mix_path: binary(),
           workspace_path: binary(),
           cwd: binary()
@@ -200,8 +200,8 @@ defmodule Workspace do
   * A path relative to the workspace `path` with the workspace config
   * A loaded config object
   """
-  @spec new(path :: binary(), config :: Workspace.Config.t() | binary()) :: t()
-  def new(path, config \\ %Workspace.Config{})
+  @spec new(path :: binary(), config :: keyword() | binary()) :: t()
+  def new(path, config \\ [])
 
   def new(path, config) when is_binary(config) do
     config_relative_path = Workspace.Utils.relative_path_to(config, Path.expand(path))
@@ -214,7 +214,9 @@ defmodule Workspace do
     new(path, config)
   end
 
-  def new(path, %Workspace.Config{} = config) do
+  def new(path, config) when is_list(config) do
+    # TODO refactor needed here
+    {:ok, config} = Workspace.Config.load(config)
     workspace_mix_path = Path.join(path, "mix.exs") |> Path.expand()
     workspace_path = Path.dirname(workspace_mix_path)
 
@@ -257,7 +259,7 @@ defmodule Workspace do
   If the config cannot be loaded or is not valid, the default config is
   returned.
   """
-  @spec config(path :: binary()) :: Workspace.Config.t()
+  @spec config(path :: binary()) :: keyword()
   def config(path) do
     case load_config_file(path) do
       {:ok, config} ->
@@ -271,7 +273,7 @@ defmodule Workspace do
         at the root of your workspace.
         """)
 
-        %Workspace.Config{}
+        []
     end
   end
 
@@ -303,7 +305,7 @@ defmodule Workspace do
   defp projects(workspace_path, config) do
     result =
       workspace_path
-      |> nested_mix_projects(config.ignore_paths, workspace_path)
+      |> nested_mix_projects(Keyword.fetch!(config, :ignore_paths), workspace_path)
       |> Enum.sort()
       |> Enum.map(fn path -> Workspace.Project.new(path, workspace_path) end)
       |> Enum.filter(&allowed_project?(&1, config))
@@ -336,7 +338,7 @@ defmodule Workspace do
 
   defp allowed_project?(project, config) do
     cond do
-      project.module in config.ignore_projects ->
+      project.module in config[:ignore_projects] ->
         false
 
       true ->

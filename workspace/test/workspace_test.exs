@@ -19,22 +19,23 @@ defmodule WorkspaceTest do
     test "warning with invalid file" do
       assert capture_io(:stderr, fn ->
                config = Workspace.config("invalid.exs")
-               assert config == %Workspace.Config{}
+               assert config == []
              end) =~ "file not found"
     end
 
     test "with incorrect contents" do
       assert capture_io(:stderr, fn ->
                config = Workspace.config("test/fixtures/configs/invalid_contents.exs")
-               assert config == %Workspace.Config{}
-             end) =~ "invalid config options given to workspace config: [:invalid]"
+               # TODO: check why config is empty in this case and not the default
+               assert config == []
+             end) =~ "unknown options [:invalid], valid options are:"
     end
 
     test "with valid config" do
       config = Workspace.config("test/fixtures/configs/valid.exs")
-      assert %Workspace.Config{} = config
-      assert config.ignore_projects == [Dummy.MixProject, Foo.MixProject]
-      assert config.ignore_paths == ["path/to/foo"]
+      assert is_list(config)
+      assert config[:ignore_projects] == [Dummy.MixProject, Foo.MixProject]
+      assert config[:ignore_paths] == ["path/to/foo"]
     end
   end
 
@@ -47,12 +48,12 @@ defmodule WorkspaceTest do
     end
 
     test "with ignore_projects set" do
-      config = %Workspace.Config{
+      config = [
         ignore_projects: [
           PackageA.MixProject,
           PackageB.MixProject
         ]
-      }
+      ]
 
       workspace = Workspace.new(@sample_workspace_path, config)
 
@@ -61,13 +62,13 @@ defmodule WorkspaceTest do
     end
 
     test "with ignore_paths set" do
-      config = %Workspace.Config{
+      config = [
         ignore_paths: [
           "package_a",
           "package_b",
           "package_c"
         ]
-      }
+      ]
 
       workspace = Workspace.new(@sample_workspace_path, config)
 

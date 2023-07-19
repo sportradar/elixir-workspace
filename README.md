@@ -8,6 +8,10 @@
 
 we need to cleanup first in order to make our lifes easier later
 
+- make workspace config a keyword list
+- save graph in workspace
+- make graph functions work with both a graph and a workspace
+- graph exporters make them accept an adjacency list
 - move test helpers under lib (only on test env initially) and document them
   properly
 - refactor all existing tests and improve test coverage
