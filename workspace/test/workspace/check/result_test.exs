@@ -5,6 +5,16 @@ defmodule Workspace.Check.ResultTest do
 
   @sample_workspace_path "test/fixtures/sample_workspace"
 
+  defmodule CheckModule do
+    @behaviour Workspace.Check
+
+    @impl true
+    def check(_workspace, _check), do: []
+
+    @impl true
+    def format_result(_result), do: []
+  end
+
   setup do
     package_path = Path.join(@sample_workspace_path, "package_a")
     project = Workspace.Project.new(package_path, @sample_workspace_path)

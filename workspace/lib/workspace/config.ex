@@ -134,7 +134,7 @@ defmodule Workspace.Config do
       {:ok, check} ->
         validate_checks(rest, [check | acc], errors)
 
-      {:error, %NimbleOptions.ValidationError{message: message}} ->
+      {:error, message} ->
         validate_checks(rest, acc, [message | errors])
     end
   end

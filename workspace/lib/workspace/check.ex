@@ -1,45 +1,47 @@
 defmodule Workspace.Check do
-  @schema [
-    module: [
-      type: :atom,
-      required: true,
-      doc: "The `Workspace.Check` module to be used."
-    ],
-    opts: [
-      type: :keyword_list,
-      doc: "The check's custom options."
-    ],
-    description: [
-      type: :string,
-      doc: "An optional description of the check"
-    ],
-    only: [
-      type: {:list, :atom},
-      doc: "A list of projects. The check will be executed only in the specified projects",
-      default: []
-    ],
-    ignore: [
-      type: {:list, :atom},
-      doc: "A list of projects to be ignored from the check",
-      default: []
-    ],
-    allow_failure: [
-      type: {:or, [:boolean, {:list, :atom}]},
-      doc: """
-      A list of projects (or `true` for all) that are allowed to fail. In case of
-      a failure it will be logged as a warning but the exit code of check will not
-      be set to 1.
-      """,
-      default: false
-    ]
-  ]
+  @check_schema NimbleOptions.new!(
+                  module: [
+                    type: :atom,
+                    required: true,
+                    doc: "The `Workspace.Check` module to be used."
+                  ],
+                  opts: [
+                    type: :keyword_list,
+                    doc: "The check's custom options.",
+                    default: []
+                  ],
+                  description: [
+                    type: :string,
+                    doc: "An optional description of the check"
+                  ],
+                  only: [
+                    type: {:list, :atom},
+                    doc:
+                      "A list of projects. The check will be executed only in the specified projects",
+                    default: []
+                  ],
+                  ignore: [
+                    type: {:list, :atom},
+                    doc: "A list of projects to be ignored from the check",
+                    default: []
+                  ],
+                  allow_failure: [
+                    type: {:or, [:boolean, {:list, :atom}]},
+                    doc: """
+                    A list of projects (or `true` for all) that are allowed to fail. In case of
+                    a failure it will be logged as a warning but the exit code of check will not
+                    be set to 1.
+                    """,
+                    default: false
+                  ]
+                )
 
   @moduledoc """
   A behaviour for implementing workspace checker.
 
   ## Introduction
 
-  A checker is responsible for validating that a workspace follows the
+  A check is responsible for validating that a workspace follows the
   configured rules.
 
   When your mono-repo grows it is becoming more tedious to keep track with
@@ -49,12 +51,12 @@ defmodule Workspace.Check do
 
   ## Configuration
 
-  In order to define a `Check` you must add an entry under the `:check` key
-  of your workspace config. The supported options are:
+  In order to define a `Workspace.Check` you must add an entry under the `:checks`
+  key of your `Workspace.Config. The supported options are for each check are:
 
-  #{NimbleOptions.docs(@schema)}
+  #{NimbleOptions.docs(@check_schema)} 
 
-  For example:
+  ## Configuration Examples
 
   ```elixir
   [
@@ -70,11 +72,18 @@ defmodule Workspace.Check do
     ]
   ]
   ```
+
+  ## Implementing a `Workspace.Check`
+
+  TODO
   """
 
   @doc """
   Applies a workspace check on the given workspace
   """
+  # TODO: check this callback, maybe we can change it to run on a single project
+  # and return {:ok, } {:error} tuples
+  # we can add an optional workspace-check for running on the complete workspace
   @callback check(workspace :: Workspace.t(), check :: keyword()) :: [
               Workspace.Check.Result.t()
             ]
@@ -84,16 +93,70 @@ defmodule Workspace.Check do
   """
   @callback format_result(result :: Workspace.Check.Result.t()) :: IO.ANSI.ansidata()
 
-  # TODO: add a schema callback
-  # TODO: add a __using__ macro and document it properly
+  @doc """
+  An optional definition of the custom check's options.
+
+  If not set the options will not be validated and all keyword lists will be considered
+  valid. It is advised to define it for better handling of errors.
+  """
+  @callback schema() :: keyword() | nil
+
+  @optional_callbacks [schema: 0]
+
+  # TODO: add a __USING__ macro
 
   @doc """
   Validates that the given `config` is a valid `Check` config.
   """
   @spec validate(config :: keyword()) ::
-          {:ok, keyword()} | {:error, NimbleOptions.ValidationError.t()}
+          {:ok, keyword()} | {:error, binary()}
   def validate(config) do
-    NimbleOptions.validate(config, @schema)
+    with {:ok, config} <- validate_schema(config),
+         {:ok, module} <- ensure_loaded_module(config[:module]),
+         {:ok, module} <- validate_check_module(module),
+         {:ok, opts_config} <- validate_check_options(module, config[:opts]) do
+      {:ok, Keyword.put(config, :opts, opts_config)}
+    end
+  end
+
+  defp validate_schema(config) do
+    case NimbleOptions.validate(config, @check_schema) do
+      {:ok, config} -> {:ok, config}
+      {:error, %NimbleOptions.ValidationError{message: message}} -> {:error, message}
+    end
+  end
+
+  defp ensure_loaded_module(module) do
+    case Code.ensure_loaded(module) do
+      {:module, module} ->
+        {:ok, module}
+
+      {:error, error_type} ->
+        {:error, "could not load check module #{inspect(module)}: #{inspect(error_type)}"}
+    end
+  end
+
+  defp validate_check_module(module) do
+    behaviours = module.module_info[:attributes][:behaviour] || []
+
+    case Workspace.Check in behaviours do
+      true -> {:ok, module}
+      false -> {:error, "#{inspect(module)} does not implement the `Workspace.Check` behaviour"}
+    end
+  end
+
+  defp validate_check_options(module, opts) do
+    if function_exported?(module, :schema, 0) do
+      case NimbleOptions.validate(opts, module.schema()) do
+        {:ok, opts} ->
+          {:ok, opts}
+
+        {:error, %NimbleOptions.ValidationError{message: message}} ->
+          {:error, "invalid check options: #{message}"}
+      end
+    else
+      {:ok, opts}
+    end
   end
 
   @doc """

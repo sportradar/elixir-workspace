@@ -10,6 +10,46 @@ defmodule Workspace.CheckTest do
     %{workspace: workspace}
   end
 
+  defmodule CheckModule do
+    @behaviour Workspace.Check
+
+    @impl true
+    def check(_workspace, _check), do: []
+
+    @impl true
+    def format_result(_result), do: []
+
+    @impl true
+    def schema, do: [foo: [type: :string, required: true], bar: [type: :integer, default: 1]]
+  end
+
+  describe "validate/1" do
+    test "with a valid config" do
+      assert {:ok, config} = Workspace.Check.validate(module: CheckModule, opts: [foo: "bar"])
+
+      # check that the config is updated
+      assert config[:allow_failure] == false
+      assert config[:opts] == [bar: 1, foo: "bar"]
+    end
+
+    test "fails if the module is invalid" do
+      assert {:error, message} = Workspace.Check.validate(module: InvalidCheckModule)
+      assert message =~ "could not load check module InvalidCheckModule: :nofile"
+    end
+
+    test "fails if the module is not a Workspace.Check" do
+      assert {:error, message} = Workspace.Check.validate(module: Enum)
+      assert message =~ "Enum does not implement the `Workspace.Check` behaviour"
+    end
+
+    test "fails if the custom options are invalid" do
+      assert {:error, message} = Workspace.Check.validate(module: CheckModule)
+
+      assert message =~
+               "invalid check options: required :foo option not found, received options: []"
+    end
+  end
+
   describe "properly handles statuses" do
     test "returns the actual status if no allow_failure is set", %{workspace: workspace} do
       check =
