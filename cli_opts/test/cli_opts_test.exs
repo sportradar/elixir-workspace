@@ -36,8 +36,12 @@ defmodule CliOptsTest do
 
     test "allowed values" do
       assert {:ok, _} = CliOpts.parse(["--project", "foo", "--mode", "serial"], @test_schema)
-      assert {:error, message} = CliOpts.parse(["--project", "foo", "--mode", "invalid"], @test_schema)
-      assert message == ~s'not allowed value invalid for mode, expected one of: ["parallel", "serial"]'
+
+      assert {:error, message} =
+               CliOpts.parse(["--project", "foo", "--mode", "invalid"], @test_schema)
+
+      assert message ==
+               ~s'not allowed value invalid for mode, expected one of: ["parallel", "serial"]'
     end
   end
 
