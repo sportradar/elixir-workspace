@@ -47,8 +47,19 @@ defmodule Workspace.Config do
   #{NimbleOptions.docs(@options_schema)}
   """
 
-  @spec load(config :: keyword()) :: {:ok, keyword()} | {:error, binary()}
-  def load(config) do
+  @doc """
+  Validates that the given `config` is a valid `Workspace` config.
+
+  A `config` is valid if:
+
+  - it follows the workspace config schema
+  - every check is valid, for more details check `Workspace.Check.validate/1`
+
+  Returns either `{:ok, config}` with the updated `config` is it is valid, or
+  `{:error, message}` in case of errors.
+  """
+  @spec validate(config :: keyword()) :: {:ok, keyword()} | {:error, binary()}
+  def validate(config) do
     with {:ok, config} <- validate_config(config),
          {:ok, config} <- validate_checks(config) do
       {:ok, config}
@@ -89,6 +100,19 @@ defmodule Workspace.Config do
 
       {:error, %NimbleOptions.ValidationError{message: message}} ->
         validate_checks(rest, acc, [message | errors])
+    end
+  end
+
+  @doc """
+  Same as `validate/1` but raises an `ArgumentError` exception in case of failure.
+
+  In case of success the validated configuration keyword list is returned.
+  """
+  @spec validate!(config :: keyword()) :: keyword()
+  def validate!(config) do
+    case validate(config) do
+      {:ok, config} -> config
+      {:error, message} -> raise ArgumentError, message: message
     end
   end
 end

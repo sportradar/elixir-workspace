@@ -216,7 +216,7 @@ defmodule Workspace do
 
   def new(path, config) when is_list(config) do
     # TODO refactor needed here
-    {:ok, config} = Workspace.Config.load(config)
+    {:ok, config} = Workspace.Config.validate(config)
     workspace_mix_path = Path.join(path, "mix.exs") |> Path.expand()
     workspace_path = Path.dirname(workspace_mix_path)
 
@@ -287,7 +287,7 @@ defmodule Workspace do
       true ->
         {config, _bindings} = Code.eval_file(config_file)
 
-        Workspace.Config.load(config)
+        Workspace.Config.validate(config)
     end
   end
 
