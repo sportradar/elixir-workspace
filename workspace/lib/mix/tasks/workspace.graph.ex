@@ -45,7 +45,7 @@ defmodule Mix.Tasks.Workspace.Graph do
     workspace_config = Keyword.get(opts, :workspace_config, ".workspace.exs")
 
     workspace =
-      Workspace.new(workspace_path, workspace_config)
+      Workspace.new!(workspace_path, workspace_config)
       |> maybe_include_status(opts[:show_status])
 
     case opts[:format] do

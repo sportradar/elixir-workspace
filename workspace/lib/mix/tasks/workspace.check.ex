@@ -26,19 +26,16 @@ defmodule Mix.Tasks.Workspace.Check do
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     config_path = Keyword.fetch!(opts, :config_path)
 
-    # TODO: fix paths, it should handle relative paths wrt cwd
-    config = Workspace.config(Path.join(workspace_path, config_path))
-
-    ensure_checks(config[:checks])
-
     workspace =
-      Workspace.new(workspace_path, config)
+      Workspace.new!(workspace_path, config_path)
       |> Workspace.filter_workspace(opts)
 
-    log("running #{length(config[:checks])} workspace checks on the workspace")
+    ensure_checks(workspace.config[:checks])
+
+    log("running #{length(workspace.config[:checks])} workspace checks on the workspace")
     newline()
 
-    config[:checks]
+    workspace.config[:checks]
     |> Enum.with_index(fn check, index -> Keyword.put(check, :index, index) end)
     |> Enum.map(fn check -> run_check(check, workspace, opts) end)
     |> maybe_set_exit_status()

@@ -1,6 +1,5 @@
 defmodule WorkspaceTest do
   use ExUnit.Case
-  import ExUnit.CaptureIO
   import TestUtils
   doctest Workspace
 
@@ -15,33 +14,33 @@ defmodule WorkspaceTest do
     %{workspace: workspace}
   end
 
-  describe "config/1" do
-    test "warning with invalid file" do
-      assert capture_io(:stderr, fn ->
-               config = Workspace.config("invalid.exs")
-               assert config == []
-             end) =~ "file not found"
-    end
-
-    test "with incorrect contents" do
-      assert capture_io(:stderr, fn ->
-               config = Workspace.config("test/fixtures/configs/invalid_contents.exs")
-               # TODO: check why config is empty in this case and not the default
-               assert config == []
-             end) =~ "unknown options [:invalid], valid options are:"
-    end
-
-    test "with valid config" do
-      config = Workspace.config("test/fixtures/configs/valid.exs")
-      assert is_list(config)
-      assert config[:ignore_projects] == [Dummy.MixProject, Foo.MixProject]
-      assert config[:ignore_paths] == ["path/to/foo"]
-    end
-  end
-
-  describe "new/1" do
+  # describe "config/1" do
+  #   test "warning with invalid file" do
+  #     assert capture_io(:stderr, fn ->
+  #              config = Workspace.config("invalid.exs")
+  #              assert config == []
+  #            end) =~ "file not found"
+  #   end
+  #
+  #   test "with incorrect contents" do
+  #     assert capture_io(:stderr, fn ->
+  #              config = Workspace.config("test/fixtures/configs/invalid_contents.exs")
+  #              # TODO: check why config is empty in this case and not the default
+  #              assert config == []
+  #            end) =~ "unknown options [:invalid], valid options are:"
+  #   end
+  #
+  #   test "with valid config" do
+  #     config = Workspace.config("test/fixtures/configs/valid.exs")
+  #     assert is_list(config)
+  #     assert config[:ignore_projects] == [Dummy.MixProject, Foo.MixProject]
+  #     assert config[:ignore_paths] == ["path/to/foo"]
+  #   end
+  # end
+  #
+  describe "new/2" do
     test "creates a workspace struct" do
-      workspace = Workspace.new(@sample_workspace_path)
+      {:ok, workspace} = Workspace.new(@sample_workspace_path)
 
       assert %Workspace{} = workspace
       assert map_size(workspace.projects) == 11
@@ -55,7 +54,7 @@ defmodule WorkspaceTest do
         ]
       ]
 
-      workspace = Workspace.new(@sample_workspace_path, config)
+      {:ok, workspace} = Workspace.new(@sample_workspace_path, config)
 
       assert %Workspace{} = workspace
       assert map_size(workspace.projects) == 9
@@ -70,46 +69,24 @@ defmodule WorkspaceTest do
         ]
       ]
 
-      workspace = Workspace.new(@sample_workspace_path, config)
+      {:ok, workspace} = Workspace.new(@sample_workspace_path, config)
 
       assert %Workspace{} = workspace
       assert map_size(workspace.projects) == 8
     end
 
-    test "raises if the path is not a workspace" do
-      assert_raise Mix.Error, ~r"to be a workspace project", fn ->
-        Workspace.new(Path.join(@sample_workspace_path, "package_a"))
-      end
+    test "error if the path is not a workspace" do
+      assert {:error, reason} = Workspace.new(Path.join(@sample_workspace_path, "package_a"))
+      assert reason =~ "workspace option is set in config object"
+      assert reason =~ "to be a workspace project. Some errors were detected"
     end
   end
 
-  describe "workspace?/1" do
-    test "relative/absolute paths to valid projects" do
-      assert Workspace.workspace?(@sample_workspace_path)
-      assert Workspace.workspace?(Path.expand(@sample_workspace_path))
-
-      assert Workspace.workspace?(Path.join(@sample_workspace_path, "mix.exs"))
-      assert Workspace.workspace?(Path.join(@sample_workspace_path, "mix.exs") |> Path.expand())
-
-      refute Workspace.workspace?(Path.join(@sample_workspace_path, "package_a"))
-      refute Workspace.workspace?(Path.join(@sample_workspace_path, "package_a") |> Path.expand())
-    end
-
-    test "raises if not valid project" do
-      assert_raise ArgumentError, fn ->
-        Workspace.workspace?(Path.join(@sample_workspace_path, "invalid"))
+  describe "new!/2" do
+    test "error if the path is not a workspace" do
+      assert_raise ArgumentError, ~r"to be a workspace project", fn ->
+        Workspace.new!(Path.join(@sample_workspace_path, "package_a"))
       end
-    end
-
-    test "with project config" do
-      workspace_config =
-        Path.join(@sample_workspace_path, "mix.exs") |> Workspace.Project.config()
-
-      project_config =
-        Path.join([@sample_workspace_path, "package_a", "mix.exs"]) |> Workspace.Project.config()
-
-      assert Workspace.workspace?(workspace_config)
-      refute Workspace.workspace?(project_config)
     end
   end
 

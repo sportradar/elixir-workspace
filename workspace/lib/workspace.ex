@@ -193,44 +193,112 @@ defmodule Workspace do
             cwd: nil
 
   @doc """
+  Similar to `new/2` but raises in case of error.
+  """
+  @spec new!(path :: binary(), config :: keyword() | binary()) :: t()
+  def new!(path, config \\ []) do
+    case new(path, config) do
+      {:ok, workspace} -> workspace
+      # TODO: create a custom error
+      {:error, reason} -> raise ArgumentError, reason
+    end
+  end
+
+  @doc """
   Creates a new `Workspace` from the given workspace path
 
   `config` can be one of the following:
 
   * A path relative to the workspace `path` with the workspace config
-  * A loaded config object
+  * A keyword list with the config
+
+  The workspace is created by finding all valid mix projects under
+  the workspace root.
+
+  Returns `{:ok, workspace}` in case of success, or `{:error, reason}`
+  if something fails.
   """
-  @spec new(path :: binary(), config :: keyword() | binary()) :: t()
+  @spec new(path :: binary(), config :: keyword() | binary()) :: {:ok, t()} | {:error, binary()}
   def new(path, config \\ [])
 
-  def new(path, config) when is_binary(config) do
-    config_relative_path = Workspace.Utils.relative_path_to(config, Path.expand(path))
-
-    config =
-      Path.join(path, config_relative_path)
-      |> Path.expand()
-      |> config()
-
-    new(path, config)
+  def new(path, config_path) when is_binary(config_path) do
+    with config_path <- Workspace.Utils.relative_path_to(config_path, Path.expand(path)),
+         config_path <- Path.join(path, config_path),
+         {:ok, config} <- load_config(config_path) do
+      new(path, config)
+    end
   end
 
   def new(path, config) when is_list(config) do
-    # TODO refactor needed here
-    {:ok, config} = Workspace.Config.validate(config)
     workspace_mix_path = Path.join(path, "mix.exs") |> Path.expand()
     workspace_path = Path.dirname(workspace_mix_path)
 
-    ensure_workspace!(workspace_mix_path)
+    with {:ok, config} <- Workspace.Config.validate(config),
+         :ok <- ensure_workspace(workspace_mix_path) do
+      projects = projects(workspace_path, config)
 
-    projects = projects(workspace_path, config)
+      workspace =
+        %__MODULE__{
+          config: config,
+          mix_path: workspace_mix_path,
+          workspace_path: workspace_path,
+          cwd: File.cwd!()
+        }
+        |> set_projects(projects)
 
-    %__MODULE__{
-      config: config,
-      mix_path: workspace_mix_path,
-      workspace_path: workspace_path,
-      cwd: File.cwd!()
-    }
-    |> set_projects(projects)
+      {:ok, workspace}
+    end
+  end
+
+  defp load_config(config_file) do
+    config_file = Path.expand(config_file)
+
+    with {:ok, config_file} <- ensure_file_exists(config_file),
+         {config, _bindings} <- Code.eval_file(config_file) do
+      {:ok, config}
+    end
+  end
+
+  defp ensure_workspace(path) do
+    with {:ok, path} <- ensure_file_exists(path),
+         # TODO: refactor it to return :ok, :error tuples
+         config <- Workspace.Project.config(path),
+         :ok <- ensure_workspace_set_in_config(config) do
+      :ok
+    else
+      {:error, reason} ->
+        {
+          :error,
+          # TODO properly format multiline errors
+          """
+          Expected #{path} to be a workspace project. Some errors were detected:
+
+          #{reason}
+
+          In order to define a project as workspace, you need to add the following
+          to the project's `mix.exs` config:
+
+              workspace: true
+          """
+        }
+    end
+  end
+
+  defp ensure_file_exists(path) do
+    case File.exists?(path) do
+      true -> {:ok, path}
+      false -> {:error, "file #{path} does not exist"}
+    end
+  end
+
+  defp ensure_workspace_set_in_config(config) when is_list(config) do
+    case config[:workspace] do
+      nil ->
+        {:error, ":workspace option is set in config object"}
+
+      _other ->
+        :ok
+    end
   end
 
   def set_projects(workspace, projects) when is_list(projects) do
@@ -252,55 +320,6 @@ defmodule Workspace do
   """
   @spec projects(workspace :: Workspace.t()) :: [Workspace.Project.t()]
   def projects(workspace), do: Map.values(workspace.projects)
-
-  @doc """
-  Tries to load the workspace config from the given path
-
-  If the config cannot be loaded or is not valid, the default config is
-  returned.
-  """
-  @spec config(path :: binary()) :: keyword()
-  def config(path) do
-    case load_config_file(path) do
-      {:ok, config} ->
-        config
-
-      {:error, reason} ->
-        IO.warn("""
-        Failed to load a valid workspace configuration from `#{path}`: #{reason}
-
-        Using a default empty configuration. It is advised to create a `.workspace.exs`
-        at the root of your workspace.
-        """)
-
-        []
-    end
-  end
-
-  defp load_config_file(config_file) do
-    config_file = Path.expand(config_file)
-
-    case File.exists?(config_file) do
-      false ->
-        {:error, "file not found"}
-
-      true ->
-        {config, _bindings} = Code.eval_file(config_file)
-
-        Workspace.Config.validate(config)
-    end
-  end
-
-  defp ensure_workspace!(path) do
-    if !workspace?(path) do
-      Mix.raise("""
-      Expected #{path} to be a workspace project. In order to define a project
-      as workspace, you need to add the following to the project's config:
-
-          workspace: true
-      """)
-    end
-  end
 
   defp projects(workspace_path, config) do
     result =
@@ -350,50 +369,6 @@ defmodule Workspace do
     ignore_paths
     |> Enum.map(fn path -> workspace_path |> Path.join(path) |> Path.expand() end)
     |> Enum.any?(fn path -> String.starts_with?(mix_path, path) end)
-  end
-
-  @doc """
-  Returns `true` if the given project is a workspace
-
-  It expects one of the following:
-
-  * a project config
-  * a path to a `mix.exs` file
-  * a path to a folder containing a root folder
-
-  If a path is provided then the config of the project will be loaded first.
-
-  If a path is provided then it will be expanded first.
-
-  Raises if a path is provided which does not resolve to a valid `mix.exs`
-  file.
-  """
-  @spec workspace?(config_or_path :: keyword() | binary()) :: boolean()
-  def workspace?(path) when is_binary(path) do
-    path =
-      path
-      |> Path.expand()
-      |> mix_exs_path()
-
-    if !File.exists?(path) do
-      raise ArgumentError, """
-      The input path is not a valid `mix.exs` file or a folder containing a
-      mix project
-      """
-    end
-
-    workspace?(Workspace.Project.config(path))
-  end
-
-  def workspace?(config) when is_list(config) do
-    config[:workspace] != nil
-  end
-
-  defp mix_exs_path(path) do
-    case String.ends_with?(path, "mix.exs") do
-      true -> path
-      false -> Path.join(path, "mix.exs")
-    end
   end
 
   def apps_to_projects(workspace, apps) when is_list(apps) do

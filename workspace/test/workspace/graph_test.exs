@@ -4,7 +4,7 @@ defmodule Workspace.GraphTest do
   alias Workspace.Graph
 
   setup do
-    %{workspace: Workspace.new("test/fixtures/sample_workspace")}
+    %{workspace: Workspace.new!("test/fixtures/sample_workspace")}
   end
 
   describe "digraph/1" do

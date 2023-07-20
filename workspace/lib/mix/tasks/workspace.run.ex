@@ -78,7 +78,7 @@ defmodule Mix.Tasks.Workspace.Run do
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     config_path = Keyword.fetch!(opts, :config_path)
 
-    workspace = Workspace.new(workspace_path, config_path)
+    workspace = Workspace.new!(workspace_path, config_path)
 
     workspace
     |> Workspace.filter_workspace(opts)

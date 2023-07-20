@@ -3,7 +3,7 @@ defmodule Workspace.Checks.ValidateConfigTest do
   alias Workspace.Checks.ValidateConfig
 
   setup do
-    %{workspace: Workspace.new("test/fixtures/sample_workspace")}
+    %{workspace: Workspace.new!("test/fixtures/sample_workspace")}
   end
 
   test "raises if no validate function is set", %{workspace: workspace} do

@@ -157,8 +157,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     config_path = Keyword.fetch!(opts, :config_path)
 
-    config = Workspace.config(Path.join(workspace_path, config_path))
-    workspace = Workspace.new(workspace_path, config)
+    {:ok, workspace} = Workspace.new(workspace_path, config_path)
 
     paths =
       workspace
