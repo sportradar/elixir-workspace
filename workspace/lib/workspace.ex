@@ -12,24 +12,24 @@ defmodule Workspace do
   Every workspace is stored internally as a struct containing the following
   fields:
 
-  * `projects` - a map of the form `%{atom => Workspace.Project.t()}` where
-  the key is the defined project name. It includes all detected workpsace
-  projects excluding any ignored ones.
-  * `cwd` - the directory from which the generation of the workspace struct
-  occurred.
-  * `mix_path` - absolute path to the workspace's root `mix.exs` file.
-  * `workspace_path` - absolute path of the workspace, this is by default the
-  folder containing the workspace mix file.
-  * `config` - the workspace's config, check `Workspace.Config` and the
-  following sections for more details.
+    * `projects` - a map of the form `%{atom => Workspace.Project.t()}` where
+    the key is the defined project name. It includes all detected workpsace
+    projects excluding any ignored ones.
+    * `cwd` - the directory from which the generation of the workspace struct
+    occurred.
+    * `mix_path` - absolute path to the workspace's root `mix.exs` file.
+    * `workspace_path` - absolute path of the workspace, this is by default the
+    folder containing the workspace mix file.
+    * `config` - the workspace's config, check `Workspace.Config` and the
+    following sections for more details.
 
   ## Workspace projects
 
   A mix project is considered a workspace project if:
 
-  - it is located in a subfolder of the workspace root path
-  - it is not included in the ignored projects or ignored paths in the
-  workspace config
+    * it is located in a subfolder of the workspace root path
+    * it is not included in the ignored projects or ignored paths in the
+    workspace config
 
   Assuming the folder stucture:
 
@@ -46,11 +46,13 @@ defmodule Workspace do
       └── package_c
   ```
 
-  - We have defined a `Workspace` under `my_workspace` folder
-  - All mix projects under `my_workspace` are by default considered
-  workspace packages. In the above example it will include the
-  `:api`, `:ui`, `:package_a`, `:package_b` and `:package_c`
-  packages.
+  In the above example:
+
+    * We have defined a `Workspace` under `my_workspace` folder
+    * All mix projects under `my_workspace` are by default considered
+    workspace packages. In the above example it will include the
+    `:api`, `:ui`, `:package_a`, `:package_b` and `:package_c`
+    packages.
 
   > #### Ignoring a package or a path {: .info}
   >
@@ -100,8 +102,8 @@ defmodule Workspace do
 
   A workspace is a normal `Mix.Project` with some tweaks:
 
-  - No actual code is expected, so `:elixirc_paths` is set to `[]`
-  - It must have a `:workspace` project option set to `true`
+    * No actual code is expected, so `:elixirc_paths` is set to `[]`
+    * It must have a `:workspace` project option set to `true`
 
   **TODO**: Once implemented add info about the generator
 
@@ -209,8 +211,8 @@ defmodule Workspace do
 
   `config` can be one of the following:
 
-  * A path relative to the workspace `path` with the workspace config
-  * A keyword list with the config
+    * A path relative to the workspace `path` with the workspace config
+    * A keyword list with the config
 
   The workspace is created by finding all valid mix projects under
   the workspace root.
@@ -234,9 +236,8 @@ defmodule Workspace do
     workspace_path = Path.dirname(workspace_mix_path)
 
     with {:ok, config} <- Workspace.Config.validate(config),
-         :ok <- ensure_workspace(workspace_mix_path) do
-      projects = projects(workspace_path, config)
-
+         :ok <- ensure_workspace(workspace_mix_path),
+         projects <- find_projects(workspace_path, config) do
       workspace =
         %__MODULE__{
           config: config,
@@ -301,38 +302,17 @@ defmodule Workspace do
     end
   end
 
-  def set_projects(workspace, projects) when is_list(projects) do
+  defp find_projects(workspace_path, config) do
     projects =
-      projects
-      |> Enum.map(fn project -> {project.app, project} end)
-      |> Enum.into(%{})
-
-    set_projects(workspace, projects)
-  end
-
-  def set_projects(workspace, projects) when is_map(projects) do
-    %__MODULE__{workspace | projects: projects}
-    |> update_projects_topology()
-  end
-
-  @doc """
-  Get a list of the workspace projects
-  """
-  @spec projects(workspace :: Workspace.t()) :: [Workspace.Project.t()]
-  def projects(workspace), do: Map.values(workspace.projects)
-
-  defp projects(workspace_path, config) do
-    result =
       workspace_path
       |> nested_mix_projects(Keyword.fetch!(config, :ignore_paths), workspace_path)
       |> Enum.sort()
       |> Enum.map(fn path -> Workspace.Project.new(path, workspace_path) end)
-      |> Enum.filter(&allowed_project?(&1, config))
+      |> Enum.filter(&ignored_project?(&1, config[:ignore_projects]))
 
-    result
+    projects
   end
 
-  # TODO: add handling of nested workspaces
   defp nested_mix_projects(path, ignore_paths, workspace_path) do
     subdirs = subdirs(path, ignore_paths, workspace_path)
 
@@ -355,9 +335,9 @@ defmodule Workspace do
 
   defp mix_project?(path), do: File.exists?(Path.join(path, "mix.exs"))
 
-  defp allowed_project?(project, config) do
+  defp ignored_project?(project, ignore_projects) do
     cond do
-      project.module in config[:ignore_projects] ->
+      project.module in ignore_projects ->
         false
 
       true ->
@@ -370,6 +350,26 @@ defmodule Workspace do
     |> Enum.map(fn path -> workspace_path |> Path.join(path) |> Path.expand() end)
     |> Enum.any?(fn path -> String.starts_with?(mix_path, path) end)
   end
+
+  def set_projects(workspace, projects) when is_list(projects) do
+    projects =
+      projects
+      |> Enum.map(fn project -> {project.app, project} end)
+      |> Enum.into(%{})
+
+    set_projects(workspace, projects)
+  end
+
+  def set_projects(workspace, projects) when is_map(projects) do
+    %__MODULE__{workspace | projects: projects}
+    |> update_projects_topology()
+  end
+
+  @doc """
+  Get a list of the workspace projects
+  """
+  @spec projects(workspace :: Workspace.t()) :: [Workspace.Project.t()]
+  def projects(workspace), do: Map.values(workspace.projects)
 
   def apps_to_projects(workspace, apps) when is_list(apps) do
     Enum.map(apps, &project_by_app_name(workspace, &1))
@@ -393,18 +393,18 @@ defmodule Workspace do
 
   ## Options
 
-  * `:ignore` (`[atom]`) - a list of projects to be ignored. This has the highest
-  priority, e.g. if the project is in the `:ignore` list it is always skipped.
-  * `:project` (`[atom]`) - a list of project to consider, if set all projects that are
-  not included in the list are considered skippable.
-  * `:affected` (`boolean`) - if set only the affected projects will be included and
-  everything else will be skipped, defaults to `false`
+    * `:ignore` (`[atom]`) - a list of projects to be ignored. This has the highest
+    priority, e.g. if the project is in the `:ignore` list it is always skipped.
+    * `:project` (`[atom]`) - a list of project to consider, if set all projects that are
+    not included in the list are considered skippable.
+    * `:affected` (`boolean`) - if set only the affected projects will be included and
+    everything else will be skipped, defaults to `false`
 
   Notice that projects are filtered using the following precedence:
 
-  - `:ignore`
-  - `:selected`
-  - `:affected`
+    * `:ignore`
+    * `:selected`
+    * `:affected`
   """
   @spec filter_workspace(workspace :: Workspace.t(), opts :: keyword()) :: Workspace.t()
   def filter_workspace(%Workspace{} = workspace, opts) do

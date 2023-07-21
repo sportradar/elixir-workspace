@@ -52,7 +52,7 @@ defmodule Workspace.Check do
   ## Configuration
 
   In order to define a `Workspace.Check` you must add an entry under the `:checks`
-  key of your `Workspace.Config. The supported options are for each check are:
+  key of your `Workspace.Config`. The supported options are for each check are:
 
   #{NimbleOptions.docs(@check_schema)} 
 

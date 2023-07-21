@@ -47,8 +47,6 @@ defmodule Mix.Tasks.Workspace.Check do
     check_status(results)
   end
 
-  # TODO: validate checks are properly defined modules are valid
-  # TODO: make checks a struct
   defp ensure_checks(checks) do
     if checks == [] do
       # TODO: improve the error message, add an example
