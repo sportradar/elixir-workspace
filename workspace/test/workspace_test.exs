@@ -90,16 +90,16 @@ defmodule WorkspaceTest do
     end
   end
 
-  describe "filter_workspace/2" do
+  describe "filter/2" do
     test "filters and updates the given workspace", %{workspace: workspace} do
-      workspace = Workspace.filter_workspace(workspace, ignore: [:bar])
+      workspace = Workspace.filter(workspace, ignore: [:bar])
 
       assert workspace.projects[:bar].skip
       refute workspace.projects[:foo].skip
     end
 
     test "if app in ignore skips the project", %{workspace: workspace} do
-      workspace = Workspace.filter_workspace(workspace, ignore: ["bar"])
+      workspace = Workspace.filter(workspace, ignore: ["bar"])
 
       assert Workspace.project_by_app_name(workspace, :bar).skip
       refute Workspace.project_by_app_name(workspace, :foo).skip
@@ -108,7 +108,7 @@ defmodule WorkspaceTest do
     test "if app in selected it is not skipped - everything else is skipped", %{
       workspace: workspace
     } do
-      workspace = Workspace.filter_workspace(workspace, project: ["bar"])
+      workspace = Workspace.filter(workspace, project: ["bar"])
 
       refute Workspace.project_by_app_name(workspace, :bar).skip
       assert Workspace.project_by_app_name(workspace, :foo).skip
@@ -117,7 +117,7 @@ defmodule WorkspaceTest do
     test "ignore has priority over project", %{
       workspace: workspace
     } do
-      workspace = Workspace.filter_workspace(workspace, ignore: [:bar], project: [:bar])
+      workspace = Workspace.filter(workspace, ignore: [:bar], project: [:bar])
 
       assert Workspace.project_by_app_name(workspace, :bar).skip
       assert Workspace.project_by_app_name(workspace, :foo).skip

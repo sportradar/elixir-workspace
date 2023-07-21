@@ -36,7 +36,7 @@ defmodule Mix.Tasks.Workspace.List do
     workspace_config = Keyword.get(opts, :workspace_config, ".workspace.exs")
 
     Workspace.new!(workspace_path, workspace_config)
-    |> Workspace.filter_workspace(opts)
+    |> Workspace.filter(opts)
     |> maybe_include_status(opts[:show_status])
     |> list_workspace_projects(opts[:show_status])
   end

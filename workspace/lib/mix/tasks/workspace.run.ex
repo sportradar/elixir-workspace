@@ -81,7 +81,7 @@ defmodule Mix.Tasks.Workspace.Run do
     workspace = Workspace.new!(workspace_path, config_path)
 
     workspace
-    |> Workspace.filter_workspace(opts)
+    |> Workspace.filter(opts)
     |> maybe_include_status(opts[:show_status])
     |> Workspace.projects()
     |> Enum.map(fn project -> run_in_project(project, opts, task_args) end)

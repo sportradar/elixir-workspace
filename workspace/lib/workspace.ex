@@ -504,8 +504,8 @@ defmodule Workspace do
     * `:selected`
     * `:affected`
   """
-  @spec filter_workspace(workspace :: Workspace.t(), opts :: keyword()) :: Workspace.t()
-  def filter_workspace(%Workspace{} = workspace, opts) do
+  @spec filter(workspace :: Workspace.t(), opts :: keyword()) :: Workspace.t()
+  def filter(%Workspace{} = workspace, opts) do
     projects = filter_projects(workspace, opts)
 
     set_projects(workspace, projects)
@@ -583,7 +583,7 @@ defmodule Workspace do
   A workspace project is considered modified if any of it's files has
   changed with respect to the `base` branch.
   """
-  @spec modified(workspace :: Workspace.t()) :: [Workspace.Project.t()]
+  @spec modified(workspace :: Workspace.t()) :: [atom()]
   def modified(workspace) do
     with {:ok, changed_files} <- Workspace.Git.changed_files(cd: workspace.workspace_path) do
       changed_files

@@ -28,7 +28,7 @@ defmodule Mix.Tasks.Workspace.Check do
 
     workspace =
       Workspace.new!(workspace_path, config_path)
-      |> Workspace.filter_workspace(opts)
+      |> Workspace.filter(opts)
 
     ensure_checks(workspace.config[:checks])
 
