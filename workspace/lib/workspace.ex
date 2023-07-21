@@ -116,8 +116,8 @@ defmodule Workspace do
   ## The workspace graph
 
   The most important concept of the `Workspace` is the projects graph. The
-  project graph must be a directed acyclic graph where each vertex is
-  a project and each edge a dependency between the two projects.
+  project graph is a directed acyclic graph where each vertex is a project
+  and each edge a dependency between the two projects.
 
   The workspace graph is constructed implicitely upon workspace's creation
   in order to ensure that all path dependencies are valid and decorate
@@ -135,19 +135,19 @@ defmodule Workspace do
   > on a test fixture would produce:
   >
   > ```
-  > project_a
-  > ├── project_b
-  > │   └── project_g
-  > ├── project_c
-  > │   ├── project_e
-  > │   └── project_f
-  > │       └── project_g
-  > └── project_d
-  > project_h
-  > └── project_d
-  > project_i
-  > └── project_j
-  > project_k
+  > package_a
+  > ├── package_b
+  > │   └── package_g
+  > ├── package_c
+  > │   ├── package_e
+  > │   └── package_f
+  > │       └── package_g
+  > └── package_d
+  > package_h
+  > └── package_d
+  > package_i
+  > └── package_j
+  > package_k
   > ```
   >
   > You can additionally plot is as mermaid graph by specifying the
@@ -155,27 +155,125 @@ defmodule Workspace do
   >
   > ```mermaid
   > flowchart TD
-  > project_a
-  > project_b
-  > project_c
-  > project_d
-  > project_e
-  > project_f
-  > project_g
-  > project_h
-  > project_i
-  > project_j
-  > project_k
+  > package_a
+  > package_b
+  > package_c
+  > package_d
+  > package_e
+  > package_f
+  > package_g
+  > package_h
+  > package_i
+  > package_j
+  > package_k
   >
-  > project_a --> project_b
-  > project_a --> project_c
-  > project_a --> project_d
-  > project_b --> project_g
-  > project_c --> project_e
-  > project_c --> project_f
-  > project_f --> project_g
-  > project_h --> project_d
-  > project_i --> project_j
+  > package_a --> package_b
+  > package_a --> package_c
+  > package_a --> package_d
+  > package_b --> package_g
+  > package_c --> package_e
+  > package_c --> package_f
+  > package_f --> package_g
+  > package_h --> package_d
+  > package_i --> package_j
+  > ```
+
+  ## Workspace filtering
+
+  As your workspace grows running a CI task on all projects becomes too slow.
+  To address this, code change analysis is supported in order to get the minimum
+  set of projects that need to be executed.
+
+  `Workspace` supports various filtering modes. Each one should be used in
+  context with the underlying task. For more details check `filter/2`.
+
+  ### Global filtering options
+
+    * `:ignored` - ignores these specific projects
+    * `:selected` - considers only these projects
+    * `:only_roots` - considers only the graph roots (sources), e.g. ignores
+    all projects that have a parent in the graph.
+
+  ### Code analysis related options
+
+    * `:modified` - returns only the modified projects, e.g. prjects for which
+    the code has changed
+    * `:affected` - returns all affected projects. Affected projects are the
+    modifed ones plus the 
+
+  `:modified` and `:affected` can be combined with the global filtering options.
+
+  > #### Understanding when and how to filter a workspace {: .info}
+  >
+  > Workspace filtering should be actively used on big workspaces in order to
+  > improve the local build and CI times.
+  >
+  > Some examples follow:
+  >
+  >   - If a workspace is used by multiple teams and contains multiple apps, you
+  > should select a specific top level app when building the project. This will
+  > ignore all other irrelevant apps.
+  >   - When changing a specific set of projects, you should use `:modified` fo
+  > formatting the code since everything else is not affected. 
+  >   - Similarly for testing you should use the `:affected` filtering since a
+  > change on a project may affect all parents.
+  >   - It is advised to have generic CI pipelines on master/main branches that
+  > do not apply any filtering.
+
+  > #### Visualizing what is affected {: .tip}
+  >
+  > You can use the `--show-status` flag in most of `workspace` to indicate what
+  > is unchanged, modified or affected.
+  >
+  > For instance if you have changed `package_f` and `package_d` you can visualize
+  > the graph using `workspace.graph --format mermaid --show-status`
+  >
+  > ```mermaid
+  > flowchart TD
+  >   package_a
+  >   package_b
+  >   package_c
+  >   package_d
+  >   package_e
+  >   package_f
+  >   package_g
+  >   package_h
+  >   package_i
+  >
+  >   package_a --> package_b
+  >   package_a --> package_c
+  >   package_a --> package_d
+  >   package_b --> package_g
+  >   package_c --> package_e
+  >   package_c --> package_f
+  >   package_f --> package_g
+  >   package_h --> package_d
+  >   package_i --> package_b
+  >
+  >   class package_a affected;
+  >   class package_c affected;
+  >   class package_d modified;
+  >   class package_f modified;
+  >   class package_h affected;
+  >
+  >   classDef affected fill:#FA6,color:#FFF;
+  >   classDef modified fill:#F33,color:#FFF;
+  > ```
+  > 
+  > Modified projects are indicated with red colors, and affected projects are
+  > highlighted with orange color.
+  >
+  > You could now use the proper filtering flags based on what you want to run:
+  >
+  > ```bash
+  > # We want to build only the top level affected projects
+  > mix workspace.run -t compile --only-roots --affected
+  >
+  > # we want to format only the modified ones
+  > mix workspace.run -t format --modified
+  >
+  > # we want to test all the affected ones
+  > mix workspace.run -t test --affected
   > ```
   """
 
