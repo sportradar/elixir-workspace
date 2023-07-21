@@ -16,6 +16,17 @@ defmodule Workspace.GraphTest do
 
       :digraph.delete(graph)
     end
+
+    test "with external dependencies set", %{workspace: workspace} do
+      graph = Graph.digraph(workspace, external: true)
+
+      assert length(:digraph.vertices(graph)) == 12
+      assert {:foo, :external} in :digraph.vertices(graph)
+
+      assert length(:digraph.edges(graph)) == 10
+
+      :digraph.delete(graph)
+    end
   end
 
   describe "with_digraph/2" do

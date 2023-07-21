@@ -10,6 +10,14 @@ defmodule Mix.Tasks.Workspace.Graph do
 
       """,
       allowed: ["pretty", "mermaid"]
+    ],
+    external: [
+      type: :boolean,
+      default: false,
+      doc: """
+      If set external dependencies will also be inlcuded in the generated
+      graph.
+      """
     ]
   ]
   @options_schema Workspace.Cli.options(
@@ -44,33 +52,48 @@ defmodule Mix.Tasks.Workspace.Graph do
     workspace = Mix.WorkspaceUtils.load_and_filter_workspace(opts)
 
     case opts[:format] do
-      "pretty" -> print_tree(workspace, opts[:show_status])
-      "mermaid" -> mermaid_graph(workspace, opts[:show_status])
+      "pretty" ->
+        print_tree(workspace, show_status: opts[:show_status], external: opts[:external])
+
+      "mermaid" ->
+        mermaid_graph(workspace, show_status: opts[:show_status], external: opts[:external])
     end
   end
 
-  defp print_tree(workspace, show_status) do
-    Workspace.Graph.with_digraph(workspace, fn graph ->
-      callback = fn {node, _format} ->
-        children =
-          :digraph.out_neighbours(graph, node)
+  defp print_tree(workspace, opts) do
+    Workspace.Graph.with_digraph(
+      workspace,
+      fn graph ->
+        callback = fn {node, _format} ->
+          children =
+            :digraph.out_neighbours(graph, node)
+            |> Enum.map(fn node -> {node, nil} end)
+            |> Enum.sort()
+
+          {app, type} = node
+
+          case type do
+            :workspace ->
+              project = Map.fetch!(workspace.projects, app)
+
+              {{node_format(project, opts[:show_status]), nil}, children}
+
+            :external ->
+              display = format_ansi([:light_black, inspect(app), " (external)", :reset])
+              {{display, nil}, children}
+          end
+        end
+
+        root_nodes =
+          graph
+          |> :digraph.source_vertices()
           |> Enum.map(fn node -> {node, nil} end)
           |> Enum.sort()
 
-        {app, _type} = node
-        project = Map.fetch!(workspace.projects, app)
-
-        {{node_format(project, show_status), nil}, children}
-      end
-
-      root_nodes =
-        graph
-        |> :digraph.source_vertices()
-        |> Enum.map(fn node -> {node, nil} end)
-        |> Enum.sort()
-
-      Mix.Utils.print_tree(root_nodes, callback)
-    end)
+        Mix.Utils.print_tree(root_nodes, callback)
+      end,
+      external: opts[:external]
+    )
 
     :ok
   end
@@ -84,34 +107,54 @@ defmodule Mix.Tasks.Workspace.Graph do
     IO.ANSI.format(message) |> :erlang.iolist_to_binary()
   end
 
-  defp mermaid_graph(workspace, show_status) do
-    Workspace.Graph.with_digraph(workspace, fn graph ->
-      vertices =
-        :digraph.vertices(graph)
-        |> Enum.map(fn {v, _type} -> "  #{v}" end)
-        |> Enum.sort()
-        |> Enum.join("\n")
+  defp mermaid_graph(workspace, opts) do
+    Workspace.Graph.with_digraph(
+      workspace,
+      fn graph ->
+        vertices =
+          :digraph.vertices(graph)
+          |> Enum.map(fn {v, _type} -> "  #{v}" end)
+          |> Enum.sort()
+          |> Enum.join("\n")
 
-      edges =
-        :digraph.edges(graph)
-        |> Enum.map(fn edge ->
-          {_e, v1, v2, _l} = :digraph.edge(graph, edge)
-          {v1, v2}
-        end)
-        |> Enum.map(fn {{v1, _type1}, {v2, _type2}} -> "  #{v1} --> #{v2}" end)
-        |> Enum.sort()
-        |> Enum.join("\n")
+        external =
+          :digraph.vertices(graph)
+          |> Enum.filter(fn {_v, type} -> type == :external end)
+          |> Enum.map(fn {v, _type} -> v end)
 
-      """
-      flowchart TD
-      #{vertices}
+        edges =
+          :digraph.edges(graph)
+          |> Enum.map(fn edge ->
+            {_e, v1, v2, _l} = :digraph.edge(graph, edge)
+            {v1, v2}
+          end)
+          |> Enum.map(fn {{v1, _type1}, {v2, _type2}} -> "  #{v1} --> #{v2}" end)
+          |> Enum.sort()
+          |> Enum.join("\n")
 
-      #{edges}
-      #{maybe_mermaid_node_format(workspace, show_status)}
-      """
-      |> String.trim()
-      |> IO.puts()
-    end)
+        """
+        flowchart TD
+        #{vertices}
+
+        #{edges}
+        #{external_node_format(external)}
+        #{maybe_mermaid_node_format(workspace, opts[:show_status])}
+        """
+        |> String.trim()
+        |> IO.puts()
+      end,
+      external: opts[:external]
+    )
+  end
+
+  defp external_node_format(external) do
+    external_styles =
+      external
+      |> Enum.map(fn app -> "  class #{app} external;" end)
+      |> Enum.join("\n")
+
+    [external_styles, "  classDef external fill:#999,color:#ee0;"]
+    |> Enum.join("\n")
   end
 
   defp maybe_mermaid_node_format(_worksapce, false), do: ""

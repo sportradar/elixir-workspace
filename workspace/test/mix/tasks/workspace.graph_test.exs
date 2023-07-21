@@ -78,6 +78,8 @@ defmodule Mix.Tasks.Workspace.GraphTest do
       package_changed_f --> package_changed_g
       package_changed_h --> package_changed_d
       package_changed_i --> package_changed_j
+
+      classDef external fill:#999,color:#ee0;
     """
 
     assert capture_io(fn ->

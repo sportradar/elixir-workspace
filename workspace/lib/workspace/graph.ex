@@ -31,7 +31,7 @@ defmodule Workspace.Graph do
           result
         when result: term()
   def with_digraph(workspace, callback, opts \\ []) do
-    graph = digraph(workspace)
+    graph = digraph(workspace, opts)
 
     try do
       callback.(graph)
@@ -45,27 +45,43 @@ defmodule Workspace.Graph do
 
   Notice that you need to manually delete the graph. Prefer instead
   `with_digraph/2`.
+
+  ## Options
+
+    * `:external` - if set external dependencies will be included as well
   """
   @spec digraph(workspace :: Workspace.t(), opts :: keyword()) :: :digraph.graph()
   def digraph(workspace, opts \\ []) do
     graph = :digraph.new()
 
+    # add workspace vertices
     for {app, _project} <- workspace.projects do
       :digraph.add_vertex(graph, {app, :workspace})
     end
 
     for {_app, project} <- workspace.projects,
-        {dep, dep_config} <- project.config[:deps] || [],
-        # TODO fixup create a workspace_project? instead and use it
-        path_dependency?(dep_config) do
-      :digraph.add_edge(graph, {project.app, :workspace}, {dep, :workspace})
+        {dep, _dep_config} <- project.config[:deps] || [],
+        node_type = node_type(workspace, dep),
+        include_node_type?(node_type, opts[:external]) do
+      :digraph.add_vertex(graph, {dep, node_type})
+      :digraph.add_edge(graph, {project.app, :workspace}, {dep, node_type})
     end
 
     graph
   end
 
-  defp path_dependency?(config) when is_binary(config), do: false
-  defp path_dependency?(config), do: config[:path] != nil
+  defp node_type(workspace, app) do
+    case workspace_project?(workspace, app) do
+      true -> :workspace
+      false -> :external
+    end
+  end
+
+  defp workspace_project?(workspace, name), do: Map.has_key?(workspace.projects, name)
+
+  defp include_node_type?(:workspace, _flag), do: true
+  defp include_node_type?(:external, true), do: true
+  defp include_node_type?(_type, _flag), do: false
 
   @doc """
   Return the source projects of the workspace
