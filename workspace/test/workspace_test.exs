@@ -101,8 +101,8 @@ defmodule WorkspaceTest do
     test "if app in ignore skips the project", %{workspace: workspace} do
       workspace = Workspace.filter(workspace, ignore: ["bar"])
 
-      assert Workspace.project_by_app_name(workspace, :bar).skip
-      refute Workspace.project_by_app_name(workspace, :foo).skip
+      assert Workspace.project!(workspace, :bar).skip
+      refute Workspace.project!(workspace, :foo).skip
     end
 
     test "if app in selected it is not skipped - everything else is skipped", %{
@@ -110,8 +110,8 @@ defmodule WorkspaceTest do
     } do
       workspace = Workspace.filter(workspace, project: ["bar"])
 
-      refute Workspace.project_by_app_name(workspace, :bar).skip
-      assert Workspace.project_by_app_name(workspace, :foo).skip
+      refute Workspace.project!(workspace, :bar).skip
+      assert Workspace.project!(workspace, :foo).skip
     end
 
     test "ignore has priority over project", %{
@@ -119,8 +119,32 @@ defmodule WorkspaceTest do
     } do
       workspace = Workspace.filter(workspace, ignore: [:bar], project: [:bar])
 
-      assert Workspace.project_by_app_name(workspace, :bar).skip
-      assert Workspace.project_by_app_name(workspace, :foo).skip
+      assert Workspace.project!(workspace, :bar).skip
+      assert Workspace.project!(workspace, :foo).skip
+    end
+  end
+
+  describe "project/2" do
+    test "gets an existing project", %{workspace: workspace} do
+      assert {:ok, _project} = Workspace.project(workspace, :foo)
+    end
+
+    test "error if invalid project", %{workspace: workspace} do
+      assert {:error, ":invalid is not a member of the workspace"} =
+               Workspace.project(workspace, :invalid)
+    end
+  end
+
+  describe "project!/2" do
+    test "gets an existing project", %{workspace: workspace} do
+      assert project = Workspace.project!(workspace, :foo)
+      assert project.app == :foo
+    end
+
+    test "raises if invalid project", %{workspace: workspace} do
+      assert_raise ArgumentError, ":invalid is not a member of the workspace", fn ->
+        Workspace.project!(workspace, :invalid)
+      end
     end
   end
 end

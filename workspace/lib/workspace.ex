@@ -464,19 +464,37 @@ defmodule Workspace do
   end
 
   @doc """
-  Get a list of the workspace projects
+  Returns the workspace projects as a list.
   """
   @spec projects(workspace :: Workspace.t()) :: [Workspace.Project.t()]
   def projects(workspace), do: Map.values(workspace.projects)
 
-  def apps_to_projects(workspace, apps) when is_list(apps) do
-    Enum.map(apps, &project_by_app_name(workspace, &1))
+  # defp apps_to_projects(workspace, apps) when is_list(apps) do
+  #   Enum.map(apps, &project_by_app_name(workspace, &1))
+  # end
+
+  @doc """
+  Get the given project from the workspace.
+
+  If the project is not a workspace member, an error tuple is returned.
+  """
+  @spec project(workspace :: t(), app :: atom()) ::
+          {:ok, Workspace.Project.t()} | {:error, binary()}
+  def project(workspace, app) when is_atom(app) do
+    case Map.has_key?(workspace.projects, app) do
+      true -> {:ok, workspace.projects[app]}
+      false -> {:error, "#{inspect(app)} is not a member of the workspace"}
+    end
   end
 
-  def project_by_app_name(workspace, app) when is_atom(app) do
-    case Map.has_key?(workspace.projects, app) do
-      true -> workspace.projects[app]
-      false -> raise KeyError, "no workspace project with app name #{inspect(app)}"
+  @doc """
+  Similar to `project/2` but raises in case of error
+  """
+  @spec project!(workspace :: t(), app :: atom()) :: Workspace.Project.t()
+  def project!(workspace, app) do
+    case project(workspace, app) do
+      {:ok, project} -> project
+      {:error, reason} -> raise ArgumentError, reason
     end
   end
 
