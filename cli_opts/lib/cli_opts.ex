@@ -5,12 +5,12 @@ defmodule CliOpts do
   `CliOpts` allows developers to define a schema for the options of command
   line tasks. Among other it offers:
 
-  - Standard schema for defining options
-  - Support for required options
-  - Initialization of options with default values
-  - Handling of aliases
-  - Propagates extra arguments (everything under a `--`) 
-  - Automatic doc generation
+    * Standard schema for defining options
+    * Support for required options
+    * Initialization of options with default values
+    * Handling of aliases
+    * Propagates extra arguments (everything under a `--`) 
+    * Automatic doc generation
 
   ## Schema options
 
@@ -18,15 +18,15 @@ defmodule CliOpts do
   key is an atom defining the name of the option and the value is a keyword
   list that can contain the following options:
 
-  - `:type` (`atom/0`) - The type of the option, e.g. `:string`, `:boolean` or
-  `:integer`. The types supported by `OptionParser` can be used.
-  - `:alias` (`atom/0`) - If set defines an alias for the given option.
-  - `:required` (`boolean/0`) - Defines if the option is required. The default
-  value is `false`
-  - `:doc` (`String.t()`) - A short description of the option item
-  - `:keep` (`boolean/0`) - If set this option can be used multiple times. The
-  default value is `false`
-  - `:allowed` (`[String.t()]`) - If set a list of allowed values.
+    * `:type` (`atom/0`) - The type of the option, e.g. `:string`, `:boolean` or
+    `:integer`. The types supported by `OptionParser` can be used.
+    * `:alias` (`atom/0`) - If set defines an alias for the given option.
+    * `:required` (`boolean/0`) - Defines if the option is required. The default
+    value is `false`
+    * `:doc` (`String.t()`) - A short description of the option item
+    * `:keep` (`boolean/0`) - If set this option can be used multiple times. The
+    default value is `false`
+    * `:allowed` (`[String.t()]`) - If set a list of allowed values.
 
   ## Example
 
@@ -66,12 +66,12 @@ defmodule CliOpts do
   In case of success it returns `{:ok, result}` where `result` is a map
   with the following keys:
 
-  - `:parsed` - a keyword list with parsed options
-  - `:args` - a list of the remeining arguments in `argv` as strings
-  - `:invalid` - a list of invalid options (check `OptionParser.parse/2` docs for
-  more details)
-  - `:extra` - a list of extra arguments, e.g. everything (if any) after
-  `--` (see the Examples section below for more information)
+    . `:parsed` - a keyword list with parsed options
+    . `:args` - a list of the remeining arguments in `argv` as strings
+    . `:invalid` - a list of invalid options (check `OptionParser.parse/2` docs for
+    more details)
+    . `:extra` - a list of extra arguments, e.g. everything (if any) after
+    `--` (see the Examples section below for more information)
 
   In case of `error`, e.g. when a required option is missing an error tuple is
   returned
@@ -222,14 +222,14 @@ defmodule CliOpts do
   defp maybe_default(schema) do
     case schema[:default] do
       nil -> ""
-      default -> " [default: `#{default}`]"
+      default -> "   [default: `#{default}`]"
     end
   end
 
   defp maybe_allowed(schema) do
     case schema[:allowed] do
       nil -> ""
-      allowed -> " Allowed values: `#{inspect(allowed)}`."
+      allowed -> "   Allowed values: `#{inspect(allowed)}`."
     end
   end
 

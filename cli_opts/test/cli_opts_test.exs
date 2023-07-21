@@ -51,7 +51,7 @@ defmodule CliOptsTest do
         """
         * `--verbose` (`boolean`) -
         * `--project, -p...` (`string`) - Required. The project to use
-        * `--mode` (`string`) -  Allowed values: `["parallel", "serial"]`. [default: `parallel`]
+        * `--mode` (`string`) -    Allowed values: `["parallel", "serial"]`.   [default: `parallel`]
         * `--with-dash` (`boolean`) - a key with a dash
         """
         |> String.trim()
