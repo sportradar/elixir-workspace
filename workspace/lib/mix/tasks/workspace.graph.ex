@@ -148,10 +148,7 @@ defmodule Mix.Tasks.Workspace.Graph do
   end
 
   defp external_node_format(external) do
-    external_styles =
-      external
-      |> Enum.map(fn app -> "  class #{app} external;" end)
-      |> Enum.join("\n")
+    external_styles = Enum.map_join(external, "\n", fn app -> "  class #{app} external;" end)
 
     [external_styles, "  classDef external fill:#999,color:#ee0;"]
     |> Enum.join("\n")
@@ -163,8 +160,7 @@ defmodule Mix.Tasks.Workspace.Graph do
     node_styles =
       Workspace.projects(workspace)
       |> Enum.filter(fn project -> project.status in [:modified, :affected] end)
-      |> Enum.map(fn project -> "  class #{project.app} #{project.status};" end)
-      |> Enum.join("\n")
+      |> Enum.map_join("\n", fn project -> "  class #{project.app} #{project.status};" end)
 
     """
 
