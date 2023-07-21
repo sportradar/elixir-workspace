@@ -80,6 +80,12 @@ defmodule WorkspaceTest do
       assert reason =~ "workspace option is set in config object"
       assert reason =~ "to be a workspace project. Some errors were detected"
     end
+
+    test "error in case of an invalid path" do
+      assert {:error, reason} = Workspace.new("/an/invalid/path")
+      assert reason =~ "mix.exs does not exist"
+      assert reason =~ "to be a workspace project. Some errors were detected"
+    end
   end
 
   describe "new!/2" do
@@ -164,6 +170,43 @@ defmodule WorkspaceTest do
 
     test "returns nil if invalid path", %{workspace: workspace} do
       assert Workspace.parent_project(workspace, "invalid/file.ex") == nil
+    end
+  end
+
+  @sample_workspace_no_git_path Path.join(TestUtils.tmp_path(), "sample_workspace_no_git")
+  @sample_workspace_changed_path Path.join(TestUtils.tmp_path(), "sample_workspace_changed")
+
+  describe "modified/2" do
+    test "returns the modified files" do
+      workspace = Workspace.new!(@sample_workspace_changed_path)
+
+      assert Workspace.modified(workspace) == [:package_changed_d, :package_changed_e]
+    end
+
+    test "error if modified files cannot be retrieved" do
+      workspace = Workspace.new!(@sample_workspace_no_git_path)
+
+      assert_raise ArgumentError, fn -> Workspace.modified(workspace) end
+    end
+  end
+
+  describe "affected/2" do
+    test "returns the affected files" do
+      workspace = Workspace.new!(@sample_workspace_changed_path)
+
+      assert Workspace.affected(workspace) == [
+               :package_changed_c,
+               :package_changed_a,
+               :package_changed_h,
+               :package_changed_d,
+               :package_changed_e
+             ]
+    end
+
+    test "error if modified files cannot be retrieved" do
+      workspace = Workspace.new!(@sample_workspace_no_git_path)
+
+      assert_raise ArgumentError, fn -> Workspace.affected(workspace) end
     end
   end
 end

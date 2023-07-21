@@ -449,6 +449,8 @@ defmodule Workspace do
     |> Enum.any?(fn path -> String.starts_with?(mix_path, path) end)
   end
 
+  @doc false
+  @spec set_projects(workspace :: t(), projects :: [Workspace.Project.t()] | map()) :: t()
   def set_projects(workspace, projects) when is_list(projects) do
     projects =
       projects
@@ -644,7 +646,8 @@ defmodule Workspace do
     end)
   end
 
-  def update_projects_topology(workspace) do
+  # TODO: check how it can be refactored
+  defp update_projects_topology(workspace) do
     roots = Workspace.Graph.source_projects(workspace)
 
     projects =

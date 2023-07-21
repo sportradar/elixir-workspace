@@ -8,6 +8,8 @@
 # default suffix
 # `sample_workspace_changed` - a copy of the sample workspace fixture with some
 # files modified for testing the affected related flags
+# `sample_workspace_no_git` - a copy of the sample workspace fixture without a
+# git repo initialized
 require TestUtils
 
 path = TestUtils.create_fixture("sample_workspace", "sample_workspace_default")
@@ -19,6 +21,9 @@ TestUtils.make_fixture_unique(path, "changed_")
 TestUtils.init_git_project(path)
 File.touch!(Path.join(path, "package_changed_d/tmp.exs"))
 File.touch!(Path.join(path, "package_changed_e/file.ex"))
+
+path = TestUtils.create_fixture("sample_workspace", "sample_workspace_no_git")
+TestUtils.make_fixture_unique(path, "no_git_")
 
 ExUnit.after_suite(fn _stats -> TestUtils.delete_tmp_dirs() end)
 
