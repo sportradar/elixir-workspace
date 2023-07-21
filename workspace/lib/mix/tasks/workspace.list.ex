@@ -60,14 +60,14 @@ defmodule Mix.Tasks.Workspace.List do
       "  * ",
       Cli.project_name(project, show_status: show_status, pretty: true),
       indent,
-      description(project.config[:description]),
-      :light_yellow,
+      :light_black,
       " ",
-      Path.relative_to(project.path, project.workspace_path),
-      :reset
+      Path.relative_to(project.mix_path, project.workspace_path),
+      :reset,
+      description(project.config[:description])
     ])
   end
 
   defp description(nil), do: ""
-  defp description(doc) when is_binary(doc), do: [" ", doc]
+  defp description(doc) when is_binary(doc), do: [" - ", doc]
 end
