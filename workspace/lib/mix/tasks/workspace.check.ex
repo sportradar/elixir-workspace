@@ -23,12 +23,8 @@ defmodule Mix.Tasks.Workspace.Check do
 
   def run(argv) do
     %{parsed: opts, args: _args, extra: _extra} = CliOpts.parse!(argv, @options_schema)
-    workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
-    config_path = Keyword.fetch!(opts, :config_path)
 
-    workspace =
-      Workspace.new!(workspace_path, config_path)
-      |> Workspace.filter(opts)
+    workspace = Mix.WorkspaceUtils.load_and_filter_workspace(opts)
 
     ensure_checks(workspace.config[:checks])
 

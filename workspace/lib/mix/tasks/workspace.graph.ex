@@ -41,21 +41,13 @@ defmodule Mix.Tasks.Workspace.Graph do
     {:ok, opts} = CliOpts.parse(args, @options_schema)
     %{parsed: opts} = opts
 
-    workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
-    workspace_config = Keyword.get(opts, :workspace_config, ".workspace.exs")
-
-    workspace =
-      Workspace.new!(workspace_path, workspace_config)
-      |> maybe_include_status(opts[:show_status])
+    workspace = Mix.WorkspaceUtils.load_and_filter_workspace(opts)
 
     case opts[:format] do
       "pretty" -> print_tree(workspace, opts[:show_status])
       "mermaid" -> mermaid_graph(workspace, opts[:show_status])
     end
   end
-
-  defp maybe_include_status(workspace, false), do: workspace
-  defp maybe_include_status(workspace, true), do: Workspace.update_projects_statuses(workspace)
 
   defp print_tree(workspace, show_status) do
     Workspace.Graph.with_digraph(workspace, fn graph ->

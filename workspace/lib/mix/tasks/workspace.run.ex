@@ -75,21 +75,12 @@ defmodule Mix.Tasks.Workspace.Run do
 
     task_args = CliOpts.to_list(invalid) ++ extra ++ args
 
-    workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
-    config_path = Keyword.fetch!(opts, :config_path)
-
-    workspace = Workspace.new!(workspace_path, config_path)
-
-    workspace
-    |> Workspace.filter(opts)
-    |> maybe_include_status(opts[:show_status])
+    opts
+    |> Mix.WorkspaceUtils.load_and_filter_workspace()
     |> Workspace.projects()
     |> Enum.map(fn project -> run_in_project(project, opts, task_args) end)
     |> raise_if_any_task_failed()
   end
-
-  defp maybe_include_status(workspace, false), do: workspace
-  defp maybe_include_status(workspace, true), do: Workspace.update_projects_statuses(workspace)
 
   defp run_in_project(%{skip: true, app: app}, args, _argv) do
     if args[:verbose] do

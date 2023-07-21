@@ -154,10 +154,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     {:ok, opts} = CliOpts.parse(args, @options_schema)
     %{parsed: opts, args: _args, extra: _extra, invalid: []} = opts
 
-    workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
-    config_path = Keyword.fetch!(opts, :config_path)
-
-    {:ok, workspace} = Workspace.new(workspace_path, config_path)
+    workspace = Mix.WorkspaceUtils.load_and_filter_workspace(opts)
 
     paths =
       workspace
@@ -177,7 +174,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     log(highlight("importing cover results", :bright))
 
     Enum.each(paths, fn {app, cover_paths, _compile_paths} ->
-      import_cover_results(app, cover_paths, workspace_path)
+      import_cover_results(app, cover_paths, workspace.workspace_path)
     end)
 
     newline()

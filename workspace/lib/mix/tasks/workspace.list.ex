@@ -32,17 +32,10 @@ defmodule Mix.Tasks.Workspace.List do
     {:ok, opts} = CliOpts.parse(args, @options_schema)
     %{parsed: opts, args: _args, extra: _extra, invalid: _invalid} = opts
 
-    workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
-    workspace_config = Keyword.get(opts, :workspace_config, ".workspace.exs")
-
-    Workspace.new!(workspace_path, workspace_config)
-    |> Workspace.filter(opts)
-    |> maybe_include_status(opts[:show_status])
+    opts
+    |> Mix.WorkspaceUtils.load_and_filter_workspace()
     |> list_workspace_projects(opts[:show_status])
   end
-
-  defp maybe_include_status(workspace, false), do: workspace
-  defp maybe_include_status(workspace, true), do: Workspace.update_projects_statuses(workspace)
 
   defp list_workspace_projects(workspace, show_status) do
     max_project_length =
