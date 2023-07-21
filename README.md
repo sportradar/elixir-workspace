@@ -8,9 +8,8 @@
 
 we need to cleanup first in order to make our lifes easier later
 
-- make workspace config a keyword list
-- save graph in workspace
-- make graph functions work with both a graph and a workspace
+- save graph in workspace (to be reconsidered) and make graph functions work with
+both a graph and a workspace
 - graph exporters make them accept an adjacency list
 - move test helpers under lib (only on test env initially) and document them
   properly
@@ -25,11 +24,11 @@ tested
 
 #### Base functionality
 
+- run - allow apps to fail
 - graph - dot output
 - graph - include external deps
 - run - partition support
 - run - support custom options per app
-- run - allow apps to fail
 - workspace.list support json output
 - add workspace.help task with all projects
 - add workspace aliases with docs

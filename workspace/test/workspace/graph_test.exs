@@ -20,21 +20,27 @@ defmodule Workspace.GraphTest do
 
   describe "with_digraph/2" do
     test "runs a function on the graph", %{workspace: workspace} do
-      assert Graph.with_digraph(workspace, fn graph -> :digraph.source_vertices(graph) end) == [
-               :package_a,
-               :package_h,
-               :package_i,
-               :package_k
+      assert Graph.with_digraph(workspace, fn graph -> :digraph.source_vertices(graph) end)
+             |> Enum.sort() == [
+               {:package_a, :workspace},
+               {:package_h, :workspace},
+               {:package_i, :workspace},
+               {:package_k, :workspace}
              ]
     end
   end
 
   test "source_projects/1", %{workspace: workspace} do
-    assert Graph.source_projects(workspace) == [:package_a, :package_h, :package_i, :package_k]
+    assert Graph.source_projects(workspace) |> Enum.sort() == [
+             :package_a,
+             :package_h,
+             :package_i,
+             :package_k
+           ]
   end
 
   test "sink_projects/1", %{workspace: workspace} do
-    assert Graph.sink_projects(workspace) == [
+    assert Graph.sink_projects(workspace) |> Enum.sort() == [
              :package_d,
              :package_e,
              :package_g,
@@ -49,11 +55,14 @@ defmodule Workspace.GraphTest do
     end
 
     test "proper traversing up of the graph", %{workspace: workspace} do
-      assert Graph.affected(workspace, [:package_k, :package_a]) == [:package_k, :package_a]
-
-      assert Graph.affected(workspace, [:package_g]) == [
-               :package_b,
+      assert Graph.affected(workspace, [:package_k, :package_a]) |> Enum.sort() == [
                :package_a,
+               :package_k
+             ]
+
+      assert Graph.affected(workspace, [:package_g]) |> Enum.sort() == [
+               :package_a,
+               :package_b,
                :package_c,
                :package_f,
                :package_g

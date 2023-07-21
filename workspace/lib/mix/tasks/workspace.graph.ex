@@ -57,7 +57,8 @@ defmodule Mix.Tasks.Workspace.Graph do
           |> Enum.map(fn node -> {node, nil} end)
           |> Enum.sort()
 
-        project = Map.fetch!(workspace.projects, node)
+        {app, _type} = node
+        project = Map.fetch!(workspace.projects, app)
 
         {{node_format(project, show_status), nil}, children}
       end
@@ -87,7 +88,7 @@ defmodule Mix.Tasks.Workspace.Graph do
     Workspace.Graph.with_digraph(workspace, fn graph ->
       vertices =
         :digraph.vertices(graph)
-        |> Enum.map(fn v -> "  #{v}" end)
+        |> Enum.map(fn {v, _type} -> "  #{v}" end)
         |> Enum.sort()
         |> Enum.join("\n")
 
@@ -97,7 +98,7 @@ defmodule Mix.Tasks.Workspace.Graph do
           {_e, v1, v2, _l} = :digraph.edge(graph, edge)
           {v1, v2}
         end)
-        |> Enum.map(fn {v1, v2} -> "  #{v1} --> #{v2}" end)
+        |> Enum.map(fn {{v1, _type1}, {v2, _type2}} -> "  #{v1} --> #{v2}" end)
         |> Enum.sort()
         |> Enum.join("\n")
 
