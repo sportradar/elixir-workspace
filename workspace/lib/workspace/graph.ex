@@ -53,7 +53,7 @@ defmodule Workspace.Graph do
   @doc """
   Return the source projects of the workspace
 
-  Notice that the project names are returned, you can use `Workspace.apps_to_projects/2`
+  Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
   """
   @spec source_projects(workspace :: Workspace.t()) :: [atom()]
@@ -64,7 +64,7 @@ defmodule Workspace.Graph do
   @doc """
   Return the sink projects of the workspace
 
-  Notice that the project names are returned, you can use `Workspace.apps_to_projects/2`
+  Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
   """
   @spec sink_projects(workspace :: Workspace.t()) :: [atom()]
@@ -75,7 +75,7 @@ defmodule Workspace.Graph do
   @doc """
   Get the affected workspace's projects given the changed projects
 
-  Notice that the project names are returned, you can use `Workspace.apps_to_projects/2`
+  Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
   """
   @spec affected(workspace :: Workspace.t(), projects :: [atom()]) :: [atom()]
