@@ -71,7 +71,7 @@ defmodule Workspace.CliTest do
     test "with default options" do
       assert capture_io(fn ->
                Cli.log("a message")
-             end) =~ format_ansi(["==> ", "a message"])
+             end) =~ "a message"
     end
 
     test "with prefix set" do
@@ -82,6 +82,12 @@ defmodule Workspace.CliTest do
       assert capture_io(fn ->
                Cli.log("a message", prefix: false)
              end) =~ "a message"
+    end
+
+    test "with prefix set to :header" do
+      assert capture_io(fn ->
+               Cli.log("a message", prefix: :header)
+             end) =~ format_ansi(["==> ", "a message"])
     end
 
     test "with a highlighted message" do
@@ -95,6 +101,12 @@ defmodule Workspace.CliTest do
     test "with default options" do
       assert capture_io(fn ->
                Cli.log_with_title("section", "a message")
+             end) =~ format_ansi(["section", " - ", "a message"])
+    end
+
+    test "with header prefix set" do
+      assert capture_io(fn ->
+               Cli.log_with_title("section", "a message", prefix: :header)
              end) =~ format_ansi(["==> ", "section", " - ", "a message"])
     end
 
@@ -131,11 +143,12 @@ defmodule Workspace.CliTest do
       project = Workspace.Project.set_status(project, :affected)
 
       assert_ansi_lists(Cli.project_name(project, opts), [
-        :yellow,
+        :orange,
+        :bright,
         ":foo",
         :reset,
+        :orange,
         :bright,
-        :yellow,
         " ●",
         :reset
       ])
@@ -144,12 +157,12 @@ defmodule Workspace.CliTest do
       project = Workspace.Project.set_status(project, :modified)
 
       assert_ansi_lists(Cli.project_name(project, opts), [
-        :bright,
         :red,
+        :bright,
         ":foo",
         :reset,
-        :bright,
         :red,
+        :bright,
         " ✚",
         :reset
       ])
@@ -174,6 +187,6 @@ defmodule Workspace.CliTest do
   end
 
   defp assert_ansi_lists(output, expected) do
-    assert List.flatten(output) == List.flatten(expected)
+    assert List.flatten(output) == Cli.format(expected) |> List.flatten()
   end
 end

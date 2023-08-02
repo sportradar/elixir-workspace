@@ -28,7 +28,10 @@ defmodule Mix.Tasks.Workspace.Check do
 
     ensure_checks(workspace.config[:checks])
 
-    log("running #{length(workspace.config[:checks])} workspace checks on the workspace")
+    log("running #{length(workspace.config[:checks])} workspace checks on the workspace",
+      prefix: :header
+    )
+
     newline()
 
     workspace.config[:checks]
@@ -60,7 +63,8 @@ defmodule Mix.Tasks.Workspace.Check do
     log_with_title(
       highlight("C#{display_index}", [:bright, status_color(status)]),
       highlight(check[:description], :bright),
-      separator: " "
+      separator: " ",
+      prefix: :header
     )
 
     for result <- results do

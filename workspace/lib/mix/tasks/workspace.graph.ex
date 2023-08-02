@@ -99,7 +99,7 @@ defmodule Mix.Tasks.Workspace.Graph do
   end
 
   defp node_format(project, show_status) do
-    Workspace.Cli.project_name(project, show_status: show_status, default_style: [])
+    Workspace.Cli.project_name(project, show_status: show_status, default_style: :gray)
     |> format_ansi()
   end
 

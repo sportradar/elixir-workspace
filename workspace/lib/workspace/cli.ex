@@ -18,10 +18,18 @@ defmodule Workspace.Cli do
   @doc """
   Helper function for console log messages
 
+  The message can be a rich formatted list. On top of the default elixir
+  styles, various `workspace` related styles are supported for consistency
+  across the cli apps. For more details on the supported style spectifications
+  check `format_style/1`.
+
   ## Options
 
-  - `:prefix` the prefix to be used, defaults to "==> ". If set to `false`
-  no prefix is applied.
+  - `:prefix` the prefix to be used. You can either specify the actual header
+  or set one of the following options:
+    - `:header`: corresponds to "==> ".
+    - if set to `false` no prefix is applied.
+    - if not set then no prefix is applied.
   """
   @spec log(
           message :: IO.ANSI.ansidata(),
@@ -31,13 +39,52 @@ defmodule Workspace.Cli do
   def log(message, opts \\ []) do
     prefix =
       case opts[:prefix] do
-        nil -> "==> "
+        nil -> ""
         false -> ""
+        :header -> "==> "
         other when is_binary(other) -> other
       end
 
-    Mix.shell().info([prefix, message])
+    [prefix, message]
+    |> format([], [])
+    |> Mix.shell().info()
   end
+
+  def format(ansidata) when is_list(ansidata), do: format(ansidata, [], [])
+  def format(ansidata), do: format([ansidata])
+
+  defp format([term | rest], rem, acc) do
+    format(term, [rest | rem], acc)
+  end
+
+  defp format(term, rem, acc) when is_atom(term) do
+    format([], rem, [acc | [format_style(term)]])
+  end
+
+  defp format(term, rem, acc) when not is_list(term) do
+    format([], rem, [acc, term])
+  end
+
+  defp format([], [next | rest], acc) do
+    format(next, rest, acc)
+  end
+
+  defp format([], [], acc) do
+    acc
+  end
+
+  # custom colors
+  defp format_style(:light_gray), do: IO.ANSI.color(3, 3, 3)
+  defp format_style(:gray), do: IO.ANSI.color(4, 4, 4)
+  defp format_style(:orange), do: IO.ANSI.color(4, 3, 1)
+
+  # project statuses
+  defp format_style(:modified), do: [:red, :bright]
+  defp format_style(:affected), do: format([:orange, :bright])
+
+  # workspace styles
+  defp format_style(:mix_path), do: format_style(:gray)
+  defp format_style(other), do: other
 
   @doc """
   Helper function for logging a message with a title
@@ -136,12 +183,14 @@ defmodule Workspace.Cli do
   @spec project_name(project :: Workspace.Project.t(), opts :: keyword()) :: IO.ANSI.ansidata()
   def project_name(project, opts \\ []) do
     show_status = opts[:show_status] || false
-    default_style = opts[:default_style] || [:light_cyan]
+    default_style = opts[:default_style] || :light_cyan
 
     cond do
       show_status ->
         [
-          highlight(inspect(project.app), project_status_style(project.status, default_style)),
+          project_status_style(project.status, default_style),
+          inspect(project.app),
+          :reset,
           project_status_suffix(project.status)
         ]
 
@@ -150,11 +199,11 @@ defmodule Workspace.Cli do
     end
   end
 
-  defp project_status_style(:affected, _default_style), do: [:yellow]
-  defp project_status_style(:modified, _default_style), do: [:bright, :red]
-  defp project_status_style(_other, default_style), do: default_style
+  defp project_status_style(:affected, _default_style), do: format(:affected)
+  defp project_status_style(:modified, _default_style), do: format(:modified)
+  defp project_status_style(_other, default_style), do: format(default_style)
 
-  defp project_status_suffix(:modified), do: [:bright, :red, " ✚", :reset]
-  defp project_status_suffix(:affected), do: [:bright, :yellow, " ●", :reset]
+  defp project_status_suffix(:modified), do: [format(:modified), " ✚", :reset]
+  defp project_status_suffix(:affected), do: [format(:affected), " ●", :reset]
   defp project_status_suffix(_other), do: [:bright, :green, " ✔", :reset]
 end
