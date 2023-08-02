@@ -31,7 +31,7 @@ test: ## Test the complete codebase
 
 .PHONY: coverage
 coverage: ## Generates coverage report
-	mix workspace.run -t test -- --cover --trace
+	-mix workspace.run -t test -- --cover --trace
 	mix workspace.test.coverage || true
 	genhtml artifacts/coverage/coverage.lcov -o artifacts/coverage --flat --prefix ${PWD}
 	open artifacts/coverage/index.html
