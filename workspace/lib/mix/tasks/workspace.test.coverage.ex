@@ -418,7 +418,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   end
 
   defp import_cover_result(workspace_path, cover_path, app) do
-    path = Workspace.Utils.relative_path_to(cover_path, workspace_path)
+    path = Workspace.Utils.Path.relative_to(cover_path, workspace_path)
 
     Mix.shell().info([
       "==> ",

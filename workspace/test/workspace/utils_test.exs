@@ -3,41 +3,6 @@ defmodule Workspace.UtilsTest do
 
   alias Workspace.Utils
 
-  describe "relative_path_to/2" do
-    test "with absolute paths" do
-      assert Utils.relative_path_to("/usr/local/foo", "/usr/local") == "foo"
-      assert Utils.relative_path_to("/usr/local/foo", "/") == "usr/local/foo"
-      assert Utils.relative_path_to("/usr/local/foo", "/etc") == "../usr/local/foo"
-      assert Utils.relative_path_to("/usr/local/foo", "/usr/local/foo") == "."
-      assert Utils.relative_path_to("/usr/local/foo/", "/usr/local/foo") == "."
-      assert Utils.relative_path_to("/usr/local/foo", "/usr/local/foo/") == "."
-
-      assert Utils.relative_path_to("/etc", "/usr/local/foo") == "../../../etc"
-      assert Utils.relative_path_to(~c"/usr/local/foo", "/etc") == "../usr/local/foo"
-      assert Utils.relative_path_to("/usr/local", "/usr/local/foo") == ".."
-      assert Utils.relative_path_to("/usr/local/..", "/usr/local") == ".."
-
-      assert Utils.relative_path_to("/usr/../etc/foo/../../bar", "/log/foo/../../usr/") ==
-               "../bar"
-    end
-
-    test "with relative paths" do
-      assert Utils.relative_path_to("usr/local/foo", "usr/local") == "usr/local/foo"
-      assert Utils.relative_path_to("usr/local/foo", "etc") == "usr/local/foo"
-
-      assert Utils.relative_path_to("usr/local/foo", "usr/local") == "usr/local/foo"
-
-      # on cwd
-      assert Utils.relative_path_to("foo", File.cwd!()) == "foo"
-      assert Utils.relative_path_to("./foo", File.cwd!()) == "./foo"
-      assert Utils.relative_path_to("../foo", File.cwd!()) == "../foo"
-
-      # both relative
-      assert Utils.relative_path_to("usr/local/foo", "usr/local") == "usr/local/foo"
-      assert Utils.relative_path_to("usr/local/foo", "etc") == "usr/local/foo"
-    end
-  end
-
   describe "digraph_to_mermaid/1" do
     test "graph with edges" do
       graph = :digraph.new()

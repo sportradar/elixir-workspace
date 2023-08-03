@@ -19,32 +19,6 @@ defmodule Workspace.Utils do
     take
   end
 
-  # TODO: Remove once we upgrade to elixir 1.16.0
-  @doc false
-  @spec relative_path_to(path :: binary(), cwd :: binary()) :: binary()
-  def relative_path_to(path, cwd) do
-    cond do
-      relative?(path) ->
-        path
-
-      true ->
-        split_path = path |> Path.expand() |> Path.split()
-        split_cwd = cwd |> Path.expand() |> Path.split()
-
-        relative_path_to(split_path, split_cwd, split_path)
-    end
-  end
-
-  defp relative_path_to(path, path, _original), do: "."
-  defp relative_path_to([h | t1], [h | t2], original), do: relative_path_to(t1, t2, original)
-
-  defp relative_path_to(l1, l2, _original) do
-    base = List.duplicate("..", length(l2))
-    Path.join(base ++ l1)
-  end
-
-  defp relative?(path), do: Path.type(path) == :relative
-
   @doc false
   @spec parent?(base :: Path.t(), path :: Path.t()) :: boolean()
   def parent?(base, path) do

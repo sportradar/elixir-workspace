@@ -322,7 +322,7 @@ defmodule Workspace do
   def new(path, config \\ [])
 
   def new(path, config_path) when is_binary(config_path) do
-    with config_path <- Workspace.Utils.relative_path_to(config_path, Path.expand(path)),
+    with config_path <- Workspace.Utils.Path.relative_to(config_path, Path.expand(path)),
          config_path <- Path.join(path, config_path),
          {:ok, config} <- load_config(config_path) do
       new(path, config)

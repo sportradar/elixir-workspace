@@ -138,7 +138,7 @@ defmodule Workspace.Project do
   """
   @spec relative_to_workspace(project :: t()) :: binary()
   def relative_to_workspace(%Project{path: path, workspace_path: workspace_path}),
-    do: Workspace.Utils.relative_path_to(path, workspace_path)
+    do: Workspace.Utils.Path.relative_to(path, workspace_path)
 
   # returns an "app name" for the given mix.exs file, it is the
   # folder name containing the project. We need a conistent app name

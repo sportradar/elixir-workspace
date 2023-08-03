@@ -86,7 +86,7 @@ defmodule Mix.Tasks.Workspace.Check do
   end
 
   defp print_result(result) do
-    path = Workspace.Utils.relative_path_to(result.project.path, File.cwd!())
+    path = Workspace.Utils.Path.relative_to(result.project.path, File.cwd!())
 
     Mix.shell().info([
       highlight(status_text(result.status), status_color(result.status)),
