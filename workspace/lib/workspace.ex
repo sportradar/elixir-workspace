@@ -639,7 +639,7 @@ defmodule Workspace do
     path = Path.expand(path, workspace.workspace_path)
 
     Enum.reduce_while(Workspace.projects(workspace), nil, fn project, _acc ->
-      case Workspace.Utils.parent?(project.path, path) do
+      case Workspace.Utils.Path.parent_dir?(project.path, path) do
         true -> {:halt, project}
         false -> {:cont, nil}
       end

@@ -20,22 +20,6 @@ defmodule Workspace.Utils do
   end
 
   @doc false
-  @spec parent?(base :: Path.t(), path :: Path.t()) :: boolean()
-  def parent?(base, path) do
-    base = Path.split(base)
-    path = Path.split(path)
-
-    starts_with?(path, base)
-  end
-
-  defp starts_with?(_path, []), do: true
-
-  defp starts_with?([head | path_tail], [head | base_tail]),
-    do: starts_with?(path_tail, base_tail)
-
-  defp starts_with?(_path, _tail), do: false
-
-  @doc false
   @spec digraph_to_mermaid(graph :: :digraph.graph()) :: binary()
   def digraph_to_mermaid(graph) do
     vertices =
