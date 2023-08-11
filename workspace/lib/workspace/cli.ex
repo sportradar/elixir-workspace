@@ -46,45 +46,88 @@ defmodule Workspace.Cli do
       end
 
     [prefix, message]
-    |> format([], [])
+    |> format()
     |> Mix.shell().info()
   end
 
-  def format(ansidata) when is_list(ansidata), do: format(ansidata, [], [])
-  def format(ansidata), do: format([ansidata])
+  @doc """
+  Format the data and apply any custom styling
 
-  defp format([term | rest], rem, acc) do
-    format(term, [rest | rem], acc)
+  It will return an `ansidata` list with the styling applied. Notice
+  that if `emit?` is set to false, ANSI escape sequences are not emitted.
+
+  An exception will be raised if an ANSI sequence is invalid.
+
+  The returned list may still contain atoms. These will be handled by the
+  `IO.ANSI.format` when the message is printed.
+
+  ## Examples
+
+      iex> Workspace.Cli.format("Hello")
+      [[], "Hello"]
+
+      iex> Workspace.Cli.format(:red)
+      [[], :red]
+
+      iex> Workspace.Cli.format(:red, false)
+      []
+
+      iex> Workspace.Cli.format([:affected, "project", :reset])
+      [[[[], [[[], "\e[38;5;179m"], :bright]], "project"], :reset]
+
+      iex> Workspace.Cli.format(:invalid, false)
+      ** (ArgumentError) invalid ANSI sequence specification: :invalid
+
+  """
+  @spec format(ansidata :: IO.ANSI.ansidata(), emit? :: boolean()) :: IO.ANSI.ansidata()
+  def format(ansidata, emit? \\ enabled?()) do
+    format(ansidata, [], [], emit?)
   end
 
-  defp format(term, rem, acc) when is_atom(term) do
-    format([], rem, [acc | [format_style(term)]])
+  defp format([term | rest], rem, acc, emit?) do
+    format(term, [rest | rem], acc, emit?)
   end
 
-  defp format(term, rem, acc) when not is_list(term) do
-    format([], rem, [acc, term])
+  defp format(term, rem, acc, true) when is_atom(term) do
+    format([], rem, [acc | [format_style(term)]], true)
   end
 
-  defp format([], [next | rest], acc) do
-    format(next, rest, acc)
+  defp format(term, rem, acc, false) when is_atom(term) do
+    format_style(term)
+    format([], rem, acc, false)
   end
 
-  defp format([], [], acc) do
+  defp format(term, rem, acc, emit?) when not is_list(term) do
+    format([], rem, [acc, term], emit?)
+  end
+
+  defp format([], [next | rest], acc, emit?) do
+    format(next, rest, acc, emit?)
+  end
+
+  defp format([], [], acc, _emit?) do
     acc
   end
 
+  defp enabled?, do: Application.get_env(:elixir, :ansi_enabled, false)
+
   # custom colors
   defp format_style(:light_gray), do: IO.ANSI.color(3, 3, 3)
-  defp format_style(:gray), do: IO.ANSI.color(4, 4, 4)
+  defp format_style(:gray), do: IO.ANSI.color(2, 2, 2)
   defp format_style(:orange), do: IO.ANSI.color(4, 3, 1)
 
   # project statuses
   defp format_style(:modified), do: [:red, :bright]
-  defp format_style(:affected), do: format([:orange, :bright])
+  defp format_style(:affected), do: format([:orange, :bright], true)
 
   # workspace styles
-  defp format_style(:mix_path), do: format_style(:gray)
-  defp format_style(other), do: other
+  defp format_style(:mix_path), do: format(:gray, true)
+
+  defp format_style(sequence) when is_atom(sequence) do
+    # we just check that this is a valid sequence
+    IO.ANSI.format_fragment(sequence, true)
+    sequence
+  end
 
   @doc """
   Helper function for logging a message with a title
@@ -144,6 +187,9 @@ defmodule Workspace.Cli do
 
   @doc """
   Highlights the given `text` with the given ansi codes
+
+  This helper just wraps the `text` with the given ansi codes and
+  adds a `:reset` afterwards.
 
   ## Examples
 
