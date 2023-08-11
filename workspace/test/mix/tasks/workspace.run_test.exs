@@ -260,6 +260,47 @@ defmodule Mix.Tasks.Workspace.RunTest do
         ":package_default_b mix cmd exit 1 failed with 1"
       ])
     end
+
+    test "if allow_failure is set a warning is emitted instead" do
+      args = [
+        "-p",
+        "package_default_a",
+        "-p",
+        "package_default_b",
+        "-t",
+        "cmd",
+        "--allow-failure",
+        "package_default_a",
+        "--allow-failure",
+        "package_default_b",
+        "--workspace-path",
+        Path.join(tmp_path(), "sample_workspace_default"),
+        "--",
+        "exit",
+        "1"
+      ]
+
+      captured =
+        capture_io(fn ->
+          RunTask.run(args)
+        end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_default_a - mix cmd exit 1",
+        "** (exit) 1",
+        "(mix 1.14.2) lib/mix/tasks/cmd.ex:74: Mix.Tasks.Cmd.run/1",
+        "(mix 1.14.2) lib/mix/task.ex:421: anonymous fn/3 in Mix.Task.run_task/4",
+        "(mix 1.14.2) lib/mix/cli.ex:84: Mix.CLI.run_task/2",
+        ":package_default_a mix cmd exit 1 failed with 1",
+        "==> :package_default_b - mix cmd exit 1",
+        "** (exit) 1",
+        "(mix 1.14.2) lib/mix/tasks/cmd.ex:74: Mix.Tasks.Cmd.run/1",
+        "(mix 1.14.2) lib/mix/task.ex:421: anonymous fn/3 in Mix.Task.run_task/4",
+        "(mix 1.14.2) lib/mix/cli.ex:84: Mix.CLI.run_task/2",
+        ":package_default_b mix cmd exit 1 failed with 1",
+        "WARNING task failed in 2 projects but the --alow-failure flag is set"
+      ])
+    end
   end
 
   describe "execution mode" do

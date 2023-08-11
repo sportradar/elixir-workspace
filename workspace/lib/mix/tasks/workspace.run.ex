@@ -38,6 +38,13 @@ defmodule Mix.Tasks.Workspace.Run do
       """,
       keep: true,
       alias: :e
+    ],
+    allow_failure: [
+      type: :string,
+      doc: """
+      Allow the task for this specific project to fail. Can be set more than once. 
+      """,
+      keep: true
     ]
   ]
 
@@ -73,14 +80,32 @@ defmodule Mix.Tasks.Workspace.Run do
     {:ok, opts} = CliOpts.parse(args, @options_schema)
     %{parsed: opts, args: args, extra: extra, invalid: invalid} = opts
 
+    opts =
+      Keyword.update(opts, :allow_failure, [], fn projects ->
+        Enum.map(projects, &String.to_atom/1)
+      end)
+
     task_args = CliOpts.to_list(invalid) ++ extra ++ args
 
     opts
     |> Mix.WorkspaceUtils.load_and_filter_workspace()
     |> Workspace.projects()
-    |> Enum.map(fn project -> run_in_project(project, opts, task_args) end)
+    |> Enum.map(fn project ->
+      result = run_in_project(project, opts, task_args)
+
+      %{
+        project: project,
+        status: execution_status(result, allowed_to_fail?(project.app, opts[:allow_failure]))
+      }
+    end)
     |> raise_if_any_task_failed()
   end
+
+  defp allowed_to_fail?(project, allowed_to_fail), do: project in allowed_to_fail
+
+  defp execution_status({:error, _reason}, true), do: :warn
+  defp execution_status({:error, _reason}, false), do: :error
+  defp execution_status(_status, _allowed_to_fail), do: :ok
 
   defp run_in_project(%{skip: true, app: app}, args, _argv) do
     if args[:verbose] do
@@ -212,13 +237,36 @@ defmodule Mix.Tasks.Workspace.Run do
   end
 
   defp raise_if_any_task_failed(task_results) do
-    failures =
-      Enum.filter(task_results, fn result ->
-        case result do
-          {:error, _reason} -> true
-          _other -> false
+    {_successful, warnings, failures} =
+      Enum.reduce(
+        task_results,
+        {[], [], []},
+        fn project, {successful, warnings, failures} ->
+          case project[:status] do
+            :error ->
+              {successful, warnings, [project | failures]}
+
+            :warn ->
+              {successful, [project | warnings], failures}
+
+            :ok ->
+              {[project | successful], warnings, failures}
+          end
         end
-      end)
+      )
+
+    if length(warnings) > 0 do
+      Workspace.Cli.log([
+        :yellow,
+        "WARNING ",
+        :reset,
+        "task failed in #{length(warnings)} projects but the ",
+        :light_cyan,
+        "--alow-failure",
+        :reset,
+        " flag is set"
+      ])
+    end
 
     if length(failures) > 0 do
       Mix.raise("mix workspace.run failed - errors detected in #{length(failures)} executions")
