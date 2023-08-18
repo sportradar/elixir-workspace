@@ -5,6 +5,7 @@ defmodule Mix.Tasks.Workspace.GraphTest do
 
   @sample_workspace_default_path Path.join(TestUtils.tmp_path(), "sample_workspace_default")
   @sample_workspace_changed_path Path.join(TestUtils.tmp_path(), "sample_workspace_changed")
+  @sample_workspace_committed_path Path.join(TestUtils.tmp_path(), "sample_workspace_committed")
 
   setup do
     Application.put_env(:elixir, :ansi_enabled, false)
@@ -51,6 +52,36 @@ defmodule Mix.Tasks.Workspace.GraphTest do
 
     assert capture_io(fn ->
              GraphTask.run(["--workspace-path", @sample_workspace_changed_path, "--show-status"])
+           end) == expected
+  end
+
+  test "prints the tree with project statuses when base and head are set" do
+    expected = """
+    :package_committed_a ●
+    ├── :package_committed_b ✔
+    │   └── :package_committed_g ✔
+    ├── :package_committed_c ✚
+    │   ├── :package_committed_e ✔
+    │   └── :package_committed_f ✔
+    │       └── :package_committed_g ✔
+    └── :package_committed_d ✔
+    :package_committed_h ✔
+    └── :package_committed_d ✔
+    :package_committed_i ✔
+    └── :package_committed_j ✔
+    :package_committed_k ✔
+    """
+
+    assert capture_io(fn ->
+             GraphTask.run([
+               "--workspace-path",
+               @sample_workspace_committed_path,
+               "--show-status",
+               "--base",
+               "HEAD~1",
+               "--head",
+               "HEAD"
+             ])
            end) == expected
   end
 
