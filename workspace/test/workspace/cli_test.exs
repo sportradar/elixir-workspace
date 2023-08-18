@@ -16,7 +16,9 @@ defmodule Workspace.CliTest do
     :workspace_path,
     :config_path,
     :project,
-    :show_status
+    :show_status,
+    :base,
+    :head
   ]
 
   test "valid options sanity check" do
