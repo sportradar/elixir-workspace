@@ -56,6 +56,8 @@ defmodule Mix.Tasks.Workspace.Run do
                       :ignore,
                       :affected,
                       :modified,
+                      :base,
+                      :head,
                       :verbose,
                       :show_status
                     ],

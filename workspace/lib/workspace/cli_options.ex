@@ -43,6 +43,20 @@ defmodule Workspace.CliOptions do
       type: :boolean,
       default: false,
       doc: "If set the status of each project will be included in the output graph"
+    ],
+    base: [
+      type: :string,
+      doc: """
+      The base git reference to compare the head to. Applied only when `--affected` or `--modified`
+      are set.
+      """
+    ],
+    head: [
+      type: :string,
+      default: "HEAD",
+      doc: """
+      A reference to the git head. Applied only if `--base` is set for getting the changed files.
+      """
     ]
   ]
 

@@ -541,13 +541,13 @@ defmodule Workspace do
     affected_projects =
       case affected do
         false -> nil
-        true -> affected(workspace)
+        true -> affected(workspace, base: opts[:base], head: opts[:head])
       end
 
     modified_projects =
       case modified do
         false -> nil
-        true -> modified(workspace)
+        true -> modified(workspace, base: opts[:base], head: opts[:head])
       end
 
     Enum.map(workspace.projects, fn {_name, project} ->
@@ -602,10 +602,22 @@ defmodule Workspace do
 
   A workspace project is considered modified if any of it's files has
   changed with respect to the `base` branch.
+
+  ## Options
+
+    * `:base` (`String.t()`) - The base git reference for detecting changed files,
+    if not set only working tree changes will be included.
+    * `:head` (`String.t()`) - The head git reference for detecting changed files. It
+    is used only if `:base` is set.
   """
-  @spec modified(workspace :: Workspace.t()) :: [atom()]
-  def modified(workspace) do
-    with {:ok, changed_files} <- Workspace.Git.changed_files(cd: workspace.workspace_path) do
+  @spec modified(workspace :: Workspace.t(), opts :: keyword()) :: [atom()]
+  def modified(workspace, opts \\ []) do
+    with {:ok, changed_files} <-
+           Workspace.Git.changed_files(
+             cd: workspace.workspace_path,
+             base: opts[:base],
+             head: opts[:head]
+           ) do
       changed_files
       |> Enum.map(fn file -> Path.join(workspace.workspace_path, file) |> Path.expand() end)
       |> Enum.map(fn file -> parent_project(workspace, file) end)
@@ -622,10 +634,17 @@ defmodule Workspace do
 
   A project is considered affected if it has changed or any of it's children has
   changed.
+
+  ## Options
+
+    * `:base` (`String.t()`) - The base git reference for detecting changed files,
+    if not set only working tree changes will be included.
+    * `:head` (`String.t()`) - The head git reference for detecting changed files. It
+    is used only if `:base` is set.
   """
-  @spec affected(workspace :: Workspace.t()) :: [atom()]
-  def affected(workspace) do
-    modified = modified(workspace)
+  @spec affected(workspace :: Workspace.t(), opts :: keyword()) :: [atom()]
+  def affected(workspace, opts \\ []) do
+    modified = modified(workspace, opts)
 
     Workspace.Graph.affected(workspace, modified)
   end
