@@ -679,15 +679,15 @@ defmodule Workspace do
     %Workspace{workspace | projects: projects}
   end
 
-  def update_projects_statuses(workspace) do
+  def update_projects_statuses(workspace, opts \\ []) do
     affected =
       workspace
-      |> affected()
+      |> affected(opts)
       |> Enum.map(fn app -> {app, :affected} end)
 
     modified =
       workspace
-      |> modified()
+      |> modified(opts)
       |> Enum.map(fn app -> {app, :modified} end)
 
     # we must first check the affected since the modified may update the

@@ -11,7 +11,7 @@ defmodule Mix.WorkspaceUtils do
 
     with {:ok, workspace} <- Workspace.new(workspace_path, config_path),
          workspace <- Workspace.filter(workspace, opts),
-         workspace <- maybe_include_status(workspace, opts[:show_status]) do
+         workspace <- maybe_include_status(workspace, opts) do
       workspace
     else
       {:error, reason} ->
@@ -19,7 +19,10 @@ defmodule Mix.WorkspaceUtils do
     end
   end
 
-  defp maybe_include_status(workspace, false), do: workspace
-  defp maybe_include_status(workspace, nil), do: workspace
-  defp maybe_include_status(workspace, true), do: Workspace.update_projects_statuses(workspace)
+  defp maybe_include_status(workspace, opts) do
+    case opts[:show_status] do
+      true -> Workspace.update_projects_statuses(workspace, base: opts[:base], head: opts[:head])
+      _ -> workspace
+    end
+  end
 end
