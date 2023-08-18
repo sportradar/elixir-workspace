@@ -32,6 +32,16 @@ defmodule Mix.Tasks.Workspace.RunTest do
     "mix.exs"
   ]
 
+  @committed_run_task [
+    "-t",
+    "format",
+    "--workspace-path",
+    Path.join(tmp_path(), "sample_workspace_committed"),
+    "--",
+    "--check-formatted",
+    "mix.exs"
+  ]
+
   describe "sanity checks of common cli arguments" do
     test "runs only on the selected projects" do
       args = [
@@ -174,6 +184,24 @@ defmodule Mix.Tasks.Workspace.RunTest do
         "==> :package_changed_i ✔ - mix format --check-formatted mix.exs",
         "==> :package_changed_j ✔ - mix format --check-formatted mix.exs",
         "==> :package_changed_k ✔ - mix format --check-formatted mix.exs"
+      ])
+    end
+
+    test "on a repo with no working tree changes nothing is executed with the affected flag" do
+      captured = capture_io(fn -> RunTask.run(["--affected" | @committed_run_task]) end)
+
+      assert_cli_output_match(captured, [])
+    end
+
+    test "on a repo with base and head set" do
+      captured =
+        capture_io(fn ->
+          RunTask.run(["--affected", "--base", "HEAD~1", "--head", "HEAD" | @committed_run_task])
+        end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_committed_a - mix format --check-formatted mix.exs",
+        "==> :package_committed_c - mix format --check-formatted mix.exs"
       ])
     end
   end
