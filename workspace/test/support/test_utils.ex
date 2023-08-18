@@ -200,6 +200,10 @@ defmodule TestUtils do
     end)
   end
 
+  def cmd_in_path(path, cmd, args) do
+    File.cd!(path, fn -> System.cmd(cmd, args) end)
+  end
+
   # compares the captured output with the expected one
   # 
   # notice that empty lines are removed from the captures

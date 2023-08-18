@@ -1,7 +1,9 @@
 defmodule Mix.Tasks.Workspace.Status do
   @options_schema Workspace.Cli.options([
                     :workspace_path,
-                    :config_path
+                    :config_path,
+                    :base,
+                    :head
                   ])
 
   @shortdoc "Display workspace's projects status."
@@ -25,15 +27,15 @@ defmodule Mix.Tasks.Workspace.Status do
     opts
     |> Keyword.merge(show_status: true)
     |> Mix.WorkspaceUtils.load_and_filter_workspace()
-    |> show_status()
+    |> show_status(base: opts[:base], head: opts[:head])
   end
 
-  defp show_status(workspace) do
-    modified = Workspace.modified(workspace)
+  defp show_status(workspace, opts) do
+    modified = Workspace.modified(workspace, opts)
 
     show_modified(workspace, modified)
 
-    affected = Workspace.affected(workspace)
+    affected = Workspace.affected(workspace, opts)
     show_affected(workspace, affected -- modified)
   end
 
