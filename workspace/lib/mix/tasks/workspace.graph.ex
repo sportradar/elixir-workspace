@@ -24,7 +24,9 @@ defmodule Mix.Tasks.Workspace.Graph do
                     [
                       :workspace_path,
                       :config_path,
-                      :show_status
+                      :show_status,
+                      :base,
+                      :head
                     ],
                     @task_options
                   )
