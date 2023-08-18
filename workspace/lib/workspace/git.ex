@@ -22,22 +22,52 @@ defmodule Workspace.Git do
   end
 
   # TODO enhance once base, head options are supported
+  @doc """
+  Detects the changed git files.
+
+  By default the following files are included:
+
+    - Uncommitted files in the working directory
+    - Untracked files in the working directory
+    - If `:base` is provided includes:
+      - The changed files between `:base` and `HEAD` if no `:head` is set.
+      - The changed files between `:base` and `:head` if `:head` is set.
+
+
+  ## Options
+
+    * `:cd` (`binary()`) - The git repo path, defaults to the current working directory.
+    * `:base` (`binary()`) - The base reference to use for comparing to the `HEAD`,
+    can be a branch, a commit or any other `git` reference.
+    * `:head` (`binary()`) - The `head` to use for comparing to `:base`, if not set
+    defaults to `HEAD`. Can be any git reference
+  """
+  @spec changed_files(opts :: keyword()) :: {:ok, [binary()]} | {:error, binary()}
   def changed_files(opts \\ []) do
     with {:ok, uncommitted} <- uncommitted_files(cd: opts[:cd]),
-         {:ok, untracked} <- untracked_files(cd: opts[:cd]) do
+         {:ok, untracked} <- untracked_files(cd: opts[:cd]),
+         {:ok, changed} <- maybe_changed_files(opts[:base], opts[:head] || "HEAD", cd: opts[:cd]) do
       changed =
-        [uncommitted, untracked]
+        [uncommitted, untracked, changed]
         |> Enum.concat()
         |> Enum.uniq()
+        |> Enum.sort()
 
       {:ok, changed}
     end
   end
 
+  defp maybe_changed_files(nil, _head, _opts), do: {:ok, []}
+  defp maybe_changed_files(base, head, opts), do: changed_files(base, head, opts)
+
   @doc """
   Returns a list of uncommitted files
 
   Uncommitted are considered the files that are staged but not committed yet.
+
+  ## Options
+
+    * `:cd` (`binary()`) - The git repo path, defaults to the current working directory.
   """
   @spec uncommitted_files(opts :: keyword()) :: {:ok, [binary()]} | {:error, binary()}
   def uncommitted_files(opts \\ []) do
@@ -50,12 +80,34 @@ defmodule Workspace.Git do
 
   @doc """
   Get list of untracked files
+
+  ## Options
+
+    * `:cd` (`binary()`) - The git repo path, defaults to the current working directory.
   """
   @spec untracked_files(opts :: keyword()) :: {:ok, [binary()]} | {:error, binary()}
   def untracked_files(opts \\ []) do
     cd = opts[:cd] || File.cwd!()
 
     with {:ok, output} <- git_in_path(cd, ~w[ls-files --others --exclude-standard]) do
+      {:ok, parse_git_output(output)}
+    end
+  end
+
+  @doc """
+  Get changed files between the given `head` and `base` git references.
+
+  ## Options
+
+    * `:cd` (`binary()`) - The git repo path, defaults to the current working directory.
+  """
+  @spec changed_files(head :: binary(), base :: binary(), opts :: keyword()) ::
+          {:ok, [binary()]} | {:error, binary()}
+  def changed_files(head, base, opts \\ []) do
+    cd = opts[:cd] || File.cwd!()
+
+    with {:ok, output} <-
+           git_in_path(cd, ["diff", "--name-only", "--no-renames", "--relative", base, head]) do
       {:ok, parse_git_output(output)}
     end
   end
