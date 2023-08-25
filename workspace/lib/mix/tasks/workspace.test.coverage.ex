@@ -5,6 +5,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
                     :project,
                     :affected,
                     :modified,
+                    :base,
+                    :head,
                     :ignore,
                     :verbose
                   ])
