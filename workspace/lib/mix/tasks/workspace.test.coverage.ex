@@ -44,6 +44,47 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   ]
   ```
 
+  > #### Test coverage configuration best practices {: .tip}
+  >
+  > It is advised to set the test coverage `:output` for all workspace projects
+  > pointing to the same directory with the application name set as prefix. This
+  > way you can easily cache it in CI pipelines.
+  >
+  > A custom check can be used to ensure it:
+  >
+  > ```elixir 
+  > [
+  >   module: Workspace.Checks.ValidateConfig,
+  >   description: "all projects must have test_coverage[:output] properly set",
+  >   opts: [
+  >     validate: fn config ->
+  >       coverage_opts = config[:test_coverage] || []
+  >       output = coverage_opts[:output]
+  >
+  >       cond do
+  >         is_nil(output) ->
+  >           {:error, ":output option not defined under :test_coverage settings"}
+  >
+  >         not String.ends_with?(output, Atom.to_string(config[:app])) ->
+  >           {:error, ":output must point to a folder with the same name as the app name"}
+  >
+  >         true ->
+  >           {:ok, ""}
+  >       end
+  >     end
+  >   ]
+  > ]
+  > ```
+  >
+  > And in your projects `mix.exs`:
+  >
+  > ```elixir
+  > test_coverage: [
+  >   output: "path/to/common/app_name"
+  > ]
+  > ```
+
+
   In order to run the tests with `--cover` enabled for all workspace projects you
   should run:
 
@@ -173,8 +214,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     log(highlight("importing cover results", :bright), prefix: :header)
 
-    Enum.each(paths, fn {app, cover_paths, _compile_paths} ->
-      import_cover_results(app, cover_paths, workspace.workspace_path)
+    Enum.each(paths, fn {project, cover_paths, _compile_paths} ->
+      import_cover_results(project, cover_paths, workspace.workspace_path)
     end)
 
     newline()
@@ -343,7 +384,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
       )
 
     cover_path = Path.join(project.path, output) |> Path.expand()
-    {project.app, [cover_path], [compile_path]}
+    {project, [cover_path], [compile_path]}
   end
 
   defp cover_compile(compile_paths) do
@@ -402,7 +443,9 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     end
   end
 
-  defp import_cover_results(app, cover_paths, workspace_path) do
+  defp import_cover_results(project, cover_paths, workspace_path) do
+    app = project.app
+
     case Enum.flat_map(cover_paths, &Path.wildcard(Path.join(&1, "#{app}*.coverdata"))) do
       [] ->
         Mix.shell().info(
