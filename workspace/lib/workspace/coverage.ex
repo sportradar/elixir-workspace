@@ -1,6 +1,8 @@
 defmodule Workspace.Coverage do
   @moduledoc false
 
+  alias Workspace.Cli
+
   def project_coverage_stats(coverage, project) do
     # coverage per project's module
     project_modules =
@@ -62,7 +64,7 @@ defmodule Workspace.Coverage do
           Path.join(output_path, filename)
       end
 
-    Mix.shell().info([
+    Cli.log([
       "    ",
       "saving lcov report to ",
       :light_yellow,

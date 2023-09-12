@@ -88,7 +88,7 @@ defmodule Mix.Tasks.Workspace.Check do
   defp print_result(result) do
     path = Workspace.Utils.Path.relative_to(result.project.path, File.cwd!())
 
-    Mix.shell().info([
+    log([
       highlight(status_text(result.status), status_color(result.status)),
       hl(":#{result.project.app}", :code),
       check_message(result),

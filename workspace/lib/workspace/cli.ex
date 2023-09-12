@@ -16,6 +16,54 @@ defmodule Workspace.Cli do
   def newline, do: Mix.shell().info("")
 
   @doc """
+  Helper function for logging a message with a title
+
+  Each log message conists of the following sections:
+
+  - `prefix` a prefix for each log message, defaults to "==> ". Can be
+  configured through the `prefix` option. If set to `false` no prefix
+  is applied.
+  - `title` a string representing the title of the log message, e.g.
+  an application name, a command or a log level. 
+  - `separator` separator between the title and the main message, defaults
+  to a space.
+  - `message` the message to be printed, can be any text
+
+  ## Options
+
+  - `:prefix` - the prefix to be used, defaults to `==> `
+  - `:separator` - the separator to be used between title and message, defaults
+  to ` - `
+
+  ## Examples
+
+  You can combine it with other helper CLI functions like `highlight` for
+  rich text log messages.
+
+  ```elixir
+  # Default invocation
+  Cli.log(":foo", "a message") ##> ==> :foo - a message
+
+  # with a different prefix
+  Cli.log(":foo", "a message", prefix: "> ") ##> > :foo - a message
+
+  # with highlighted sections
+  Cli.log(project_name(project, show_status: true), highlight(message, [:bright, :red]))
+  ```
+  """
+  @spec log_with_title(
+          section :: IO.ANSI.ansidata(),
+          message :: IO.ANSI.ansidata(),
+          opts :: Keyword.t()
+        ) ::
+          :ok
+  def log_with_title(title, message, opts \\ []) do
+    separator = opts[:separator] || " - "
+
+    log([title, separator, message], opts)
+  end
+
+  @doc """
   Helper function for console log messages
 
   The message can be a rich formatted list. On top of the default elixir
@@ -127,54 +175,6 @@ defmodule Workspace.Cli do
     # we just check that this is a valid sequence
     IO.ANSI.format_fragment(sequence, true)
     sequence
-  end
-
-  @doc """
-  Helper function for logging a message with a title
-
-  Each log message conists of the following sections:
-
-  - `prefix` a prefix for each log message, defaults to "==> ". Can be
-  configured through the `prefix` option. If set to `false` no prefix
-  is applied.
-  - `title` a string representing the title of the log message, e.g.
-  an application name, a command or a log level. 
-  - `separator` separator between the title and the main message, defaults
-  to a space.
-  - `message` the message to be printed, can be any text
-
-  ## Options
-
-  - `:prefix` - the prefix to be used, defaults to `==> `
-  - `:separator` - the separator to be used between title and message, defaults
-  to ` - `
-
-  ## Examples
-
-  You can combine it with other helper CLI functions like `highlight` for
-  rich text log messages.
-
-  ```elixir
-  # Default invocation
-  Cli.log(":foo", "a message") ##> ==> :foo - a message
-
-  # with a different prefix
-  Cli.log(":foo", "a message", prefix: "> ") ##> > :foo - a message
-
-  # with highlighted sections
-  Cli.log(project_name(project, show_status: true), highlight(message, [:bright, :red]))
-  ```
-  """
-  @spec log_with_title(
-          section :: IO.ANSI.ansidata(),
-          message :: IO.ANSI.ansidata(),
-          opts :: Keyword.t()
-        ) ::
-          :ok
-  def log_with_title(title, message, opts \\ []) do
-    separator = opts[:separator] || " - "
-
-    log([title, separator, message], opts)
   end
 
   def status_color(:error), do: :red

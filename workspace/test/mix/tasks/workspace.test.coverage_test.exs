@@ -50,14 +50,14 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
     expected =
       [
         "==> importing cover results",
-        "==> :package_a - importing cover results from package_a/cover/package_a.coverdata",
-        "==> :package_b - importing cover results from package_b/cover/package_b.coverdata",
-        "==> :package_c - importing cover results from package_c/cover/package_c.coverdata",
+        ":package_a - importing cover results from package_a/cover/package_a.coverdata",
+        ":package_b - importing cover results from package_b/cover/package_b.coverdata",
+        ":package_c - importing cover results from package_c/cover/package_c.coverdata",
         "==> analysing coverage data",
-        "==> :package_a - total coverage 100.00% [threshold 90%]",
-        "==> :package_b - total coverage 50.00% [threshold 90%]",
+        ":package_a - total coverage 100.00% [threshold 90%]",
+        ":package_b - total coverage 50.00% [threshold 90%]",
         "50.00%   PackageB (1/2 lines)",
-        "==> :package_c - total coverage 25.00% [threshold 90%]",
+        ":package_c - total coverage 25.00% [threshold 90%]",
         "25.00%   PackageC (1/4 lines)",
         "==> workspace coverage 42.86% [threshold 90%]"
       ]
@@ -95,9 +95,9 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
     expected =
       [
         "==> importing cover results",
-        "==> :package_a - importing cover results from package_a/cover/package_a.coverdata",
+        ":package_a - importing cover results from package_a/cover/package_a.coverdata",
         "==> analysing coverage data",
-        "==> :package_a - total coverage 100.00% [threshold 90%]",
+        ":package_a - total coverage 100.00% [threshold 90%]",
         "==> workspace coverage 100.00% [threshold 90%]"
       ]
       |> add_index_to_output(1)
@@ -142,9 +142,9 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
     expected =
       [
         "==> importing cover results",
-        "==> :package_a - importing cover results from package_a/cover/package_a.coverdata",
+        ":package_a - importing cover results from package_a/cover/package_a.coverdata",
         "==> analysing coverage data",
-        "==> :package_a - total coverage 100.00% [threshold 90%]",
+        ":package_a - total coverage 100.00% [threshold 90%]",
         "100.00%  PackageA (1/1 lines)",
         "==> workspace coverage 100.00% [threshold 90%]"
       ]
@@ -185,14 +185,14 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
     expected =
       [
         "==> importing cover results",
-        "==> :package_a - importing cover results from package_a/cover/package_a.coverdata",
-        "==> :package_b - importing cover results from package_b/cover/package_b.coverdata",
-        "==> :package_c - importing cover results from package_c/cover/package_c.coverdata",
+        ":package_a - importing cover results from package_a/cover/package_a.coverdata",
+        ":package_b - importing cover results from package_b/cover/package_b.coverdata",
+        ":package_c - importing cover results from package_c/cover/package_c.coverdata",
         "==> analysing coverage data",
-        "==> :package_a - total coverage 100.00% [threshold 90%]",
-        "==> :package_b - total coverage 50.00% [threshold 90%]",
+        ":package_a - total coverage 100.00% [threshold 90%]",
+        ":package_b - total coverage 50.00% [threshold 90%]",
         "50.00%   PackageB (1/2 lines)",
-        "==> :package_c - total coverage 25.00% [threshold 90%]",
+        ":package_c - total coverage 25.00% [threshold 90%]",
         "25.00%   PackageC (1/4 lines)",
         "==> workspace coverage 42.86% [threshold 40%]",
         "==> exporting coverage data",
@@ -240,11 +240,11 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
         "package_b - could not find .coverdata file in any of the paths:",
         "package_c - could not find .coverdata file in any of the paths:",
         "==> analysing coverage data",
-        "==> :package_a - total coverage 0.00% [threshold 90%]",
+        ":package_a - total coverage 0.00% [threshold 90%]",
         "0.00%    PackageA (0/1 lines)",
-        "==> :package_b - total coverage 0.00% [threshold 90%]",
+        ":package_b - total coverage 0.00% [threshold 90%]",
         "0.00%    PackageB (0/2 lines)",
-        "==> :package_c - total coverage 0.00% [threshold 90%]",
+        ":package_c - total coverage 0.00% [threshold 90%]",
         "0.00%    PackageC (0/4 lines)",
         "==> workspace coverage 0.00% [threshold 90%]"
       ]

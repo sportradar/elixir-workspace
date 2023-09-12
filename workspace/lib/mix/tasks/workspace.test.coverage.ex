@@ -259,7 +259,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
             ),
             " [threshold #{error_threshold}%]"
           ],
-          prefix: :header
+          prefix: "    "
         )
 
         print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
@@ -332,7 +332,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
       if percentage < warning_threshold or opts[:verbose] do
         formatted_coverage = :io_lib.format("~.2f", [percentage])
 
-        Mix.shell().info([
+        log([
           "    ",
           coverage_color(percentage, error_threshold, warning_threshold),
           :bright,
@@ -450,7 +450,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     case Enum.flat_map(cover_paths, &Path.wildcard(Path.join(&1, "#{app}*.coverdata"))) do
       [] ->
-        Mix.shell().info(
+        log(
           "#{inspect(app)} - could not find .coverdata file in any of the paths: " <>
             Enum.join(cover_paths, ", ")
         )
@@ -465,8 +465,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   defp import_cover_result(workspace_path, cover_path, app) do
     path = Workspace.Utils.Path.relative_to(cover_path, workspace_path)
 
-    Mix.shell().info([
-      "==> ",
+    log([
+      "    ",
       highlight(inspect(app), :cyan),
       " - importing cover results from ",
       highlight(path, [:light_yellow])
@@ -499,7 +499,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
         case project do
           nil ->
-            Mix.shell().info([
+            log([
               "    ",
               :light_yellow,
               inspect(module),

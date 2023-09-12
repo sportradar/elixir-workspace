@@ -56,7 +56,7 @@ defmodule Mix.Tasks.Workspace.List do
     indent_size = max_project_length - String.length(inspect(project.app))
     indent = String.duplicate(" ", indent_size)
 
-    Mix.shell().info([
+    Cli.log([
       "  * ",
       Cli.project_name(project, show_status: show_status, pretty: true),
       indent,

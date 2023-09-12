@@ -226,7 +226,7 @@ defmodule Mix.Tasks.Workspace.Run do
         task = Keyword.get(meta, :task)
         project = Keyword.get(meta, :project)
 
-        Mix.shell().info([
+        log([
           highlight(inspect(project.app), [:bright, :red]),
           " ",
           highlight(task, :bright),

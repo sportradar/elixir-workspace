@@ -360,7 +360,6 @@ defmodule Workspace do
 
   defp ensure_workspace(path) do
     with {:ok, path} <- ensure_file_exists(path),
-         # TODO: refactor it to return :ok, :error tuples
          config <- Workspace.Project.config(path),
          :ok <- ensure_workspace_set_in_config(config) do
       :ok
@@ -368,7 +367,6 @@ defmodule Workspace do
       {:error, reason} ->
         {
           :error,
-          # TODO properly format multiline errors
           """
           Expected #{path} to be a workspace project. Some errors were detected:
 
