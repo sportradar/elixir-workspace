@@ -1,5 +1,5 @@
 # Global fixtures
-# 
+#
 # these can be used throughout the tests
 #
 # the following fixtures are created:

@@ -6,8 +6,8 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
   import ExUnit.CaptureIO
   import TestUtils
 
-  alias Mix.Tasks.Workspace.Test.Coverage, as: TestCoverageTask
   alias Mix.Tasks.Workspace.Run, as: RunTask
+  alias Mix.Tasks.Workspace.Test.Coverage, as: TestCoverageTask
 
   setup do
     Application.put_env(:elixir, :ansi_enabled, false)

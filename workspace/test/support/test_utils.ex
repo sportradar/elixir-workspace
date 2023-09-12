@@ -205,7 +205,7 @@ defmodule TestUtils do
   end
 
   # compares the captured output with the expected one
-  # 
+  #
   # notice that empty lines are removed from the captures
   # and it is transformed to a list of lines
   def assert_cli_output_match(captured, expected) do

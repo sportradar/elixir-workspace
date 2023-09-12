@@ -612,20 +612,21 @@ defmodule Workspace do
   """
   @spec modified(workspace :: Workspace.t(), opts :: keyword()) :: [atom()]
   def modified(workspace, opts \\ []) do
-    with {:ok, changed_files} <-
-           Workspace.Git.changed_files(
-             cd: workspace.workspace_path,
-             base: opts[:base],
-             head: opts[:head]
-           ) do
-      changed_files
-      |> Enum.map(fn file -> Path.join(workspace.workspace_path, file) |> Path.expand() end)
-      |> Enum.map(fn file -> parent_project(workspace, file) end)
-      |> Enum.filter(fn project -> project != nil end)
-      |> Enum.map(& &1.app)
-      |> Enum.uniq()
-    else
-      {:error, reason} -> raise ArgumentError, "failed to get modified files: #{reason}"
+    case Workspace.Git.changed_files(
+           cd: workspace.workspace_path,
+           base: opts[:base],
+           head: opts[:head]
+         ) do
+      {:ok, changed_files} ->
+        changed_files
+        |> Enum.map(fn file -> Path.join(workspace.workspace_path, file) |> Path.expand() end)
+        |> Enum.map(fn file -> parent_project(workspace, file) end)
+        |> Enum.filter(fn project -> project != nil end)
+        |> Enum.map(& &1.app)
+        |> Enum.uniq()
+
+      {:error, reason} ->
+        raise ArgumentError, "failed to get modified files: #{reason}"
     end
   end
 
@@ -679,7 +680,7 @@ defmodule Workspace do
     %Workspace{workspace | projects: projects}
   end
 
-  def update_projects_statuses(workspace, opts \\ []) do
+  def update_projects_statuses(workspace, opts) do
     affected =
       workspace
       |> affected(opts)

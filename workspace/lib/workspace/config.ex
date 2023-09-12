@@ -96,9 +96,8 @@ defmodule Workspace.Config do
   """
   @spec validate(config :: keyword()) :: {:ok, keyword()} | {:error, binary()}
   def validate(config) do
-    with {:ok, config} <- validate_config(config),
-         {:ok, config} <- validate_checks(config) do
-      {:ok, config}
+    with {:ok, config} <- validate_config(config) do
+      validate_checks(config)
     end
   end
 
