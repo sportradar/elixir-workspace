@@ -67,7 +67,7 @@ defmodule CliOpts do
   with the following keys:
 
     . `:parsed` - a keyword list with parsed options
-    . `:args` - a list of the remeining arguments in `argv` as strings
+    . `:args` - a list of the remaining arguments in `argv` as strings
     . `:invalid` - a list of invalid options (check `OptionParser.parse/2` docs for
     more details)
     . `:extra` - a list of extra arguments, e.g. everything (if any) after
