@@ -21,7 +21,6 @@ defmodule Workspace.Git do
     git_in_path(cd, ~w[rev-parse --show-toplevel])
   end
 
-  # TODO enhance once base, head options are supported
   @doc """
   Detects the changed git files.
 
@@ -36,10 +35,10 @@ defmodule Workspace.Git do
 
   ## Options
 
-    * `:cd` (`binary()`) - The git repo path, defaults to the current working directory.
-    * `:base` (`binary()`) - The base reference to use for comparing to the `HEAD`,
+    * `:cd` (`t:binary/0`) - The git repo path, defaults to the current working directory.
+    * `:base` (`t:binary/0`) - The base reference to use for comparing to the `HEAD`,
     can be a branch, a commit or any other `git` reference.
-    * `:head` (`binary()`) - The `head` to use for comparing to `:base`, if not set
+    * `:head` (`t:binary/0`) - The `head` to use for comparing to `:base`, if not set
     defaults to `HEAD`. Can be any git reference
   """
   @spec changed_files(opts :: keyword()) :: {:ok, [binary()]} | {:error, binary()}
@@ -67,7 +66,7 @@ defmodule Workspace.Git do
 
   ## Options
 
-    * `:cd` (`binary()`) - The git repo path, defaults to the current working directory.
+    * `:cd` (`t:binary/0`) - The git repo path, defaults to the current working directory.
   """
   @spec uncommitted_files(opts :: keyword()) :: {:ok, [binary()]} | {:error, binary()}
   def uncommitted_files(opts \\ []) do
@@ -83,7 +82,7 @@ defmodule Workspace.Git do
 
   ## Options
 
-    * `:cd` (`binary()`) - The git repo path, defaults to the current working directory.
+    * `:cd` (`t:binary/0`) - The git repo path, defaults to the current working directory.
   """
   @spec untracked_files(opts :: keyword()) :: {:ok, [binary()]} | {:error, binary()}
   def untracked_files(opts \\ []) do
@@ -99,7 +98,7 @@ defmodule Workspace.Git do
 
   ## Options
 
-    * `:cd` (`binary()`) - The git repo path, defaults to the current working directory.
+    * `:cd` (`t:binary/0`) - The git repo path, defaults to the current working directory.
   """
   @spec changed_files(head :: binary(), base :: binary(), opts :: keyword()) ::
           {:ok, [binary()]} | {:error, binary()}
