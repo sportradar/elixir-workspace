@@ -80,20 +80,18 @@ defmodule Mix.Tasks.Workspace.Run do
 
   def run(args) do
     {:ok, opts} = CliOpts.parse(args, @options_schema)
-    %{parsed: opts, args: args, extra: extra, invalid: invalid} = opts
+    %{parsed: opts, extra: extra} = opts
 
     opts =
       Keyword.update(opts, :allow_failure, [], fn projects ->
         Enum.map(projects, &String.to_atom/1)
       end)
 
-    task_args = CliOpts.to_list(invalid) ++ extra ++ args
-
     opts
     |> Mix.WorkspaceUtils.load_and_filter_workspace()
     |> Workspace.projects()
     |> Enum.map(fn project ->
-      result = run_in_project(project, opts, task_args)
+      result = run_in_project(project, opts, extra)
 
       %{
         project: project,
