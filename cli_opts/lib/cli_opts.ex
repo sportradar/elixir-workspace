@@ -70,8 +70,9 @@ defmodule CliOpts do
     . `:args` - a list of the remaining arguments in `argv` as strings
     . `:invalid` - a list of invalid options (check `OptionParser.parse/2` docs for
     more details)
-    . `:extra` - a list of extra arguments, e.g. everything (if any) after
-    `--` (see the Examples section below for more information)
+    . `:extra` - a list of extra arguments. An option is considered extra if
+    it appears after a return separator `--` (see the Examples section below
+    for more information)
 
   In case of `error`, e.g. when a required option is missing an error tuple is
   returned
@@ -103,7 +104,6 @@ defmodule CliOpts do
   @spec parse(argv :: argv(), schema :: Keyword.t()) ::
           {:ok, parsed_options()} | {:error, String.t()}
   def parse(argv, schema) do
-    # TODO: check if this is needed
     {argv, extra} = split_argv(argv)
 
     {parsed, args, invalid} =
@@ -157,81 +157,26 @@ defmodule CliOpts do
     end
   end
 
-  def docs(schema) do
-    schema
-    |> Enum.reduce([], &maybe_option_doc/2)
-    |> Enum.reverse()
-    |> Enum.join("\n")
-  end
+  @doc ~S'''
+  Returns documentation for the given CLI options schema.
 
-  defp maybe_option_doc({key, schema}, acc) do
-    if schema[:doc] == false do
-      acc
-    else
-      option_doc({key, schema}, acc)
-    end
-  end
+  You can use this to inject documentation in your mix tasks docstrings, for
+  example say you have a schema defined in a module attribute:
 
-  defp option_doc({key, schema}, acc) do
-    doc =
+      @task_opts_schema [...]
+
+  You can use `docs/1` to inject documentation:
+
+      @moduledoc """
+      ...
+
+      ## CLI Options
+
+      #{CliOpts.docs(@task_opts_schema)}
       """
-      * `#{key_doc(key, schema)}` (`#{schema[:type]}`) - #{maybe_required(schema)}#{key_body_doc(schema)}
-      """
-      |> String.trim_trailing()
-
-    [doc | acc]
-  end
-
-  defp key_doc(key, schema) do
-    "--#{format_key(key)}#{maybe_alias(schema)}"
-    |> maybe_repeating(schema)
-  end
-
-  defp format_key(key), do: String.replace("#{key}", "_", "-")
-
-  defp maybe_alias(schema) do
-    case schema[:alias] do
-      nil -> ""
-      alias -> ", -#{alias}"
-    end
-  end
-
-  defp maybe_required(schema) do
-    case schema[:required] do
-      true -> "Required. "
-      _ -> ""
-    end
-  end
-
-  defp maybe_repeating(key, schema) do
-    case schema[:keep] do
-      true -> "#{key}..."
-      _ -> key
-    end
-  end
-
-  defp key_body_doc(schema) do
-    [
-      schema[:doc],
-      maybe_allowed(schema),
-      maybe_default(schema)
-    ]
-    |> Enum.join("")
-  end
-
-  defp maybe_default(schema) do
-    case schema[:default] do
-      nil -> ""
-      default -> "   [default: `#{default}`]"
-    end
-  end
-
-  defp maybe_allowed(schema) do
-    case schema[:allowed] do
-      nil -> ""
-      allowed -> "   Allowed values: `#{inspect(allowed)}`."
-    end
-  end
+  '''
+  @spec docs(schema :: Keyword.t()) :: String.t()
+  def docs(schema) when is_list(schema), do: CliOpts.Docs.generate(schema)
 
   defp switches(schema) do
     schema
@@ -325,16 +270,4 @@ defmodule CliOpts do
       errors -> {:error, Enum.join(errors, "\n")}
     end
   end
-
-  @doc """
-  Transforms a list of parsed cli options to the binary input.
-
-  Notice that it expects only invalid parsed attributes.
-  """
-  @spec to_list([{binary(), nil | binary()}]) :: [binary()]
-  def to_list(args), do: to_list(args, [])
-
-  defp to_list([], acc), do: acc
-  defp to_list([{arg, nil} | tail], acc), do: to_list(tail, acc ++ [arg])
-  defp to_list([{arg, value} | tail], acc), do: to_list(tail, acc ++ [arg, value])
 end
