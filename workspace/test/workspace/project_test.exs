@@ -14,6 +14,13 @@ defmodule Workspace.ProjectTest do
       assert project.module == PackageA.MixProject
     end
 
+    test "evaluates the docs" do
+      project_path = Path.join(@sample_workspace_path, "package_d")
+      project = Project.new(project_path, @sample_workspace_path)
+
+      assert project.config[:docs] == [foo: 1]
+    end
+
     # dummy test just for test coverage
     test "create struct directly" do
       project = %Project{

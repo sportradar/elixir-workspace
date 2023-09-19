@@ -57,13 +57,24 @@ defmodule Workspace.Project do
         %__MODULE__{
           app: module.project()[:app],
           module: module,
-          config: Mix.Project.config(),
+          config: evaluate_config(Mix.Project.config()),
           mix_path: mix_path,
           path: Path.dirname(mix_path),
           workspace_path: workspace_path
         }
       end
     )
+  end
+
+  # some config settings are defined as functions in order to be lazily
+  # evaluated, we evaluate them here since they may be used in checks
+  defp evaluate_config(config) do
+    docs = config[:docs]
+
+    cond do
+      is_function(docs, 0) -> Keyword.replace(config, :docs, docs.())
+      true -> config
+    end
   end
 
   @valid_statuses [:undefined, :modified, :affected, :unaffected]
