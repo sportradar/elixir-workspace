@@ -1,10 +1,10 @@
-# <%= mod %>
+# :<%= app %>
 
 **TODO: Add description**
 
 ## Usage
 
-`<%= app %>` is a mono-repo managed by `Workspace`. You can create packages
+`:<%= app %>` is a mono-repo managed by `Workspace`. You can create packages
 using `mix new`.
 
 You can run any command on all packages through `workspace.run` for example:

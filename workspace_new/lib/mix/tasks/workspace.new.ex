@@ -6,7 +6,7 @@ defmodule Mix.Tasks.Workspace.New do
   import Mix.Generator
 
   @switches [
-    workspace: :string,
+    app: :string,
     module: :string
   ]
 
@@ -27,6 +27,12 @@ defmodule Mix.Tasks.Workspace.New do
         check_mod_name_availability!(mod)
 
         unless path == "." do
+          if File.exists?(path) do
+            Mix.raise(
+              "Directory #{path} already exists, please select another directory for your workspace"
+            )
+          end
+
           File.mkdir_p!(path)
         end
 
@@ -74,8 +80,6 @@ defmodule Mix.Tasks.Workspace.New do
       version: get_version(System.version())
     ]
 
-    # mod_filename = Macro.underscore(mod)
-
     create_file("README.md", template("README.md", bindings))
     create_file(".formatter.exs", template(".formatter.exs", bindings))
     create_file(".gitignore", template(".gitignore", bindings))
@@ -94,10 +98,6 @@ defmodule Mix.Tasks.Workspace.New do
   defp get_version(version) do
     {:ok, version} = Version.parse(version)
 
-    "#{version.major}.#{version.minor}" <>
-      case version.pre do
-        [h | _] -> "-#{h}"
-        [] -> ""
-      end
+    "#{version.major}.#{version.minor}"
   end
 end
