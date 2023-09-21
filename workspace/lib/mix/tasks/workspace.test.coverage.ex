@@ -267,7 +267,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
         [status | acc]
       end)
 
-    {overall_coverage, _module_stats} = Workspace.Coverage.summarize_line_coverage(coverage_stats)
+    {overall_coverage, _module_stats} =
+      Workspace.Coverage.summarize_line_coverage(coverage_stats, workspace)
 
     {error_threshold, warning_threshold} =
       project_coverage_thresholds(workspace.config[:test_coverage])

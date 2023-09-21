@@ -4,11 +4,28 @@ defmodule Workspace.Coverage do
   def project_coverage_stats(coverage, project) do
     # coverage per project's module
     project_modules =
-      Enum.filter(coverage, fn {_module, app, _function_data, _line_data} ->
+      coverage
+      |> Enum.filter(fn {_module, app, _function_data, _line_data} ->
         app == project.app
+      end)
+      |> Enum.reject(fn {module, _app, _function_data, _line_data} ->
+        ignored_modules = get_in(project.config, [:test_coverage, :ignore_modules]) || []
+        module in ignored_modules
       end)
 
     summarize_line_coverage(project_modules)
+  end
+
+  # TODO: refactor, code repetition with previous function
+  def summarize_line_coverage(coverage, workspace) do
+    coverage
+    |> Enum.reject(fn {module, app, _function_data, _line_data} ->
+      project = workspace.projects[app] || []
+      ignored_modules = get_in(project.config, [:test_coverage, :ignore_modules]) || []
+
+      module in ignored_modules
+    end)
+    |> summarize_line_coverage()
   end
 
   def summarize_line_coverage(coverage) do
