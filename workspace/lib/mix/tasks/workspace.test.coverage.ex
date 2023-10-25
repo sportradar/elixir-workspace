@@ -1,15 +1,28 @@
 defmodule Mix.Tasks.Workspace.Test.Coverage do
-  @options_schema Workspace.Cli.options([
-                    :workspace_path,
-                    :config_path,
-                    :project,
-                    :affected,
-                    :modified,
-                    :base,
-                    :head,
-                    :ignore,
-                    :verbose
-                  ])
+  opts = [
+    silent: [
+      type: :boolean,
+      doc: """
+      If set to true only the package coverage is not reported and not the individual modules
+      coverages. This has higher priority than the `:verbose` option.
+      """
+    ]
+  ]
+
+  @options_schema Workspace.Cli.options(
+                    [
+                      :workspace_path,
+                      :config_path,
+                      :project,
+                      :affected,
+                      :modified,
+                      :base,
+                      :head,
+                      :ignore,
+                      :verbose
+                    ],
+                    opts
+                  )
 
   @shortdoc "Runs test coverage on the workspace"
 
@@ -262,7 +275,9 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
           prefix: "    "
         )
 
-        print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
+        unless opts[:silent] do
+          print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
+        end
 
         [status | acc]
       end)

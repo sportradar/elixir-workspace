@@ -153,6 +153,55 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
     assert_cli_output_match(captured, expected)
   end
 
+  test "with silent flag set" do
+    fixture_path = test_fixture_path()
+
+    in_fixture("test_coverage", fn ->
+      make_fixture_unique(fixture_path, 6)
+    end)
+
+    # first run the tests with --cover flag set
+    capture_io(fn ->
+      RunTask.run([
+        "-t",
+        "test",
+        "--workspace-path",
+        fixture_path,
+        "--",
+        "--cover"
+      ])
+    end)
+
+    captured =
+      assert_raise_and_capture_io(
+        Mix.Error,
+        ~r"coverage for one or more projects below the required threshold",
+        fn ->
+          TestCoverageTask.run([
+            "--workspace-path",
+            fixture_path,
+            "--silent"
+          ])
+        end
+      )
+
+    expected =
+      [
+        "==> importing cover results",
+        ":package_a - importing cover results from package_a/cover/package_a.coverdata",
+        ":package_b - importing cover results from package_b/cover/package_b.coverdata",
+        ":package_c - importing cover results from package_c/cover/package_c.coverdata",
+        "==> analysing coverage data",
+        ":package_a - total coverage 100.00% [threshold 90%]",
+        ":package_b - total coverage 50.00% [threshold 90%]",
+        ":package_c - total coverage 25.00% [threshold 90%]",
+        "==> workspace coverage 42.86% [threshold 90%]"
+      ]
+      |> add_index_to_output(6)
+
+    assert_cli_output_match(captured, expected)
+  end
+
   test "with lcov exporter set and allow failures set" do
     fixture_path = test_fixture_path()
 
