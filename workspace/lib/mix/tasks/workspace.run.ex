@@ -76,6 +76,8 @@ defmodule Mix.Tasks.Workspace.Run do
 
   use Mix.Task
 
+  @recursive true
+
   import Workspace.Cli
 
   def run(args) do
