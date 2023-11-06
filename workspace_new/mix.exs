@@ -8,9 +8,10 @@ defmodule WorkspaceNew.MixProject do
       version: "0.1.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
-      deps: [],
+      deps: deps(),
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
+      preferred_cli_env: [docs: :docs],
       docs: [
         output: "../artifacts/docs/workspace_new",
         formatters: ["html"]
@@ -26,6 +27,12 @@ defmodule WorkspaceNew.MixProject do
   def application do
     [
       extra_applications: [:eex]
+    ]
+  end
+
+  defp deps do
+    [
+      {:ex_doc, "== 0.30.9", only: :docs}
     ]
   end
 end

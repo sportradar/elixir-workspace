@@ -57,10 +57,10 @@ defmodule Workspace.MixProject do
     [
       {:cli_opts, path: "../cli_opts/"},
       {:nimble_options, "~> 1.0.2"},
-      {:ex_doc, "~> 0.28", [only: :dev, runtime: false]},
-      {:credo, "~> 1.6.7", [only: [:dev, :test], runtime: false]},
-      {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
-      {:doctor, "~> 0.21.0", [only: :dev, runtime: false]}
+      {:ex_doc, "== 0.30.9", only: :dev, runtime: false},
+      {:credo, "~> 1.6.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "== 1.4.2", only: [:dev], runtime: false},
+      {:doctor, "~> 0.21.0", only: :dev, runtime: false}
     ]
   end
 
