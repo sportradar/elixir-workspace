@@ -32,7 +32,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   You can use it to generate test coverage for one or more projects of the
   workspace. It will take care of finding the `coveradata` files, fixing the
   absolute paths with respect to the workspace root and formatting the
-  resutls
+  results
 
       $ mix workspace.test.coverage
 

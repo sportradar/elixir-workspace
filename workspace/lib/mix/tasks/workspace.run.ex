@@ -67,11 +67,108 @@ defmodule Mix.Tasks.Workspace.Run do
   @shortdoc "Run a mix command to all projects"
 
   @moduledoc """
-  Run a mix task on one or more workspace projects
+  Run a mix task on one or more workspace projects.
 
-  ## Command Line Options
+  Monorepos can have hundreds of projects so being able to run a task against all
+  or a subset of them is a key feature of `Workspace`.
+
+  ## The project graph
+
+  The core concept of `Workspace` is the project graph. This is a directed acyclic
+  graphs depicting the internal project dependencies. This is used by all tasks
+  internally in order to specify the status of the projects.
+
+  Assume you have the following workspace:
+
+  ```
+  package_a
+  ├── package_b ✚
+  │   └── package_g
+  ├── package_c
+  │   ├── package_e
+  │   └── package_f
+  │       └── package_g
+  └── package_d
+  package_h ✚
+  └── package_d
+  ```
+
+  It consists of various packages, and two of them (`_b` and `_h`) are modified. Using
+  the graph we can find the dependencies between packages and **limit the execution of
+  a task** only to the subset that makes sense. 
+
+  **Using the proper execution strategy wisely significantly improves the CI execution
+  time**.
+
+  > #### Where to run a task? {: .tip}
+  >
+  > This clearly depends on the type of the task. Let's see some examples:
+  >
+  > - `mix format` makes sense to be executed only on the modified packages.
+  > - `mix test` should be executed on the modified and the parents of them since a change
+  > on a package may affect a dependent one.
+  > - `mix deps.get` makes sense to be executed only on the root packages if
+  > you have adopted a common deps path, since internal dependencies will be
+  > inherited from dependent packages.
+  > - In the main branch it makes sense to run the full suite on the
+  > complete workspace.
+
+  Check `Workspace` for more details. In order to visualize the graph of the current
+  workspace check the `workspace.graph` task.
+
+  ## Command-line Options
 
   #{CliOpts.docs(@options_schema)}
+
+  ## Filtering tasks
+
+  One of the key features of `workspace.run` is the flexibility regarding the projects
+  on which the task will be executed.
+
+  Let's see some examples:
+
+      # Run test on all workspace projects
+      $ mix workspace.run -t test
+
+      # Run test only on foo and bar
+      $ mix workspace.run -t test -p foo -p bar
+
+      # Run test on all projects excluding foo and bar
+      $ mix workspace.run -t test -i foo -i bar
+
+      # Run test on all affected projects
+      $ mix workspace.run -t test --affected
+
+      # Run test on all modified projects
+      $ mix workspace.run -t test --modified
+
+      # Run test only on top level projects
+      $ mix workspace.run -t test --only-roots
+
+  ## The `--env-var` option
+
+  Some tasks depend on environment variables. You can use the `--env-var` option to
+  set an environment variable only during a task's execution. This is particularly useful
+  in CI environments.
+
+      $ mix workspace.run -t compile --env-var MIX_ENV=compile
+
+  You can set multiple environment variables by setting the `--env-var` multiple times.
+
+  ## Dry running a task
+
+  You can set the `--dry-run` option in order to dry run the task, e.g. to check the
+  sequence of mix tasks that will be invoked.
+
+  ## Allowing failures on some projects
+
+  On big codebases not all projects are of the same quality standards and some linter
+  tasks may fail on them. In such cases you may want to still run the linting tasks on
+  these projects but ignore their output status from the overall run task's status. In
+  such cases you can use the `--allow-failure` option:
+
+      # Run lint on all projects but ignore the output status of project foo
+      $ mix workspace.run -t lint --allow-failure foo
   """
 
   use Mix.Task
