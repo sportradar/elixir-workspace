@@ -1,7 +1,6 @@
 defmodule CliOpts.Docs do
   @moduledoc false
 
-
   @doc false
   @spec generate(schema :: keyword()) :: String.t()
   def generate(schema) do
@@ -79,6 +78,4 @@ defmodule CliOpts.Docs do
       default -> "   [default: `#{default}`]"
     end
   end
-
-
 end
