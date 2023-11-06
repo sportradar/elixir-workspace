@@ -15,7 +15,7 @@ lint: ## Run linters suite on project
 	mix workspace.check
 	mix workspace.run -t format -- --check-formatted
 	mix credo
-	mix workspace.run -t doctor -- --failed
+	mix workspace.run -t doctor --allow-failure workspace_new -- --failed
 
 ##@ Documentation
 

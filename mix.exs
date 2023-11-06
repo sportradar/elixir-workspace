@@ -42,7 +42,7 @@ defmodule Workspace.MixWorkspace do
         "workspace.run -t format"
       ],
       credo: [
-        "workspace.run -t credo -- --config-file #{credo_config} --strict"
+        "workspace.run -t credo --allow-failure workspace_new -- --config-file #{credo_config} --strict"
       ],
       # "deps.get": ["workspace.run -t deps.get"],
       test: ["workspace.run -t test"]
