@@ -19,7 +19,7 @@ defmodule Mix.Tasks.Workspace.Status do
   """
   use Mix.Task
 
-  @impl true
+  @impl Mix.Task
   def run(args) do
     {:ok, opts} = CliOpts.parse(args, @options_schema)
     %{parsed: opts, args: _args, extra: _extra, invalid: _invalid} = opts
