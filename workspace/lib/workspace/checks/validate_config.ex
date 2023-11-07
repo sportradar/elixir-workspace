@@ -40,16 +40,14 @@ defmodule Workspace.Checks.ValidateConfig do
           {status, [message: message]}
 
         {status, message} when is_binary(message) ->
-          raise ArgumentError, """
-          validate function must return a {status, message} tuple where \
-          status one of [:ok, :error, :skip], got: #{status}\
-          """
+          raise ArgumentError,
+                "validate function must return a {status, message} tuple where " <>
+                  "status one of [:ok, :error, :skip], got: #{status}"
 
         {_status, message} ->
-          raise ArgumentError, """
-          validate function must return a {status, message} tuple where \
-          message must be a string, got: #{inspect(message)}\
-          """
+          raise ArgumentError,
+                "validate function must return a {status, message} tuple where " <>
+                  "message must be a string, got: #{inspect(message)}"
 
         other ->
           raise ArgumentError,
