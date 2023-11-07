@@ -71,13 +71,11 @@ defmodule Workspace.Graph do
   end
 
   defp node_type(workspace, app) do
-    case workspace_project?(workspace, app) do
+    case Workspace.project?(workspace, app) do
       true -> :workspace
       false -> :external
     end
   end
-
-  defp workspace_project?(workspace, name), do: Map.has_key?(workspace.projects, name)
 
   defp include_node_type?(:workspace, _flag), do: true
   defp include_node_type?(:external, true), do: true

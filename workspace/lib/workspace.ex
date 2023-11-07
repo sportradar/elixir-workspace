@@ -469,6 +469,13 @@ defmodule Workspace do
   @spec projects(workspace :: Workspace.t()) :: [Workspace.Project.t()]
   def projects(workspace), do: Map.values(workspace.projects)
 
+  @doc """
+  Returns `true` if the given `app` is a `workspace` project, `false` otherwise. 
+  """
+  @spec project?(workspace :: t(), app :: atom()) :: boolean()
+  def project?(workspace, app) when is_struct(workspace, Workspace) and is_atom(app),
+    do: Map.has_key?(workspace.projects, app)
+
   # defp apps_to_projects(workspace, apps) when is_list(apps) do
   #   Enum.map(apps, &project_by_app_name(workspace, &1))
   # end
