@@ -1,6 +1,25 @@
 defmodule Mix.Tasks.Workspace.New do
   @shortdoc "Creates a new workspace project"
 
+  @moduledoc """
+  Creates a new workspace project.
+
+  It expects the path of the project as an argument.
+
+      $ mix workspace.new PATH [--module MODULE] [--app APP]
+
+  A workspace at the given `PATH` will be created. The The
+  application name and module name will be retrieved
+  from the path, unless `--module` or `--app` is given.
+
+  ## Options
+
+    * `--app` - the name of the OTP application
+
+    * `--module` - the name of the base mix workspace module in
+      the generated skeleton
+  """
+
   use Mix.Task
 
   import Mix.Generator
