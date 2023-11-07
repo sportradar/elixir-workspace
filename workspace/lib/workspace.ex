@@ -522,18 +522,30 @@ defmodule Workspace do
 
   ## Options
 
-    * `:ignore` (`[atom]`) - a list of projects to be ignored. This has the highest
-    priority, e.g. if the project is in the `:ignore` list it is always skipped.
-    * `:project` (`[atom]`) - a list of project to consider, if set all projects that are
-    not included in the list are considered skippable.
-    * `:affected` (`boolean`) - if set only the affected projects will be included and
-    everything else will be skipped, defaults to `false`
+    * `:ignore` (list of `t:atom/0`) - a list of projects to be ignored. This has
+    the highest priority, e.g. if the project is in the `:ignore` list it is
+    always skipped.
+    * `:project` (list of `t:atom/0`) - a list of project to consider, if set all
+    projects that are not included in the list are considered skippable.
+    * `:affected` (`t:boolean/0`) - if set only the affected projects will be
+    included and everything else will be skipped. Defaults to `false`.
+    * `:modified` (`t:boolean/0`) - if set only the modified projects will be
+    included. A project is considered modified if any file under the project's
+    root (excluding files in the `.gitignore`) has changed. Defaults to `false`.
+    * `:only_roots` (`t:boolean/0`) - if set only the root projects will be
+    included and everything else will be skipped. Defaults to `false`.
+    * `:base` (`t:String.t/0`) - The base git reference for detecting changed files,
+    If not set only working tree changes will be included.
+    * `:head` (`t:String.t/0`) - The head git reference for detecting changed files.
+    It is used only if `:base` is set.
 
-  Notice that projects are filtered using the following precedence:
-
-    * `:ignore`
-    * `:selected`
-    * `:affected`
+  > #### Filtering order {: .neutral}
+  > 
+  > Notice that projects are filtered using the following precedence:
+  >
+  > * Ignored projects (`:ignore` option set)
+  > * Selected projects (`:project` option set)
+  > * Code status modifiers (`:affected`, `:modified` and `:only_roots`)
   """
   @spec filter(workspace :: Workspace.t(), opts :: keyword()) :: Workspace.t()
   def filter(%Workspace{} = workspace, opts) do
