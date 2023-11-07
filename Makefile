@@ -21,6 +21,15 @@ cloc: ## Code stats
 
 ##@ Linting
 
+.PHONE: spell
+spell: ## Run cspell on project
+	@echo "=> spell-checking lib folders"
+	@-cspell lint **/lib/**/*.ex **/lib/*.ex
+	@echo "=> spell-checking test folders"
+	@-cspell lint "**/test/**/*.exs" "**/test/**/*.ex"
+	@echo "=> spell-checking docs"
+	@-cspell lint **/*.md *.md
+
 .PHONE: format
 format: ## Format the workspace
 	mix workspace.run -t format
