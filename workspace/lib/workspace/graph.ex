@@ -94,13 +94,15 @@ defmodule Workspace.Graph do
   end
 
   defp maybe_external_dependencies(workspace, true, ignored) do
+    workspace_apps = Map.keys(workspace.projects)
+
     workspace.projects
     |> Enum.reject(fn {app, _project} -> ignored_app?(app, ignored) end)
     |> Enum.map(fn {_app, project} -> project.config[:deps] || [] end)
     |> List.flatten()
     |> Enum.map(fn dep -> elem(dep, 0) end)
     |> Enum.uniq()
-    |> Enum.reject(&Workspace.project?(workspace, &1))
+    |> Enum.reject(fn dep -> dep in workspace_apps end)
     |> Enum.reject(&ignored_app?(&1, ignored))
     |> Enum.map(fn dep -> {dep, :external, nil} end)
   end
