@@ -10,9 +10,9 @@ defmodule Workspace.Graph do
     * `:workspace` - for workspace internal projects
     * `:external` - for external projects / dependencies
 
-  By default `:workspace` will always be included in the graph. On the other hand
-  `:external` dependencies will be included only if the `:external` option is set
-  to `true` during graph's construction.
+  By default `:workspace` dependencies will always be included in the graph. On the
+  other hand `:external` dependencies will be included only if the `:external`
+  option is set to `true` during graph's construction.
   """
 
   @type vertices :: [:digraph.vertex()]
@@ -54,41 +54,71 @@ defmodule Workspace.Graph do
   """
   @spec digraph(workspace :: Workspace.t(), opts :: keyword()) :: :digraph.graph()
   def digraph(workspace, opts \\ []) do
+    graph_nodes = valid_nodes(workspace, opts[:external], opts[:ignore])
+    graph_apps = Enum.map(graph_nodes, fn node -> elem(node, 0) end)
+
     graph = :digraph.new()
 
-    # add workspace vertices
-    for {app, _project} <- workspace.projects,
-        include_app?(app, opts[:ignore]) do
-      :digraph.add_vertex(graph, {app, :workspace})
+    # add vertices
+    for {app, type, project} <- graph_nodes do
+      node = graph_node(app, type, project)
+      :digraph.add_vertex(graph, node)
     end
 
     for {_app, project} <- workspace.projects,
-        {dep, _dep_config} <- project.config[:deps] || [],
-        node_type = node_type(workspace, dep),
-        include_app?(project.app, opts[:ignore]),
-        include_app?(dep, opts[:ignore]),
-        include_node_type?(node_type, opts[:external]) do
-      :digraph.add_vertex(graph, {dep, node_type})
-      :digraph.add_edge(graph, {project.app, :workspace}, {dep, node_type})
+        dep <- project_deps(project),
+        project.app in graph_apps,
+        dep in graph_apps do
+      from_node = node_by_app(graph, project.app)
+      to_node = node_by_app(graph, dep)
+      :digraph.add_edge(graph, from_node, to_node)
     end
 
     graph
   end
 
-  defp include_app?(_app, nil), do: true
-  defp include_app?(app, ignore) when is_atom(app), do: include_app?(Atom.to_string(app), ignore)
-  defp include_app?(app, ignore) when is_list(ignore), do: app not in ignore
+  defp valid_nodes(workspace, external, ignored) do
+    workspace_nodes =
+      for {app, project} <- workspace.projects,
+          not ignored_app?(app, ignored) do
+        {app, :workspace, project}
+      end
 
-  defp node_type(workspace, app) do
-    case Workspace.project?(workspace, app) do
-      true -> :workspace
-      false -> :external
-    end
+    workspace_nodes ++ maybe_external_dependencies(workspace, external, ignored)
   end
 
-  defp include_node_type?(:workspace, _flag), do: true
-  defp include_node_type?(:external, true), do: true
-  defp include_node_type?(_type, _flag), do: false
+  defp project_deps(project) do
+    deps = project.config[:deps] || []
+
+    Enum.map(deps, fn dep -> elem(dep, 0) end)
+  end
+
+  defp maybe_external_dependencies(workspace, true, ignored) do
+    workspace.projects
+    |> Enum.reject(fn {app, _project} -> ignored_app?(app, ignored) end)
+    |> Enum.map(fn {_app, project} -> project.config[:deps] || [] end)
+    |> List.flatten()
+    |> Enum.map(fn dep -> elem(dep, 0) end)
+    |> Enum.uniq()
+    |> Enum.reject(&Workspace.project?(workspace, &1))
+    |> Enum.reject(&ignored_app?(&1, ignored))
+    |> Enum.map(fn dep -> {dep, :external, nil} end)
+  end
+
+  defp maybe_external_dependencies(_workspace, _external, _ignored), do: []
+
+  defp graph_node(app, :workspace, project),
+    do: Workspace.Graph.Node.new(app, :workspace, project: project)
+
+  defp graph_node(app, :external, _project), do: Workspace.Graph.Node.new(app, :external)
+
+  # TODO: make ignored list of atoms by default
+  defp ignored_app?(_app, nil), do: false
+
+  defp ignored_app?(app, ignored) when is_atom(app),
+    do: ignored_app?(Atom.to_string(app), ignored)
+
+  defp ignored_app?(app, ignored) when is_list(ignored), do: app in ignored
 
   @doc """
   Return the source projects of the workspace
@@ -101,7 +131,7 @@ defmodule Workspace.Graph do
     with_digraph(workspace, fn graph ->
       graph
       |> :digraph.source_vertices()
-      |> Enum.map(fn {app, _type} -> app end)
+      |> Enum.map(& &1.app)
     end)
   end
 
@@ -116,25 +146,29 @@ defmodule Workspace.Graph do
     with_digraph(workspace, fn graph ->
       graph
       |> :digraph.sink_vertices()
-      |> Enum.map(fn {app, _type} -> app end)
+      |> Enum.map(& &1.app)
     end)
   end
 
   @doc """
-  Get the affected workspace's projects given the changed projects
+  Get the affected workspace's projects given the changed `projects`
 
   Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
   """
   @spec affected(workspace :: Workspace.t(), projects :: [atom()]) :: [atom()]
   def affected(workspace, projects) do
-    projects = Enum.map(projects, fn project -> {project, :workspace} end)
-
     with_digraph(workspace, fn graph ->
-      :digraph_utils.reaching_neighbours(projects, graph)
+      nodes = Enum.map(projects, fn project -> node_by_app(graph, project) end)
+
+      :digraph_utils.reaching_neighbours(nodes, graph)
+      |> Enum.map(& &1.app)
       |> Enum.concat(projects)
       |> Enum.uniq()
-      |> Enum.map(fn {app, _type} -> app end)
     end)
+  end
+
+  defp node_by_app(graph, app) do
+    Enum.find(:digraph.vertices(graph), &(&1.app == app))
   end
 end

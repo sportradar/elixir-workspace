@@ -20,10 +20,12 @@ defmodule Workspace.GraphTest do
     test "with external dependencies set", %{workspace: workspace} do
       graph = Graph.digraph(workspace, external: true)
 
-      assert length(:digraph.vertices(graph)) == 12
-      assert {:foo, :external} in :digraph.vertices(graph)
+      nodes = Enum.map(:digraph.vertices(graph), fn node -> {node.app, node.type} end)
 
-      assert length(:digraph.edges(graph)) == 10
+      assert length(:digraph.vertices(graph)) == 13
+      assert {:foo, :external} in nodes
+
+      assert length(:digraph.edges(graph)) == 11
 
       :digraph.delete(graph)
     end
@@ -32,10 +34,13 @@ defmodule Workspace.GraphTest do
       graph = Graph.digraph(workspace, ignore: ["package_a", "package_b", "package_c"])
 
       assert length(:digraph.vertices(graph)) == 8
-      refute {:package_a, :workspace} in :digraph.vertices(graph)
-      refute {:package_b, :workspace} in :digraph.vertices(graph)
-      refute {:package_c, :workspace} in :digraph.vertices(graph)
-      assert {:package_d, :workspace} in :digraph.vertices(graph)
+
+      nodes = :digraph.vertices(graph) |> Enum.map(fn node -> {node.app, node.type} end)
+
+      refute {:package_a, :workspace} in nodes
+      refute {:package_b, :workspace} in nodes
+      refute {:package_c, :workspace} in nodes
+      assert {:package_d, :workspace} in nodes
 
       assert length(:digraph.edges(graph)) == 3
 
@@ -45,8 +50,15 @@ defmodule Workspace.GraphTest do
 
   describe "with_digraph/2" do
     test "runs a function on the graph", %{workspace: workspace} do
-      assert Graph.with_digraph(workspace, fn graph -> :digraph.source_vertices(graph) end)
-             |> Enum.sort() == [
+      nodes = Graph.with_digraph(workspace, fn graph -> :digraph.source_vertices(graph) end)
+
+      for node <- nodes do
+        assert %Workspace.Graph.Node{} = node
+      end
+
+      apps = Enum.map(nodes, fn node -> {node.app, node.type} end)
+
+      assert Enum.sort(apps) == [
                {:package_a, :workspace},
                {:package_h, :workspace},
                {:package_i, :workspace},

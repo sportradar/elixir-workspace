@@ -88,6 +88,7 @@ defmodule Mix.Tasks.Workspace.GraphTest do
   test "prints the tree with external dependencies" do
     expected = """
     :package_changed_a
+    ├── :ex_doc (external)
     ├── :package_changed_b
     │   ├── :foo (external)
     │   └── :package_changed_g

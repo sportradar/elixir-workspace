@@ -81,16 +81,14 @@ defmodule Mix.Tasks.Workspace.Graph do
             |> Enum.map(fn node -> {node, nil} end)
             |> Enum.sort()
 
-          {app, type} = node
-
-          case type do
+          case node.type do
             :workspace ->
-              project = Map.fetch!(workspace.projects, app)
+              project = node.project
 
               {{node_format(project, opts[:show_status]), nil}, children}
 
             :external ->
-              display = format_ansi([:light_black, inspect(app), " (external)", :reset])
+              display = format_ansi([:light_black, inspect(node.app), " (external)", :reset])
               {{display, nil}, children}
           end
         end
@@ -126,14 +124,14 @@ defmodule Mix.Tasks.Workspace.Graph do
       fn graph ->
         vertices =
           :digraph.vertices(graph)
-          |> Enum.map(fn {v, _type} -> "  #{v}" end)
+          |> Enum.map(fn node -> "  #{node.app}" end)
           |> Enum.sort()
           |> Enum.join("\n")
 
         external =
           :digraph.vertices(graph)
-          |> Enum.filter(fn {_v, type} -> type == :external end)
-          |> Enum.map(fn {v, _type} -> v end)
+          |> Enum.filter(fn node -> node.type == :external end)
+          |> Enum.map(& &1.app)
 
         edges =
           :digraph.edges(graph)
@@ -141,7 +139,7 @@ defmodule Mix.Tasks.Workspace.Graph do
             {_e, v1, v2, _l} = :digraph.edge(graph, edge)
             {v1, v2}
           end)
-          |> Enum.map(fn {{v1, _type1}, {v2, _type2}} -> "  #{v1} --> #{v2}" end)
+          |> Enum.map(fn {v1, v2} -> "  #{v1.app} --> #{v2.app}" end)
           |> Enum.sort()
           |> Enum.join("\n")
 
