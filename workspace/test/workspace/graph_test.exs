@@ -27,6 +27,20 @@ defmodule Workspace.GraphTest do
 
       :digraph.delete(graph)
     end
+
+    test "with ignore set", %{workspace: workspace} do
+      graph = Graph.digraph(workspace, ignore: ["package_a", "package_b", "package_c"])
+
+      assert length(:digraph.vertices(graph)) == 8
+      refute {:package_a, :workspace} in :digraph.vertices(graph)
+      refute {:package_b, :workspace} in :digraph.vertices(graph)
+      refute {:package_c, :workspace} in :digraph.vertices(graph)
+      assert {:package_d, :workspace} in :digraph.vertices(graph)
+
+      assert length(:digraph.edges(graph)) == 3
+
+      :digraph.delete(graph)
+    end
   end
 
   describe "with_digraph/2" do

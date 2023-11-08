@@ -49,19 +49,24 @@ defmodule Workspace.Graph do
   ## Options
 
     * `:external` - if set external dependencies will be included as well
+    * `:ignore` - if set the specified workspace projects will not be included
+    in the graph
   """
   @spec digraph(workspace :: Workspace.t(), opts :: keyword()) :: :digraph.graph()
   def digraph(workspace, opts \\ []) do
     graph = :digraph.new()
 
     # add workspace vertices
-    for {app, _project} <- workspace.projects do
+    for {app, _project} <- workspace.projects,
+        include_app?(app, opts[:ignore]) do
       :digraph.add_vertex(graph, {app, :workspace})
     end
 
     for {_app, project} <- workspace.projects,
         {dep, _dep_config} <- project.config[:deps] || [],
         node_type = node_type(workspace, dep),
+        include_app?(project.app, opts[:ignore]),
+        include_app?(dep, opts[:ignore]),
         include_node_type?(node_type, opts[:external]) do
       :digraph.add_vertex(graph, {dep, node_type})
       :digraph.add_edge(graph, {project.app, :workspace}, {dep, node_type})
@@ -69,6 +74,10 @@ defmodule Workspace.Graph do
 
     graph
   end
+
+  defp include_app?(_app, nil), do: true
+  defp include_app?(app, ignore) when is_atom(app), do: include_app?(Atom.to_string(app), ignore)
+  defp include_app?(app, ignore) when is_list(ignore), do: app not in ignore
 
   defp node_type(workspace, app) do
     case Workspace.project?(workspace, app) do
