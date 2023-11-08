@@ -33,6 +33,33 @@ defmodule Mix.Tasks.Workspace.GraphTest do
            end) == expected
   end
 
+  test "with plain output format" do
+    expected = """
+    :package_default_a
+    |-- :package_default_b
+    |   `-- :package_default_g
+    |-- :package_default_c
+    |   |-- :package_default_e
+    |   `-- :package_default_f
+    |       `-- :package_default_g
+    `-- :package_default_d
+    :package_default_h
+    `-- :package_default_d
+    :package_default_i
+    `-- :package_default_j
+    :package_default_k
+    """
+
+    assert capture_io(fn ->
+             GraphTask.run([
+               "--workspace-path",
+               @sample_workspace_default_path,
+               "--format",
+               "plain"
+             ])
+           end) == expected
+  end
+
   test "prints the tree with project statuses" do
     expected = """
     :package_changed_a ●
