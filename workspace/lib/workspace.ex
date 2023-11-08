@@ -196,7 +196,7 @@ defmodule Workspace do
 
   ### Code analysis related options
 
-    * `:modified` - returns only the modified projects, e.g. prjects for which
+    * `:modified` - returns only the modified projects, e.g. projects for which
     the code has changed
     * `:affected` - returns all affected projects. Affected projects are the
     modifed ones plus the 

@@ -108,6 +108,32 @@ defmodule Mix.Tasks.Workspace.GraphTest do
            end) == expected
   end
 
+  test "does not print ignored packages" do
+    expected = """
+    :package_changed_a
+    ├── :package_changed_c
+    │   └── :package_changed_e
+    └── :package_changed_d
+    :package_changed_g
+    :package_changed_h
+    └── :package_changed_d
+    :package_changed_i
+    └── :package_changed_j
+    :package_changed_k
+    """
+
+    assert capture_io(fn ->
+             GraphTask.run([
+               "--workspace-path",
+               @sample_workspace_changed_path,
+               "--ignore",
+               "package_changed_b",
+               "--ignore",
+               "package_changed_f"
+             ])
+           end) == expected
+  end
+
   test "mermaid output format" do
     expected = """
     flowchart TD

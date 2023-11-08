@@ -25,6 +25,7 @@ defmodule Mix.Tasks.Workspace.Graph do
                       :workspace_path,
                       :config_path,
                       :show_status,
+                      :ignore,
                       :base,
                       :head
                     ],
@@ -55,10 +56,18 @@ defmodule Mix.Tasks.Workspace.Graph do
 
     case opts[:format] do
       "pretty" ->
-        print_tree(workspace, show_status: opts[:show_status], external: opts[:external])
+        print_tree(workspace,
+          show_status: opts[:show_status],
+          external: opts[:external],
+          ignore: opts[:ignore]
+        )
 
       "mermaid" ->
-        mermaid_graph(workspace, show_status: opts[:show_status], external: opts[:external])
+        mermaid_graph(workspace,
+          show_status: opts[:show_status],
+          external: opts[:external],
+          ignore: opts[:ignore]
+        )
     end
   end
 
@@ -94,7 +103,8 @@ defmodule Mix.Tasks.Workspace.Graph do
 
         Mix.Utils.print_tree(root_nodes, callback)
       end,
-      external: opts[:external]
+      external: opts[:external],
+      ignore: opts[:ignore]
     )
 
     :ok
@@ -146,7 +156,8 @@ defmodule Mix.Tasks.Workspace.Graph do
         |> String.trim()
         |> IO.puts()
       end,
-      external: opts[:external]
+      external: opts[:external],
+      ignore: opts[:ignore]
     )
   end
 
