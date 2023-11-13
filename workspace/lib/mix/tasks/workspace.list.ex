@@ -44,10 +44,10 @@ defmodule Mix.Tasks.Workspace.List do
       |> Enum.map(fn project -> inspect(project.app) |> String.length() end)
       |> Enum.max()
 
-    Enum.each(
-      Workspace.projects(workspace),
-      &print_project_info(&1, max_project_length, show_status)
-    )
+    workspace
+    |> Workspace.projects()
+    |> Enum.sort_by(& &1.app)
+    |> Enum.each(&print_project_info(&1, max_project_length, show_status))
   end
 
   defp print_project_info(%Workspace.Project{skip: true}, _length, _show_status), do: :ok
