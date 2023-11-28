@@ -7,8 +7,6 @@ defmodule Workspace.Project do
 
   @typedoc """
   Struct holding info about a mix project
-
-
   """
   @type t :: %Project{
           app: atom(),
@@ -174,18 +172,15 @@ defmodule Workspace.Project do
   """
   def ensure_mix_file!(path) do
     cond do
+      # TODO: fix error messages
       Path.basename(path) != "mix.exs" ->
-        raise_no_mix_file(path)
+        raise ArgumentError, "expected to get a valid path to a `mix.exs` file, got: #{path}"
 
       not File.exists?(path) ->
-        raise_no_mix_file(path)
+        raise ArgumentError, "expected to get a valid path to a `mix.exs` file, got: #{path}"
 
       true ->
         :ok
     end
-  end
-
-  defp raise_no_mix_file(path) do
-    raise ArgumentError, "expected to get a valid path to a `mix.exs` file, got: #{path}"
   end
 end
