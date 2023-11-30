@@ -473,7 +473,11 @@ defmodule Workspace do
   Returns the workspace projects as a list.
   """
   @spec projects(workspace :: Workspace.t()) :: [Workspace.Project.t()]
-  def projects(workspace), do: Map.values(workspace.projects)
+  def projects(workspace) do
+    workspace.projects
+    |> Map.values()
+    |> Enum.sort_by(fn project -> project.app end)
+  end
 
   @doc """
   Returns `true` if the given `app` is a `workspace` project, `false` otherwise. 
