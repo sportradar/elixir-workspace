@@ -9,14 +9,9 @@ defmodule Mix.WorkspaceUtils do
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     config_path = Keyword.fetch!(opts, :config_path)
 
-    with {:ok, workspace} <- Workspace.new(workspace_path, config_path),
-         workspace <- Workspace.filter(workspace, opts),
-         workspace <- maybe_include_status(workspace, opts) do
-      workspace
-    else
-      {:error, reason} ->
-        raise Mix.Error, "failed to load workspace from #{workspace_path}: #{reason}"
-    end
+    Workspace.new!(workspace_path, config_path)
+    |> Workspace.filter(opts)
+    |> maybe_include_status(opts)
   end
 
   defp maybe_include_status(workspace, opts) do
