@@ -212,7 +212,7 @@ defmodule Mix.Tasks.Workspace.Run do
       log(
         [
           highlight("#{args[:task]}", [:bright, :yellow]),
-          "skipping #{app}"
+          " skipping #{app}"
         ],
         prefix: :header
       )

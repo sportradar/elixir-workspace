@@ -98,16 +98,16 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
       assert_cli_output_match(captured, [
         "==> :package_default_a - mix format --check-formatted mix.exs",
-        "==> formatskipping package_default_b",
-        "==> formatskipping package_default_c",
-        "==> formatskipping package_default_d",
-        "==> formatskipping package_default_e",
-        "==> formatskipping package_default_f",
-        "==> formatskipping package_default_g",
-        "==> formatskipping package_default_h",
-        "==> formatskipping package_default_i",
-        "==> formatskipping package_default_j",
-        "==> formatskipping package_default_k"
+        "==> format skipping package_default_b",
+        "==> format skipping package_default_c",
+        "==> format skipping package_default_d",
+        "==> format skipping package_default_e",
+        "==> format skipping package_default_f",
+        "==> format skipping package_default_g",
+        "==> format skipping package_default_h",
+        "==> format skipping package_default_i",
+        "==> format skipping package_default_j",
+        "==> format skipping package_default_k"
       ])
     end
   end
