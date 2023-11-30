@@ -3,7 +3,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     silent: [
       type: :boolean,
       doc: """
-      If set to true only the package coverage is not reported and not the individual modules
+      If set to true only the package coverage is reported and not the individual modules
       coverages. This has higher priority than the `:verbose` option.
       """
     ]
@@ -27,10 +27,10 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   @shortdoc "Runs test coverage on the workspace"
 
   @moduledoc """
-  Run test coverage on the workspace
+  Analyze the test coverage of the workspace.
 
   You can use it to generate test coverage for one or more projects of the
-  workspace. It will take care of finding the `coveradata` files, fixing the
+  workspace. It will take care of finding the `coverdata` files, fixing the
   absolute paths with respect to the workspace root and formatting the
   results
 
@@ -119,8 +119,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   > When restructuring a large codebase some extracted projects will not have the
   > desired coverage. Instead of setting a very low threshold or adding tests
   > directly, you can explicitely allow these projects to fail. In order to do this
-  > you have to set the `:allow_failure` flag of the `:test_coverage` settings. For
-  > example:
+  > you have to set the `:allow_failure` flag of the `:test_coverage` workspace
+  > settings. For example:
   >
   > ```elixir
   > test_coverage: [
@@ -137,8 +137,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   Warning threshold can be configured by setting the `:warning_threshold` option. If
   not set it defaults to `error_threshold + (100 - error_threshold)/2`. All project
-  and module coverages that have are below the warning threshold are logged as
-  warnings.
+  and module coverages that are below the warning threshold are logged as warnings.
 
   Notice that by default modules that have coverage above the warning threshold are
   not logged. You can force the logging of all modules by setting the `--verbose`
@@ -164,9 +163,10 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   ## Exporting coverage
 
-  By default the coverage results are not exported but only logged. You can however specify
-  one or more exporters in your workspace `:test_coverage` config. Each exporter is
-  expected to by a function that accepts as input a workspace and a list of tuples of the form:
+  By default the coverage results are not exported but only logged. You can however
+  specify one or more exporters in your workspace `:test_coverage` config. Each exporter
+  is expected to be a function that accepts as input a workspace and a list of tuples
+  of the form:
 
   ```elixir
   {module :: module(), path :: binary(), function_data, line_data}
