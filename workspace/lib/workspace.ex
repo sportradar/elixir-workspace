@@ -310,7 +310,6 @@ defmodule Workspace do
   def new!(path, config \\ []) do
     case new(path, config) do
       {:ok, workspace} -> workspace
-      # TODO: create a custom error
       {:error, reason} -> raise ArgumentError, reason
     end
   end
@@ -333,9 +332,10 @@ defmodule Workspace do
   def new(path, config \\ [])
 
   def new(path, config_path) when is_binary(config_path) do
-    with config_path <- Workspace.Utils.Path.relative_to(config_path, Path.expand(path)),
-         config_path <- Path.join(path, config_path),
-         {:ok, config} <- load_config(config_path) do
+    config_path = Workspace.Utils.Path.relative_to(config_path, Path.expand(path))
+    config_path = Path.join(path, config_path)
+
+    with {:ok, config} <- Workspace.Config.load(config_path) do
       new(path, config)
     end
   end
@@ -360,17 +360,8 @@ defmodule Workspace do
     end
   end
 
-  defp load_config(config_file) do
-    config_file = Path.expand(config_file)
-
-    with {:ok, config_file} <- ensure_file_exists(config_file),
-         {config, _bindings} <- Code.eval_file(config_file) do
-      {:ok, config}
-    end
-  end
-
   defp ensure_workspace(path) do
-    with {:ok, path} <- ensure_file_exists(path),
+    with {:ok, path} <- Workspace.Helpers.ensure_file_exists(path),
          config <- Workspace.Project.config(path),
          :ok <- ensure_workspace_set_in_config(config) do
       :ok
@@ -389,13 +380,6 @@ defmodule Workspace do
               workspace: true
           """
         }
-    end
-  end
-
-  defp ensure_file_exists(path) do
-    case File.exists?(path) do
-      true -> {:ok, path}
-      false -> {:error, "file #{path} does not exist"}
     end
   end
 

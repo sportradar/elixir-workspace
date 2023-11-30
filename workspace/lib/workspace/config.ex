@@ -84,6 +84,21 @@ defmodule Workspace.Config do
   """
 
   @doc """
+  Loads the workspace config from the given path.
+
+  An error tuple will be returned if the config is invalid.
+  """
+  @spec load(config_file :: String.t()) :: {:ok, keyword()} | {:error, binary()}
+  def load(config_file) do
+    config_file = Path.expand(config_file)
+
+    with {:ok, config_file} <- Workspace.Helpers.ensure_file_exists(config_file),
+         {config, _bindings} <- Code.eval_file(config_file) do
+      {:ok, config}
+    end
+  end
+
+  @doc """
   Validates that the given `config` is a valid `Workspace` config.
 
   A `config` is valid if:
