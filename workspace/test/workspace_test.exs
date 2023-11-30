@@ -77,7 +77,7 @@ defmodule WorkspaceTest do
 
     test "error if the path is not a workspace" do
       assert {:error, reason} = Workspace.new(Path.join(@sample_workspace_path, "package_a"))
-      assert reason =~ "workspace option is set in config object"
+      assert reason =~ ":workspace is not set in your project's config"
       assert reason =~ "to be a workspace project. Some errors were detected"
     end
 

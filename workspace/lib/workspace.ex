@@ -386,7 +386,7 @@ defmodule Workspace do
   defp ensure_workspace_set_in_config(config) when is_list(config) do
     case config[:workspace] do
       nil ->
-        {:error, ":workspace option is set in config object"}
+        {:error, ":workspace is not set in your project's config"}
 
       _other ->
         :ok
