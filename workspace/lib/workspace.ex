@@ -277,6 +277,17 @@ defmodule Workspace do
   > ```
   """
 
+  @typedoc """
+  Struct holding a workspace.
+
+  It contains the following:
+
+  * `:projects` - A map with all workspace projects.
+  * `:config` - The workspace configuration settings.
+  * `:mix_path` - The path to the workspace's root `mix.exs`.
+  * `:workspace_path` - The workspace root path.
+  * `:cwd` - The directory from which the workspace was generated.
+  """
   @type t :: %Workspace{
           projects: %{atom() => Workspace.Project.t()},
           config: keyword(),
