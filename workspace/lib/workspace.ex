@@ -396,13 +396,11 @@ defmodule Workspace do
   @default_ignored_paths [".git", "_build", ".elixir_ls"]
 
   defp find_projects(workspace_path, config) do
+    ignored_paths = Keyword.fetch!(config, :ignore_paths) ++ @default_ignored_paths
+
     projects =
       workspace_path
-      |> nested_mix_projects(
-        Keyword.fetch!(config, :ignore_paths) ++ @default_ignored_paths,
-        workspace_path
-      )
-      |> Enum.sort()
+      |> nested_mix_projects(ignored_paths, workspace_path)
       |> Enum.map(fn path -> Workspace.Project.new(path, workspace_path) end)
       |> Enum.filter(&ignored_project?(&1, config[:ignore_projects]))
 
