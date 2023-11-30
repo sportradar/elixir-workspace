@@ -8,6 +8,12 @@ defmodule Workspace.CliTest do
 
   doctest Workspace.Cli
 
+  setup do
+    Application.put_env(:elixir, :ansi_enabled, true)
+
+    on_exit(fn -> Application.put_env(:elixir, :ansi_enabled, false) end)
+  end
+
   @valid_options [
     :affected,
     :modified,
