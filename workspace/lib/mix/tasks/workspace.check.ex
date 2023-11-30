@@ -49,8 +49,26 @@ defmodule Mix.Tasks.Workspace.Check do
 
   defp ensure_checks(checks) do
     if checks == [] do
-      # TODO: improve the error message, add an example
-      Mix.raise("No checkers config found in workspace config")
+      Mix.raise("""
+      No checks configured in your workspace. In order to add a check add a `checks`
+      list in your workspace config and configure the required checks. For example:
+
+          checks: [
+            [
+              module: Workspace.Checks.ValidateConfig,
+              description: "all projects must have a description set",
+              opts: [
+                validate: fn config ->
+                  case config[:description] do
+                    nil -> {:error, "no :description set"}
+                    description when is_binary(description) -> {:ok, ""}
+                    other -> {:error, "description must be binary}
+                  end
+                end
+              ]
+            ]
+          }
+      """)
     end
   end
 

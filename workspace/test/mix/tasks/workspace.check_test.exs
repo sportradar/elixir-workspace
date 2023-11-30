@@ -13,7 +13,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
   end
 
   test "raises if no checks are defined" do
-    assert_raise Mix.Error, ~r/No checkers config found/, fn ->
+    assert_raise Mix.Error, ~r/No checks configured in your workspace/, fn ->
       CheckTask.run(["--workspace-path", @sample_workspace_path])
     end
   end
