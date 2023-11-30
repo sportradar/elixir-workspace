@@ -4,11 +4,7 @@ defmodule WorkspaceNew.MixProject do
   def project do
     [
       app: :workspace_new,
-      description: """
-      Workspace generator.
-
-      Provides a `mix workspace.new` task to bootstrap a new workspace.
-      """,
+      description: "workspace generator",
       version: "0.1.0",
       elixir: "~> 1.13",
       start_permanent: Mix.env() == :prod,
