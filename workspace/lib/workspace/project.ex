@@ -67,13 +67,13 @@ defmodule Workspace.Project do
   # some config settings are defined as functions in order to be lazily
   # evaluated, we evaluate them here since they may be used in checks
   defp evaluate_config(config) do
-    docs = config[:docs]
-
-    cond do
-      is_function(docs, 0) -> Keyword.replace(config, :docs, docs.())
-      true -> config
+    for {key, value} <- config do
+      {key, maybe_evaluate(value)}
     end
   end
+
+  defp maybe_evaluate(value) when is_function(value, 0), do: value.()
+  defp maybe_evaluate(value), do: value
 
   @valid_statuses [:undefined, :modified, :affected, :unaffected]
 

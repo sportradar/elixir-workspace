@@ -14,7 +14,7 @@ defmodule Workspace.ProjectTest do
       assert project.module == PackageA.MixProject
     end
 
-    test "evaluates the docs" do
+    test "evaluates project config functions if needed" do
       project_path = Path.join(@sample_workspace_path, "package_d")
       project = Project.new(project_path, @sample_workspace_path)
 
