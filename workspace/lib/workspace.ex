@@ -479,9 +479,16 @@ defmodule Workspace do
   def project?(workspace, app) when is_struct(workspace, Workspace) and is_atom(app),
     do: Map.has_key?(workspace.projects, app)
 
-  # defp apps_to_projects(workspace, apps) when is_list(apps) do
-  #   Enum.map(apps, &project_by_app_name(workspace, &1))
-  # end
+  @doc """
+  Similar to `project/2` but raises in case of error
+  """
+  @spec project!(workspace :: t(), app :: atom()) :: Workspace.Project.t()
+  def project!(workspace, app) do
+    case project(workspace, app) do
+      {:ok, project} -> project
+      {:error, reason} -> raise ArgumentError, reason
+    end
+  end
 
   @doc """
   Get the given project from the workspace.
@@ -494,17 +501,6 @@ defmodule Workspace do
     case Map.has_key?(workspace.projects, app) do
       true -> {:ok, workspace.projects[app]}
       false -> {:error, "#{inspect(app)} is not a member of the workspace"}
-    end
-  end
-
-  @doc """
-  Similar to `project/2` but raises in case of error
-  """
-  @spec project!(workspace :: t(), app :: atom()) :: Workspace.Project.t()
-  def project!(workspace, app) do
-    case project(workspace, app) do
-      {:ok, project} -> project
-      {:error, reason} -> raise ArgumentError, reason
     end
   end
 

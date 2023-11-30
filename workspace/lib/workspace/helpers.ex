@@ -10,5 +10,4 @@ defmodule Workspace.Helpers do
       false -> {:error, "file #{path} does not exist"}
     end
   end
-
 end
