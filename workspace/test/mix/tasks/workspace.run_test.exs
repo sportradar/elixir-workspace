@@ -266,7 +266,10 @@ defmodule Mix.Tasks.Workspace.RunTest do
         "1"
       ]
 
-      expected_message = "mix workspace.run failed - errors detected in 2 executions"
+      expected_message = """
+      mix workspace.run failed - errors detected in 2 executions
+      failed projects - [:package_default_b, :package_default_a]
+      """
 
       captured =
         assert_raise_and_capture_io(Mix.Error, expected_message, fn ->
@@ -326,7 +329,8 @@ defmodule Mix.Tasks.Workspace.RunTest do
         "(mix 1.14.2) lib/mix/task.ex:421: anonymous fn/3 in Mix.Task.run_task/4",
         "(mix 1.14.2) lib/mix/cli.ex:84: Mix.CLI.run_task/2",
         ":package_default_b mix cmd exit 1 failed with 1",
-        "WARNING task failed in 2 projects but the --alow-failure flag is set"
+        "WARNING task failed in 2 projects but the --alow-failure flag is set",
+        "failed projects - [:package_default_b, :package_default_a]"
       ])
     end
   end

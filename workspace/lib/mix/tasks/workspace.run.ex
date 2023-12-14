@@ -355,6 +355,8 @@ defmodule Mix.Tasks.Workspace.Run do
         end
       )
 
+    names = fn projects -> Enum.map(projects, & &1.project.app) end
+
     if length(warnings) > 0 do
       Workspace.Cli.log([
         :yellow,
@@ -366,10 +368,15 @@ defmodule Mix.Tasks.Workspace.Run do
         :reset,
         " flag is set"
       ])
+
+      Workspace.Cli.log(["  failed projects - ", :yellow, inspect(names.(warnings))])
     end
 
     if length(failures) > 0 do
-      Mix.raise("mix workspace.run failed - errors detected in #{length(failures)} executions")
+      Mix.raise("""
+      mix workspace.run failed - errors detected in #{length(failures)} executions
+      failed projects - #{inspect(names.(failures))}
+      """)
     end
   end
 end
