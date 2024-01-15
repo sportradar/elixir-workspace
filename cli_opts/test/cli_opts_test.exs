@@ -58,5 +58,18 @@ defmodule CliOptsTest do
 
       assert CliOpts.docs(@test_schema) == expected
     end
+
+    test "with sorting enabled" do
+      expected =
+        """
+        * `--mode` (`string`) -    Allowed values: `["parallel", "serial"]`.   [default: `parallel`]
+        * `--project, -p...` (`string`) - Required. The project to use
+        * `--verbose` (`boolean`) -
+        * `--with-dash` (`boolean`) - a key with a dash
+        """
+        |> String.trim()
+
+      assert CliOpts.docs(@test_schema, sort: true) == expected
+    end
   end
 end

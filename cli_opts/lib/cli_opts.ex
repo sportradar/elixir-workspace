@@ -175,8 +175,8 @@ defmodule CliOpts do
       #{CliOpts.docs(@task_opts_schema)}
       """
   '''
-  @spec docs(schema :: Keyword.t()) :: String.t()
-  def docs(schema) when is_list(schema), do: CliOpts.Docs.generate(schema)
+  @spec docs(schema :: Keyword.t(), opts :: keyword()) :: String.t()
+  def docs(schema, opts \\ []) when is_list(schema), do: CliOpts.Docs.generate(schema, opts)
 
   defp switches(schema) do
     schema

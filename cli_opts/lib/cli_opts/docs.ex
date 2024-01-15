@@ -2,13 +2,17 @@ defmodule CliOpts.Docs do
   @moduledoc false
 
   @doc false
-  @spec generate(schema :: keyword()) :: String.t()
-  def generate(schema) do
+  @spec generate(schema :: keyword(), opts :: keyword()) :: String.t()
+  def generate(schema, opts) do
     schema
+    |> maybe_sort(Keyword.get(opts, :sort, false))
     |> Enum.reduce([], &maybe_option_doc/2)
     |> Enum.reverse()
     |> Enum.join("\n")
   end
+
+  defp maybe_sort(schema, true), do: Enum.sort_by(schema, fn {key, _value} -> key end, :asc)
+  defp maybe_sort(schema, _other), do: schema
 
   defp maybe_option_doc({key, schema}, acc) do
     if schema[:doc] == false do
