@@ -191,11 +191,15 @@ defmodule Mix.Tasks.Workspace.Run do
     |> Mix.WorkspaceUtils.load_and_filter_workspace()
     |> Workspace.projects()
     |> Enum.map(fn project ->
+      triggered_at = System.os_time(:millisecond)
       result = run_in_project(project, opts, extra)
+      completed_at = System.os_time(:millisecond)
 
       %{
         project: project,
-        status: execution_status(result, allowed_to_fail?(project.app, opts[:allow_failure]))
+        status: execution_status(result, allowed_to_fail?(project.app, opts[:allow_failure])),
+        triggered_at: triggered_at,
+        completed_at: completed_at
       }
     end)
     |> raise_if_any_task_failed()
@@ -207,13 +211,11 @@ defmodule Mix.Tasks.Workspace.Run do
   defp execution_status({:error, _reason}, false), do: :error
   defp execution_status(_status, _allowed_to_fail), do: :ok
 
-  defp run_in_project(%{skip: true, app: app}, args, _argv) do
-    if args[:verbose] do
-      log(
-        [
-          highlight("#{args[:task]}", [:bright, :yellow]),
-          " skipping #{app}"
-        ],
+  defp run_in_project(%{skip: true} = project, options, _argv) do
+    if options[:verbose] do
+      log_with_title(
+        project_name(project, show_status: options[:show_status]),
+        highlight("skipped", [:bright, :yellow]),
         prefix: :header
       )
     end
