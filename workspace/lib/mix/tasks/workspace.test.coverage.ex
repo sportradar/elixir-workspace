@@ -197,7 +197,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   ## Command line options
 
-  #{CliOpts.docs(@options_schema)}
+  #{CliOpts.docs(@options_schema, sort: true)}
   """
   use Mix.Task
 

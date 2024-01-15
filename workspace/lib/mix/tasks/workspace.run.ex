@@ -118,7 +118,7 @@ defmodule Mix.Tasks.Workspace.Run do
 
   ## Command-line Options
 
-  #{CliOpts.docs(@options_schema)}
+  #{CliOpts.docs(@options_schema, sort: true)}
 
   ## Filtering tasks
 

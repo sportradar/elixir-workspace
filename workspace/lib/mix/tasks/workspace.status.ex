@@ -15,7 +15,7 @@ defmodule Mix.Tasks.Workspace.Status do
 
   ## Command line options
 
-  #{CliOpts.docs(@options_schema)}
+  #{CliOpts.docs(@options_schema, sort: true)}
   """
   use Mix.Task
 

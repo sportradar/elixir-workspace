@@ -22,7 +22,7 @@ defmodule Mix.Tasks.Workspace.List do
 
   ## Command line options
 
-  #{CliOpts.docs(@options_schema)}
+  #{CliOpts.docs(@options_schema, sort: true)}
   """
   use Mix.Task
   alias Workspace.Cli
