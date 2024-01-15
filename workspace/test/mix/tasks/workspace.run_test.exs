@@ -276,20 +276,18 @@ defmodule Mix.Tasks.Workspace.RunTest do
           RunTask.run(args)
         end)
 
-      assert_cli_output_match(captured, [
-        "==> :package_default_a - mix cmd exit 1",
-        "** (exit) 1",
-        "(mix 1.14.2) lib/mix/tasks/cmd.ex:74: Mix.Tasks.Cmd.run/1",
-        "(mix 1.14.2) lib/mix/task.ex:421: anonymous fn/3 in Mix.Task.run_task/4",
-        "(mix 1.14.2) lib/mix/cli.ex:84: Mix.CLI.run_task/2",
-        ":package_default_a mix cmd exit 1 failed with 1",
-        "==> :package_default_b - mix cmd exit 1",
-        "** (exit) 1",
-        "(mix 1.14.2) lib/mix/tasks/cmd.ex:74: Mix.Tasks.Cmd.run/1",
-        "(mix 1.14.2) lib/mix/task.ex:421: anonymous fn/3 in Mix.Task.run_task/4",
-        "(mix 1.14.2) lib/mix/cli.ex:84: Mix.CLI.run_task/2",
-        ":package_default_b mix cmd exit 1 failed with 1"
-      ])
+      assert_cli_output_match(
+        captured,
+        [
+          "==> :package_default_a - mix cmd exit 1",
+          "** (exit) 1",
+          ":package_default_a mix cmd exit 1 failed with 1",
+          "==> :package_default_b - mix cmd exit 1",
+          "** (exit) 1",
+          ":package_default_b mix cmd exit 1 failed with 1"
+        ],
+        partial: true
+      )
     end
 
     test "if allow_failure is set a warning is emitted instead" do
@@ -316,22 +314,20 @@ defmodule Mix.Tasks.Workspace.RunTest do
           RunTask.run(args)
         end)
 
-      assert_cli_output_match(captured, [
-        "==> :package_default_a - mix cmd exit 1",
-        "** (exit) 1",
-        "(mix 1.14.2) lib/mix/tasks/cmd.ex:74: Mix.Tasks.Cmd.run/1",
-        "(mix 1.14.2) lib/mix/task.ex:421: anonymous fn/3 in Mix.Task.run_task/4",
-        "(mix 1.14.2) lib/mix/cli.ex:84: Mix.CLI.run_task/2",
-        ":package_default_a mix cmd exit 1 failed with 1",
-        "==> :package_default_b - mix cmd exit 1",
-        "** (exit) 1",
-        "(mix 1.14.2) lib/mix/tasks/cmd.ex:74: Mix.Tasks.Cmd.run/1",
-        "(mix 1.14.2) lib/mix/task.ex:421: anonymous fn/3 in Mix.Task.run_task/4",
-        "(mix 1.14.2) lib/mix/cli.ex:84: Mix.CLI.run_task/2",
-        ":package_default_b mix cmd exit 1 failed with 1",
-        "WARNING task failed in 2 projects but the --alow-failure flag is set",
-        "failed projects - [:package_default_b, :package_default_a]"
-      ])
+      assert_cli_output_match(
+        captured,
+        [
+          "==> :package_default_a - mix cmd exit 1",
+          "** (exit) 1",
+          ":package_default_a mix cmd exit 1 failed with 1",
+          "==> :package_default_b - mix cmd exit 1",
+          "** (exit) 1",
+          ":package_default_b mix cmd exit 1 failed with 1",
+          "WARNING task failed in 2 projects but the --alow-failure flag is set",
+          "failed projects - [:package_default_b, :package_default_a]"
+        ],
+        partial: true
+      )
     end
   end
 

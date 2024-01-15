@@ -208,29 +208,45 @@ defmodule TestUtils do
   #
   # notice that empty lines are removed from the captures
   # and it is transformed to a list of lines
-  def assert_cli_output_match(captured, expected) do
+  #
+  # Options
+  #
+  # if partial is set to `true` we pattern match only the given output lines
+  def assert_cli_output_match(captured, expected, opts \\ []) do
     captured =
       captured
       |> String.split("\n")
       |> Enum.map(&String.trim/1)
       |> Enum.filter(fn line -> line != "" end)
 
-    # if the lengths are not the same print the full lists for
-    # debugging
-    if length(expected) != length(captured) do
-      assert expected == captured
-    end
+    partial = Keyword.get(opts, :partial, false)
 
-    mismatches =
-      Enum.zip(captured, expected)
-      |> Enum.map(fn {captured_line, expected_line} ->
-        captured_line =~ expected_line
-      end)
-      |> Enum.filter(fn status -> status == false end)
+    case partial do
+      false ->
+        # if the lengths are not the same print the full lists for
+        # debugging
+        if length(expected) != length(captured) do
+          assert expected == captured
+        end
 
-    case mismatches do
-      [] -> assert true
-      _errors -> assert expected == captured
+        mismatches =
+          Enum.zip(captured, expected)
+          |> Enum.map(fn {captured_line, expected_line} ->
+            captured_line =~ expected_line
+          end)
+          |> Enum.filter(fn status -> status == false end)
+
+        case mismatches do
+          [] -> assert true
+          _errors -> assert expected == captured
+        end
+
+      true ->
+        captured = Enum.join(captured, "\n")
+
+        for line <- expected do
+          assert captured =~ line
+        end
     end
   end
 
