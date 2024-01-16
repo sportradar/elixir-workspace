@@ -54,7 +54,7 @@ defmodule Workspace.Check do
   In order to define a `Workspace.Check` you must add an entry under the `:checks`
   key of your `Workspace.Config`. The supported options are for each check are:
 
-  #{NimbleOptions.docs(@check_schema)} 
+  #{NimbleOptions.docs(@check_schema)}
 
   ## Configuration Examples
 
@@ -185,12 +185,10 @@ defmodule Workspace.Check do
             Workspace.Check.Result.new(check, project)
             |> Workspace.Check.Result.set_status(status)
             |> Workspace.Check.Result.set_metadata(metadata)
-            |> Workspace.Check.Result.set_index(check[:index])
 
           false ->
             Workspace.Check.Result.new(check, project)
             |> Workspace.Check.Result.set_status(:skip)
-            |> Workspace.Check.Result.set_index(check[:index])
         end
 
       [result | acc]

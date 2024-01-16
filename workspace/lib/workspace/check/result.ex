@@ -14,8 +14,7 @@ defmodule Workspace.Check.Result do
           check: keyword(),
           project: Workspace.Project.t(),
           status: nil | :ok | :error | :skip,
-          meta: nil | keyword(),
-          index: nil | pos_integer()
+          meta: nil | keyword()
         }
 
   @enforce_keys [:module, :check, :project]
@@ -24,9 +23,7 @@ defmodule Workspace.Check.Result do
             project: nil,
             status: nil,
             # should be set by checkers
-            meta: [],
-            # TODO: remove instead pass the check to the struct
-            index: nil
+            meta: []
 
   def new(check, project) do
     %__MODULE__{
@@ -48,11 +45,4 @@ defmodule Workspace.Check.Result do
   """
   @spec set_metadata(result :: t(), metadata :: keyword()) :: t()
   def set_metadata(result, metadata), do: %__MODULE__{result | meta: metadata}
-
-  @doc """
-  Sets the result's index.
-  """
-  @spec set_index(result :: t(), index :: pos_integer()) :: t()
-  # TODO: remove
-  def set_index(result, index), do: %__MODULE__{result | index: index}
 end
