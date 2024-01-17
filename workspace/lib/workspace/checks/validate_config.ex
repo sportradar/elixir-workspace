@@ -1,4 +1,18 @@
 defmodule Workspace.Checks.ValidateConfig do
+  @schema NimbleOptions.new!(
+            validate: [
+              type: {:fun, 1},
+              required: true,
+              doc: """
+              An anonymous function of arity 1 for validating a project's config. The project's
+              config is passed as input to the user provided function. It must return one of:
+
+              - `{:ok, message :: String.t()}` in case of success
+              - `{:error, message :: String.t()}` in case of error
+              """
+            ]
+          )
+
   @moduledoc """
   Checks that the given config is valid
 
@@ -7,10 +21,9 @@ defmodule Workspace.Checks.ValidateConfig do
 
   ## Configuration
 
-  It expects the following configuration parameters:
+  #{NimbleOptions.docs(@schema)}
 
-  * `:validate` - an anonymous function that expects as input the config
-  object of the project and returns either `{:ok, message}` or `{:error, message}`.
+  ## Example
 
   In order to configure this checker add the following, under `checks`,
   in your `workspace.exs`:
@@ -18,17 +31,22 @@ defmodule Workspace.Checks.ValidateConfig do
   ```elixir
   [
     module: Workspace.Checks.ValidateConfig,
-    description: "all projects must have elixir version set to 1.13"
-    validate: fn config ->
-      case config[:elixir] do
-        "~> 1.13" -> {:ok, "elixir version set to 1.13"}
-        other -> {:error, "wrong elixir version, expected 1.13, got \#\{other\}"}
+    description: "all projects must have elixir version set to 1.13",
+    opts: [
+      validate: fn config ->
+        case config[:elixir] do
+          "~> 1.13" -> {:ok, "elixir version set to 1.13"}
+          other -> {:error, "wrong elixir version, expected 1.13, got \#\{other\}"}
+        end
       end
-    end
+    ]
   ]
   ```
   """
   @behaviour Workspace.Check
+
+  @impl Workspace.Check
+  def schema, do: @schema
 
   @impl Workspace.Check
   def check(workspace, check) do

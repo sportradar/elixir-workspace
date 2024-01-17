@@ -6,14 +6,28 @@ defmodule Workspace.Checks.ValidateConfigTest do
     %{workspace: Workspace.new!("test/fixtures/sample_workspace")}
   end
 
-  test "raises if no validate function is set", %{workspace: workspace} do
+  test "raises if no validate function is set" do
     check = [
       module: ValidateConfig,
-      opts: [],
-      only: [:package_a]
+      opts: []
     ]
 
-    assert_raise KeyError, fn -> ValidateConfig.check(workspace, check) end
+    assert {:error, message} = Workspace.Check.validate(check)
+
+    assert message ==
+             "invalid check options: required :validate option not found, received options: []"
+  end
+
+  test "with wrong function arity" do
+    check = [
+      module: ValidateConfig,
+      opts: [validate: fn -> :ok end]
+    ]
+
+    assert {:error, message} = Workspace.Check.validate(check)
+
+    assert message ==
+             "invalid check options: invalid value for :validate option: expected function of arity 1, got: function of arity 0"
   end
 
   test "runs the given validation function", %{workspace: workspace} do
