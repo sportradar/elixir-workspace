@@ -11,7 +11,7 @@ defmodule Genify do
          {:ok, template_module} <- validate_template_module(template_config),
          {:ok, template_files} <- template_files(path),
          {:ok, opts} <- validate_template_cli_opts(template_config, opts),
-         {:ok, opts} <- template_module.post_process_cli_opts(opts) do
+         {:ok, opts} <- template_module.validate_cli_opts(opts) do
       generate_template(path, template_files, template_config, opts)
     end
   end

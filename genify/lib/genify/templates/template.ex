@@ -1,9 +1,11 @@
 defmodule Genify.Templates.Template do
   @moduledoc false
+  @behaviour Genify.Template
 
   # Generates a genify template
 
-  def post_process_cli_opts(opts) do
+  @impl Genify.Template
+  def validate_cli_opts(opts) do
     path =
       Keyword.fetch!(opts, :path)
       |> Path.expand(File.cwd!())
@@ -11,7 +13,8 @@ defmodule Genify.Templates.Template do
     {:ok, Keyword.put(opts, :path, path)}
   end
 
-  def destination_path(asset_path, config, opts) do
+  @impl Genify.Template
+  def destination_path(asset_path, _config, opts) do
     Path.join([opts[:path], opts[:name], asset_path])
   end
 end

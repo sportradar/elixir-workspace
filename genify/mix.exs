@@ -30,7 +30,8 @@ defmodule Genify.MixProject do
 
   defp deps do
     [
-      {:cli_opts, path: "../cli_opts/"}
+      {:cli_opts, path: "../cli_opts/"},
+      {:ex_doc, "== 0.30.9", only: :dev, runtime: false},
     ]
   end
 end
