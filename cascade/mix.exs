@@ -1,9 +1,9 @@
-defmodule Genify.MixProject do
+defmodule Cascade.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :genify,
+      app: :cascade,
       version: "0.1.0",
       elixir: "~> 1.13",
       description: "generate code from templates",
@@ -12,11 +12,11 @@ defmodule Genify.MixProject do
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
       docs: [
-        output: "../artifacts/docs/genify",
+        output: "../artifacts/docs/cascade",
         formatters: ["html"]
       ],
       test_coverage: [
-        export: "genify",
+        export: "cascade",
         output: "../artifacts/coverdata"
       ],
     ]

@@ -1,4 +1,4 @@
-defmodule Genify do
+defmodule Cascade do
   @moduledoc """
   Generate code from templates.
   """

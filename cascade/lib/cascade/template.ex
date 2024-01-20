@@ -1,8 +1,8 @@
-defmodule Genify.Template do
+defmodule Cascade.Template do
   @moduledoc """
   The template generation logic.
 
-  Every `Genify` template must implement this behaviour. It provides
+  Every `Cascade` template must implement this behaviour. It provides
   callbacks which affect the template generation logic.
   """
 

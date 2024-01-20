@@ -1,10 +1,10 @@
-defmodule Genify.Templates.Template do
+defmodule Cascade.Templates.Template do
   @moduledoc false
-  @behaviour Genify.Template
+  @behaviour Cascade.Template
 
-  # Generates a genify template
+  # Generates a cascade template
 
-  @impl Genify.Template
+  @impl Cascade.Template
   def validate_cli_opts(opts) do
     path =
       Keyword.fetch!(opts, :path)
@@ -13,7 +13,7 @@ defmodule Genify.Templates.Template do
     {:ok, Keyword.put(opts, :path, path)}
   end
 
-  @impl Genify.Template
+  @impl Cascade.Template
   def destination_path(asset_path, _config, opts) do
     Path.join([opts[:path], opts[:name], asset_path])
   end

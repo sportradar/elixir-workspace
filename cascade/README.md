@@ -1,21 +1,21 @@
-# Genify
+# Cascade
 
 **TODO: Add description**
 
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `genify` to your list of dependencies in `mix.exs`:
+by adding `cascade` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:genify, "~> 0.1.0"}
+    {:cascade, "~> 0.1.0"}
   ]
 end
 ```
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/genify>.
+be found at <https://hexdocs.pm/cascade>.
 

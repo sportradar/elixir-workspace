@@ -2,16 +2,16 @@
   name: :new,
   shortdoc: "Generates a new template",
   doc: """
-  Generates a new `genify` template.
+  Generates a new `cascade` template.
 
   TODO: add detailed description
 
   ## Usage
 
       # generate a template named ui_component
-      mix genify.gen template --path templates --name ui_component
+      mix cascade.gen template --path templates --name ui_component
   """,
-  module: Genify.Templates.Template,
+  module: Cascade.Templates.Template,
   args: [
     path: [
       type: :string,
