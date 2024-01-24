@@ -18,7 +18,7 @@ defmodule Cascade.MixProject do
       test_coverage: [
         export: "cascade",
         output: "../artifacts/coverdata"
-      ],
+      ]
     ]
   end
 
@@ -31,7 +31,7 @@ defmodule Cascade.MixProject do
   defp deps do
     [
       {:cli_opts, path: "../cli_opts/"},
-      {:ex_doc, "== 0.30.9", only: :dev, runtime: false},
+      {:ex_doc, "== 0.30.9", only: :dev, runtime: false}
     ]
   end
 end

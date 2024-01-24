@@ -3,96 +3,39 @@ defmodule Cascade do
   Generate code from templates.
   """
 
-  def generate(name, templates_path, opts \\ []) do
-    path = Path.join(templates_path, name)
+  @doc """
+  Returns all available templates.
 
-    with {:ok, path} <- validate_file_exists(path, "template path #{path} does not exist"),
-         {:ok, template_config} <- read_template_config(path),
-         {:ok, template_module} <- validate_template_module(template_config),
-         {:ok, template_files} <- template_files(path),
-         {:ok, opts} <- validate_template_cli_opts(template_config, opts),
-         {:ok, opts} <- template_module.validate_cli_opts(opts) do
-      generate_template(path, template_files, template_config, opts)
+  All modules implementing the `Cascade.Template` behaviour will be returned.
+  """
+  @spec templates() :: keyword()
+  def templates do
+    template_modules = Cascade.Utils.modules_implementing_behaviour(Cascade.Template)
+
+    Enum.map(template_modules, fn module -> {module.name(), module} end)
+  end
+
+  def generate(name, root_path, opts \\ []) do
+    with {:ok, template} <- template_from_name(name),
+         {:ok, opts} <- validate_template_cli_opts(template, opts) do
+      Cascade.Template.generate(template, root_path, opts)
     end
   end
 
-  defp read_template_config(path) do
-    config_path = Path.join(path, "config.exs")
+  defp template_from_name(name) when is_atom(name) do
+    templates = templates()
 
-    with {:ok, config_path} <-
-           validate_file_exists(config_path, "template config #{config_path} does not exist") do
-      {template_config, _bindings} = Code.eval_file(config_path)
-      {:ok, template_config}
-    end
-  end
-
-  defp validate_template_module(config) do
-    # TODO: verify that it implements the proper behaviour
-    case config[:module] do
-      nil -> {:error, "no template module defined in template config"}
+    case templates[name] do
+      nil -> {:error, "no template #{inspect(name)} found"}
       module -> {:ok, module}
     end
   end
 
-  defp template_files(path) do
-    assets_path = Path.join(path, "assets")
+  defp validate_template_cli_opts(template, args) do
+    args_schema = template.args_schema()
 
-    with {:ok, assets_path} <-
-           validate_file_exists(assets_path, "assets path #{assets_path} does not exist") do
-      files = Path.wildcard(Path.join(assets_path, "**"))
-
-      case files do
-        [] -> {:error, "no template files detected under #{assets_path}"}
-        files -> {:ok, files}
-      end
-    end
-  end
-
-  defp validate_file_exists(path, error_message) do
-    case File.exists?(path) do
-      true -> {:ok, path}
-      false -> {:error, error_message}
-    end
-  end
-
-  defp validate_template_cli_opts(template_config, args) do
-    args_schema = Keyword.get(template_config, :args, [])
-
-    {:ok, %{parsed: args}} = CliOpts.parse(args, args_schema)
-    {:ok, args}
-  end
-
-  defp generate_template(path, template_files, template_config, opts) do
-    module = Keyword.fetch!(template_config, :module)
-    Code.ensure_loaded!(module)
-
-    for file <- template_files, relative_path = relative_to_assets_path(file, path) do
-      source_path = file
-      destination_path = module.destination_path(relative_path, template_config, opts)
-
-      body =
-        source_path
-        |> EEx.eval_file(opts)
-        |> maybe_format(destination_path)
-
-      IO.puts("generating #{file} - #{relative_path}")
-      IO.puts("destination path - #{destination_path}")
-      Mix.Generator.create_file(destination_path, body, force: true)
-    end
-  end
-
-  defp relative_to_assets_path(path, template_path) do
-    Path.relative_to(path, Path.join(template_path, "assets"))
-  end
-
-  @elixir_extensions [".ex", ".exs", ".heex"]
-
-  defp maybe_format(body, path) do
-    extension = Path.extname(path)
-
-    case extension in @elixir_extensions do
-      true -> Code.format_string!(body)
-      false -> body
+    with {:ok, %{parsed: args}} <- CliOpts.parse(args, args_schema) do
+      template.validate_cli_opts(args)
     end
   end
 end
