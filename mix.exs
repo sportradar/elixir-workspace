@@ -29,6 +29,7 @@ defmodule Workspace.MixWorkspace do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:cascade, path: "cascade"},
       {:workspace, path: "workspace"}
     ]
   end
