@@ -113,6 +113,8 @@ defmodule Cascade.Template do
 
   defmacro __using__(_opts) do
     quote do
+      Module.register_attribute(__MODULE__, :shortdoc, persist: true)
+
       @behaviour Cascade.Template
 
       app = Application.get_application(__MODULE__)
@@ -173,6 +175,33 @@ defmodule Cascade.Template do
     case extension in @elixir_extensions do
       true -> Code.format_string!(body)
       false -> body
+    end
+  end
+
+  @doc """
+  Gets the moduledoc for the given template `module`.
+
+  Returns the moduledoc or `nil`.
+  """
+  @spec moduledoc(module :: module()) :: String.t() | nil | false
+  def moduledoc(module) when is_atom(module) do
+    case Code.fetch_docs(module) do
+      {:docs_v1, _, _, _, %{"en" => moduledoc}, _, _} -> moduledoc
+      {:docs_v1, _, _, _, :none, _, _} -> nil
+      _ -> false
+    end
+  end
+
+  @doc """
+  Gets the shortdoc for the given template `module`.
+
+  Returns the shortdoc or `nil`.
+  """
+  @spec shortdoc(module :: module()) :: String.t() | nil
+  def shortdoc(module) when is_atom(module) do
+    case List.keyfind(module.__info__(:attributes), :shortdoc, 0) do
+      {:shortdoc, [shortdoc]} -> shortdoc
+      _ -> nil
     end
   end
 end
