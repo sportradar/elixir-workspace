@@ -1,6 +1,40 @@
 defmodule Cascade.Templates.Template do
-  @moduledoc false
-  @behaviour Cascade.Template
+  @args_schema [
+    name: [
+      type: :string,
+      doc: "The template name.",
+      required: true
+    ],
+    assets_path: [
+      type: :string,
+      doc: """
+      The assets path with respect to the current working directory.
+      This is where all template assets should be added. By convention
+      it defaults to a `templates` folder at the same level as your
+      `lib` folder.
+      """,
+      required: false,
+      default: "templates"
+    ],
+    templates_path: [
+      type: :string,
+      doc: """
+      The path under the `lib` folder where templates are stored. If not
+      set defaults to `{app_name}/templates`.
+      """
+    ]
+  ]
+
+  @shortdoc "Generates a new template"
+
+  @moduledoc """
+  Generates a new template.
+
+  ## Arguments
+
+  #{CliOpts.docs(@args_schema)}
+  """
+  use Cascade.Template
 
   @assets_path Path.expand("../../../templates/template", __DIR__)
 
@@ -12,33 +46,7 @@ defmodule Cascade.Templates.Template do
   def name, do: :template
 
   @impl Cascade.Template
-  def args_schema do
-    [
-      name: [
-        type: :string,
-        doc: "The template name.",
-        required: true
-      ],
-      assets_path: [
-        type: :string,
-        doc: """
-        The assets path with respect to the current working directory.
-        This is where all template assets should be added. By convention
-        it defaults to a `templates` folder at the same level as your
-        `lib` folder.
-        """,
-        required: false,
-        default: "templates"
-      ],
-      templates_path: [
-        type: :string,
-        doc: """
-        The path under the `lib` folder where templates are stored. If not
-        set defaults to `{app_name}/templates`.
-        """
-      ]
-    ]
-  end
+  def args_schema, do: @args_schema
 
   @impl Cascade.Template
   def validate_cli_opts(opts) do
