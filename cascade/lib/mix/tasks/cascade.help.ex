@@ -28,18 +28,24 @@ defmodule Mix.Tasks.Cascade.Help do
     ])
   end
 
+  def run(["-" <> _arg]) do
+    Mix.raise(
+      "Unexpected arguments, expected \"mix cascade.help\" or \"mix cascade.help TEMPLATE\""
+    )
+  end
+
   def run([template]) do
     templates = Cascade.templates()
 
     case templates[String.to_atom(template)] do
       nil ->
         Mix.raise(
-          "No tempalte `#{template}` found. Run \"mix cascade.help\" to get a list of available templates"
+          "No template `#{template}` found. Run \"mix cascade.help\" to get a list of available templates"
         )
 
       module ->
         docs = Cascade.Template.moduledoc(module)
-        opts = [width: width(), enabled: true]
+        opts = [width: 80, enabled: IO.ANSI.enabled?()]
 
         IO.ANSI.Docs.print_headings(["mix cascade #{template}"], opts)
         IO.ANSI.Docs.print(docs, "text/markdown", opts)
@@ -47,7 +53,9 @@ defmodule Mix.Tasks.Cascade.Help do
   end
 
   def run(_other) do
-    Mix.raise("Unexpected arguments, expected \"mix cascade.list\"")
+    Mix.raise(
+      "Unexpected arguments, expected \"mix cascade.help\" or \"mix cascade.help TEMPLATE\""
+    )
   end
 
   defp list_templates do
@@ -72,13 +80,6 @@ defmodule Mix.Tasks.Cascade.Help do
     case Cascade.Template.shortdoc(module) do
       nil -> ""
       shortdoc -> shortdoc
-    end
-  end
-
-  defp width() do
-    case :io.columns() do
-      {:ok, width} -> min(width, 80)
-      {:error, _} -> 80
     end
   end
 end

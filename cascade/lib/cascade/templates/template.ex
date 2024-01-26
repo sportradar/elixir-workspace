@@ -30,7 +30,7 @@ defmodule Cascade.Templates.Template do
   @moduledoc """
   Generates a new template.
 
-  ## Arguments
+  ## Command line options
 
   #{CliOpts.docs(@args_schema)}
   """
