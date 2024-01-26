@@ -102,8 +102,7 @@ defmodule Workspace.Graph do
     |> List.flatten()
     |> Enum.map(fn dep -> elem(dep, 0) end)
     |> Enum.uniq()
-    |> Enum.reject(fn dep -> dep in workspace_apps end)
-    |> Enum.reject(&ignored_app?(&1, ignored))
+    |> Enum.reject(fn dep -> dep in workspace_apps or ignored_app?(dep, ignored) end)
     |> Enum.map(fn dep -> {dep, :external, nil} end)
   end
 

@@ -46,6 +46,7 @@ defmodule Mix.Tasks.Workspace.Graph do
   #{CliOpts.docs(@options_schema, sort: true)}
   """
   use Mix.Task
+  alias Workspace.Graph.Formatters
 
   @impl Mix.Task
   def run(args) do
@@ -56,21 +57,21 @@ defmodule Mix.Tasks.Workspace.Graph do
 
     case opts[:format] do
       "pretty" ->
-        Workspace.Graph.Formatters.PrintTree.render(
+        Formatters.PrintTree.render(
           workspace,
           Keyword.take(opts, [:show_status, :external, :ignore])
           |> Keyword.merge(pretty: true)
         )
 
       "plain" ->
-        Workspace.Graph.Formatters.PrintTree.render(
+        Formatters.PrintTree.render(
           workspace,
           Keyword.take(opts, [:show_status, :external, :ignore])
           |> Keyword.merge(pretty: false)
         )
 
       "mermaid" ->
-        Workspace.Graph.Formatters.Mermaid.render(
+        Formatters.Mermaid.render(
           workspace,
           Keyword.take(opts, [:show_status, :external, :ignore])
         )
