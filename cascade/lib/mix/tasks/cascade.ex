@@ -27,7 +27,7 @@ defmodule Mix.Tasks.Cascade do
   The extra command line arguments depend on the template. You can
   list all available templates by running:
 
-      $ mix cascade.list
+      $ mix cascade.help
 
   You can get detailed docs for a specific template by running:
 
