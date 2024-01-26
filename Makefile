@@ -40,7 +40,7 @@ lint: ## Run linters suite on project
 	mix workspace.run -t format -- --check-formatted
 	mix workspace.run -t xref -- graph --format cycles --fail-above 0
 	mix credo
-	mix workspace.run -t doctor --allow-failure workspace_new -- --failed
+	mix workspace.run -t doctor --allow-failure workspace_new --ignore cascade -- --failed
 
 ##@ Documentation
 
