@@ -44,7 +44,7 @@ defmodule Mix.Tasks.Cascade.Help do
         )
 
       module ->
-        docs = Cascade.Template.moduledoc(module)
+        docs = Cascade.Template.moduledoc(module) || ""
         opts = [width: 80, enabled: IO.ANSI.enabled?()]
 
         IO.ANSI.Docs.print_headings(["mix cascade #{template}"], opts)

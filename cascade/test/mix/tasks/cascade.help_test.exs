@@ -3,6 +3,16 @@ defmodule Mix.Tasks.Cascade.HelpTest do
 
   import ExUnit.CaptureIO
 
+  defmodule TemplateNoDocs do
+    use Cascade.Template
+
+    @impl true
+    def name, do: :no_docs
+
+    @impl true
+    def assets_path, do: Path.expand("invalid_path", __DIR__)
+  end
+
   setup do
     Application.put_env(:elixir, :ansi_enabled, false)
   end
@@ -15,6 +25,7 @@ defmodule Mix.Tasks.Cascade.HelpTest do
 
     assert captured =~ "template_no_docs  #"
     assert captured =~ "template          # Generates a new template"
+    assert captured =~ "no_docs           #"
     assert captured =~ "Run mix cascade NAME to generate a template"
     assert captured =~ "Run mix cascade.help NAME to see help of a specific template"
   end
@@ -27,6 +38,15 @@ defmodule Mix.Tasks.Cascade.HelpTest do
 
     assert captured =~ "mix cascade template"
     assert captured =~ "## Command line options"
+  end
+
+  test "with a template without docs" do
+    captured =
+      capture_io(fn ->
+        Mix.Tasks.Cascade.Help.run(["no_docs"])
+      end)
+
+    assert String.trim(captured) == "mix cascade no_docs"
   end
 
   test "with invalid template" do

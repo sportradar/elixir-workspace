@@ -24,6 +24,22 @@ defmodule Mix.Tasks.CascadeTest do
     end)
   end
 
+  test "with invalid template name" do
+    assert_raise Mix.Error,
+                 ~r"no template :unknown found",
+                 fn ->
+                   Mix.Tasks.Cascade.run(["unknown"])
+                 end
+  end
+
+  test "with multiple templates given" do
+    assert_raise Mix.Error,
+                 ~r/expected a single template to be given, please use "mix cascade template_name"/,
+                 fn ->
+                   Mix.Tasks.Cascade.run(["unknown", "unknown"])
+                 end
+  end
+
   defp in_tmp(tmp_dir, name, fun) do
     path = Path.join(tmp_dir, name)
 

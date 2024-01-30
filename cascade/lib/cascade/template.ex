@@ -187,7 +187,6 @@ defmodule Cascade.Template do
   def moduledoc(module) when is_atom(module) do
     case Code.fetch_docs(module) do
       {:docs_v1, _, _, _, %{"en" => moduledoc}, _, _} -> moduledoc
-      {:docs_v1, _, _, _, :none, _, _} -> nil
       _ -> false
     end
   end
