@@ -124,16 +124,23 @@ defmodule Workspace.Graph do
   @doc """
   Return the source projects of the workspace
 
+  The input can be either a `Workspace` struct or the workspace graph. In case of a
+  `Workspace` a temporary graph will be constructed.
+
   Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
   """
-  @spec source_projects(workspace :: Workspace.t()) :: [atom()]
-  def source_projects(workspace) do
+  @spec source_projects(workspace :: Workspace.t() | :digraph.graph()) :: [atom()]
+  def source_projects(workspace) when is_struct(workspace, Workspace) do
     with_digraph(workspace, fn graph ->
-      graph
-      |> :digraph.source_vertices()
-      |> Enum.map(& &1.app)
+      source_projects(graph)
     end)
+  end
+
+  def source_projects(graph) do
+    graph
+    |> :digraph.source_vertices()
+    |> Enum.map(& &1.app)
   end
 
   @doc """

@@ -376,6 +376,7 @@ defmodule Workspace do
         }
         |> set_projects(projects)
         |> generate_graph()
+        |> update_projects_topology()
 
       Workspace.Cli.debug("initialized a workspace with #{length(projects)} projects")
 
@@ -429,7 +430,6 @@ defmodule Workspace do
 
   def set_projects(workspace, projects) when is_map(projects) do
     %__MODULE__{workspace | projects: projects}
-    |> update_projects_topology()
   end
 
   defp generate_graph(workspace) do
@@ -656,9 +656,8 @@ defmodule Workspace do
     end)
   end
 
-  # TODO: check how it can be refactored
   defp update_projects_topology(workspace) do
-    roots = Workspace.Graph.source_projects(workspace)
+    roots = Workspace.Graph.source_projects(workspace.graph)
 
     projects =
       Enum.reduce(workspace.projects, %{}, fn {name, project}, acc ->
