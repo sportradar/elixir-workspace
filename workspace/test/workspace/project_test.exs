@@ -61,7 +61,7 @@ defmodule Workspace.ProjectTest do
     end
 
     test "raises if invalid project or mix file" do
-      error_message = ~r"expected to get a valid path to a `mix.exs` file"
+      error_message = ~r"dummy/mix.exs does not exist"
 
       assert_raise ArgumentError, error_message, fn ->
         Project.in_project("dummy", fn _ -> nil end)

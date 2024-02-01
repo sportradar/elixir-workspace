@@ -172,12 +172,11 @@ defmodule Workspace.Project do
   """
   def ensure_mix_file!(path) do
     cond do
-      # TODO: fix error messages
       Path.basename(path) != "mix.exs" ->
         raise ArgumentError, "expected to get a valid path to a `mix.exs` file, got: #{path}"
 
       not File.exists?(path) ->
-        raise ArgumentError, "expected to get a valid path to a `mix.exs` file, got: #{path}"
+        raise ArgumentError, "#{path} does not exist"
 
       true ->
         :ok
