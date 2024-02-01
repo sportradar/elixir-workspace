@@ -197,4 +197,22 @@ defmodule Workspace.CliTest do
   defp assert_ansi_lists(output, expected) do
     assert List.flatten(output) == Cli.format(expected) |> List.flatten()
   end
+
+  describe "debug/1" do
+    test "with WORKSPACE_DEBUG disabled" do
+      assert capture_io(fn ->
+               Cli.debug("a debug message")
+             end) == ""
+    end
+
+    test "with WORKSPACE_DEBUG enabled" do
+      System.put_env("WORKSPACE_DEBUG", "true")
+
+      assert capture_io(fn ->
+               Cli.debug("a debug message")
+             end) =~ format_ansi([:light_black, "a debug message"])
+    after
+      System.delete_env("WORKSPACE_DEBUG")
+    end
+  end
 end

@@ -252,4 +252,20 @@ defmodule Workspace.Cli do
   defp project_status_suffix(:modified), do: [format(:modified), " ✚", :reset]
   defp project_status_suffix(:affected), do: [format(:affected), " ●", :reset]
   defp project_status_suffix(_other), do: [:bright, :green, " ✔", :reset]
+
+  @doc """
+  Prints a debug message.
+
+  The message is printed only if debugging messages are enabled. In  order to
+  enable them you need to set the `WORKSPACE_DEV` environment variable to
+  `"true"`.
+  """
+  @spec debug(message :: IO.ANSI.ansidata()) :: :ok
+  def debug(message) do
+    if debug_messages_enabled?(),
+      do: log([:light_black, message, :reset]),
+      else: :ok
+  end
+
+  defp debug_messages_enabled?, do: System.get_env("WORKSPACE_DEBUG") in ~w(true 1)
 end
