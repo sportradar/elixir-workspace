@@ -27,10 +27,13 @@ defmodule Workspace.Finder do
   end
 
   defp nested_mix_projects(path, ignore_paths, workspace_path) do
-    # TODO: pass verbose and if set print checked paths
+    Workspace.Cli.debug("scanning projects under #{path}")
+
     subdirs = subdirs(path, ignore_paths, workspace_path)
 
     projects = Enum.filter(subdirs, &mix_project?/1)
+    Workspace.Cli.debug("  #{length(projects)} projects detected")
+
     remaining = subdirs -- projects
 
     Enum.reduce(remaining, projects, fn project, acc ->

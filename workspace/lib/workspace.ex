@@ -275,6 +275,17 @@ defmodule Workspace do
   > # we want to test all the affected ones
   > mix workspace.run -t test --affected
   > ```
+
+  ## Environment variables
+
+  The following environment variables are supported:
+
+  * `WORKSPACE_DEBUG` - if then debug information will be printed.
+
+  Environment variables that are not meant to hold a value (and act basically as
+  flags) should be set to either `1` or `true`, for example:
+
+      $ WORKSPACE_DEBUG=true mix workspace.check
   """
 
   @typedoc """
@@ -347,6 +358,8 @@ defmodule Workspace do
     workspace_mix_path = Path.join(path, "mix.exs") |> Path.expand()
     workspace_path = Path.dirname(workspace_mix_path)
 
+    Workspace.Cli.debug("initializing workspace under #{path}")
+
     with {:ok, config} <- Workspace.Config.validate(config),
          :ok <- ensure_workspace(workspace_mix_path),
          projects <-
@@ -363,6 +376,8 @@ defmodule Workspace do
         }
         |> set_projects(projects)
         |> generate_graph()
+
+      Workspace.Cli.debug("initialized a workspace with #{length(projects)} projects")
 
       {:ok, workspace}
     end
