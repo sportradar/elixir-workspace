@@ -609,7 +609,9 @@ defmodule Workspace do
          ) do
       {:ok, changed_files} ->
         changed_files
-        |> Enum.map(fn file -> Path.join(workspace.workspace_path, file) |> Path.expand() end)
+        |> Enum.map(fn {file, _type} ->
+          Path.join(workspace.workspace_path, file) |> Path.expand()
+        end)
         |> Enum.map(fn file -> parent_project(workspace, file) end)
         |> Enum.filter(fn project -> project != nil end)
         |> Enum.map(& &1.app)

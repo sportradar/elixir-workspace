@@ -28,10 +28,16 @@ defmodule Workspace.Git do
 
     - Uncommitted files in the working directory
     - Untracked files in the working directory
-    - If `:base` is provided includes:
+    - If `:base` is provided it also includes:
       - The changed files between `:base` and `HEAD` if no `:head` is set.
       - The changed files between `:base` and `:head` if `:head` is set.
 
+  A list of tuples of the form `{"path/to/changed/file", change_type}` is
+  returned, where `change_type` can be one of the following:
+
+  * `:uncommitted` - for changed files under version control that are not committed
+  * `:untracked` - for new files that are not under version control
+  * `:modified` - for changed committed files between the `HEAD` and the `BASE`
 
   ## Options
 
@@ -47,14 +53,19 @@ defmodule Workspace.Git do
          {:ok, untracked} <- untracked_files(cd: opts[:cd]),
          {:ok, changed} <- maybe_changed_files(opts[:base], opts[:head] || "HEAD", cd: opts[:cd]) do
       changed =
-        [uncommitted, untracked, changed]
+        [
+          annotate_change(uncommitted, :uncommitted),
+          annotate_change(untracked, :untracked),
+          annotate_change(changed, :modified)
+        ]
         |> Enum.concat()
-        |> Enum.uniq()
-        |> Enum.sort()
+        |> Enum.sort_by(fn {file, _change} -> file end)
 
       {:ok, changed}
     end
   end
+
+  defp annotate_change(files, change), do: Enum.map(files, fn file -> {file, change} end)
 
   defp maybe_changed_files(nil, _head, _opts), do: {:ok, []}
   defp maybe_changed_files(base, head, opts), do: changed_files(base, head, opts)

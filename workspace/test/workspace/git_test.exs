@@ -42,7 +42,9 @@ defmodule Workspace.GitTest do
         File.touch!("package_a/tmp.exs")
         File.touch!("package_b/file.ex")
 
-        assert Workspace.Git.changed_files() == {:ok, ["package_a/tmp.exs", "package_b/file.ex"]}
+        assert Workspace.Git.changed_files() ==
+                 {:ok, [{"package_a/tmp.exs", :untracked}, {"package_b/file.ex", :untracked}]}
+
         assert Workspace.Git.uncommitted_files() == {:ok, []}
 
         assert Workspace.Git.untracked_files() ==
@@ -51,7 +53,9 @@ defmodule Workspace.GitTest do
         # git add a file
         System.cmd("git", ~w[add package_a/tmp.exs])
 
-        assert Workspace.Git.changed_files() == {:ok, ["package_a/tmp.exs", "package_b/file.ex"]}
+        assert Workspace.Git.changed_files() ==
+                 {:ok, [{"package_a/tmp.exs", :uncommitted}, {"package_b/file.ex", :untracked}]}
+
         assert Workspace.Git.uncommitted_files() == {:ok, ["package_a/tmp.exs"]}
         assert Workspace.Git.untracked_files() == {:ok, ["package_b/file.ex"]}
 
@@ -59,13 +63,13 @@ defmodule Workspace.GitTest do
         System.cmd("git", ~w[commit -m message])
 
         # if no head is set it is not considered changed
-        assert Workspace.Git.changed_files() == {:ok, ["package_b/file.ex"]}
+        assert Workspace.Git.changed_files() == {:ok, [{"package_b/file.ex", :untracked}]}
         assert Workspace.Git.uncommitted_files() == {:ok, []}
         assert Workspace.Git.untracked_files() == {:ok, ["package_b/file.ex"]}
 
         # if base is head it is included
         assert Workspace.Git.changed_files(base: "HEAD~1") ==
-                 {:ok, ["package_a/tmp.exs", "package_b/file.ex"]}
+                 {:ok, [{"package_a/tmp.exs", :modified}, {"package_b/file.ex", :untracked}]}
 
         # commit the other file as well
         System.cmd("git", ~w[add package_b/file.ex])
@@ -73,11 +77,11 @@ defmodule Workspace.GitTest do
 
         # with no head set and base two commits below
         assert Workspace.Git.changed_files(base: "HEAD~2") ==
-                 {:ok, ["package_a/tmp.exs", "package_b/file.ex"]}
+                 {:ok, [{"package_a/tmp.exs", :modified}, {"package_b/file.ex", :modified}]}
 
         # with head set
         assert Workspace.Git.changed_files(base: "HEAD~2", head: "HEAD~1") ==
-                 {:ok, ["package_a/tmp.exs"]}
+                 {:ok, [{"package_a/tmp.exs", :modified}]}
 
         # changed_files/3 sanity checks
         assert Workspace.Git.changed_files("HEAD~2", "HEAD") ==
