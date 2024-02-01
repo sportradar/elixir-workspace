@@ -44,6 +44,8 @@ defmodule WorkspaceTest do
 
       assert %Workspace{} = workspace
       assert map_size(workspace.projects) == 11
+      assert length(:digraph.vertices(workspace.graph)) == 11
+      assert length(:digraph.source_vertices(workspace.graph)) == 4
     end
 
     test "with ignore_projects set" do
@@ -58,6 +60,7 @@ defmodule WorkspaceTest do
 
       assert %Workspace{} = workspace
       assert map_size(workspace.projects) == 9
+      assert length(:digraph.vertices(workspace.graph)) == 9
     end
 
     test "with ignore_paths set" do
@@ -73,6 +76,7 @@ defmodule WorkspaceTest do
 
       assert %Workspace{} = workspace
       assert map_size(workspace.projects) == 8
+      assert length(:digraph.vertices(workspace.graph)) == 8
     end
 
     test "error if the path is not a workspace" do

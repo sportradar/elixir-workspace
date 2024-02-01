@@ -287,13 +287,15 @@ defmodule Workspace do
   * `:mix_path` - The path to the workspace's root `mix.exs`.
   * `:workspace_path` - The workspace root path.
   * `:cwd` - The directory from which the workspace was generated.
+  * `:graph` - The DAG (directed acyclic graph) of the workspace.
   """
   @type t :: %Workspace{
           projects: %{atom() => Workspace.Project.t()},
           config: keyword(),
           mix_path: binary(),
           workspace_path: binary(),
-          cwd: binary()
+          cwd: binary(),
+          graph: :digraph.graph()
         }
 
   @enforce_keys [:config, :mix_path, :workspace_path, :cwd]
@@ -301,7 +303,8 @@ defmodule Workspace do
             config: nil,
             mix_path: nil,
             workspace_path: nil,
-            cwd: nil
+            cwd: nil,
+            graph: nil
 
   @doc """
   Similar to `new/2` but raises in case of error.
@@ -355,6 +358,7 @@ defmodule Workspace do
           cwd: File.cwd!()
         }
         |> set_projects(projects)
+        |> generate_graph()
 
       {:ok, workspace}
     end
@@ -460,6 +464,10 @@ defmodule Workspace do
   def set_projects(workspace, projects) when is_map(projects) do
     %__MODULE__{workspace | projects: projects}
     |> update_projects_topology()
+  end
+
+  defp generate_graph(workspace) do
+    %__MODULE__{workspace | graph: Workspace.Graph.digraph(workspace)}
   end
 
   @doc """
