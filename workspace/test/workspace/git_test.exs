@@ -89,6 +89,13 @@ defmodule Workspace.GitTest do
 
         assert Workspace.Git.changed_files("HEAD~2", "HEAD~2") ==
                  {:ok, []}
+
+        # if a file is moved from a project to another both are changed
+        System.cmd("mv", ~w[package_b/file.ex package_a/moved_file.ex])
+
+        assert Workspace.Git.changed_files() ==
+                 {:ok,
+                  [{"package_a/moved_file.ex", :untracked}, {"package_b/file.ex", :uncommitted}]}
       end)
     end
   end
