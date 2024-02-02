@@ -11,7 +11,7 @@ defmodule Workspace.Topology do
   def parent_project(workspace, path) do
     path = Path.expand(path, workspace.workspace_path)
 
-    Enum.reduce_while(Workspace.projects(workspace), nil, fn project, _acc ->
+    Enum.reduce_while(workspace.projects, nil, fn {_app, project}, _acc ->
       case Workspace.Utils.Path.parent_dir?(project.path, path) do
         true -> {:halt, project}
         false -> {:cont, nil}
