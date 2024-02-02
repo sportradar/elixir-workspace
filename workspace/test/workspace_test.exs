@@ -158,25 +158,6 @@ defmodule WorkspaceTest do
     end
   end
 
-  describe "parent_project/2" do
-    test "returns the valid parent project with a full path", %{workspace: workspace} do
-      assert project =
-               Workspace.parent_project(workspace, "/usr/local/workspace/packages/foo/file.ex")
-
-      assert project.app == :foo
-    end
-
-    test "returns the valid parent project with a relative path", %{workspace: workspace} do
-      assert project = Workspace.parent_project(workspace, "packages/foo/file.ex")
-
-      assert project.app == :foo
-    end
-
-    test "returns nil if invalid path", %{workspace: workspace} do
-      assert Workspace.parent_project(workspace, "invalid/file.ex") == nil
-    end
-  end
-
   @sample_workspace_no_git_path Path.join(TestUtils.tmp_path(), "sample_workspace_no_git")
   @sample_workspace_changed_path Path.join(TestUtils.tmp_path(), "sample_workspace_changed")
 

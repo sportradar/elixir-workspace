@@ -612,7 +612,7 @@ defmodule Workspace do
         |> Enum.map(fn {file, _type} ->
           Path.join(workspace.workspace_path, file) |> Path.expand()
         end)
-        |> Enum.map(fn file -> parent_project(workspace, file) end)
+        |> Enum.map(fn file -> Workspace.Topology.parent_project(workspace, file) end)
         |> Enum.filter(fn project -> project != nil end)
         |> Enum.map(& &1.app)
         |> Enum.uniq()
@@ -640,22 +640,6 @@ defmodule Workspace do
     modified = modified(workspace, opts)
 
     Workspace.Graph.affected(workspace, modified)
-  end
-
-  @doc """
-  Returns the project the file belongs to, or `nil` in case of error.
-  """
-  @spec parent_project(workspace :: Workspace.t(), path :: Path.t()) ::
-          Workspace.Project.t() | nil
-  def parent_project(workspace, path) do
-    path = Path.expand(path, workspace.workspace_path)
-
-    Enum.reduce_while(Workspace.projects(workspace), nil, fn project, _acc ->
-      case Workspace.Utils.Path.parent_dir?(project.path, path) do
-        true -> {:halt, project}
-        false -> {:cont, nil}
-      end
-    end)
   end
 
   defp update_projects_topology(workspace) do

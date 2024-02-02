@@ -511,7 +511,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     # - ignored by configuration
     case Path.type(path) do
       :relative ->
-        project = Workspace.parent_project(workspace, to_string(module_path))
+        project = Workspace.Topology.parent_project(workspace, to_string(module_path))
 
         case project do
           nil ->
