@@ -52,9 +52,18 @@ defmodule Workspace.Graph do
     * `:ignore` - if set the specified workspace projects will not be included
     in the graph
   """
-  @spec digraph(workspace :: Workspace.t(), opts :: keyword()) :: :digraph.graph()
-  def digraph(workspace, opts \\ []) do
-    graph_nodes = valid_nodes(workspace, opts[:external], opts[:ignore])
+  @spec digraph(
+          workspace_or_projects :: Workspace.t() | [Workspace.Project.t()],
+          opts :: keyword()
+        ) :: :digraph.graph()
+  def digraph(workspace_or_projects, opts \\ [])
+
+  def digraph(workspace, opts) when is_struct(workspace, Workspace) do
+    digraph(Map.values(workspace.projects), opts)
+  end
+
+  def digraph(projects, opts) when is_list(projects) do
+    graph_nodes = valid_nodes(projects, opts[:external], opts[:ignore])
     graph_apps = Enum.map(graph_nodes, fn node -> elem(node, 0) end)
 
     graph = :digraph.new()
@@ -65,7 +74,7 @@ defmodule Workspace.Graph do
       :digraph.add_vertex(graph, node)
     end
 
-    for {_app, project} <- workspace.projects,
+    for project <- projects,
         dep <- project_deps(project),
         project.app in graph_apps,
         dep in graph_apps do
@@ -77,14 +86,15 @@ defmodule Workspace.Graph do
     graph
   end
 
-  defp valid_nodes(workspace, external, ignored) do
+  defp valid_nodes(projects, external, ignored) do
     workspace_nodes =
-      for {app, project} <- workspace.projects,
+      for project <- projects,
+          app = project.app,
           not ignored_app?(app, ignored) do
         {app, :workspace, project}
       end
 
-    workspace_nodes ++ maybe_external_dependencies(workspace, external, ignored)
+    workspace_nodes ++ maybe_external_dependencies(projects, external, ignored)
   end
 
   defp project_deps(project) do
@@ -93,12 +103,12 @@ defmodule Workspace.Graph do
     Enum.map(deps, fn dep -> elem(dep, 0) end)
   end
 
-  defp maybe_external_dependencies(workspace, true, ignored) do
-    workspace_apps = Map.keys(workspace.projects)
+  defp maybe_external_dependencies(projects, true, ignored) do
+    workspace_apps = Enum.map(projects, & &1.app)
 
-    workspace.projects
-    |> Enum.reject(fn {app, _project} -> ignored_app?(app, ignored) end)
-    |> Enum.map(fn {_app, project} -> project.config[:deps] || [] end)
+    projects
+    |> Enum.reject(fn project -> ignored_app?(project.app, ignored) end)
+    |> Enum.map(fn project -> project.config[:deps] || [] end)
     |> List.flatten()
     |> Enum.map(fn dep -> elem(dep, 0) end)
     |> Enum.uniq()
