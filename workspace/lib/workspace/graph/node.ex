@@ -16,19 +16,18 @@ defmodule Workspace.Graph.Node do
   supported but it is open ended for future extensions:
     * `:workspace` - Represents a workspace project.
     * `:external` - Represents an external dependency.
-  * `:project` - For packages of type `:workspace` this holds the `Workspace.Project`
-  of the current `app`.
   * `:metadata` - Arbitrary keyword list for setting metadata.
   """
   @type t :: %__MODULE__{
           app: atom(),
-          type: atom(),
-          project: nil | Workspace.Project.t(),
+          type: :workspace | :external,
           metadata: keyword()
         }
 
+  @valid_types [:workspace, :external]
+
   @enforce_keys [:app, :type]
-  defstruct app: nil, type: nil, project: nil, metadata: []
+  defstruct app: nil, type: nil, metadata: []
 
   @doc """
   Create a new node with the given `app` and `type`.
@@ -39,36 +38,10 @@ defmodule Workspace.Graph.Node do
   otherwise
   * `:metadata` - Arbitrary node metadata.
   """
-  @spec new(app :: atom(), type :: atom()) :: t()
-  def new(app, type, opts \\ []) when is_atom(app) do
-    opts = Keyword.validate!(opts, project: nil, metadata: [])
+  @spec new(app :: atom(), type :: atom(), opts :: keyword()) :: t()
+  def new(app, type, opts \\ []) when is_atom(app) and type in @valid_types do
+    opts = Keyword.validate!(opts, metadata: [])
 
-    new(app, type, opts[:project], opts[:metadata])
-  end
-
-  defp new(app, :workspace, project, metadata) do
-    validate_project!(app, project)
-
-    %__MODULE__{app: app, type: :workspace, project: project, metadata: metadata}
-  end
-
-  defp new(app, :external, _project, metadata) do
-    %__MODULE__{app: app, type: :external, metadata: metadata}
-  end
-
-  defp validate_project!(app, %Workspace.Project{} = project) do
-    if project.app != app do
-      raise ArgumentError,
-            "invalid :workspace project graph node, expected the " <>
-              "project app to be: #{inspect(app)}, got: #{inspect(project.app)}"
-    end
-
-    :ok
-  end
-
-  defp validate_project!(app, project) do
-    raise ArgumentError,
-          "invalid project for #{inspect(app)}, a workspace graph node must include " <>
-            "a `Workspace.Project`, got: #{inspect(project)}"
+    %__MODULE__{app: app, type: type, metadata: opts[:metadata]}
   end
 end

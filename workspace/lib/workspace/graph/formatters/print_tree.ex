@@ -17,7 +17,7 @@ defmodule Workspace.Graph.Formatters.PrintTree do
 
           case node.type do
             :workspace ->
-              project = node.project
+              project = Workspace.project!(workspace, node.app)
 
               {{node_format(project, opts[:show_status]), nil}, children}
 

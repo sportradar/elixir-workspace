@@ -69,8 +69,8 @@ defmodule Workspace.Graph do
     graph = :digraph.new()
 
     # add vertices
-    for {app, type, project} <- graph_nodes do
-      node = graph_node(app, type, project)
+    for {app, type} <- graph_nodes do
+      node = graph_node(app, type)
       :digraph.add_vertex(graph, node)
     end
 
@@ -91,7 +91,7 @@ defmodule Workspace.Graph do
       for project <- projects,
           app = project.app,
           not ignored_app?(app, ignored) do
-        {app, :workspace, project}
+        {app, :workspace}
       end
 
     workspace_nodes ++ maybe_external_dependencies(projects, external, ignored)
@@ -113,15 +113,15 @@ defmodule Workspace.Graph do
     |> Enum.map(fn dep -> elem(dep, 0) end)
     |> Enum.uniq()
     |> Enum.reject(fn dep -> dep in workspace_apps or ignored_app?(dep, ignored) end)
-    |> Enum.map(fn dep -> {dep, :external, nil} end)
+    |> Enum.map(fn dep -> {dep, :external} end)
   end
 
   defp maybe_external_dependencies(_workspace, _external, _ignored), do: []
 
-  defp graph_node(app, :workspace, project),
-    do: Workspace.Graph.Node.new(app, :workspace, project: project)
+  defp graph_node(app, :workspace),
+    do: Workspace.Graph.Node.new(app, :workspace)
 
-  defp graph_node(app, :external, _project), do: Workspace.Graph.Node.new(app, :external)
+  defp graph_node(app, :external), do: Workspace.Graph.Node.new(app, :external)
 
   # TODO: make ignored list of atoms by default
   defp ignored_app?(_app, nil), do: false
