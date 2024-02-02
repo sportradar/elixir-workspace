@@ -14,7 +14,9 @@ defmodule Workspace.StatusTest do
     test "error if modified files cannot be retrieved" do
       workspace = Workspace.new!(@sample_workspace_no_git_path)
 
-      assert_raise ArgumentError, fn -> Workspace.Status.modified(workspace) end
+      assert_raise ArgumentError, ~r"failed to get modified files", fn ->
+        Workspace.Status.modified(workspace)
+      end
     end
   end
 
@@ -34,7 +36,9 @@ defmodule Workspace.StatusTest do
     test "error if modified files cannot be retrieved" do
       workspace = Workspace.new!(@sample_workspace_no_git_path)
 
-      assert_raise ArgumentError, fn -> Workspace.Status.affected(workspace) end
+      assert_raise ArgumentError, ~r"failed to get modified files", fn ->
+        Workspace.Status.affected(workspace)
+      end
     end
   end
 end
