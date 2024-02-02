@@ -27,16 +27,21 @@ defmodule Mix.Tasks.Workspace.Status do
     opts
     |> Keyword.merge(show_status: true)
     |> Mix.WorkspaceUtils.load_and_filter_workspace()
-    |> show_status(base: opts[:base], head: opts[:head])
+    |> show_status()
   end
 
-  defp show_status(workspace, opts) do
-    modified = Workspace.Status.modified(workspace, opts)
+  defp show_status(workspace) do
+    modified = projects_with_status(workspace, :modified)
+    affected = projects_with_status(workspace, :affected)
 
     show_modified(workspace, modified)
-
-    affected = Workspace.Status.affected(workspace, opts)
     show_affected(workspace, affected -- modified)
+  end
+
+  defp projects_with_status(workspace, status) do
+    workspace.projects
+    |> Enum.filter(fn {_app, project} -> project.status == status end)
+    |> Enum.map(fn {app, _project} -> app end)
   end
 
   defp show_modified(_workspace, []), do: :ok
