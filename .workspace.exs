@@ -1,5 +1,5 @@
 [
-  ignore_paths: ["artifacts/deps"],
+  ignore_paths: [".elixir-tools", "artifacts", "cover"],
   checks: [
     [
       module: Workspace.Checks.ValidateConfigPath,
