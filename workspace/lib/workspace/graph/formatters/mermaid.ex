@@ -41,7 +41,7 @@ defmodule Workspace.Graph.Formatters.Mermaid do
         |> IO.puts()
       end,
       external: opts[:external],
-      ignore: opts[:ignore]
+      exclude: opts[:exclude]
     )
   end
 

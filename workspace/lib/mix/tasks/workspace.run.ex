@@ -36,8 +36,7 @@ defmodule Mix.Tasks.Workspace.Run do
       expected to be in the form `ENV_VAR_NAME=value`. You can use this multiple times
       for setting multiple variables.\
       """,
-      keep: true,
-      alias: :e
+      keep: true
     ],
     allow_failure: [
       type: :string,
@@ -53,7 +52,7 @@ defmodule Mix.Tasks.Workspace.Run do
                       :workspace_path,
                       :config_path,
                       :project,
-                      :ignore,
+                      :exclude,
                       :affected,
                       :modified,
                       :base,
@@ -134,7 +133,7 @@ defmodule Mix.Tasks.Workspace.Run do
       $ mix workspace.run -t test -p foo -p bar
 
       # Run test on all projects excluding foo and bar
-      $ mix workspace.run -t test -i foo -i bar
+      $ mix workspace.run -t test --exclude foo --exclude bar
 
       # Run test on all affected projects
       $ mix workspace.run -t test --affected

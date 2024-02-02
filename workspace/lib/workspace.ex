@@ -490,7 +490,7 @@ defmodule Workspace do
 
   ## Options
 
-    * `:ignore` (list of `t:atom/0`) - a list of projects to be ignored. This has
+    * `:exclude` (list of `t:atom/0`) - a list of projects to be ignored. This has
     the highest priority, e.g. if the project is in the `:ignore` list it is
     always skipped.
     * `:project` (list of `t:atom/0`) - a list of project to consider, if set all
@@ -511,7 +511,7 @@ defmodule Workspace do
   > 
   > Notice that projects are filtered using the following precedence:
   >
-  > * Ignored projects (`:ignore` option set)
+  > * Ignored projects (`:exclude` option set)
   > * Selected projects (`:project` option set)
   > * Code status modifiers (`:affected`, `:modified` and `:only_roots`)
   """
@@ -523,7 +523,7 @@ defmodule Workspace do
   end
 
   defp filter_projects(workspace, opts) do
-    ignored = Enum.map(opts[:ignore] || [], &maybe_to_atom/1)
+    ignored = Enum.map(opts[:exclude] || [], &maybe_to_atom/1)
     selected = Enum.map(opts[:project] || [], &maybe_to_atom/1)
     affected = opts[:affected] || false
     modified = opts[:modified] || false

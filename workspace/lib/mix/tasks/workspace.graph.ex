@@ -25,7 +25,7 @@ defmodule Mix.Tasks.Workspace.Graph do
                       :workspace_path,
                       :config_path,
                       :show_status,
-                      :ignore,
+                      :exclude,
                       :base,
                       :head
                     ],
@@ -59,21 +59,21 @@ defmodule Mix.Tasks.Workspace.Graph do
       "pretty" ->
         Formatters.PrintTree.render(
           workspace,
-          Keyword.take(opts, [:show_status, :external, :ignore])
+          Keyword.take(opts, [:show_status, :external, :exclude])
           |> Keyword.merge(pretty: true)
         )
 
       "plain" ->
         Formatters.PrintTree.render(
           workspace,
-          Keyword.take(opts, [:show_status, :external, :ignore])
+          Keyword.take(opts, [:show_status, :external, :exclude])
           |> Keyword.merge(pretty: false)
         )
 
       "mermaid" ->
         Formatters.Mermaid.render(
           workspace,
-          Keyword.take(opts, [:show_status, :external, :ignore])
+          Keyword.take(opts, [:show_status, :external, :exclude])
         )
     end
   end

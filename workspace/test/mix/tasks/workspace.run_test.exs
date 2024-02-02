@@ -63,9 +63,9 @@ defmodule Mix.Tasks.Workspace.RunTest do
       ])
 
       args = [
-        "-i",
+        "-e",
         "package_default_a",
-        "-i",
+        "-e",
         "package_default_b",
         "--dry-run" | @default_run_task
       ]
@@ -208,7 +208,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
   describe "environment variables" do
     test "raises if inproper configuration of environment variables" do
-      args = ["-p", "package_default_a", "--verbose", "-e", "FOO" | @default_run_task]
+      args = ["-p", "package_default_a", "--verbose", "--env-var", "FOO" | @default_run_task]
 
       expected_message =
         "invalid environment variable definition, " <>
@@ -229,7 +229,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         "cmd",
         "--workspace-path",
         Path.join(tmp_path(), "sample_workspace_default"),
-        "-e",
+        "--env-var",
         "FOO=bar",
         "--",
         "echo",

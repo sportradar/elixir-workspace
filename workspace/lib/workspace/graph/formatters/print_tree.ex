@@ -36,7 +36,7 @@ defmodule Workspace.Graph.Formatters.PrintTree do
         print_tree(root_nodes, callback, pretty: pretty)
       end,
       external: opts[:external],
-      ignore: opts[:ignore]
+      exclude: opts[:exclude]
     )
   end
 

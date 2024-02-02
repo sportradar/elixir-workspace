@@ -3,7 +3,7 @@ defmodule Mix.Tasks.Workspace.List do
                     :workspace_path,
                     :config_path,
                     :project,
-                    :ignore,
+                    :exclude,
                     :show_status
                   ])
 

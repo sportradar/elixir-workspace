@@ -13,9 +13,9 @@ defmodule Workspace.CliOptions do
       alias: :m,
       doc: "Run only on modified projects"
     ],
-    ignore: [
+    exclude: [
       type: :string,
-      alias: :i,
+      alias: :e,
       keep: true,
       doc: "Ignore the given projects"
     ],

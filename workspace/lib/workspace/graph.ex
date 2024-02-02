@@ -49,7 +49,7 @@ defmodule Workspace.Graph do
   ## Options
 
     * `:external` - if set external dependencies will be included as well
-    * `:ignore` - if set the specified workspace projects will not be included
+    * `:exclude` - if set the specified workspace projects will not be included
     in the graph
   """
   @spec digraph(
@@ -64,7 +64,7 @@ defmodule Workspace.Graph do
 
   def digraph(projects, opts) when is_list(projects) do
     Workspace.Cli.debug("generating workspace graph")
-    graph_nodes = valid_nodes(projects, opts[:external], opts[:ignore])
+    graph_nodes = valid_nodes(projects, opts[:external], opts[:exclude])
     graph_apps = Enum.map(graph_nodes, fn node -> elem(node, 0) end)
 
     graph = :digraph.new()

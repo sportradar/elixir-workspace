@@ -130,7 +130,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
             "--config-path",
             "../configs/with_checks.exs",
             "--verbose",
-            "--ignore",
+            "--exclude",
             "package_d"
           ])
         end

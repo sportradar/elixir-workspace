@@ -68,7 +68,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
            end) == expected
   end
 
-  test "with --ignore option set" do
+  test "with --exclude option set" do
     expected = """
       * :package_default_b package_default_b/mix.exs - a dummy project
     """
@@ -81,7 +81,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
                "package_default_a",
                "-p",
                "package_default_b",
-               "-i",
+               "-e",
                "package_default_a"
              ])
            end) == expected

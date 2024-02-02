@@ -136,7 +136,7 @@ defmodule Mix.Tasks.Workspace.GraphTest do
            end) == expected
   end
 
-  test "does not print ignored packages" do
+  test "does not print excluded packages" do
     expected = """
     :package_changed_a
     ├── :package_changed_c
@@ -154,9 +154,9 @@ defmodule Mix.Tasks.Workspace.GraphTest do
              GraphTask.run([
                "--workspace-path",
                @sample_workspace_changed_path,
-               "--ignore",
+               "--exclude",
                "package_changed_b",
-               "--ignore",
+               "--exclude",
                "package_changed_f"
              ])
            end) == expected

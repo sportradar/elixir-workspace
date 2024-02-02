@@ -17,7 +17,7 @@ defmodule Workspace.CliTest do
   @valid_options [
     :affected,
     :modified,
-    :ignore,
+    :exclude,
     :verbose,
     :workspace_path,
     :config_path,
