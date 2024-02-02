@@ -3,6 +3,8 @@ defmodule Workspace.Git do
   Helper git related functions
   """
 
+  @type change_type :: :uncommitted | :untraced | :modified
+
   @doc """
   Get the git repo root of the given path
 
@@ -47,7 +49,8 @@ defmodule Workspace.Git do
     * `:head` (`t:binary/0`) - The `head` to use for comparing to `:base`, if not set
     defaults to `HEAD`. Can be any git reference
   """
-  @spec changed_files(opts :: keyword()) :: {:ok, [binary()]} | {:error, binary()}
+  @spec changed_files(opts :: keyword()) ::
+          {:ok, [{binary(), change_type()}]} | {:error, binary()}
   def changed_files(opts \\ []) do
     with {:ok, uncommitted} <- uncommitted_files(cd: opts[:cd]),
          {:ok, untracked} <- untracked_files(cd: opts[:cd]),
