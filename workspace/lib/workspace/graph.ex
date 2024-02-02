@@ -63,6 +63,7 @@ defmodule Workspace.Graph do
   end
 
   def digraph(projects, opts) when is_list(projects) do
+    Workspace.Cli.debug("generating workspace graph")
     graph_nodes = valid_nodes(projects, opts[:external], opts[:ignore])
     graph_apps = Enum.map(graph_nodes, fn node -> elem(node, 0) end)
 
