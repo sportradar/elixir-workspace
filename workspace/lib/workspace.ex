@@ -362,21 +362,18 @@ defmodule Workspace do
 
     with {:ok, config} <- Workspace.Config.validate(config),
          :ok <- ensure_workspace(workspace_mix_path),
-         projects <-
-           Workspace.Finder.projects(
-             workspace_path,
-             Keyword.take(config, [:ignore_paths, :ignore_projects])
-           ) do
+         projects <- Workspace.Finder.projects(workspace_path, config),
+         graph <- Workspace.Graph.digraph(projects),
+         projects <- update_projects_topology(projects, graph) do
       workspace =
         %__MODULE__{
           config: config,
           mix_path: workspace_mix_path,
           workspace_path: workspace_path,
-          cwd: File.cwd!()
+          cwd: File.cwd!(),
+          graph: graph
         }
         |> set_projects(projects)
-        |> generate_graph()
-        |> update_projects_topology()
 
       Workspace.Cli.debug("initialized a workspace with #{length(projects)} projects")
 
@@ -407,6 +404,14 @@ defmodule Workspace do
     end
   end
 
+  defp update_projects_topology(projects, graph) do
+    roots = Workspace.Graph.source_projects(graph)
+
+    Enum.map(projects, fn project ->
+      Workspace.Project.set_root?(project, project.app in roots)
+    end)
+  end
+
   defp ensure_workspace_set_in_config(config) when is_list(config) do
     case config[:workspace] do
       nil ->
@@ -430,10 +435,6 @@ defmodule Workspace do
 
   def set_projects(workspace, projects) when is_map(projects) do
     %__MODULE__{workspace | projects: projects}
-  end
-
-  defp generate_graph(workspace) do
-    %__MODULE__{workspace | graph: Workspace.Graph.digraph(workspace)}
   end
 
   @doc """
@@ -640,19 +641,6 @@ defmodule Workspace do
     modified = modified(workspace, opts)
 
     Workspace.Graph.affected(workspace, modified)
-  end
-
-  defp update_projects_topology(workspace) do
-    roots = Workspace.Graph.source_projects(workspace.graph)
-
-    projects =
-      Enum.reduce(workspace.projects, %{}, fn {name, project}, acc ->
-        project = Workspace.Project.set_root?(project, name in roots)
-
-        Map.put_new(acc, name, project)
-      end)
-
-    %Workspace{workspace | projects: projects}
   end
 
   def update_projects_statuses(workspace, opts) do
