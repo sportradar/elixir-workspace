@@ -532,13 +532,13 @@ defmodule Workspace do
     affected_projects =
       case affected do
         false -> nil
-        true -> affected(workspace, base: opts[:base], head: opts[:head])
+        true -> Workspace.Status.affected(workspace, base: opts[:base], head: opts[:head])
       end
 
     modified_projects =
       case modified do
         false -> nil
-        true -> modified(workspace, base: opts[:base], head: opts[:head])
+        true -> Workspace.Status.modified(workspace, base: opts[:base], head: opts[:head])
       end
 
     Enum.map(workspace.projects, fn {_name, project} ->
@@ -588,70 +588,15 @@ defmodule Workspace do
   defp maybe_to_atom(value) when is_atom(value), do: value
   defp maybe_to_atom(value) when is_binary(value), do: String.to_atom(value)
 
-  @doc """
-  Returns the modified projects
-
-  A workspace project is considered modified if any of it's files has
-  changed with respect to the `base` branch.
-
-  ## Options
-
-    * `:base` (`String.t()`) - The base git reference for detecting changed files,
-    if not set only working tree changes will be included.
-    * `:head` (`String.t()`) - The head git reference for detecting changed files. It
-    is used only if `:base` is set.
-  """
-  @spec modified(workspace :: Workspace.t(), opts :: keyword()) :: [atom()]
-  def modified(workspace, opts \\ []) do
-    case Workspace.Git.changed_files(
-           cd: workspace.workspace_path,
-           base: opts[:base],
-           head: opts[:head]
-         ) do
-      {:ok, changed_files} ->
-        changed_files
-        |> Enum.map(fn {file, _type} ->
-          Path.join(workspace.workspace_path, file) |> Path.expand()
-        end)
-        |> Enum.map(fn file -> Workspace.Topology.parent_project(workspace, file) end)
-        |> Enum.filter(fn project -> project != nil end)
-        |> Enum.map(& &1.app)
-        |> Enum.uniq()
-
-      {:error, reason} ->
-        raise ArgumentError, "failed to get modified files: #{reason}"
-    end
-  end
-
-  @doc """
-  Returns the affected projects
-
-  A project is considered affected if it has changed or any of it's children has
-  changed.
-
-  ## Options
-
-    * `:base` (`String.t()`) - The base git reference for detecting changed files,
-    if not set only working tree changes will be included.
-    * `:head` (`String.t()`) - The head git reference for detecting changed files. It
-    is used only if `:base` is set.
-  """
-  @spec affected(workspace :: Workspace.t(), opts :: keyword()) :: [atom()]
-  def affected(workspace, opts \\ []) do
-    modified = modified(workspace, opts)
-
-    Workspace.Graph.affected(workspace, modified)
-  end
-
   def update_projects_statuses(workspace, opts) do
     affected =
       workspace
-      |> affected(opts)
+      |> Workspace.Status.affected(opts)
       |> Enum.map(fn app -> {app, :affected} end)
 
     modified =
       workspace
-      |> modified(opts)
+      |> Workspace.Status.modified(opts)
       |> Enum.map(fn app -> {app, :modified} end)
 
     # we must first check the affected since the modified may update the

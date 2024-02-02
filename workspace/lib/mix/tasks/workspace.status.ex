@@ -31,11 +31,11 @@ defmodule Mix.Tasks.Workspace.Status do
   end
 
   defp show_status(workspace, opts) do
-    modified = Workspace.modified(workspace, opts)
+    modified = Workspace.Status.modified(workspace, opts)
 
     show_modified(workspace, modified)
 
-    affected = Workspace.affected(workspace, opts)
+    affected = Workspace.Status.affected(workspace, opts)
     show_affected(workspace, affected -- modified)
   end
 
