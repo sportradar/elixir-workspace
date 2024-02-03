@@ -394,13 +394,26 @@ defmodule Workspace do
           Expected #{path} to be a workspace project. Some errors were detected:
 
           #{reason}
-
-          In order to define a project as workspace, you need to add the following
-          to the project's `mix.exs` config:
-
-              workspace: true
           """
         }
+    end
+  end
+
+  defp ensure_workspace_set_in_config(config) when is_list(config) do
+    case config[:workspace] do
+      nil ->
+        {:error,
+         """
+         :workspace is not set in your project's config
+
+         In order to define a project as workspace, you need to add the following
+         to the project's `mix.exs` config:
+
+             workspace: true
+         """}
+
+      _other ->
+        :ok
     end
   end
 
@@ -410,16 +423,6 @@ defmodule Workspace do
     Enum.map(projects, fn project ->
       Workspace.Project.set_root?(project, project.app in roots)
     end)
-  end
-
-  defp ensure_workspace_set_in_config(config) when is_list(config) do
-    case config[:workspace] do
-      nil ->
-        {:error, ":workspace is not set in your project's config"}
-
-      _other ->
-        :ok
-    end
   end
 
   @doc false
