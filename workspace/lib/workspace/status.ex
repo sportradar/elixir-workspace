@@ -10,6 +10,12 @@ defmodule Workspace.Status do
   * `:affected` - if any of the project's dependencies is modified
   * `:unaffected` - if the project and any of it's dependencis have
   not been modified.
+
+  > #### Git repository {: .info}
+  >
+  > Notice that it is assumed that `git` is used for the version
+  > control of the repository. In any other case the workspace
+  > status related functionality will not work.
   """
 
   @type file_info :: {Path.t(), Workspace.Git.change_type()}
