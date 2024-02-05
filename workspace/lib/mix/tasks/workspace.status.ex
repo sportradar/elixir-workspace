@@ -31,17 +31,11 @@ defmodule Mix.Tasks.Workspace.Status do
   end
 
   defp show_status(workspace) do
-    modified = projects_with_status(workspace, :modified)
-    affected = projects_with_status(workspace, :affected)
+    modified = Workspace.Status.modified(workspace)
+    affected = Workspace.Status.affected(workspace)
 
     show_modified(workspace, modified)
     show_affected(workspace, affected -- modified)
-  end
-
-  defp projects_with_status(workspace, status) do
-    workspace.projects
-    |> Enum.filter(fn {_app, project} -> project.status == status end)
-    |> Enum.map(fn {app, _project} -> app end)
   end
 
   defp show_modified(_workspace, []), do: :ok
