@@ -590,31 +590,4 @@ defmodule Workspace do
 
   defp maybe_to_atom(value) when is_atom(value), do: value
   defp maybe_to_atom(value) when is_binary(value), do: String.to_atom(value)
-
-  def update_projects_statuses(workspace, opts) do
-    affected =
-      workspace
-      |> Workspace.Status.affected(opts)
-      |> Enum.map(fn app -> {app, :affected} end)
-
-    modified =
-      workspace
-      |> Workspace.Status.modified(opts)
-      |> Enum.map(fn app -> {app, :modified} end)
-
-    # we must first check the affected since the modified may update the
-    # status
-    Enum.reduce(affected ++ modified, workspace, fn {app, status}, workspace ->
-      set_project_status(workspace, app, status)
-    end)
-  end
-
-  defp set_project_status(workspace, name, status) do
-    projects =
-      Map.update!(workspace.projects, name, fn project ->
-        Workspace.Project.set_status(project, status)
-      end)
-
-    set_projects(workspace, projects)
-  end
 end

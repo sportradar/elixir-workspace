@@ -16,7 +16,7 @@ defmodule Mix.WorkspaceUtils do
 
   defp maybe_include_status(workspace, opts) do
     case opts[:show_status] do
-      true -> Workspace.update_projects_statuses(workspace, base: opts[:base], head: opts[:head])
+      true -> Workspace.Status.update(workspace, base: opts[:base], head: opts[:head])
       _ -> workspace
     end
   end

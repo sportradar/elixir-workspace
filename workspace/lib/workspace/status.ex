@@ -21,6 +21,42 @@ defmodule Workspace.Status do
   @type file_info :: {Path.t(), Workspace.Git.change_type()}
 
   @doc """
+  Annotates the workspace projects with their statuses.
+
+  This will mark the workspace projects with either `:affected` or
+  `:modified` based on the changes between the `:base` and `:head`
+  references.
+
+  ## Options
+
+    * `:base` (`String.t()`) - The base git reference for detecting changed files,
+    if not set only working tree changes will be included.
+    * `:head` (`String.t()`) - The head git reference for detecting changed files. It
+    is used only if `:base` is set.
+  """
+  @spec update(workspace :: Workspace.t(), opts :: keyword()) :: Workspace.t()
+  def update(workspace, opts) do
+    affected =
+      workspace
+      |> Workspace.Status.affected(opts)
+      |> Enum.map(fn app -> {app, :affected} end)
+
+    modified =
+      workspace
+      |> Workspace.Status.modified(opts)
+      |> Enum.map(fn app -> {app, :modified} end)
+
+    # we must first check the affected since the modified may update the
+    # status
+    projects =
+      Enum.reduce(affected ++ modified, workspace.projects, fn {app, status}, projects ->
+        Map.update!(projects, app, fn project -> Workspace.Project.set_status(project, status) end)
+      end)
+
+    %Workspace{workspace | projects: projects}
+  end
+
+  @doc """
   Returns the changed files grouped by the project they belong to.
 
   ## Options
