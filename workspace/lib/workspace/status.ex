@@ -34,16 +34,16 @@ defmodule Workspace.Status do
     * `:head` (`String.t()`) - The head git reference for detecting changed files. It
     is used only if `:base` is set.
   """
-  @spec update(workspace :: Workspace.t(), opts :: keyword()) :: Workspace.t()
+  @spec update(workspace :: Workspace.State.t(), opts :: keyword()) :: Workspace.State.t()
   def update(workspace, opts) do
     affected =
       workspace
-      |> Workspace.Status.affected(opts)
+      |> affected(opts)
       |> Enum.map(fn app -> {app, :affected} end)
 
     modified =
       workspace
-      |> Workspace.Status.modified(opts)
+      |> modified(opts)
       |> Enum.map(fn app -> {app, :modified} end)
 
     # we must first check the affected since the modified may update the
@@ -53,7 +53,7 @@ defmodule Workspace.Status do
         Map.update!(projects, app, fn project -> Workspace.Project.set_status(project, status) end)
       end)
 
-    %Workspace{workspace | projects: projects}
+    Workspace.State.set_projects(workspace, projects)
   end
 
   @doc """
@@ -66,7 +66,7 @@ defmodule Workspace.Status do
     * `:head` (`String.t()`) - The head git reference for detecting changed files. It
     is used only if `:base` is set.
   """
-  @spec changed(workspace :: Workspace.t(), opts :: keyword()) :: [{atom(), file_info()}]
+  @spec changed(workspace :: Workspace.State.t(), opts :: keyword()) :: [{atom(), file_info()}]
   def changed(workspace, opts \\ []) do
     case Workspace.Git.changed_files(
            cd: workspace.workspace_path,
@@ -108,7 +108,7 @@ defmodule Workspace.Status do
     * `:head` (`String.t()`) - The head git reference for detecting changed files. It
     is used only if `:base` is set.
   """
-  @spec modified(workspace :: Workspace.t(), opts :: keyword()) :: [atom()]
+  @spec modified(workspace :: Workspace.State.t(), opts :: keyword()) :: [atom()]
   def modified(workspace, opts \\ []) do
     changed(workspace, opts)
     |> Enum.filter(fn {project, _changes} -> project != nil end)
@@ -129,7 +129,7 @@ defmodule Workspace.Status do
     * `:head` (`String.t()`) - The head git reference for detecting changed files. It
     is used only if `:base` is set.
   """
-  @spec affected(workspace :: Workspace.t(), opts :: keyword()) :: [atom()]
+  @spec affected(workspace :: Workspace.State.t(), opts :: keyword()) :: [atom()]
   def affected(workspace, opts \\ []) do
     modified = modified(workspace, opts)
 

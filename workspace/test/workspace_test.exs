@@ -42,7 +42,7 @@ defmodule WorkspaceTest do
     test "creates a workspace struct" do
       {:ok, workspace} = Workspace.new(@sample_workspace_path)
 
-      assert %Workspace{} = workspace
+      assert %Workspace.State{} = workspace
       assert map_size(workspace.projects) == 11
       assert length(:digraph.vertices(workspace.graph)) == 11
       assert length(:digraph.source_vertices(workspace.graph)) == 4
@@ -58,7 +58,7 @@ defmodule WorkspaceTest do
 
       {:ok, workspace} = Workspace.new(@sample_workspace_path, config)
 
-      assert %Workspace{} = workspace
+      assert %Workspace.State{} = workspace
       assert map_size(workspace.projects) == 9
       assert length(:digraph.vertices(workspace.graph)) == 9
     end
@@ -74,7 +74,7 @@ defmodule WorkspaceTest do
 
       {:ok, workspace} = Workspace.new(@sample_workspace_path, config)
 
-      assert %Workspace{} = workspace
+      assert %Workspace.State{} = workspace
       assert map_size(workspace.projects) == 8
       assert length(:digraph.vertices(workspace.graph)) == 8
     end

@@ -24,7 +24,7 @@ defmodule Workspace.Graph do
   supported options check `digraph/2`
   """
   @spec with_digraph(
-          workspace :: Workspace.t(),
+          workspace :: Workspace.State.t(),
           callback :: (:digraph.graph() -> result),
           opts :: keyword()
         ) ::
@@ -53,12 +53,12 @@ defmodule Workspace.Graph do
     in the graph
   """
   @spec digraph(
-          workspace_or_projects :: Workspace.t() | [Workspace.Project.t()],
+          workspace_or_projects :: Workspace.State.t() | [Workspace.Project.t()],
           opts :: keyword()
         ) :: :digraph.graph()
   def digraph(workspace_or_projects, opts \\ [])
 
-  def digraph(workspace, opts) when is_struct(workspace, Workspace) do
+  def digraph(workspace, opts) when is_struct(workspace, Workspace.State) do
     digraph(Map.values(workspace.projects), opts)
   end
 
@@ -141,8 +141,8 @@ defmodule Workspace.Graph do
   Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
   """
-  @spec source_projects(workspace :: Workspace.t() | :digraph.graph()) :: [atom()]
-  def source_projects(workspace) when is_struct(workspace, Workspace) do
+  @spec source_projects(workspace :: Workspace.State.t() | :digraph.graph()) :: [atom()]
+  def source_projects(workspace) when is_struct(workspace, Workspace.State) do
     with_digraph(workspace, fn graph ->
       source_projects(graph)
     end)
@@ -160,7 +160,7 @@ defmodule Workspace.Graph do
   Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
   """
-  @spec sink_projects(workspace :: Workspace.t()) :: [atom()]
+  @spec sink_projects(workspace :: Workspace.State.t()) :: [atom()]
   def sink_projects(workspace) do
     with_digraph(workspace, fn graph ->
       graph
@@ -175,7 +175,7 @@ defmodule Workspace.Graph do
   Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
   """
-  @spec affected(workspace :: Workspace.t(), projects :: [atom()]) :: [atom()]
+  @spec affected(workspace :: Workspace.State.t(), projects :: [atom()]) :: [atom()]
   def affected(workspace, projects) do
     with_digraph(workspace, fn graph ->
       nodes = Enum.map(projects, fn project -> node_by_app(graph, project) end)

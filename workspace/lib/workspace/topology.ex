@@ -6,7 +6,7 @@ defmodule Workspace.Topology do
   @doc """
   Returns the project the file belongs to, or `nil` in case of error.
   """
-  @spec parent_project(workspace :: Workspace.t(), path :: Path.t()) ::
+  @spec parent_project(workspace :: Workspace.State.t(), path :: Path.t()) ::
           Workspace.Project.t() | nil
   def parent_project(workspace, path) do
     path = Path.expand(path, workspace.workspace_path)

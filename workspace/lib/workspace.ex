@@ -7,22 +7,6 @@ defmodule Workspace do
   provided tools you can effectively work on massive codebases properly
   splitted into reusable packages.
 
-  ## The `%Workspace{}` structure
-
-  Every workspace is stored internally as a struct containing the following
-  fields:
-
-    * `projects` - a map of the form `%{atom => Workspace.Project.t()}` where
-    the key is the defined project name. It includes all detected workpsace
-    projects excluding any ignored ones.
-    * `cwd` - the directory from which the generation of the workspace struct
-    occurred.
-    * `mix_path` - absolute path to the workspace's root `mix.exs` file.
-    * `workspace_path` - absolute path of the workspace, this is by default the
-    folder containing the workspace mix file.
-    * `config` - the workspace's config, check `Workspace.Config` and the
-    following sections for more details.
-
   ## Workspace projects
 
   A mix project is considered a workspace project if:
@@ -288,39 +272,10 @@ defmodule Workspace do
       $ WORKSPACE_DEBUG=true mix workspace.check
   """
 
-  @typedoc """
-  Struct holding a workspace.
-
-  It contains the following:
-
-  * `:projects` - A map with all workspace projects.
-  * `:config` - The workspace configuration settings.
-  * `:mix_path` - The path to the workspace's root `mix.exs`.
-  * `:workspace_path` - The workspace root path.
-  * `:cwd` - The directory from which the workspace was generated.
-  * `:graph` - The DAG (directed acyclic graph) of the workspace.
-  """
-  @type t :: %Workspace{
-          projects: %{atom() => Workspace.Project.t()},
-          config: keyword(),
-          mix_path: binary(),
-          workspace_path: binary(),
-          cwd: binary(),
-          graph: :digraph.graph()
-        }
-
-  @enforce_keys [:config, :mix_path, :workspace_path, :cwd]
-  defstruct projects: %{},
-            config: nil,
-            mix_path: nil,
-            workspace_path: nil,
-            cwd: nil,
-            graph: nil
-
   @doc """
   Similar to `new/2` but raises in case of error.
   """
-  @spec new!(path :: binary(), config :: keyword() | binary()) :: t()
+  @spec new!(path :: binary(), config :: keyword() | binary()) :: Workspace.State.t()
   def new!(path, config \\ []) do
     case new(path, config) do
       {:ok, workspace} -> workspace
@@ -342,7 +297,8 @@ defmodule Workspace do
   Returns `{:ok, workspace}` in case of success, or `{:error, reason}`
   if something fails.
   """
-  @spec new(path :: binary(), config :: keyword() | binary()) :: {:ok, t()} | {:error, binary()}
+  @spec new(path :: binary(), config :: keyword() | binary()) ::
+          {:ok, Workspace.State.t()} | {:error, binary()}
   def new(path, config \\ [])
 
   def new(path, config_path) when is_binary(config_path) do
@@ -362,19 +318,8 @@ defmodule Workspace do
 
     with {:ok, config} <- Workspace.Config.validate(config),
          :ok <- ensure_workspace(workspace_mix_path),
-         projects <- Workspace.Finder.projects(workspace_path, config),
-         graph <- Workspace.Graph.digraph(projects),
-         projects <- update_projects_topology(projects, graph) do
-      workspace =
-        %__MODULE__{
-          config: config,
-          mix_path: workspace_mix_path,
-          workspace_path: workspace_path,
-          cwd: File.cwd!(),
-          graph: graph
-        }
-        |> set_projects(projects)
-
+         projects <- Workspace.Finder.projects(workspace_path, config) do
+      workspace = Workspace.State.new(workspace_path, workspace_mix_path, config, projects)
       Workspace.Cli.debug("initialized a workspace with #{length(projects)} projects")
 
       {:ok, workspace}
@@ -417,33 +362,10 @@ defmodule Workspace do
     end
   end
 
-  defp update_projects_topology(projects, graph) do
-    roots = Workspace.Graph.source_projects(graph)
-
-    Enum.map(projects, fn project ->
-      Workspace.Project.set_root?(project, project.app in roots)
-    end)
-  end
-
-  @doc false
-  @spec set_projects(workspace :: t(), projects :: [Workspace.Project.t()] | map()) :: t()
-  def set_projects(workspace, projects) when is_list(projects) do
-    projects =
-      projects
-      |> Enum.map(fn project -> {project.app, project} end)
-      |> Enum.into(%{})
-
-    set_projects(workspace, projects)
-  end
-
-  def set_projects(workspace, projects) when is_map(projects) do
-    %__MODULE__{workspace | projects: projects}
-  end
-
   @doc """
   Returns the workspace projects as a list.
   """
-  @spec projects(workspace :: Workspace.t()) :: [Workspace.Project.t()]
+  @spec projects(workspace :: Workspace.State.t()) :: [Workspace.Project.t()]
   def projects(workspace) do
     workspace.projects
     |> Map.values()
@@ -453,14 +375,14 @@ defmodule Workspace do
   @doc """
   Returns `true` if the given `app` is a `workspace` project, `false` otherwise. 
   """
-  @spec project?(workspace :: t(), app :: atom()) :: boolean()
-  def project?(workspace, app) when is_struct(workspace, Workspace) and is_atom(app),
+  @spec project?(workspace :: Workspace.State.t(), app :: atom()) :: boolean()
+  def project?(workspace, app) when is_struct(workspace, Workspace.State) and is_atom(app),
     do: Map.has_key?(workspace.projects, app)
 
   @doc """
   Similar to `project/2` but raises in case of error
   """
-  @spec project!(workspace :: t(), app :: atom()) :: Workspace.Project.t()
+  @spec project!(workspace :: Workspace.State.t(), app :: atom()) :: Workspace.Project.t()
   def project!(workspace, app) do
     case project(workspace, app) do
       {:ok, project} -> project
@@ -473,7 +395,7 @@ defmodule Workspace do
 
   If the project is not a workspace member, an error tuple is returned.
   """
-  @spec project(workspace :: t(), app :: atom()) ::
+  @spec project(workspace :: Workspace.State.t(), app :: atom()) ::
           {:ok, Workspace.Project.t()} | {:error, binary()}
   def project(workspace, app) when is_atom(app) do
     case Map.has_key?(workspace.projects, app) do
@@ -518,11 +440,11 @@ defmodule Workspace do
   > * Selected projects (`:project` option set)
   > * Code status modifiers (`:affected`, `:modified` and `:only_roots`)
   """
-  @spec filter(workspace :: Workspace.t(), opts :: keyword()) :: Workspace.t()
-  def filter(%Workspace{} = workspace, opts) do
+  @spec filter(workspace :: Workspace.State.t(), opts :: keyword()) :: Workspace.State.t()
+  def filter(%Workspace.State{} = workspace, opts) do
     projects = filter_projects(workspace, opts)
 
-    set_projects(workspace, projects)
+    Workspace.State.set_projects(workspace, projects)
   end
 
   defp filter_projects(workspace, opts) do
