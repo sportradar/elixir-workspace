@@ -26,8 +26,8 @@ defmodule Mix.Tasks.Workspace.StatusTest do
       :package_changed_e package_changed_e/mix.exs
 
     Affected projects:
-      :package_changed_c package_changed_c/mix.exs
       :package_changed_a package_changed_a/mix.exs
+      :package_changed_c package_changed_c/mix.exs
       :package_changed_h package_changed_h/mix.exs
 
     """

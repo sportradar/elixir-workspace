@@ -31,6 +31,7 @@ defmodule Workspace.State do
   * `:workspace_path` - The workspace root path.
   * `:cwd` - The directory from which the workspace was generated.
   * `:graph` - The DAG (directed acyclic graph) of the workspace.
+  * `:status_updated?` - Set to `true` if the workspace status has been updated.
   """
   @type t :: %Workspace.State{
           projects: %{atom() => Workspace.Project.t()},
@@ -38,7 +39,8 @@ defmodule Workspace.State do
           mix_path: binary(),
           workspace_path: binary(),
           cwd: binary(),
-          graph: :digraph.graph()
+          graph: :digraph.graph(),
+          status_updated?: boolean()
         }
 
   @enforce_keys [:config, :mix_path, :workspace_path, :cwd]
@@ -47,7 +49,8 @@ defmodule Workspace.State do
             mix_path: nil,
             workspace_path: nil,
             cwd: nil,
-            graph: nil
+            graph: nil,
+            status_updated?: false
 
   def new(path, mix_path, config, projects) do
     graph = Workspace.Graph.digraph(projects)
@@ -85,4 +88,12 @@ defmodule Workspace.State do
   def set_projects(workspace, projects) when is_map(projects) do
     %__MODULE__{workspace | projects: projects}
   end
+
+  @doc false
+  @spec status_updated(workspace :: t()) :: t()
+  def status_updated(workspace), do: %__MODULE__{workspace | status_updated?: true}
+
+  @doc false
+  @spec status_updated?(workspace :: t()) :: boolean()
+  def status_updated?(workspace), do: workspace.status_updated?
 end

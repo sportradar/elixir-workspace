@@ -4,6 +4,36 @@ defmodule Workspace.StatusTest do
   @sample_workspace_no_git_path Path.join(TestUtils.tmp_path(), "sample_workspace_no_git")
   @sample_workspace_changed_path Path.join(TestUtils.tmp_path(), "sample_workspace_changed")
 
+  describe "update/2" do
+    test "returns all changed files per project" do
+      workspace = Workspace.new!(@sample_workspace_changed_path)
+      refute workspace.status_updated?
+
+      workspace = Workspace.Status.update(workspace, [])
+      assert workspace.status_updated?
+
+      assert workspace.projects[:package_changed_a].status == :affected
+      assert workspace.projects[:package_changed_b].status == :undefined
+      assert workspace.projects[:package_changed_c].status == :affected
+      assert workspace.projects[:package_changed_d].status == :modified
+      assert workspace.projects[:package_changed_e].status == :modified
+      assert workspace.projects[:package_changed_f].status == :undefined
+      assert workspace.projects[:package_changed_g].status == :undefined
+      assert workspace.projects[:package_changed_h].status == :affected
+      assert workspace.projects[:package_changed_i].status == :undefined
+      assert workspace.projects[:package_changed_j].status == :undefined
+      assert workspace.projects[:package_changed_k].status == :undefined
+
+      assert workspace.projects[:package_changed_d].changes == [
+               {"package_changed_d/tmp.exs", :untracked}
+             ]
+
+      assert workspace.projects[:package_changed_e].changes == [
+               {"package_changed_e/file.ex", :untracked}
+             ]
+    end
+  end
+
   describe "changed/2" do
     test "returns all changed files per project" do
       workspace = Workspace.new!(@sample_workspace_changed_path)
@@ -36,11 +66,11 @@ defmodule Workspace.StatusTest do
       workspace = Workspace.new!(@sample_workspace_changed_path)
 
       assert Workspace.Status.affected(workspace) == [
-               :package_changed_c,
                :package_changed_a,
-               :package_changed_h,
+               :package_changed_c,
                :package_changed_d,
-               :package_changed_e
+               :package_changed_e,
+               :package_changed_h
              ]
     end
 

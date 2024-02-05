@@ -37,27 +37,32 @@ defmodule Workspace.Status do
   @spec update(workspace :: Workspace.State.t(), opts :: keyword()) :: Workspace.State.t()
   def update(workspace, opts) do
     changes = changed(workspace, opts)
-    modified = modified_projects(changes)
-    affected = affected_projects(workspace, modified)
 
-    # we must first check the affected since the modified may update the
-    # status
+    modifications = Enum.filter(changes, fn {project, _changes} -> project != nil end)
+
+    # Mark modified projects
     projects =
-      Enum.reduce(
-        annotate(affected, :affected) ++ annotate(modified, :modified),
-        workspace.projects,
-        fn {app, status}, projects ->
-          Map.update!(projects, app, fn project ->
-            Workspace.Project.set_status(project, status)
-          end)
-        end
-      )
+      Enum.reduce(modifications, workspace.projects, fn {project, changes}, projects ->
+        Map.update!(projects, project, fn project ->
+          Workspace.Project.modified(project, changes)
+        end)
+      end)
 
-    Workspace.State.set_projects(workspace, projects)
+    # Affected projects
+    modified = Enum.map(modifications, fn {project, _changes} -> project end)
+    affected = Workspace.Graph.affected(workspace, modified)
+
+    projects =
+      Enum.reduce(affected, projects, fn project, workspace_projects ->
+        Map.update!(workspace_projects, project, fn project ->
+          Workspace.Project.affected(project)
+        end)
+      end)
+
+    workspace
+    |> Workspace.State.set_projects(projects)
+    |> Workspace.State.status_updated()
   end
-
-  defp annotate(projects, annotation),
-    do: Enum.map(projects, fn project -> {project, annotation} end)
 
   @doc """
   Returns the changed files grouped by the project they belong to.
@@ -113,16 +118,19 @@ defmodule Workspace.Status do
   """
   @spec modified(workspace :: Workspace.State.t(), opts :: keyword()) :: [atom()]
   def modified(workspace, opts \\ []) do
-    workspace
-    |> changed(opts)
-    |> modified_projects()
+    workspace = maybe_update_status(workspace, opts)
+
+    workspace.projects
+    |> Enum.filter(fn {_name, project} -> Workspace.Project.modified?(project) end)
+    |> Enum.map(fn {name, _project} -> name end)
+    |> Enum.sort()
   end
 
-  defp modified_projects(changes) do
-    changes
-    |> Enum.filter(fn {project, _changes} -> project != nil end)
-    |> Enum.map(fn {project, _changes} -> project end)
-    |> Enum.uniq()
+  defp maybe_update_status(workspace, opts) do
+    case Workspace.State.status_updated?(workspace) do
+      true -> workspace
+      false -> update(workspace, opts)
+    end
   end
 
   @doc """
@@ -140,9 +148,11 @@ defmodule Workspace.Status do
   """
   @spec affected(workspace :: Workspace.State.t(), opts :: keyword()) :: [atom()]
   def affected(workspace, opts \\ []) do
-    modified = modified(workspace, opts)
-    affected_projects(workspace, modified)
-  end
+    workspace = maybe_update_status(workspace, opts)
 
-  defp affected_projects(workspace, modified), do: Workspace.Graph.affected(workspace, modified)
+    workspace.projects
+    |> Enum.filter(fn {_name, project} -> Workspace.Project.affected?(project) end)
+    |> Enum.map(fn {name, _project} -> name end)
+    |> Enum.sort()
+  end
 end

@@ -16,7 +16,8 @@ defmodule Workspace.Project do
           path: binary(),
           workspace_path: binary(),
           status: :undefined | :unaffected | :modified | :affected,
-          root?: nil | boolean()
+          root?: nil | boolean(),
+          changes: [{Path.t(), Workspace.Git.change_type()}]
         }
 
   @enforce_keys [:app, :module, :config, :mix_path, :path, :workspace_path]
@@ -28,7 +29,8 @@ defmodule Workspace.Project do
             workspace_path: nil,
             skip: false,
             status: :undefined,
-            root?: nil
+            root?: nil,
+            changes: nil
 
   @doc """
   Creates a new project for the given project path.
@@ -82,6 +84,61 @@ defmodule Workspace.Project do
 
   def set_root?(project, root?) when is_boolean(root?),
     do: %Workspace.Project{project | root?: root?}
+
+  @doc """
+  Marks the given project as `:modified`.
+
+  The `changes` is the list of changed files belonging to the current
+  `project` that have changed.
+
+  An exception will be raised if the `changes` list is empty.
+  """
+  @spec modified(project :: t(), changes :: []) :: t()
+  def modified(project, []) do
+    raise ArgumentError,
+          "Cannot mark #{inspect(project.app)} as modified without any associated changes"
+  end
+
+  def modified(project, changes) when is_list(changes) do
+    %Workspace.Project{
+      project
+      | status: :modified,
+        changes: changes
+    }
+  end
+
+  @doc """
+  Returns `true` if the project is modified, false otherwise
+  """
+  @spec modified?(project :: t()) :: boolean()
+  def modified?(project), do: project.status == :modified
+
+  @doc """
+  Marks the given project as `:affected`.
+
+  A project is considered affected if any of it's dependencies (either
+  direct or indirect) is modified.
+
+  Notice that if the project is already marked as `:modified` it's status
+  does not change to `:affected` since by default modified projects are
+  considered affected.
+  """
+  @spec affected(project :: t()) :: t()
+  def affected(project) do
+    case project.status do
+      :modified -> project
+      _other -> %__MODULE__{project | status: :affected}
+    end
+  end
+
+  @doc """
+  Returns `true` if the project is affected, `false` otherwise.
+
+  A project is considered `:affected` if it is either modified or indirectly
+  affected from a modified dependency.
+  """
+  @spec affected?(project :: t()) :: boolean()
+  def affected?(project), do: project.status in [:modified, :affected]
 
   # Helper utility function that just gives a mix.exs absolute path
   # from the input path. It does not check if the file actually exists.
