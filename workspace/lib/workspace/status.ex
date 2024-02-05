@@ -36,25 +36,28 @@ defmodule Workspace.Status do
   """
   @spec update(workspace :: Workspace.State.t(), opts :: keyword()) :: Workspace.State.t()
   def update(workspace, opts) do
-    affected =
-      workspace
-      |> affected(opts)
-      |> Enum.map(fn app -> {app, :affected} end)
-
-    modified =
-      workspace
-      |> modified(opts)
-      |> Enum.map(fn app -> {app, :modified} end)
+    changes = changed(workspace, opts)
+    modified = modified_projects(changes)
+    affected = affected_projects(workspace, modified)
 
     # we must first check the affected since the modified may update the
     # status
     projects =
-      Enum.reduce(affected ++ modified, workspace.projects, fn {app, status}, projects ->
-        Map.update!(projects, app, fn project -> Workspace.Project.set_status(project, status) end)
-      end)
+      Enum.reduce(
+        annotate(affected, :affected) ++ annotate(modified, :modified),
+        workspace.projects,
+        fn {app, status}, projects ->
+          Map.update!(projects, app, fn project ->
+            Workspace.Project.set_status(project, status)
+          end)
+        end
+      )
 
     Workspace.State.set_projects(workspace, projects)
   end
+
+  defp annotate(projects, annotation),
+    do: Enum.map(projects, fn project -> {project, annotation} end)
 
   @doc """
   Returns the changed files grouped by the project they belong to.
@@ -110,7 +113,13 @@ defmodule Workspace.Status do
   """
   @spec modified(workspace :: Workspace.State.t(), opts :: keyword()) :: [atom()]
   def modified(workspace, opts \\ []) do
-    changed(workspace, opts)
+    workspace
+    |> changed(opts)
+    |> modified_projects()
+  end
+
+  defp modified_projects(changes) do
+    changes
     |> Enum.filter(fn {project, _changes} -> project != nil end)
     |> Enum.map(fn {project, _changes} -> project end)
     |> Enum.uniq()
@@ -132,7 +141,8 @@ defmodule Workspace.Status do
   @spec affected(workspace :: Workspace.State.t(), opts :: keyword()) :: [atom()]
   def affected(workspace, opts \\ []) do
     modified = modified(workspace, opts)
-
-    Workspace.Graph.affected(workspace, modified)
+    affected_projects(workspace, modified)
   end
+
+  defp affected_projects(workspace, modified), do: Workspace.Graph.affected(workspace, modified)
 end

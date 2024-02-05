@@ -411,7 +411,7 @@ defmodule Workspace do
   project is considered skippable. The decision is made based on the passed
   options.
 
-  A `Workspace` is returned with the projects statuses updated.
+  A `Workspace.State` is returned with the projects statuses updated.
 
   ## Options
 
