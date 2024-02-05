@@ -44,7 +44,9 @@ defmodule Mix.Tasks.Workspace.Status do
     Workspace.Cli.log([:light_gray, "Modified projects:", :reset])
 
     Enum.each(modified, fn name ->
-      print_project(Workspace.project!(workspace, name), :modified)
+      project = Workspace.project!(workspace, name)
+      print_project_status(project, :modified)
+      print_changes(project)
     end)
 
     Workspace.Cli.newline()
@@ -56,13 +58,13 @@ defmodule Mix.Tasks.Workspace.Status do
     Workspace.Cli.log([:light_gray, "Affected projects:", :reset], prefix: "")
 
     Enum.each(affected, fn name ->
-      print_project(Workspace.project!(workspace, name), :affected)
+      print_project_status(Workspace.project!(workspace, name), :affected)
     end)
 
     Workspace.Cli.newline()
   end
 
-  defp print_project(project, color) do
+  defp print_project_status(project, color) do
     Workspace.Cli.log([
       "  ",
       color,
@@ -74,4 +76,23 @@ defmodule Mix.Tasks.Workspace.Status do
       :reset
     ])
   end
+
+  defp print_changes(project) do
+    for {path, change_type} <- project.changes do
+      Workspace.Cli.log([
+        "    ",
+        change_type_color(change_type),
+        change_type(change_type),
+        " ",
+        path,
+        :reset
+      ])
+    end
+  end
+
+  defp change_type_color(:untracked), do: :gold
+  defp change_type_color(_other), do: :pink
+
+  defp change_type(:untracked), do: "untracked"
+  defp change_type(_other), do: "modified "
 end

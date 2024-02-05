@@ -23,7 +23,9 @@ defmodule Mix.Tasks.Workspace.StatusTest do
     expected = """
     Modified projects:
       :package_changed_d package_changed_d/mix.exs
+        untracked package_changed_d/tmp.exs
       :package_changed_e package_changed_e/mix.exs
+        untracked package_changed_e/file.ex
 
     Affected projects:
       :package_changed_a package_changed_a/mix.exs
@@ -41,6 +43,7 @@ defmodule Mix.Tasks.Workspace.StatusTest do
     expected = """
     Modified projects:
       :package_committed_c package_committed_c/mix.exs
+        modified  package_committed_c/file.ex
 
     Affected projects:
       :package_committed_a package_committed_a/mix.exs

@@ -163,6 +163,8 @@ defmodule Workspace.Cli do
   defp format_style(:light_gray), do: IO.ANSI.color(3, 3, 3)
   defp format_style(:gray), do: IO.ANSI.color(2, 2, 2)
   defp format_style(:orange), do: IO.ANSI.color(4, 3, 1)
+  defp format_style(:pink), do: IO.ANSI.color(4, 1, 2)
+  defp format_style(:gold), do: IO.ANSI.color(5, 3, 1)
 
   # project statuses
   defp format_style(:modified), do: [:red, :bright]

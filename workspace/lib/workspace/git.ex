@@ -3,7 +3,7 @@ defmodule Workspace.Git do
   Helper git related functions
   """
 
-  @type change_type :: :uncommitted | :untraced | :modified
+  @type change_type :: :uncommitted | :untracked | :modified
 
   @doc """
   Get the git repo root of the given path
