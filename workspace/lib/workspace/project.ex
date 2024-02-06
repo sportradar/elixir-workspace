@@ -1,9 +1,46 @@
 defmodule Workspace.Project do
+  opts = [
+    tags: [
+      type: {:list, {:or, [:atom, {:tuple, [:atom, :atom]}]}},
+      doc: """
+      Tags associated with the current project. A single tags can be either
+      an `atom` or a tuple of the form `{atom, atom}`. In the latter case
+      this is considered a scoped tag. For example:
+
+      ```elixir
+      tags: [:utils, {:scope, :shared}]
+      ```
+      """,
+      required: false
+    ]
+  ]
+
+  @workspace_config_schema NimbleOptions.new!(opts)
+
   @moduledoc """
-  A struct holding a workspace project info
+  A struct holding a workspace project info.
+
+  ## Workspace project config
+
+  Each workspace project may optionally have some workspace related settings defined
+  in it's `Mix.Project` config. There isn't a comprehensive list of all supported
+  options since various plugins or mix tasks may define their own options that can
+  be read from this configuration.
+
+  The following are the global workspace supported settings:
+
+  #{NimbleOptions.docs(@workspace_config_schema)}
   """
 
   alias __MODULE__, as: Project
+
+  @typedoc """
+  A project's tag.
+
+  It can either be a single atom or a tuple of atoms. In the latter case
+  this is considered a scoped tag.
+  """
+  @type tag :: atom() | {atom(), atom()}
 
   @typedoc """
   Struct holding info about a mix project
@@ -17,7 +54,8 @@ defmodule Workspace.Project do
           workspace_path: binary(),
           status: :undefined | :unaffected | :modified | :affected,
           root?: nil | boolean(),
-          changes: [{Path.t(), Workspace.Git.change_type()}]
+          changes: [{Path.t(), Workspace.Git.change_type()}],
+          tags: [tag()]
         }
 
   @enforce_keys [:app, :module, :config, :mix_path, :path, :workspace_path]
@@ -30,7 +68,8 @@ defmodule Workspace.Project do
             skip: false,
             status: :undefined,
             root?: nil,
-            changes: nil
+            changes: nil,
+            tags: []
 
   @doc """
   Creates a new project for the given project path.
@@ -55,13 +94,17 @@ defmodule Workspace.Project do
     in_project(
       Path.dirname(mix_path),
       fn module ->
+        config = evaluate_config(Mix.Project.config())
+        workspace_config = validate_workspace_project_config!(config)
+
         %__MODULE__{
           app: module.project()[:app],
           module: module,
-          config: evaluate_config(Mix.Project.config()),
+          config: config,
           mix_path: mix_path,
           path: Path.dirname(mix_path),
-          workspace_path: workspace_path
+          workspace_path: workspace_path,
+          tags: workspace_config[:tags]
         }
       end
     )
@@ -77,6 +120,15 @@ defmodule Workspace.Project do
 
   defp maybe_evaluate(value) when is_function(value, 0), do: value.()
   defp maybe_evaluate(value), do: value
+
+  defp validate_workspace_project_config!(config) when is_list(config) do
+    workspace_config = config[:workspace] || []
+
+    global_config = Keyword.take(workspace_config, Keyword.keys(@workspace_config_schema.schema))
+    global_config = NimbleOptions.validate!(global_config, @workspace_config_schema)
+
+    Keyword.merge(workspace_config, global_config)
+  end
 
   @doc """
   Returns a map including the key properties of the given project.

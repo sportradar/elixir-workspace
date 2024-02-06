@@ -12,6 +12,7 @@ defmodule Workspace.ProjectTest do
       project = Project.new(project_path, @sample_workspace_path)
 
       assert project.module == PackageA.MixProject
+      assert project.tags == [:shared, {:area, :core}]
     end
 
     test "evaluates project config functions if needed" do
@@ -33,6 +34,16 @@ defmodule Workspace.ProjectTest do
       }
 
       assert project.app == :app
+    end
+
+    test "raises in case of invalid global configuration" do
+      project_path = "test/fixtures/invalid_project"
+
+      message = "invalid value for :tags option: expected list, got: 1"
+
+      assert_raise NimbleOptions.ValidationError, message, fn ->
+        Project.new(project_path, "test/fixtures")
+      end
     end
   end
 
