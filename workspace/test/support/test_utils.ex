@@ -144,6 +144,8 @@ defmodule Workspace.TestUtils do
     app = Keyword.fetch!(config, :app)
     project_path = Path.join([workspace_path, path, Atom.to_string(app)])
 
+    tags = Keyword.get(config, :workspace, []) |> Keyword.get(:tags, [])
+
     %Workspace.Project{
       app: app,
       module: project_module(app),
@@ -151,7 +153,7 @@ defmodule Workspace.TestUtils do
       mix_path: Path.join(project_path, "mix.exs"),
       path: project_path,
       workspace_path: workspace_path,
-      tags: opts[:tags] || []
+      tags: tags
     }
   end
 
