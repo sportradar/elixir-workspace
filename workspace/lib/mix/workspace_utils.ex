@@ -10,7 +10,7 @@ defmodule Mix.WorkspaceUtils do
     config_path = Keyword.fetch!(opts, :config_path)
 
     Workspace.new!(workspace_path, config_path)
-    |> Workspace.filter(opts)
+    |> Workspace.Filtering.run(opts)
     |> maybe_include_status(opts)
   end
 
