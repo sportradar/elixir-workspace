@@ -11,7 +11,8 @@ defmodule Workspace.Project do
       tags: [:utils, {:scope, :shared}]
       ```
       """,
-      required: false
+      required: false,
+      default: []
     ]
   ]
 

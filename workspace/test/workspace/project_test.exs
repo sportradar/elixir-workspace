@@ -20,6 +20,7 @@ defmodule Workspace.ProjectTest do
       project = Project.new(project_path, @sample_workspace_path)
 
       assert project.config[:docs] == [foo: 1]
+      assert project.tags == []
     end
 
     # dummy test just for test coverage
