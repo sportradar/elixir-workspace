@@ -39,6 +39,8 @@ defmodule Mix.Tasks.Workspace.NewTest do
         capture_io(fn -> Mix.Tasks.Workspace.New.run(["hello_workspace", "--module", "Hello"]) end)
 
         assert_file(tmp_dir, "hello_workspace/mix.exs", ~r/defmodule Hello.MixWorkspace/)
+        assert_file(tmp_dir, "hello_workspace/mix.exs", ~r/workspace: \[/)
+        assert_file(tmp_dir, "hello_workspace/mix.exs", ~r/type: :workspace/)
 
         assert_file(tmp_dir, "hello_workspace/README.md", fn file ->
           assert file =~ ~r/# :hello_workspace\n/

@@ -9,7 +9,9 @@ defmodule <%= mod %>.MixWorkspace do
         start_permanent: Mix.env() == :prod,
         deps: deps(),
         elixirc_paths: [],
-        workspace: true,
+        workspace: [
+          type: :workspace
+        ],
         lockfile: "workspace.lock" 
       ]
     end
