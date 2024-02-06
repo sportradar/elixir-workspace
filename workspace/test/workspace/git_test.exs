@@ -1,5 +1,7 @@
 defmodule Workspace.GitTest do
-  use MixTest.Case
+  use ExUnit.Case
+
+  import Workspace.TestUtils
 
   describe "root" do
     test "gets the proper root of a git repo" do

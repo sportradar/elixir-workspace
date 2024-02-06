@@ -1,4 +1,4 @@
-defmodule TestUtils do
+defmodule Workspace.TestUtils do
   @moduledoc false
 
   require ExUnit.Assertions

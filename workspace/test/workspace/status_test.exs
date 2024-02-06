@@ -1,8 +1,14 @@
 defmodule Workspace.StatusTest do
   use ExUnit.Case
 
-  @sample_workspace_no_git_path Path.join(TestUtils.tmp_path(), "sample_workspace_no_git")
-  @sample_workspace_changed_path Path.join(TestUtils.tmp_path(), "sample_workspace_changed")
+  @sample_workspace_no_git_path Path.join(
+                                  Workspace.TestUtils.tmp_path(),
+                                  "sample_workspace_no_git"
+                                )
+  @sample_workspace_changed_path Path.join(
+                                   Workspace.TestUtils.tmp_path(),
+                                   "sample_workspace_changed"
+                                 )
 
   describe "update/2" do
     test "returns all changed files per project" do

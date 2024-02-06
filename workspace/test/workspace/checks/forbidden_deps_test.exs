@@ -1,5 +1,5 @@
 defmodule Workspace.Checks.ForbiddenDepsTest do
-  use CheckTest.Case
+  use Workspace.CheckCase
   alias Workspace.Checks.ForbiddenDeps
 
   setup do

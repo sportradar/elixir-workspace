@@ -1,6 +1,6 @@
 defmodule Workspace.FilteringTest do
   use ExUnit.Case
-  import TestUtils
+  import Workspace.TestUtils
 
   setup do
     project_a = project_fixture(app: :foo)

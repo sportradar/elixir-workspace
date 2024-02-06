@@ -1,13 +1,13 @@
 # Checks related helper functions
-defmodule CheckTest.Case do
+defmodule Workspace.CheckCase do
   @moduledoc false
 
   use ExUnit.CaseTemplate
 
   using do
     quote do
-      import CheckTest.Case
-      import TestUtils
+      import Workspace.CheckCase
+      import Workspace.TestUtils
     end
   end
 

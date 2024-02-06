@@ -12,28 +12,28 @@
 # changes committed for testing the affected flags
 # - `sample_workspace_no_git` - a copy of the sample workspace fixture without a
 # git repo initialized
-require TestUtils
+require Workspace.TestUtils
 
-path = TestUtils.create_fixture("sample_workspace", "sample_workspace_default")
-TestUtils.make_fixture_unique(path, "default_")
-TestUtils.init_git_project(path)
+path = Workspace.TestUtils.create_fixture("sample_workspace", "sample_workspace_default")
+Workspace.TestUtils.make_fixture_unique(path, "default_")
+Workspace.TestUtils.init_git_project(path)
 
-path = TestUtils.create_fixture("sample_workspace", "sample_workspace_changed")
-TestUtils.make_fixture_unique(path, "changed_")
-TestUtils.init_git_project(path)
+path = Workspace.TestUtils.create_fixture("sample_workspace", "sample_workspace_changed")
+Workspace.TestUtils.make_fixture_unique(path, "changed_")
+Workspace.TestUtils.init_git_project(path)
 File.touch!(Path.join(path, "package_changed_d/tmp.exs"))
 File.touch!(Path.join(path, "package_changed_e/file.ex"))
 
-path = TestUtils.create_fixture("sample_workspace", "sample_workspace_committed")
-TestUtils.make_fixture_unique(path, "committed_")
-TestUtils.init_git_project(path)
+path = Workspace.TestUtils.create_fixture("sample_workspace", "sample_workspace_committed")
+Workspace.TestUtils.make_fixture_unique(path, "committed_")
+Workspace.TestUtils.init_git_project(path)
 File.touch!(Path.join(path, "package_committed_c/file.ex"))
-TestUtils.cmd_in_path(path, "git", ~w[add .])
-TestUtils.cmd_in_path(path, "git", ~w[commit -m message])
+Workspace.TestUtils.cmd_in_path(path, "git", ~w[add .])
+Workspace.TestUtils.cmd_in_path(path, "git", ~w[commit -m message])
 
-path = TestUtils.create_fixture("sample_workspace", "sample_workspace_no_git")
-TestUtils.make_fixture_unique(path, "no_git_")
+path = Workspace.TestUtils.create_fixture("sample_workspace", "sample_workspace_no_git")
+Workspace.TestUtils.make_fixture_unique(path, "no_git_")
 
-ExUnit.after_suite(fn _stats -> TestUtils.delete_tmp_dirs() end)
+ExUnit.after_suite(fn _stats -> Workspace.TestUtils.delete_tmp_dirs() end)
 
 ExUnit.start()

@@ -1,5 +1,5 @@
 defmodule Workspace.Checks.EnsureDependenciesTest do
-  use CheckTest.Case
+  use Workspace.CheckCase
   alias Workspace.Checks.EnsureDependencies
 
   setup do

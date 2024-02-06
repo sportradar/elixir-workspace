@@ -1,6 +1,6 @@
 defmodule Mix.Tasks.Workspace.CheckTest do
   use ExUnit.Case, async: false
-  import TestUtils
+  import Workspace.TestUtils
 
   alias Mix.Tasks.Workspace.Check, as: CheckTask
 

@@ -1,7 +1,10 @@
 defmodule Workspace.ExportTest do
   use ExUnit.Case
 
-  @sample_workspace_changed_path Path.join(TestUtils.tmp_path(), "sample_workspace_changed")
+  @sample_workspace_changed_path Path.join(
+                                   Workspace.TestUtils.tmp_path(),
+                                   "sample_workspace_changed"
+                                 )
 
   describe "to_json/1" do
     test "without changes updated" do

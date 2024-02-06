@@ -1,5 +1,5 @@
 defmodule Workspace.Checks.ValidateTagsTest do
-  use CheckTest.Case
+  use Workspace.CheckCase
   alias Workspace.Checks.ValidateTags
 
   setup do

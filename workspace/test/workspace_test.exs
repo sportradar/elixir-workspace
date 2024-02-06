@@ -1,6 +1,6 @@
 defmodule WorkspaceTest do
   use ExUnit.Case
-  import TestUtils
+  import Workspace.TestUtils
   doctest Workspace
 
   @sample_workspace_path "test/fixtures/sample_workspace"

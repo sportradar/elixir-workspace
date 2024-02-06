@@ -1,5 +1,5 @@
 defmodule Workspace.Checks.DependenciesVersionTest do
-  use CheckTest.Case
+  use Workspace.CheckCase
   alias Workspace.Checks.DependenciesVersion
 
   setup do

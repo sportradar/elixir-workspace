@@ -1,10 +1,10 @@
 defmodule Mix.Tasks.Workspace.RunTest do
   use ExUnit.Case
 
-  require TestUtils
+  require Workspace.TestUtils
 
   import ExUnit.CaptureIO
-  import TestUtils
+  import Workspace.TestUtils
 
   alias Mix.Tasks.Workspace.Run, as: RunTask
 

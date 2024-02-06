@@ -1,5 +1,5 @@
 defmodule Workspace.Checks.ValidateConfigPathTest do
-  use CheckTest.Case
+  use Workspace.CheckCase
   alias Workspace.Checks.ValidateConfigPath
 
   setup do

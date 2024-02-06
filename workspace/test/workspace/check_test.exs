@@ -1,5 +1,5 @@
 defmodule Workspace.CheckTest do
-  use CheckTest.Case
+  use Workspace.CheckCase
 
   setup do
     project_a = project_fixture(app: :foo)

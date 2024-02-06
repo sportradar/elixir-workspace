@@ -3,9 +3,18 @@ defmodule Mix.Tasks.Workspace.GraphTest do
   import ExUnit.CaptureIO
   alias Mix.Tasks.Workspace.Graph, as: GraphTask
 
-  @sample_workspace_default_path Path.join(TestUtils.tmp_path(), "sample_workspace_default")
-  @sample_workspace_changed_path Path.join(TestUtils.tmp_path(), "sample_workspace_changed")
-  @sample_workspace_committed_path Path.join(TestUtils.tmp_path(), "sample_workspace_committed")
+  @sample_workspace_default_path Path.join(
+                                   Workspace.TestUtils.tmp_path(),
+                                   "sample_workspace_default"
+                                 )
+  @sample_workspace_changed_path Path.join(
+                                   Workspace.TestUtils.tmp_path(),
+                                   "sample_workspace_changed"
+                                 )
+  @sample_workspace_committed_path Path.join(
+                                     Workspace.TestUtils.tmp_path(),
+                                     "sample_workspace_committed"
+                                   )
 
   setup do
     Application.put_env(:elixir, :ansi_enabled, false)

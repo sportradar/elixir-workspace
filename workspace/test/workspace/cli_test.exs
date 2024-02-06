@@ -2,7 +2,7 @@ defmodule Workspace.CliTest do
   use ExUnit.Case
 
   import ExUnit.CaptureIO
-  import TestUtils
+  import Workspace.TestUtils
 
   alias Workspace.Cli
 
