@@ -13,10 +13,10 @@ defmodule Workspace.Filtering do
   Filter the `workspace` projects based on the given options.
 
   It will iterate over all projects and wil set the `:skip` to `true` if the
-  project is considered skippable. The decision is made based on the passed
+  project is considered skippable. The decision is made based on the provided
   options.
 
-  A `Workspace.State` is returned with the projects statuses updated.
+  A `Workspace.State` is returned with the projects updated.
 
   ## Options
 
