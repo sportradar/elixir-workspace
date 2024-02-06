@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Workspace.Graph do
-  @task_options [
+  opts = [
     format: [
       type: :string,
       default: "pretty",
@@ -20,6 +20,7 @@ defmodule Mix.Tasks.Workspace.Graph do
       """
     ]
   ]
+
   @options_schema Workspace.Cli.options(
                     [
                       :workspace_path,
@@ -29,7 +30,7 @@ defmodule Mix.Tasks.Workspace.Graph do
                       :base,
                       :head
                     ],
-                    @task_options
+                    opts
                   )
 
   @shortdoc "Prints the dependency tree"

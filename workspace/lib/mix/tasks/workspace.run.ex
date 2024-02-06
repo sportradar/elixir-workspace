@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Workspace.Run do
-  @task_options [
+  opts = [
     task: [
       type: :string,
       alias: :t,
@@ -60,7 +60,7 @@ defmodule Mix.Tasks.Workspace.Run do
                       :verbose,
                       :show_status
                     ],
-                    @task_options
+                    opts
                   )
 
   @shortdoc "Run a mix command to all projects"
