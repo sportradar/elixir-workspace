@@ -24,8 +24,10 @@ defmodule Mix.Tasks.Cascade do
 
       $ mix cascade template_name [--root PATH] -- [...]
 
-  The extra command line arguments depend on the template. You can
-  list all available templates by running:
+  Notice that individual templates may support extra command line
+  arguments. These must be specified after the `--` separator.
+
+  You can list all available templates by running:
 
       $ mix cascade.help
 
