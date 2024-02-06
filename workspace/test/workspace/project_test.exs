@@ -94,4 +94,21 @@ defmodule Workspace.ProjectTest do
 
     assert Project.relative_to_workspace(project) == "package_a"
   end
+
+  test "to_map/1" do
+    project_path = Path.join(@sample_workspace_path, "package_a")
+    project = Project.new(project_path, @sample_workspace_path)
+
+    assert Project.to_map(project) == %{
+             module: "PackageA.MixProject",
+             status: "undefined",
+             path: Path.join(@sample_workspace_path, "package_a") |> Path.expand(),
+             root: nil,
+             app: "package_a",
+             mix_path:
+               Path.join([@sample_workspace_path, "package_a", "mix.exs"]) |> Path.expand(),
+             workspace_path: Path.expand(@sample_workspace_path),
+             changes: []
+           }
+  end
 end

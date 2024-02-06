@@ -512,4 +512,19 @@ defmodule Workspace do
 
   defp maybe_to_atom(value) when is_atom(value), do: value
   defp maybe_to_atom(value) when is_binary(value), do: String.to_atom(value)
+
+  @doc """
+  Returns a `json` representation of the key workspace properties.
+
+  By default only the `workspace_path` and the `projects` are included.
+  """
+  @spec to_json(workspace :: Workspace.State.t()) :: String.t()
+  def to_json(workspace) do
+    %{
+      workspace_path: workspace.workspace_path,
+      projects:
+        Enum.map(workspace.projects, fn {_name, project} -> Workspace.Project.to_map(project) end)
+    }
+    |> Jason.encode!(pretty: true)
+  end
 end

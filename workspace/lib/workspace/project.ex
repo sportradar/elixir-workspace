@@ -77,6 +77,28 @@ defmodule Workspace.Project do
   defp maybe_evaluate(value) when is_function(value, 0), do: value.()
   defp maybe_evaluate(value), do: value
 
+  @doc """
+  Returns a map including the key properties of the given project.
+
+  Only `:app`, `:module`, `:mix_path`, `:path`, `:workspace_path`, `:status`,
+  `:root` and `:changes` are included.
+  """
+  @spec to_map(project :: t()) :: map()
+  def to_map(project) do
+    changes = Enum.map(project.changes || [], fn {file, _type} -> file end)
+
+    %{
+      app: Atom.to_string(project.app),
+      module: inspect(project.module),
+      mix_path: project.mix_path,
+      path: project.path,
+      workspace_path: project.workspace_path,
+      status: Atom.to_string(project.status),
+      root: project.root?,
+      changes: changes
+    }
+  end
+
   @valid_statuses [:undefined, :modified, :affected, :unaffected]
 
   def set_status(project, status) when status in @valid_statuses,
