@@ -23,8 +23,13 @@ defmodule Workspace.Filtering do
     * `:exclude` (list of `t:atom/0`) - a list of projects to be ignored. This has
     the highest priority, e.g. if the project is in the `:ignore` list it is
     always skipped.
-    * `:project` (list of `t:atom/0`) - a list of project to consider, if set all
+    * `:exclude_tags` (list of `t:Workspace.Project.tag()`) - a list of tags to be
+    ignored. Any project that has any of the provided tags will be skipped.
+    * `:project` (list of `t:atom/0`) - a list of projects to consider. If set all
     projects that are not included in the list are considered skippable.
+    * `:tags` (list of `t:Workspace.Project.tag()`) - a list of tags to be
+    considered. All projects that do not have at least one the specified tags will
+    be skipped.
     * `:affected` (`t:boolean/0`) - if set only the affected projects will be
     included and everything else will be skipped. Defaults to `false`.
     * `:modified` (`t:boolean/0`) - if set only the modified projects will be
@@ -41,8 +46,8 @@ defmodule Workspace.Filtering do
   > 
   > Notice that projects are filtered using the following precedence:
   >
-  > * Excluded projects (`:exclude` option set)
-  > * Selected projects (`:project` option set)
+  > * Excluded projects (`:exclude` or `:exclude_tags` options set)
+  > * Selected projects (`:project` or `:tags` option set)
   > * Code status modifiers (`:affected`, `:modified` and `:only_roots`)
   """
   @spec run(workspace :: Workspace.State.t(), opts :: keyword()) :: Workspace.State.t()
@@ -63,56 +68,41 @@ defmodule Workspace.Filtering do
   defp maybe_update_status(workspace, _opts, _other), do: workspace
 
   defp filter_projects(workspace, opts) do
-    ignored = Enum.map(opts[:exclude] || [], &maybe_to_atom/1)
-    selected = Enum.map(opts[:project] || [], &maybe_to_atom/1)
-    affected = opts[:affected] || false
-    modified = opts[:modified] || false
-    only_roots = opts[:only_roots] || false
+    opts = [
+      excluded: Enum.map(opts[:exclude] || [], &maybe_to_atom/1),
+      selected: Enum.map(opts[:project] || [], &maybe_to_atom/1),
+      affected: opts[:affected] || false,
+      modified: opts[:modified] || false,
+      only_roots: opts[:only_roots] || false
+    ]
 
     Enum.map(workspace.projects, fn {_name, project} ->
-      Map.put(
-        project,
-        :skip,
-        skippable?(project, selected, ignored, affected, modified, only_roots)
-      )
+      Map.put(project, :skip, skippable?(project, opts))
     end)
-  end
-
-  defp skippable?(
-         %Workspace.Project{app: app, root?: root?} = project,
-         selected,
-         excluded,
-         affected,
-         modified,
-         only_roots
-       ) do
-    cond do
-      # first we check if the project is in the excluded list
-      app in excluded ->
-        true
-
-      # next we check if the project is not selected
-      selected != [] and app not in selected ->
-        true
-
-      # if only_roots is set and the project is not a root skip it
-      only_roots and not root? ->
-        true
-
-      # next we check if affected is set and the project is not affected
-      affected and not Workspace.Project.affected?(project) ->
-        true
-
-      # next we check if modified is set and the project is not modified
-      modified and not Workspace.Project.modified?(project) ->
-        true
-
-      # in any other case it is not skippable
-      true ->
-        false
-    end
   end
 
   defp maybe_to_atom(value) when is_atom(value), do: value
   defp maybe_to_atom(value) when is_binary(value), do: String.to_atom(value)
+
+  defp skippable?(project, opts) do
+    excluded_project?(project, opts[:excluded]) or
+      not_selected_project?(project, opts[:selected]) or
+      not_root?(project, opts[:only_roots]) or
+      not_affected?(project, opts[:affected]) or
+      not_modified?(project, opts[:modified])
+  end
+
+  defp excluded_project?(project, excluded), do: project.app in excluded
+
+  defp not_selected_project?(_project, []), do: false
+  defp not_selected_project?(project, selected), do: project.app not in selected
+
+  defp not_root?(_project, false), do: false
+  defp not_root?(project, true), do: not project.root?
+
+  defp not_affected?(_project, false), do: false
+  defp not_affected?(project, true), do: not Workspace.Project.affected?(project)
+
+  defp not_modified?(_project, false), do: false
+  defp not_modified?(project, true), do: not Workspace.Project.modified?(project)
 end
