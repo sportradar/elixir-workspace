@@ -9,6 +9,8 @@ defmodule Workspace.Export do
   Returns a `json` representation of the key workspace properties.
 
   By default only the `workspace_path` and the `projects` are included.
+
+  Notice that skipped projects are not inlcuded.
   """
   @spec to_json(workspace :: Workspace.State.t()) :: String.t()
   def to_json(workspace) do
@@ -17,7 +19,9 @@ defmodule Workspace.Export do
     %{
       workspace_path: workspace.workspace_path,
       projects:
-        Enum.map(workspace.projects, fn {_name, project} -> Workspace.Project.to_map(project) end)
+        workspace.projects
+        |> Enum.reject(fn {_name, project} -> project.skip end)
+        |> Enum.map(fn {_name, project} -> Workspace.Project.to_map(project) end)
     }
     |> Jason.encode!(pretty: true)
   end

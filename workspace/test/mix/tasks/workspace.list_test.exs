@@ -86,4 +86,52 @@ defmodule Mix.Tasks.Workspace.ListTest do
              ])
            end) == expected
   end
+
+  test "with --json option set" do
+    output = Path.join(@sample_workspace_changed_path, "workspace.json")
+
+    expected = """
+    ==> generated #{output}
+    """
+
+    assert capture_io(fn ->
+             ListTask.run([
+               "--workspace-path",
+               @sample_workspace_changed_path,
+               "--json",
+               "--output",
+               output
+             ])
+           end) == expected
+
+    assert %{"projects" => projects} = File.read!(output) |> Jason.decode!()
+
+    assert length(projects) == 11
+  end
+
+  test "with --json option set and --exclude" do
+    output = Path.join(@sample_workspace_changed_path, "workspace.json")
+
+    expected = """
+    ==> generated #{output}
+    """
+
+    assert capture_io(fn ->
+             ListTask.run([
+               "--workspace-path",
+               @sample_workspace_changed_path,
+               "--json",
+               "--output",
+               output,
+               "-e",
+               "package_changed_a",
+               "-e",
+               "package_changed_b"
+             ])
+           end) == expected
+
+    assert %{"projects" => projects} = File.read!(output) |> Jason.decode!()
+
+    assert length(projects) == 9
+  end
 end

@@ -1,11 +1,34 @@
 defmodule Mix.Tasks.Workspace.List do
-  @options_schema Workspace.Cli.options([
-                    :workspace_path,
-                    :config_path,
-                    :project,
-                    :exclude,
-                    :show_status
-                  ])
+  opts = [
+    json: [
+      type: :boolean,
+      default: false,
+      doc: """
+      If set a `json` file will be generated with the list of workspace projects and
+      associated metadata. By default it will be saved in `workspace.json` in the
+      current directory. You can override the output path by setting the `--output`
+      option.
+      """
+    ],
+    output: [
+      type: :string,
+      default: "workspace.json",
+      doc: """
+      The output file. Applicable only if `--json` is set.
+      """
+    ]
+  ]
+
+  @options_schema Workspace.Cli.options(
+                    [
+                      :workspace_path,
+                      :config_path,
+                      :project,
+                      :exclude,
+                      :show_status
+                    ],
+                    opts
+                  )
 
   @shortdoc "Display info about the workspace projects"
 
@@ -34,7 +57,14 @@ defmodule Mix.Tasks.Workspace.List do
 
     opts
     |> Mix.WorkspaceUtils.load_and_filter_workspace()
-    |> list_workspace_projects(opts[:show_status])
+    |> list_or_save_workspace_projects(opts)
+  end
+
+  defp list_or_save_workspace_projects(workspace, opts) do
+    case opts[:json] do
+      false -> list_workspace_projects(workspace, opts[:show_status])
+      true -> write_json(workspace, opts[:output])
+    end
   end
 
   defp list_workspace_projects(workspace, show_status) do
@@ -70,4 +100,12 @@ defmodule Mix.Tasks.Workspace.List do
 
   defp description(nil), do: ""
   defp description(doc) when is_binary(doc), do: [" - ", doc]
+
+  defp write_json(workspace, output_path) do
+    json_data = Workspace.Export.to_json(workspace)
+
+    File.write!(output_path, json_data)
+
+    Workspace.Cli.log([:green, "generated ", :reset, output_path], prefix: :header)
+  end
 end
