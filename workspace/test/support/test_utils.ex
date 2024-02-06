@@ -150,7 +150,8 @@ defmodule TestUtils do
       config: config,
       mix_path: Path.join(project_path, "mix.exs"),
       path: project_path,
-      workspace_path: workspace_path
+      workspace_path: workspace_path,
+      tags: opts[:tags] || []
     }
   end
 
