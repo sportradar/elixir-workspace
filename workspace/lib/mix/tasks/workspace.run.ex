@@ -178,6 +178,8 @@ defmodule Mix.Tasks.Workspace.Run do
 
   @impl Mix.Task
   def run(args) do
+    Mix.Task.reenable("workspace.run")
+
     {:ok, opts} = CliOpts.parse(args, @options_schema)
     %{parsed: opts, extra: extra} = opts
 
