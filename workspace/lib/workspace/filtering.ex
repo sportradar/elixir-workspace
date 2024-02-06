@@ -41,16 +41,26 @@ defmodule Workspace.Filtering do
   > 
   > Notice that projects are filtered using the following precedence:
   >
-  > * Ignored projects (`:exclude` option set)
+  > * Excluded projects (`:exclude` option set)
   > * Selected projects (`:project` option set)
   > * Code status modifiers (`:affected`, `:modified` and `:only_roots`)
   """
   @spec run(workspace :: Workspace.State.t(), opts :: keyword()) :: Workspace.State.t()
   def run(%Workspace.State{} = workspace, opts) do
+    workspace =
+      maybe_update_status(
+        workspace,
+        Keyword.take(opts, [:base, :head]),
+        opts[:affected] || opts[:modified]
+      )
+
     projects = filter_projects(workspace, opts)
 
     Workspace.State.set_projects(workspace, projects)
   end
+
+  defp maybe_update_status(workspace, opts, true), do: Workspace.Status.update(workspace, opts)
+  defp maybe_update_status(workspace, _opts, _other), do: workspace
 
   defp filter_projects(workspace, opts) do
     ignored = Enum.map(opts[:exclude] || [], &maybe_to_atom/1)
@@ -59,38 +69,26 @@ defmodule Workspace.Filtering do
     modified = opts[:modified] || false
     only_roots = opts[:only_roots] || false
 
-    affected_projects =
-      case affected do
-        false -> nil
-        true -> Workspace.Status.affected(workspace, base: opts[:base], head: opts[:head])
-      end
-
-    modified_projects =
-      case modified do
-        false -> nil
-        true -> Workspace.Status.modified(workspace, base: opts[:base], head: opts[:head])
-      end
-
     Enum.map(workspace.projects, fn {_name, project} ->
       Map.put(
         project,
         :skip,
-        skippable?(project, selected, ignored, affected_projects, modified_projects, only_roots)
+        skippable?(project, selected, ignored, affected, modified, only_roots)
       )
     end)
   end
 
   defp skippable?(
-         %Workspace.Project{app: app, root?: root?},
+         %Workspace.Project{app: app, root?: root?} = project,
          selected,
-         ignored,
+         excluded,
          affected,
          modified,
          only_roots
        ) do
     cond do
-      # first we check if the project is in the ignore list
-      app in ignored ->
+      # first we check if the project is in the excluded list
+      app in excluded ->
         true
 
       # next we check if the project is not selected
@@ -102,11 +100,11 @@ defmodule Workspace.Filtering do
         true
 
       # next we check if affected is set and the project is not affected
-      is_list(affected) and app not in affected ->
+      affected and not Workspace.Project.affected?(project) ->
         true
 
       # next we check if modified is set and the project is not modified
-      is_list(modified) and app not in modified ->
+      modified and not Workspace.Project.modified?(project) ->
         true
 
       # in any other case it is not skippable
