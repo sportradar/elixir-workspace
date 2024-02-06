@@ -8,7 +8,9 @@ defmodule SampleWorkspace.MixWorkspace do
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       elixirc_paths: [],
-      workspace: true
+      workspace: [
+        type: :workspace
+      ]
     ]
   end
 end

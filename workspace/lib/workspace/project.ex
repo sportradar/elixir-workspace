@@ -46,6 +46,7 @@ defmodule Workspace.Project do
   This will raise if the `path` does not correspond to a valid
   mix project.
   """
+  # TODO: check for nested workspaces and raise if needed
   @spec new(mix_path :: String.t(), workspace_path :: String.t()) :: t()
   def new(path, workspace_path) do
     mix_path = mix_path(path)

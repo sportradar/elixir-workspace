@@ -7,6 +7,30 @@ defmodule Workspace do
   provided tools you can effectively work on massive codebases properly
   splitted into reusable packages.
 
+  ## Structuring a folder as a workspace root
+
+  A workspace is a normal `Mix.Project` with some tweaks:
+
+    * No actual code is expected, so `:elixirc_paths` is set to `[]`
+    * It must have a `:workspace` project option configured with a `:type` set
+    to `:workspace`.
+
+  ```elixir
+  def project do
+    [
+      workspace: [
+        type: :workspace,
+        # arbitrary options can be set there
+      ],
+      # rest Mix.Project settings
+    ]
+  end
+  ```
+
+  A generator is provided for bootstrapping a new workspace project:
+
+      $ mix workspace.new NAME
+
   ## Workspace projects
 
   A mix project is considered a workspace project if:
@@ -81,15 +105,6 @@ defmodule Workspace do
   > ```
   >
   > would fail to initialize since `:package_a` is defined twice.
-
-  ## Structuring a folder as a workspace root
-
-  A workspace is a normal `Mix.Project` with some tweaks:
-
-    * No actual code is expected, so `:elixirc_paths` is set to `[]`
-    * It must have a `:workspace` project option set to `true`
-
-  **TODO**: Once implemented add info about the generator
 
   ## Loading a workspace
 
@@ -345,20 +360,22 @@ defmodule Workspace do
   end
 
   defp ensure_workspace_set_in_config(config) when is_list(config) do
-    case config[:workspace] do
-      nil ->
-        {:error,
-         """
-         :workspace is not set in your project's config
+    workspace_config = config[:workspace] || []
 
-         In order to define a project as workspace, you need to add the following
-         to the project's `mix.exs` config:
+    if Keyword.keyword?(workspace_config) and workspace_config[:type] == :workspace do
+      :ok
+    else
+      {:error,
+       """
+       The project is not properly configured as a workspace.
 
-             workspace: true
-         """}
+       In order to define a project as a workspace, you need to add the following
+       to the project's `mix.exs` config:
 
-      _other ->
-        :ok
+           workspace: [
+             type: :workspace
+           ]
+       """}
     end
   end
 
