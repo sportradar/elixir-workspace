@@ -8,6 +8,6 @@ defmodule Workspace.Coverage.Exporter do
 
   TODO: add detailed docs
   """
-  @callback export(workspace :: Workspace.t(), coverage_data :: [term()], opts :: keyword()) ::
+  @callback export(workspace :: Workspace.State.t(), coverage_data :: [term()], opts :: keyword()) ::
               :ok | {:error, String.t()}
 end

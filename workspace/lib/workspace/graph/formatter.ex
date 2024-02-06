@@ -13,5 +13,5 @@ defmodule Workspace.Graph.Formatter do
 
   Options are generic and any formatter can support custom options.
   """
-  @callback render(workspace :: Workspace.t(), opts :: keyword()) :: :ok
+  @callback render(workspace :: Workspace.State.t(), opts :: keyword()) :: :ok
 end

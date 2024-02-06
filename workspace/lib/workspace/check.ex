@@ -84,7 +84,7 @@ defmodule Workspace.Check do
   # TODO: check this callback, maybe we can change it to run on a single project
   # and return {:ok, } {:error} tuples
   # we can add an optional workspace-check for running on the complete workspace
-  @callback check(workspace :: Workspace.t(), check :: keyword()) :: [
+  @callback check(workspace :: Workspace.State.t(), check :: keyword()) :: [
               Workspace.Check.Result.t()
             ]
 
@@ -169,7 +169,7 @@ defmodule Workspace.Check do
   and handling ignored projects...
   """
   @spec check_projects(
-          workspace :: Workspace.t(),
+          workspace :: Workspace.State.t(),
           check :: keyword(),
           check_fun :: (Workspace.Project.t() -> {atom(), keyword()})
         ) :: [Workspace.Check.Result.t()]
