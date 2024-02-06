@@ -73,7 +73,9 @@ defmodule Workspace.Filtering do
       selected: Enum.map(opts[:project] || [], &maybe_to_atom/1),
       affected: opts[:affected] || false,
       modified: opts[:modified] || false,
-      only_roots: opts[:only_roots] || false
+      only_roots: opts[:only_roots] || false,
+      excluded_tags: opts[:excluded_tags] || [],
+      tags: opts[:tags] || []
     ]
 
     Enum.map(workspace.projects, fn {_name, project} ->
@@ -86,7 +88,9 @@ defmodule Workspace.Filtering do
 
   defp skippable?(project, opts) do
     excluded_project?(project, opts[:excluded]) or
+      excluded_tag?(project, opts[:excluded_tags]) or
       not_selected_project?(project, opts[:selected]) or
+      not_selected_tag?(project, opts[:tags]) or
       not_root?(project, opts[:only_roots]) or
       not_affected?(project, opts[:affected]) or
       not_modified?(project, opts[:modified])
@@ -94,8 +98,16 @@ defmodule Workspace.Filtering do
 
   defp excluded_project?(project, excluded), do: project.app in excluded
 
+  defp excluded_tag?(project, excluded_tags),
+    do: Enum.any?(project.tags, fn tag -> tag in excluded_tags end)
+
   defp not_selected_project?(_project, []), do: false
   defp not_selected_project?(project, selected), do: project.app not in selected
+
+  defp not_selected_tag?(_project, []), do: false
+
+  defp not_selected_tag?(project, tags),
+    do: Enum.all?(project.tags, fn tag -> tag not in tags end)
 
   defp not_root?(_project, false), do: false
   defp not_root?(project, true), do: not project.root?
