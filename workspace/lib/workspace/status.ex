@@ -35,7 +35,7 @@ defmodule Workspace.Status do
     is used only if `:base` is set.
   """
   @spec update(workspace :: Workspace.State.t(), opts :: keyword()) :: Workspace.State.t()
-  def update(workspace, opts) do
+  def update(workspace, opts \\ []) do
     changes = changed(workspace, opts)
 
     modifications = Enum.filter(changes, fn {project, _changes} -> project != nil end)
