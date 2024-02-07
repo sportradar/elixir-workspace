@@ -27,6 +27,9 @@ defmodule CliOpts do
     * `:keep` (`boolean/0`) - If set this option can be used multiple times. The
     default value is `false`
     * `:allowed` (`[String.t()]`) - If set a list of allowed values.
+    * `:as` (`atom/0`) - If set the option will be renamed to this value internally.
+    This is useful for semantic mapping of options, for example an option
+    `:select` with `:keep` set to `true` can be mapped to `:selected`.
 
   ## Example
 
@@ -36,7 +39,8 @@ defmodule CliOpts do
       type: :string,
       alias: :i,
       keep: true,
-      doc: "Ignore the given file"
+      doc: "Ignore the given file",
+      as: :selected
     ],
     task: [
       type: :string,
@@ -91,8 +95,8 @@ defmodule CliOpts do
       iex> CliOpts.parse(["--verbose", "-i"], [verbose: [type: :boolean]])
       {:ok, %{parsed: [verbose: true], args: [], extra: [], invalid: [{"-i", nil}]}}
 
-      iex> CliOpts.parse(["-f", "file1", "-f", "file2"], [file: [type: :string, alias: :f, keep: true]])
-      {:ok, %{parsed: [file: ["file1", "file2"]], args: [], extra: [], invalid: []}}
+      iex> CliOpts.parse(["-f", "file1", "-f", "file2"], [file: [type: :string, alias: :f, keep: true, as: :files]])
+      {:ok, %{parsed: [files: ["file1", "file2"]], args: [], extra: [], invalid: []}}
 
       iex> CliOpts.parse(["--verbose", "--", "--other", "file"], [verbose: [type: :boolean]])
       {:ok, %{parsed: [verbose: true], args: [], extra: ["--other", "file"], invalid: []}}
@@ -115,7 +119,7 @@ defmodule CliOpts do
          {:ok, parsed} <- check_allowed(parsed, schema) do
       {:ok,
        %{
-         parsed: parsed,
+         parsed: maybe_rename(parsed, schema),
          args: args,
          invalid: invalid,
          extra: extra
@@ -155,6 +159,16 @@ defmodule CliOpts do
       {:error, reason} ->
         raise OptionParser.ParseError, reason
     end
+  end
+
+  defp maybe_rename(opts, schema) do
+    Enum.reduce(opts, [], fn {name, value}, acc ->
+      case schema[name][:as] do
+        nil -> [{name, value} | acc]
+        as -> [{as, value} | acc]
+      end
+    end)
+    |> Enum.reverse()
   end
 
   @doc ~S'''

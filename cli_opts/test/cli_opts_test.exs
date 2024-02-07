@@ -43,6 +43,24 @@ defmodule CliOptsTest do
       assert message ==
                ~s'not allowed value invalid for mode, expected one of: ["parallel", "serial"]'
     end
+
+    test ":as option" do
+      assert {:ok, opts} =
+               CliOpts.parse(["--select", "foo", "--select", "bar"],
+                 select: [type: :string, keep: true, as: :selected]
+               )
+
+      assert opts.parsed[:selected] == ["foo", "bar"]
+      assert is_nil(opts.parsed[:select])
+
+      assert {:ok, opts} =
+               CliOpts.parse(["--select", "foo", "--select", "bar"],
+                 select: [type: :string, keep: true]
+               )
+
+      assert is_nil(opts.parsed[:selected])
+      assert opts.parsed[:select] == ["foo", "bar"]
+    end
   end
 
   describe "docs/1" do
