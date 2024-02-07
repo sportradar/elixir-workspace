@@ -4,7 +4,9 @@ defmodule Mix.Tasks.Workspace.Check do
                     :config_path,
                     :verbose,
                     :project,
-                    :exclude
+                    :exclude,
+                    :tag,
+                    :exclude_tag
                   ])
 
   @shortdoc "Runs configured checkers on the current workspace"

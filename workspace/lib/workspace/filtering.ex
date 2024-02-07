@@ -75,7 +75,7 @@ defmodule Workspace.Filtering do
       modified: opts[:modified] || false,
       only_roots: opts[:only_roots] || false,
       excluded_tags: opts[:excluded_tags] || [],
-      tags: opts[:tags] || []
+      tags: Enum.map(opts[:tags] || [], &maybe_to_tag/1)
     ]
 
     Enum.map(workspace.projects, fn {_name, project} ->
@@ -85,6 +85,27 @@ defmodule Workspace.Filtering do
 
   defp maybe_to_atom(value) when is_atom(value), do: value
   defp maybe_to_atom(value) when is_binary(value), do: String.to_atom(value)
+
+  defp maybe_to_tag(tag) when is_atom(tag), do: tag
+  defp maybe_to_tag({scope, tag}) when is_atom(scope) and is_atom(tag), do: {scope, tag}
+
+  defp maybe_to_tag(tag) when is_binary(tag) do
+    case String.split(tag, ":") do
+      [tag] ->
+        String.to_atom(tag)
+
+      [scope, tag] ->
+        {String.to_atom(scope), String.to_atom(tag)}
+
+      _other ->
+        raise ArgumentError,
+              "invalid tag, it should be `tag` or `scope:tag`, got: #{inspect(tag)}"
+    end
+  end
+
+  defp maybe_to_tag(_other),
+    do:
+      raise(ArgumentError, "invalid tag, it should be a string of the form `tag` or `scope:tag`")
 
   defp skippable?(project, opts) do
     excluded_project?(project, opts[:excluded]) or

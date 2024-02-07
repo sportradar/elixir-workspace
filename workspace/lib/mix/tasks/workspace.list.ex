@@ -25,6 +25,8 @@ defmodule Mix.Tasks.Workspace.List do
                       :config_path,
                       :project,
                       :exclude,
+                      :tag,
+                      :exclude_tag,
                       :show_status
                     ],
                     opts

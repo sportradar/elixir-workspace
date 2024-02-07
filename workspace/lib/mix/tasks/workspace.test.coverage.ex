@@ -19,6 +19,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
                       :base,
                       :head,
                       :exclude,
+                      :tag,
+                      :exclude_tag,
                       :verbose
                     ],
                     opts
