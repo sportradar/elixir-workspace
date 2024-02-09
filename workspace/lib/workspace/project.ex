@@ -315,4 +315,33 @@ defmodule Workspace.Project do
         :ok
     end
   end
+
+  @doc """
+  Returns `true` if the `project` has the given `tag`, `false` otherwise.
+  """
+  @spec has_tag?(project :: t(), tag :: tag()) :: boolean()
+  def has_tag?(project, tag), do: Enum.any?(project.tags, fn t -> t == tag end)
+
+  @doc """
+  Returns `true` if the `project` has at least one scoped tag with the
+  given `scope`, `false` otherwise.
+  """
+  @spec has_scoped_tag?(project :: t(), scope :: atom()) :: boolean()
+  def has_scoped_tag?(project, scope) do
+    Enum.any?(project.tags, fn
+      {tag_scope, _tag} -> scope == tag_scope
+      _other -> false
+    end)
+  end
+
+  @doc """
+  Returns all tags with the given `scope`.
+  """
+  @spec scoped_tags(project :: t(), scope :: atom()) :: [tag()]
+  def scoped_tags(project, scope) do
+    Enum.filter(project.tags, fn
+      {tag_scope, _tag} -> tag_scope == scope
+      _other -> false
+    end)
+  end
 end

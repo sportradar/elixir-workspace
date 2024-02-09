@@ -1,6 +1,8 @@
 defmodule Workspace.ProjectTest do
   use ExUnit.Case
 
+  alias Mix.Project
+  alias Mix.Project
   alias Workspace.Project
   doctest Workspace.Project
 
@@ -122,5 +124,31 @@ defmodule Workspace.ProjectTest do
              workspace_path: Path.expand(@sample_workspace_path),
              changes: []
            }
+  end
+
+  describe "tags tests" do
+    test "project with no tags" do
+      project = Workspace.TestUtils.project_fixture(app: :foo, workspace: [tags: []])
+
+      refute Project.has_tag?(project, :foo)
+      refute Project.has_scoped_tag?(project, :foo)
+      assert Project.scoped_tags(project, :foo) == []
+    end
+
+    test "with multiple tags" do
+      project =
+        Workspace.TestUtils.project_fixture(
+          app: :foo,
+          workspace: [tags: [:foo, :bar, {:scope, :shared}, {:scope, :admin}, {:team, :ui}]]
+        )
+
+      assert Project.has_tag?(project, :foo)
+      refute Project.has_scoped_tag?(project, :foo)
+      assert Project.has_scoped_tag?(project, :scope)
+      assert Project.has_scoped_tag?(project, :team)
+      assert Project.scoped_tags(project, :foo) == []
+      assert Project.scoped_tags(project, :scope) == [{:scope, :shared}, {:scope, :admin}]
+      assert Project.scoped_tags(project, :team) == [{:team, :ui}]
+    end
   end
 end
