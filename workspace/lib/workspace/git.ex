@@ -24,7 +24,7 @@ defmodule Workspace.Git do
   end
 
   @doc """
-  Detects the changed git files.
+  Detects the changed files in the given directory.
 
   By default the following files are included:
 
@@ -49,9 +49,9 @@ defmodule Workspace.Git do
     * `:head` (`t:binary/0`) - The `head` to use for comparing to `:base`, if not set
     defaults to `HEAD`. Can be any git reference
   """
-  @spec changed_files(opts :: keyword()) ::
+  @spec changed(opts :: keyword()) ::
           {:ok, [{binary(), change_type()}]} | {:error, binary()}
-  def changed_files(opts \\ []) do
+  def changed(opts \\ []) do
     with {:ok, uncommitted} <- uncommitted_files(cd: opts[:cd]),
          {:ok, untracked} <- untracked_files(cd: opts[:cd]),
          {:ok, changed} <- maybe_changed_files(opts[:base], opts[:head] || "HEAD", cd: opts[:cd]) do

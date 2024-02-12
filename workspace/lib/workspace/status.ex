@@ -82,7 +82,7 @@ defmodule Workspace.Status do
   """
   @spec changed(workspace :: Workspace.State.t(), opts :: keyword()) :: [{atom(), file_info()}]
   def changed(workspace, opts \\ []) do
-    case Workspace.Git.changed_files(
+    case Workspace.Git.changed(
            cd: workspace.workspace_path,
            base: opts[:base],
            head: opts[:head]
