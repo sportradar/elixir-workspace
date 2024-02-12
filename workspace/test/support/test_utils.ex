@@ -216,12 +216,7 @@ defmodule Workspace.TestUtils do
   #
   # if partial is set to `true` we pattern match only the given output lines
   def assert_cli_output_match(captured, expected, opts \\ []) do
-    captured =
-      captured
-      |> String.split("\n")
-      |> Enum.map(&String.trim/1)
-      |> Enum.filter(fn line -> line != "" end)
-
+    captured = parse_captured(captured)
     partial = Keyword.get(opts, :partial, false)
 
     case partial do
@@ -251,6 +246,21 @@ defmodule Workspace.TestUtils do
           assert captured =~ line
         end
     end
+  end
+
+  def refute_cli_output_match(captured, refuted) do
+    captured = parse_captured(captured) |> Enum.join("\n")
+
+    for line <- refuted do
+      refute captured =~ line
+    end
+  end
+
+  defp parse_captured(captured) do
+    captured
+    |> String.split("\n")
+    |> Enum.map(&String.trim/1)
+    |> Enum.filter(fn line -> line != "" end)
   end
 
   def assert_raise_and_capture_io(exception, message, fun) do

@@ -44,6 +44,13 @@ defmodule Mix.Tasks.Workspace.Run do
       Allow the task for this specific project to fail. Can be set more than once. 
       """,
       keep: true
+    ],
+    early_stop: [
+      type: :boolean,
+      doc: """
+      If set the execution will stop if the execution of any project failed
+      """,
+      default: false
     ]
   ]
 
@@ -161,6 +168,11 @@ defmodule Mix.Tasks.Workspace.Run do
   You can set the `--dry-run` option in order to dry run the task, e.g. to check the
   sequence of mix tasks that will be invoked.
 
+  ## Early stopping
+
+  You can set the `--early-stop` flag in order to immediately terminate the command if
+  the execution in any of the projects has failed.
+
   ## Allowing failures on some projects
 
   On big codebases not all projects are of the same quality standards and some linter
@@ -204,6 +216,7 @@ defmodule Mix.Tasks.Workspace.Run do
         triggered_at: triggered_at,
         completed_at: completed_at
       }
+      |> maybe_early_stop(opts[:early_stop])
     end)
     |> raise_if_any_task_failed()
   end
@@ -338,6 +351,18 @@ defmodule Mix.Tasks.Workspace.Run do
         ])
 
         status
+    end
+  end
+
+  defp maybe_early_stop(result, false), do: result
+
+  defp maybe_early_stop(result, true) do
+    case result[:status] do
+      :error ->
+        Mix.raise("--early-stop is set - terminating workspace.run")
+
+      _other ->
+        result
     end
   end
 
