@@ -190,4 +190,18 @@ defmodule Workspace.Graph do
   defp node_by_app(graph, app) do
     Enum.find(:digraph.vertices(graph), &(&1.app == app))
   end
+
+  @doc """
+  Returns the direct dependencies of the given `project`
+
+  The direct dependencies are the path dependencies that are defined in the
+  `project`' s `mix.exs`.
+  """
+  @spec dependencies(workspace :: Workspace.State.t(), project :: atom()) :: [atom()]
+  def dependencies(workspace, project) do
+    node = node_by_app(workspace.graph, project)
+
+    :digraph.out_neighbours(workspace.graph, node)
+    |> Enum.map(& &1.app)
+  end
 end

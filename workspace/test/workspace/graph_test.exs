@@ -106,4 +106,16 @@ defmodule Workspace.GraphTest do
              ]
     end
   end
+
+  describe "dependencies/2" do
+    test "returns the neighbours of a given node", %{workspace: workspace} do
+      assert Graph.dependencies(workspace, :package_d) == []
+
+      assert Graph.dependencies(workspace, :package_a) |> Enum.sort() == [
+               :package_b,
+               :package_c,
+               :package_d
+             ]
+    end
+  end
 end
