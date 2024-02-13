@@ -318,8 +318,13 @@ defmodule Workspace.Project do
 
   @doc """
   Returns `true` if the `project` has the given `tag`, `false` otherwise.
+
+  ## Special tags
+
+  - `:*` - matches all tags, it always returns `true`
   """
   @spec has_tag?(project :: t(), tag :: tag()) :: boolean()
+  def has_tag?(_project, :*), do: true
   def has_tag?(project, tag), do: Enum.any?(project.tags, fn t -> t == tag end)
 
   @doc """

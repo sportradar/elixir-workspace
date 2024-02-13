@@ -130,6 +130,7 @@ defmodule Workspace.ProjectTest do
     test "project with no tags" do
       project = Workspace.TestUtils.project_fixture(app: :foo, workspace: [tags: []])
 
+      assert Project.has_tag?(project, :*)
       refute Project.has_tag?(project, :foo)
       refute Project.has_scoped_tag?(project, :foo)
       assert Project.scoped_tags(project, :foo) == []
@@ -142,6 +143,7 @@ defmodule Workspace.ProjectTest do
           workspace: [tags: [:foo, :bar, {:scope, :shared}, {:scope, :admin}, {:team, :ui}]]
         )
 
+      assert Project.has_tag?(project, :*)
       assert Project.has_tag?(project, :foo)
       refute Project.has_scoped_tag?(project, :foo)
       assert Project.has_scoped_tag?(project, :scope)
