@@ -340,6 +340,14 @@ defmodule Workspace.Project do
   end
 
   @doc """
+  Returns `true` if the `project` has any of the given tags.
+  """
+  @spec has_any_tag?(project :: t(), tags :: [tag()]) :: boolean()
+  def has_any_tag?(project, tags) do
+    Enum.any?(tags, fn tag -> has_tag?(project, tag) end)
+  end
+
+  @doc """
   Returns all tags with the given `scope`.
   """
   @spec scoped_tags(project :: t(), scope :: atom()) :: [tag()]

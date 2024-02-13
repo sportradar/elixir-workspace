@@ -130,10 +130,19 @@ defmodule Workspace.ProjectTest do
     test "project with no tags" do
       project = Workspace.TestUtils.project_fixture(app: :foo, workspace: [tags: []])
 
+      # has_tag?/2
       assert Project.has_tag?(project, :*)
       refute Project.has_tag?(project, :foo)
+
+      # has_scoped_tag?/2
       refute Project.has_scoped_tag?(project, :foo)
+
+      # scoped_tags/2
       assert Project.scoped_tags(project, :foo) == []
+
+      # has_any_tag?/2
+      assert Project.has_any_tag?(project, [:foo, :bar, :*])
+      refute Project.has_any_tag?(project, [:foo, :bar, :baz])
     end
 
     test "with multiple tags" do
@@ -143,14 +152,26 @@ defmodule Workspace.ProjectTest do
           workspace: [tags: [:foo, :bar, {:scope, :shared}, {:scope, :admin}, {:team, :ui}]]
         )
 
+      # has_tag?/2
       assert Project.has_tag?(project, :*)
       assert Project.has_tag?(project, :foo)
+
+      # has_scoped_tag?/2
       refute Project.has_scoped_tag?(project, :foo)
       assert Project.has_scoped_tag?(project, :scope)
       assert Project.has_scoped_tag?(project, :team)
+
+      # scoped_tags/2
       assert Project.scoped_tags(project, :foo) == []
       assert Project.scoped_tags(project, :scope) == [{:scope, :shared}, {:scope, :admin}]
       assert Project.scoped_tags(project, :team) == [{:team, :ui}]
+
+      # has_any_tag?/2
+      assert Project.has_any_tag?(project, [:foo, :bar, :*])
+      assert Project.has_any_tag?(project, [:foo, :bar, :baz])
+      refute Project.has_any_tag?(project, [:baz, :goo])
+      refute Project.has_any_tag?(project, [{:scope, :foo}, {:scope, :bar}])
+      assert Project.has_any_tag?(project, [{:scope, :foo}, {:scope, :bar}, {:scope, :admin}])
     end
   end
 end
