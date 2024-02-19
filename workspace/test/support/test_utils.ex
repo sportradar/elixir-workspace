@@ -160,14 +160,9 @@ defmodule Workspace.TestUtils do
   # creates a workspace fixture
   def workspace_fixture(projects, opts \\ []) do
     workspace_path = Keyword.get(opts, :workspace_path, "/usr/local/workspace")
+    mix_path = Path.join(workspace_path, "mix.exs")
 
-    %Workspace.State{
-      config: [],
-      mix_path: Path.join(workspace_path, "mix.exs"),
-      workspace_path: workspace_path,
-      cwd: File.cwd!()
-    }
-    |> Workspace.State.set_projects(projects)
+    Workspace.State.new(workspace_path, mix_path, [], projects)
   end
 
   defp project_module(app) do
