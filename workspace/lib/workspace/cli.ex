@@ -173,6 +173,9 @@ defmodule Workspace.Cli do
   # workspace styles
   defp format_style(:mix_path), do: format(:gray, true)
 
+  defp format_style(:tag), do: format(:pink, true)
+  defp format_style(:project), do: format(:light_cyan, true)
+
   defp format_style(sequence) when is_atom(sequence) do
     # we just check that this is a valid sequence
     IO.ANSI.format_fragment(sequence, true)
