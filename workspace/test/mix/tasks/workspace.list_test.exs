@@ -18,7 +18,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
 
   test "prints the tree of the workspace" do
     expected = """
-      * :package_default_a package_default_a/mix.exs
+      * :package_default_a package_default_a/mix.exs :shared, area:core
       * :package_default_b package_default_b/mix.exs - a dummy project
       * :package_default_c package_default_c/mix.exs
       * :package_default_d package_default_d/mix.exs
@@ -38,7 +38,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
 
   test "with --show-status flag" do
     expected = """
-      * :package_changed_a ● package_changed_a/mix.exs
+      * :package_changed_a ● package_changed_a/mix.exs :shared, area:core
       * :package_changed_b ✔ package_changed_b/mix.exs - a dummy project
       * :package_changed_c ● package_changed_c/mix.exs
       * :package_changed_d ✚ package_changed_d/mix.exs
@@ -58,7 +58,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
 
   test "with --project option set" do
     expected = """
-      * :package_default_a package_default_a/mix.exs
+      * :package_default_a package_default_a/mix.exs :shared, area:core
       * :package_default_b package_default_b/mix.exs - a dummy project
     """
 

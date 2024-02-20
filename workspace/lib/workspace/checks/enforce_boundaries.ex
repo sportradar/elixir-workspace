@@ -127,7 +127,7 @@ defmodule Workspace.Checks.EnforceBoundaries do
 
   defp check_rule(project, _workspace, rule, false) do
     Workspace.Cli.debug(
-      "not applicable for project #{project.app} - tag #{tag_to_string(rule[:tag])} missing"
+      "not applicable for project #{project.app} - tag #{Workspace.Project.format_tag(rule[:tag])} missing"
     )
 
     {:ok, [status: :not_applicable]}
@@ -220,10 +220,7 @@ defmodule Workspace.Checks.EnforceBoundaries do
     |> Enum.intersperse(", ")
   end
 
-  defp format_tag(tag), do: [:tag, tag_to_string(tag), :reset]
-
-  defp tag_to_string(tag) when is_atom(tag), do: inspect(tag)
-  defp tag_to_string({scope, tag}), do: "#{scope}:#{tag}"
+  defp format_tag(tag), do: [:tag, Workspace.Project.format_tag(tag), :reset]
 
   defp format_deps(deps) do
     Enum.map(deps, fn dep -> [:project, inspect(dep), :reset] end)

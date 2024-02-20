@@ -96,7 +96,8 @@ defmodule Mix.Tasks.Workspace.List do
       " ",
       Path.relative_to(project.mix_path, project.workspace_path),
       :reset,
-      description(project.config[:description])
+      description(project.config[:description]),
+      tags(project.tags)
     ])
   end
 
@@ -109,5 +110,15 @@ defmodule Mix.Tasks.Workspace.List do
     File.write!(output_path, json_data)
 
     Workspace.Cli.log([:green, "generated ", :reset, output_path], prefix: :header)
+  end
+
+  defp tags([]), do: []
+
+  defp tags(tags) do
+    tags =
+      Enum.map(tags, fn tag -> [:tag, Workspace.Project.format_tag(tag), :reset] end)
+      |> Enum.intersperse(", ")
+
+    [" " | tags]
   end
 end

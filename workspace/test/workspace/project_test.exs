@@ -122,7 +122,8 @@ defmodule Workspace.ProjectTest do
              mix_path:
                Path.join([@sample_workspace_path, "package_a", "mix.exs"]) |> Path.expand(),
              workspace_path: Path.expand(@sample_workspace_path),
-             changes: []
+             changes: [],
+             tags: [":shared", "area:core"]
            }
   end
 

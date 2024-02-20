@@ -149,7 +149,8 @@ defmodule Workspace.Project do
       workspace_path: project.workspace_path,
       status: Atom.to_string(project.status),
       root: project.root?,
-      changes: changes
+      changes: changes,
+      tags: Enum.map(project.tags, &format_tag/1)
     }
   end
 
@@ -357,4 +358,11 @@ defmodule Workspace.Project do
       _other -> false
     end)
   end
+
+  @doc """
+  Formats a tag as a binary.
+  """
+  @spec format_tag(tag :: tag()) :: String.t()
+  def format_tag(tag) when is_atom(tag), do: inspect(tag)
+  def format_tag({scope, tag}), do: "#{scope}:#{tag}"
 end
