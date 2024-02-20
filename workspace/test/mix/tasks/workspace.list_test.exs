@@ -113,6 +113,8 @@ defmodule Mix.Tasks.Workspace.ListTest do
     assert %{"projects" => projects} = File.read!(output) |> Jason.decode!()
 
     assert length(projects) == 11
+  after
+    File.rm!(Path.join(@sample_workspace_changed_path, "workspace.json"))
   end
 
   test "with --json option set and --exclude" do
@@ -139,5 +141,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
     assert %{"projects" => projects} = File.read!(output) |> Jason.decode!()
 
     assert length(projects) == 9
+  after
+    File.rm!(Path.join(@sample_workspace_changed_path, "workspace.json"))
   end
 end
