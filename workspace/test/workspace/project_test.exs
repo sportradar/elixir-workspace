@@ -174,5 +174,31 @@ defmodule Workspace.ProjectTest do
       refute Project.has_any_tag?(project, [{:scope, :foo}, {:scope, :bar}])
       assert Project.has_any_tag?(project, [{:scope, :foo}, {:scope, :bar}, {:scope, :admin}])
     end
+
+    test "format_tag/1" do
+      assert Project.format_tag(:foo) == ":foo"
+      assert Project.format_tag({:scope, :foo}) == "scope:foo"
+    end
+  end
+
+  describe "modified/2" do
+    test "raises if no changes" do
+      project = Workspace.TestUtils.project_fixture(app: :foo)
+
+      assert_raise ArgumentError,
+                   "Cannot mark :foo as modified without any associated changes",
+                   fn ->
+                     Workspace.Project.modified(project, [])
+                   end
+    end
+
+    test "assigns the changes and marks the project modified" do
+      project =
+        Workspace.TestUtils.project_fixture(app: :foo)
+        |> Project.modified(["README.md"])
+
+      assert project.status == :modified
+      assert project.changes == ["README.md"]
+    end
   end
 end
