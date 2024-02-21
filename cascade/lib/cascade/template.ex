@@ -155,7 +155,7 @@ defmodule Cascade.Template do
 
   defp template_assets(template) do
     assets_path = template.assets_path()
-    assets = Path.wildcard(Path.join(assets_path, "**"))
+    assets = Path.wildcard(Path.join(assets_path, "**"), match_dot: true)
 
     case assets do
       [] ->
