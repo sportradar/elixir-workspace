@@ -18,6 +18,14 @@ defmodule Mix.Tasks.Workspace.Graph do
       If set external dependencies will also be inlcuded in the generated
       graph.
       """
+    ],
+    show_tags: [
+      type: :boolean,
+      default: false,
+      doc: """
+      If set the project's tags are also included in the generated graph. Currently
+      applicable only for `:pretty` and `:plain` formatters.
+      """
     ]
   ]
 
@@ -56,26 +64,23 @@ defmodule Mix.Tasks.Workspace.Graph do
 
     workspace = Mix.WorkspaceUtils.load_and_filter_workspace(opts)
 
+    formatter_options = Keyword.take(opts, [:show_status, :show_tags, :external, :exclude])
+
     case opts[:format] do
       "pretty" ->
         Formatters.PrintTree.render(
           workspace,
-          Keyword.take(opts, [:show_status, :external, :exclude])
-          |> Keyword.merge(pretty: true)
+          Keyword.merge(formatter_options, pretty: true)
         )
 
       "plain" ->
         Formatters.PrintTree.render(
           workspace,
-          Keyword.take(opts, [:show_status, :external, :exclude])
-          |> Keyword.merge(pretty: false)
+          Keyword.merge(formatter_options, pretty: false)
         )
 
       "mermaid" ->
-        Formatters.Mermaid.render(
-          workspace,
-          Keyword.take(opts, [:show_status, :external, :exclude])
-        )
+        Formatters.Mermaid.render(workspace, formatter_options)
     end
   end
 end

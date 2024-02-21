@@ -2,6 +2,15 @@ defmodule Workspace.Graph.Formatters.PrintTree do
   @moduledoc false
   @behaviour Workspace.Graph.Formatter
 
+  @doc """
+  Renders a workspace graph as text.
+
+  ## Options
+
+  * `:pretty` - if not set only ascii characters will be used
+  * `:show_status` - if set the status of the package will be included
+  * `:show_tags` - if set the tags of the package will be displayed
+  """
   @impl true
   def render(workspace, opts) do
     pretty = Keyword.fetch!(opts, :pretty)
@@ -19,7 +28,7 @@ defmodule Workspace.Graph.Formatters.PrintTree do
             :workspace ->
               project = Workspace.project!(workspace, node.app)
 
-              {{node_format(project, opts[:show_status]), nil}, children}
+              {{node_format(project, opts[:show_status], opts[:show_tags]), nil}, children}
 
             :external ->
               display = format_ansi([:light_black, inspect(node.app), " (external)", :reset])
@@ -40,13 +49,26 @@ defmodule Workspace.Graph.Formatters.PrintTree do
     )
   end
 
-  defp node_format(project, show_status) do
+  defp node_format(project, show_status, show_tags) do
     Workspace.Cli.project_name(project, show_status: show_status, default_style: :gray)
+    |> maybe_add_tags(project.tags, show_tags)
     |> Workspace.Cli.format()
     |> format_ansi()
   end
 
-  def format_ansi(message) do
+  defp maybe_add_tags(name, [], _show_tags), do: name
+
+  defp maybe_add_tags(name, tags, true) do
+    tags =
+      Enum.map(tags, fn tag -> [:tag, Workspace.Project.format_tag(tag), :reset] end)
+      |> Enum.intersperse(", ")
+
+    [name, " " | tags]
+  end
+
+  defp maybe_add_tags(name, _tags, _show_tags), do: name
+
+  defp format_ansi(message) do
     IO.ANSI.format(message) |> :erlang.iolist_to_binary()
   end
 
