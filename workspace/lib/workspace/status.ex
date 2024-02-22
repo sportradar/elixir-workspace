@@ -33,14 +33,15 @@ defmodule Workspace.Status do
     if not set only working tree changes will be included.
     * `:head` (`String.t()`) - The head git reference for detecting changed files. It
     is used only if `:base` is set.
+    * `:force` (`boolean()`) - If set the workspace status will be force updated.
   """
   @spec update(workspace :: Workspace.State.t(), opts :: keyword()) :: Workspace.State.t()
   def update(workspace, opts \\ []) do
-    case Workspace.State.status_updated?(workspace) do
-      true ->
+    case should_update_status?(workspace, opts[:force]) do
+      false ->
         workspace
 
-      false ->
+      true ->
         changes = changed(workspace, opts)
 
         modifications = Enum.filter(changes, fn {project, _changes} -> project != nil end)
@@ -69,6 +70,11 @@ defmodule Workspace.Status do
         |> Workspace.State.status_updated()
     end
   end
+
+  defp should_update_status?(_workspace, true), do: true
+
+  defp should_update_status?(workspace, _force),
+    do: not Workspace.State.status_updated?(workspace)
 
   @doc """
   Returns the changed files grouped by the project they belong to.

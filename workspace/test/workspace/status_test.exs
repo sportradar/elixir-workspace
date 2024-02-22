@@ -38,6 +38,41 @@ defmodule Workspace.StatusTest do
                {"package_changed_e/file.ex", :untracked}
              ]
     end
+
+    test "force option" do
+      workspace = Workspace.new!(@sample_workspace_changed_path)
+      refute workspace.status_updated?
+
+      workspace = Workspace.Status.update(workspace, [])
+      assert workspace.status_updated?
+
+      assert workspace.projects[:package_changed_c].status == :affected
+      assert workspace.projects[:package_changed_c].changes == nil
+
+      # make a change to a project
+      foo_path = Path.join([@sample_workspace_changed_path, "package_changed_c/foo.md"])
+      File.write!(foo_path, "")
+
+      # with force not set no new changes are updated
+      workspace = Workspace.Status.update(workspace, [])
+      assert workspace.status_updated?
+
+      assert workspace.projects[:package_changed_c].status == :affected
+      assert workspace.projects[:package_changed_c].changes == nil
+
+      # with force set to true new changes are detected
+      workspace = Workspace.Status.update(workspace, force: true)
+      assert workspace.status_updated?
+
+      assert workspace.projects[:package_changed_c].status == :modified
+
+      assert workspace.projects[:package_changed_c].changes == [
+               {"package_changed_c/foo.md", :untracked}
+             ]
+    after
+      foo_path = Path.join([@sample_workspace_changed_path, "package_changed_c/foo.md"])
+      File.rm!(foo_path)
+    end
   end
 
   describe "changed/2" do
