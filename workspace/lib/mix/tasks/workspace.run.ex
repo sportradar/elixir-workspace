@@ -51,6 +51,16 @@ defmodule Mix.Tasks.Workspace.Run do
       If set the execution will stop if the execution of any project failed
       """,
       default: false
+    ],
+    partitions: [
+      type: :integer,
+      doc: """
+      Sets the number of partitions to split executions in. It must be a number
+      greater than zero. If set to `1` it acts as a no-op. If more than one you
+      must also set the the `WORKSPACE_RUN_PARTITION` environment variable with
+      the partition to use in the current execution. See the "Run partitioning"
+      section for more details
+      """
     ]
   ]
 
@@ -153,6 +163,24 @@ defmodule Mix.Tasks.Workspace.Run do
       # Run test only on top level projects
       $ mix workspace.run -t test --only-roots
 
+  ## Run partitioning
+
+  In big workspaces some CI steps may take a lot time. You can split the execution of
+  a task in multiple partitions in order to speed up this process. This is done by
+  setting the `--partitions` option and setting the `WORKSPACE_RUN_PARTITION` environment
+  variable to control the current partition.
+
+  For example to split the execution of `mix test` on all workspace projects into
+  4 partitions, you would use the following:
+
+      $ WORKSPACE_RUN_PARTITION=1 mix workspace.run -t run --partitions 4
+      $ WORKSPACE_RUN_PARTITION=2 mix workspace.run -t run --partitions 4
+      $ WORKSPACE_RUN_PARTITION=3 mix workspace.run -t run --partitions 4
+      $ WORKSPACE_RUN_PARTITION=4 mix workspace.run -t run --partitions 4
+
+  The matching projects are sorted upfront and assigned to each partition in a round-robin
+  fashion.
+
   ## The `--env-var` option
 
   Some tasks depend on environment variables. You can use the `--env-var` option to
@@ -205,6 +233,7 @@ defmodule Mix.Tasks.Workspace.Run do
     opts
     |> Mix.WorkspaceUtils.load_and_filter_workspace()
     |> Workspace.projects()
+    |> filter_by_partition(opts[:partitions])
     |> Enum.map(fn project ->
       triggered_at = System.os_time(:millisecond)
       result = run_in_project(project, opts, extra)
@@ -219,6 +248,27 @@ defmodule Mix.Tasks.Workspace.Run do
       |> maybe_early_stop(opts[:early_stop])
     end)
     |> raise_if_any_task_failed()
+  end
+
+  defp filter_by_partition(projects, partitions) when partitions in [nil, 1], do: projects
+
+  defp filter_by_partition(projects, partitions) when partitions > 1 do
+    partition = System.get_env("WORKSPACE_RUN_PARTITION")
+
+    case partition && Integer.parse(partition) do
+      {partition, ""} when partition in 1..partitions ->
+        partition = partition - 1
+
+        for {project, index} <- Enum.with_index(Enum.sort_by(projects, & &1.app)),
+            rem(index, partitions) == partition,
+            do: project
+
+      _other ->
+        Mix.raise(
+          "The WORKSPACE_RUN_PARTITION environment variable must be set to an integer between " <>
+            "1..#{partitions} when the --partitions option is set, got: #{inspect(partition)}"
+        )
+    end
   end
 
   defp allowed_to_fail?(project, allowed_to_fail), do: project in allowed_to_fail

@@ -370,6 +370,114 @@ defmodule Mix.Tasks.Workspace.RunTest do
     end
   end
 
+  describe "partitioned runs" do
+    test "no-op if --partitions is set to 1" do
+      args = [
+        "--partitions",
+        "1",
+        "--dry-run" | @default_run_task
+      ]
+
+      captured =
+        capture_io(fn ->
+          RunTask.run(args)
+        end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_default_a - mix format --check-formatted mix.exs",
+        "==> :package_default_b - mix format --check-formatted mix.exs",
+        "==> :package_default_c - mix format --check-formatted mix.exs",
+        "==> :package_default_d - mix format --check-formatted mix.exs",
+        "==> :package_default_e - mix format --check-formatted mix.exs",
+        "==> :package_default_f - mix format --check-formatted mix.exs",
+        "==> :package_default_g - mix format --check-formatted mix.exs",
+        "==> :package_default_h - mix format --check-formatted mix.exs",
+        "==> :package_default_i - mix format --check-formatted mix.exs",
+        "==> :package_default_j - mix format --check-formatted mix.exs",
+        "==> :package_default_k - mix format --check-formatted mix.exs"
+      ])
+    end
+
+    test "raises if --partitions is set and no env variable is present" do
+      args = [
+        "--partitions",
+        "4",
+        "--dry-run" | @default_run_task
+      ]
+
+      expected_message =
+        "The WORKSPACE_RUN_PARTITION environment variable must be set to " <>
+          "an integer between 1..4 when the --partitions option is set, got: nil"
+
+      assert_raise Mix.Error, expected_message, fn -> RunTask.run(args) end
+    end
+
+    test "with --partitions and env variable set" do
+      args = [
+        "--partitions",
+        "4",
+        "--dry-run" | @default_run_task
+      ]
+
+      # partition 1
+      System.put_env("WORKSPACE_RUN_PARTITION", "1")
+
+      captured =
+        capture_io(fn ->
+          RunTask.run(args)
+        end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_default_a - mix format --check-formatted mix.exs",
+        "==> :package_default_e - mix format --check-formatted mix.exs",
+        "==> :package_default_i - mix format --check-formatted mix.exs"
+      ])
+
+      # partition 2
+      System.put_env("WORKSPACE_RUN_PARTITION", "2")
+
+      captured =
+        capture_io(fn ->
+          RunTask.run(args)
+        end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_default_b - mix format --check-formatted mix.exs",
+        "==> :package_default_f - mix format --check-formatted mix.exs",
+        "==> :package_default_j - mix format --check-formatted mix.exs"
+      ])
+
+      # partition 3
+      System.put_env("WORKSPACE_RUN_PARTITION", "3")
+
+      captured =
+        capture_io(fn ->
+          RunTask.run(args)
+        end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_default_c - mix format --check-formatted mix.exs",
+        "==> :package_default_g - mix format --check-formatted mix.exs",
+        "==> :package_default_k - mix format --check-formatted mix.exs"
+      ])
+
+      # partition 4
+      System.put_env("WORKSPACE_RUN_PARTITION", "4")
+
+      captured =
+        capture_io(fn ->
+          RunTask.run(args)
+        end)
+
+      assert_cli_output_match(captured, [
+        "==> :package_default_d - mix format --check-formatted mix.exs",
+        "==> :package_default_h - mix format --check-formatted mix.exs"
+      ])
+    after
+      System.delete_env("WORKSPACE_RUN_PARTITION")
+    end
+  end
+
   describe "execution mode" do
     test "with in-project execution mode" do
       args = [
