@@ -3,7 +3,7 @@ defmodule Workspace.FilteringTest do
   import Workspace.TestUtils
 
   setup do
-    project_a = project_fixture(app: :foo, workspace: [tags: [:foo]])
+    project_a = project_fixture(app: :foo, workspace: [tags: [:foo, {:scope, :ui}]])
     project_b = project_fixture(app: :bar, workspace: [tags: [:bar]])
     project_c = project_fixture(app: :baz, workspace: [tags: [:foo, :bar]])
 
@@ -86,6 +86,34 @@ defmodule Workspace.FilteringTest do
       refute Workspace.project!(workspace, :bar).skip
       refute Workspace.project!(workspace, :baz).skip
       refute Workspace.project!(workspace, :foo).skip
+    end
+
+    test "with scoped tags", %{workspace: workspace} do
+      workspace = Workspace.Filtering.run(workspace, tags: [{:scope, :ui}])
+
+      assert Workspace.project!(workspace, :bar).skip
+      assert Workspace.project!(workspace, :baz).skip
+      refute Workspace.project!(workspace, :foo).skip
+    end
+
+    test "with binary tags", %{workspace: workspace} do
+      workspace = Workspace.Filtering.run(workspace, tags: ["scope:ui", "bar"])
+
+      refute Workspace.project!(workspace, :bar).skip
+      refute Workspace.project!(workspace, :baz).skip
+      refute Workspace.project!(workspace, :foo).skip
+    end
+
+    test "with invalid tags", %{workspace: workspace} do
+      message = "invalid tag, it should be `tag` or `scope:tag`, got: \"scope:with:ui\""
+
+      assert_raise ArgumentError, message, fn ->
+        Workspace.Filtering.run(workspace, tags: ["scope:with:ui"])
+      end
+
+      assert_raise ArgumentError, fn ->
+        Workspace.Filtering.run(workspace, tags: [1])
+      end
     end
   end
 end

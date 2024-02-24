@@ -102,8 +102,8 @@ defmodule Workspace.CliTest do
 
     test "with a highlighted message" do
       assert capture_io(fn ->
-               Cli.log([:bright, :red, "a message"], prefix: "--> ")
-             end) =~ format_ansi(["--> ", :bright, :red, "a message"])
+               Cli.log([:project, "a message"], prefix: "--> ")
+             end) =~ format_ansi(["--> ", :light_cyan, "a message"])
     end
   end
 
