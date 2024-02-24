@@ -84,6 +84,22 @@ defmodule Workspace.StatusTest do
                package_changed_e: [{"package_changed_e/file.ex", :untracked}]
              }
     end
+
+    test "with changed file not belonging to a project" do
+      workspace = Workspace.new!(@sample_workspace_changed_path)
+
+      foo_path = Path.join([@sample_workspace_changed_path, "foo.md"])
+      File.write!(foo_path, "")
+
+      assert Workspace.Status.changed(workspace) == %{
+               package_changed_d: [{"package_changed_d/tmp.exs", :untracked}],
+               package_changed_e: [{"package_changed_e/file.ex", :untracked}],
+               nil: [{"foo.md", :untracked}]
+             }
+    after
+      foo_path = Path.join([@sample_workspace_changed_path, "foo.md"])
+      File.rm!(foo_path)
+    end
   end
 
   describe "modified/2" do
