@@ -28,7 +28,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
       * :package_default_h package_default_h/mix.exs
       * :package_default_i package_default_i/mix.exs
       * :package_default_j package_default_j/mix.exs
-      * :package_default_k package_default_k/mix.exs
+      * :package_default_k nested/package_default_k/mix.exs
     """
 
     assert capture_io(fn ->
@@ -48,7 +48,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
       * :package_changed_h ● package_changed_h/mix.exs
       * :package_changed_i ✔ package_changed_i/mix.exs
       * :package_changed_j ✔ package_changed_j/mix.exs
-      * :package_changed_k ✔ package_changed_k/mix.exs
+      * :package_changed_k ✔ nested/package_changed_k/mix.exs
     """
 
     assert capture_io(fn ->
