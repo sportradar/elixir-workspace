@@ -126,4 +126,9 @@ defmodule WorkspaceTest do
       end
     end
   end
+
+  test "project?/2", %{workspace: workspace} do
+    assert Workspace.project?(workspace, :foo)
+    refute Workspace.project?(workspace, :food)
+  end
 end
