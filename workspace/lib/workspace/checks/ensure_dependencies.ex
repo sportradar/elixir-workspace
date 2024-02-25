@@ -1,4 +1,15 @@
 defmodule Workspace.Checks.EnsureDependencies do
+  @schema NimbleOptions.new!(
+            deps: [
+              type: {:list, :atom},
+              required: true,
+              doc: """
+              The list of required dependencies. An error will be raised if
+              any of these packages is **not** used as a dependency in any
+              workspace project.
+              """
+            ]
+          )
   @moduledoc """
   Checks that the given dependencies are defined.
 
@@ -7,12 +18,12 @@ defmodule Workspace.Checks.EnsureDependencies do
 
   ## Configuration
 
-  It expects the following configuration parameters:
+  #{NimbleOptions.docs(@schema)}
 
-  * `:deps` - a list of required dependencies
+  ## Example
 
-  In order to configure this checker add the following, under `checkers`,
-  in your `workspace.exs`:
+  In order to ensure that all workspace projects use `:ex_doc` and `:credo`
+  add the following rule in your `workspace.exs`:
 
   ```elixir
   [
@@ -24,6 +35,9 @@ defmodule Workspace.Checks.EnsureDependencies do
   ```
   """
   @behaviour Workspace.Check
+
+  @impl Workspace.Check
+  def schema, do: @schema
 
   @impl Workspace.Check
   def check(workspace, check) do

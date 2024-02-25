@@ -1,4 +1,16 @@
 defmodule Workspace.Checks.ForbiddenDeps do
+  @schema NimbleOptions.new!(
+            deps: [
+              type: {:list, :atom},
+              required: true,
+              doc: """
+              The list of forbidden deps. An error will be raised if
+              any of these packages is used as a dependency in any
+              workspace project.
+              """
+            ]
+          )
+
   @moduledoc """
   Ensures that the given dependencies are not defined.
 
@@ -13,15 +25,13 @@ defmodule Workspace.Checks.ForbiddenDeps do
 
   ## Configuration
 
-  It expects the following configuration parameters:
-
-  * `:deps` - a list of forbidden dependencies
+  #{NimbleOptions.docs(@schema)}
 
   ## Example
-  
+
   The following check ensures that `:foo` and `:bar` are not defined
   as dependencies across the workspace
-  
+
   ```elixir
   [
     module: Workspace.Checks.ForbiddenDeps,
@@ -33,6 +43,9 @@ defmodule Workspace.Checks.ForbiddenDeps do
   ```
   """
   @behaviour Workspace.Check
+
+  @impl Workspace.Check
+  def schema, do: @schema
 
   @impl Workspace.Check
   def check(workspace, check) do
