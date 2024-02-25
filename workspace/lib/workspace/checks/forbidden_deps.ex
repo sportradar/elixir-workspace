@@ -17,20 +17,20 @@ defmodule Workspace.Checks.ForbiddenDeps do
 
   * `:deps` - a list of forbidden dependencies
 
-  > #### Example {: .tip}
-  > 
-  > The following check ensures that `:foo` and `:bar` are not defined
-  > as dependencies across the workspace
-  >
-  > ```elixir
-  > [
-  >   module: Workspace.Checks.ForbiddenDeps,
-  >   description: ":foo and :bar are forbidden deps",
-  >   opts: [
-  >     deps: [:foo, :bar]
-  >   ]
-  > ]
-  > ```
+  ## Example
+  
+  The following check ensures that `:foo` and `:bar` are not defined
+  as dependencies across the workspace
+  
+  ```elixir
+  [
+    module: Workspace.Checks.ForbiddenDeps,
+    description: ":foo and :bar are forbidden deps",
+    opts: [
+      deps: [:foo, :bar]
+    ]
+  ]
+  ```
   """
   @behaviour Workspace.Check
 
