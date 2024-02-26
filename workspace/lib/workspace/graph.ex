@@ -64,7 +64,12 @@ defmodule Workspace.Graph do
 
   def digraph(projects, opts) when is_list(projects) do
     Workspace.Cli.debug("generating workspace graph")
-    graph_nodes = valid_nodes(projects, opts[:external], opts[:exclude])
+
+    excluded =
+      Keyword.get(opts, :exclude, [])
+      |> Enum.map(&maybe_to_atom/1)
+
+    graph_nodes = valid_nodes(projects, opts[:external], excluded)
     graph_apps = Enum.map(graph_nodes, fn node -> elem(node, 0) end)
 
     graph = :digraph.new()
@@ -87,15 +92,18 @@ defmodule Workspace.Graph do
     graph
   end
 
-  defp valid_nodes(projects, external, ignored) do
+  defp maybe_to_atom(item) when is_atom(item), do: item
+  defp maybe_to_atom(item) when is_binary(item), do: String.to_atom(item)
+
+  defp valid_nodes(projects, external, excluded) do
     workspace_nodes =
       for project <- projects,
           app = project.app,
-          not ignored_app?(app, ignored) do
+          not excluded_app?(app, excluded) do
         {app, :workspace}
       end
 
-    workspace_nodes ++ maybe_external_dependencies(projects, external, ignored)
+    workspace_nodes ++ maybe_external_dependencies(projects, external, excluded)
   end
 
   defp project_deps(project) do
@@ -104,33 +112,27 @@ defmodule Workspace.Graph do
     Enum.map(deps, fn dep -> elem(dep, 0) end)
   end
 
-  defp maybe_external_dependencies(projects, true, ignored) do
+  defp maybe_external_dependencies(projects, true, excluded) do
     workspace_apps = Enum.map(projects, & &1.app)
 
     projects
-    |> Enum.reject(fn project -> ignored_app?(project.app, ignored) end)
+    |> Enum.reject(fn project -> excluded_app?(project.app, excluded) end)
     |> Enum.map(fn project -> project.config[:deps] || [] end)
     |> List.flatten()
     |> Enum.map(fn dep -> elem(dep, 0) end)
     |> Enum.uniq()
-    |> Enum.reject(fn dep -> dep in workspace_apps or ignored_app?(dep, ignored) end)
+    |> Enum.reject(fn dep -> dep in workspace_apps or excluded_app?(dep, excluded) end)
     |> Enum.map(fn dep -> {dep, :external} end)
   end
 
-  defp maybe_external_dependencies(_workspace, _external, _ignored), do: []
+  defp maybe_external_dependencies(_workspace, _external, _excluded), do: []
 
   defp graph_node(app, :workspace),
     do: Workspace.Graph.Node.new(app, :workspace)
 
   defp graph_node(app, :external), do: Workspace.Graph.Node.new(app, :external)
 
-  # TODO: make ignored list of atoms by default
-  defp ignored_app?(_app, nil), do: false
-
-  defp ignored_app?(app, ignored) when is_atom(app),
-    do: ignored_app?(Atom.to_string(app), ignored)
-
-  defp ignored_app?(app, ignored) when is_list(ignored), do: app in ignored
+  defp excluded_app?(app, excluded) when is_atom(app), do: app in excluded
 
   @doc """
   Return the source projects of the workspace

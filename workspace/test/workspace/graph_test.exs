@@ -31,7 +31,7 @@ defmodule Workspace.GraphTest do
     end
 
     test "with exclude set", %{workspace: workspace} do
-      graph = Graph.digraph(workspace, exclude: ["package_a", "package_b", "package_c"])
+      graph = Graph.digraph(workspace, exclude: [:package_a, "package_b", "package_c"])
 
       assert length(:digraph.vertices(graph)) == 8
 
