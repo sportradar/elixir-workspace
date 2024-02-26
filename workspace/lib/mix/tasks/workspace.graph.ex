@@ -26,6 +26,22 @@ defmodule Mix.Tasks.Workspace.Graph do
       If set the project's tags are also included in the generated graph. Currently
       applicable only for `:pretty` and `:plain` formatters.
       """
+    ],
+    focus: [
+      type: :string,
+      doc: """
+      If set the graph will be focused around the given project. Should be combined
+      with `:proximity` in order to define the depth of inward and outward neighbours
+      to be displayed.
+      """
+    ],
+    proximity: [
+      type: :integer,
+      default: 1,
+      doc: """
+      The maximum allowed proximity between a graph's project and children or parent
+      projects. Only applicable if `:focus` is set.
+      """
     ]
   ]
 
@@ -65,25 +81,23 @@ defmodule Mix.Tasks.Workspace.Graph do
 
     workspace = Mix.WorkspaceUtils.load_and_filter_workspace(opts)
 
-    formatter_options = Keyword.take(opts, [:show_status, :show_tags, :external, :exclude])
-
     case opts[:format] do
       "pretty" ->
         Formatter.format(
           Formatters.PrintTree,
           workspace,
-          Keyword.merge(formatter_options, pretty: true)
+          Keyword.merge(opts, pretty: true)
         )
 
       "plain" ->
         Formatter.format(
           Formatters.PrintTree,
           workspace,
-          Keyword.merge(formatter_options, pretty: false)
+          Keyword.merge(opts, pretty: false)
         )
 
       "mermaid" ->
-        Formatter.format(Formatters.Mermaid, workspace, formatter_options)
+        Formatter.format(Formatters.Mermaid, workspace, opts)
     end
   end
 end

@@ -19,7 +19,16 @@ defmodule Workspace.Graph.Formatter do
     Workspace.Graph.with_digraph(
       workspace,
       fn graph ->
-        formatter.render(graph, workspace, opts)
+        case opts[:focus] do
+          nil ->
+            formatter.render(graph, workspace, opts)
+
+          project ->
+            proximity = Keyword.fetch!(opts, :proximity)
+            subgraph = Workspace.Graph.subgraph(graph, String.to_atom(project), proximity)
+
+            formatter.render(subgraph, workspace, opts)
+        end
       end,
       external: opts[:external],
       exclude: opts[:exclude]

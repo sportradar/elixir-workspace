@@ -206,4 +206,34 @@ defmodule Workspace.Graph do
     :digraph.out_neighbours(workspace.graph, node)
     |> Enum.map(& &1.app)
   end
+
+  @doc """
+  Returns a subgraph around the given `project` and all nodes within the given `proximity`.
+  """
+  @spec subgraph(
+          graph :: :digraph.graph(),
+          project :: Workspace.Project.t(),
+          proximity :: pos_integer()
+        ) :: :digraph.graph()
+  def subgraph(graph, project, proximity) do
+    node = node_by_app(graph, project)
+
+    vertices =
+      :digraph.vertices(graph)
+      |> Enum.filter(fn vertex -> within_proximity?(graph, vertex, node, proximity) end)
+      |> Enum.concat([node])
+
+    :digraph_utils.subgraph(graph, vertices)
+  end
+
+  defp within_proximity?(graph, vertex1, vertex2, proximity) do
+    shortest_path =
+      :digraph.get_short_path(graph, vertex1, vertex2) ||
+        :digraph.get_short_path(graph, vertex2, vertex1)
+
+    case shortest_path do
+      false -> false
+      path -> Enum.count(path) <= proximity + 1
+    end
+  end
 end

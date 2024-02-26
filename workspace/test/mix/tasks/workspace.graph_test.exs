@@ -42,6 +42,43 @@ defmodule Mix.Tasks.Workspace.GraphTest do
            end) == expected
   end
 
+  test "with focus set and default proximity" do
+    expected = """
+    :package_default_c
+    └── :package_default_f
+        └── :package_default_g
+    """
+
+    assert capture_io(fn ->
+             GraphTask.run([
+               "--workspace-path",
+               @sample_workspace_default_path,
+               "--focus",
+               "package_default_f"
+             ])
+           end) == expected
+  end
+
+  test "with focus set and custom proximity" do
+    expected = """
+    :package_default_a
+    └── :package_default_c
+        └── :package_default_f
+            └── :package_default_g
+    """
+
+    assert capture_io(fn ->
+             GraphTask.run([
+               "--workspace-path",
+               @sample_workspace_default_path,
+               "--focus",
+               "package_default_f",
+               "--proximity",
+               "2"
+             ])
+           end) == expected
+  end
+
   test "with plain output format" do
     expected = """
     :package_default_a
@@ -169,6 +206,25 @@ defmodule Mix.Tasks.Workspace.GraphTest do
 
     assert capture_io(fn ->
              GraphTask.run(["--workspace-path", @sample_workspace_changed_path, "--external"])
+           end) == expected
+  end
+
+  test "with external and focus" do
+    expected = """
+    :package_changed_a
+    └── :package_changed_b
+        ├── :foo (external)
+        └── :package_changed_g
+    """
+
+    assert capture_io(fn ->
+             GraphTask.run([
+               "--workspace-path",
+               @sample_workspace_changed_path,
+               "--external",
+               "--focus",
+               "package_changed_b"
+             ])
            end) == expected
   end
 
