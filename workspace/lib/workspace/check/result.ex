@@ -8,7 +8,18 @@ defmodule Workspace.Check.Result do
 
   @valid_statuses [:ok, :error, :warn, :skip]
 
-  # TODO: add typedoc
+  @typedoc """
+  The internal representation of a workspace check result.
+
+  It includes the following fields:
+
+  * `:module` - the underlying check module implementing the `Workspace.Check` behaviour
+  * `:check` - the check configuration
+  * `:project` - the `Workspace.Project` on which the check was executed
+  * `:status` - the status of the check, will be `:ok` in case of success, `:error` in
+  case of failure or `:skip` if the check was skipped for the current project.
+  * `:meta` - arbitrary check metadata
+  """
   @type t :: %__MODULE__{
           module: module(),
           check: keyword(),
