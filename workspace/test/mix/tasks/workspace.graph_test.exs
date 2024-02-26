@@ -254,6 +254,31 @@ defmodule Mix.Tasks.Workspace.GraphTest do
            end) == expected
   end
 
+  test "with dot output set" do
+    expected = """
+    digraph G {
+      package_changed_c -> package_changed_e;
+      package_changed_a -> package_changed_c;
+      package_changed_i -> package_changed_j;
+      package_changed_a -> package_changed_d;
+      package_changed_h -> package_changed_d;
+    }
+    """
+
+    assert capture_io(fn ->
+             GraphTask.run([
+               "--workspace-path",
+               @sample_workspace_changed_path,
+               "--exclude",
+               "package_changed_b",
+               "--exclude",
+               "package_changed_f",
+               "--format",
+               "dot"
+             ])
+           end) == expected
+  end
+
   test "mermaid output format" do
     expected = """
     flowchart TD

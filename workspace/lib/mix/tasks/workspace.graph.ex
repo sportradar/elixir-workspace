@@ -8,8 +8,9 @@ defmodule Mix.Tasks.Workspace.Graph do
         * `pretty` - pretty prints the graph as a tree.
         * `plain` - does not use Unicode code points for formatting the tree.
         * `mermaid` - exports the graph as a mermaid graph.
+        * `dot` - produces a graphviz DOT graph description of the workspace.
       """,
-      allowed: ["pretty", "plain", "mermaid"]
+      allowed: ["pretty", "plain", "mermaid", "dot"]
     ],
     external: [
       type: :boolean,
@@ -98,6 +99,9 @@ defmodule Mix.Tasks.Workspace.Graph do
 
       "mermaid" ->
         Formatter.format(Formatters.Mermaid, workspace, opts)
+
+      "dot" ->
+        Formatter.format(Formatters.Dot, workspace, opts)
     end
   end
 end
