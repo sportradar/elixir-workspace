@@ -329,6 +329,34 @@ defmodule Mix.Tasks.Workspace.RunTest do
       ])
     end
 
+    test "with --early-stop set but no failures" do
+      args = [
+        "-p",
+        "package_default_a",
+        "-p",
+        "package_default_b",
+        "-t",
+        "cmd",
+        "--early-stop",
+        "--workspace-path",
+        Path.join(tmp_path(), "sample_workspace_default"),
+        "--",
+        "exit",
+        "0"
+      ]
+
+      captured = capture_io(fn -> RunTask.run(args) end)
+
+      assert_cli_output_match(
+        captured,
+        [
+          "==> :package_default_a - mix cmd exit 0",
+          "==> :package_default_b - mix cmd exit 0"
+        ],
+        partial: true
+      )
+    end
+
     test "if allow_failure is set a warning is emitted instead" do
       args = [
         "-p",
