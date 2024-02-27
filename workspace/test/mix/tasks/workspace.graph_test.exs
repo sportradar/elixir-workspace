@@ -257,11 +257,11 @@ defmodule Mix.Tasks.Workspace.GraphTest do
   test "with dot output set" do
     expected = """
     digraph G {
-      package_changed_c -> package_changed_e;
       package_changed_a -> package_changed_c;
-      package_changed_i -> package_changed_j;
       package_changed_a -> package_changed_d;
+      package_changed_c -> package_changed_e;
       package_changed_h -> package_changed_d;
+      package_changed_i -> package_changed_j;
     }
     """
 

@@ -11,6 +11,7 @@ defmodule Workspace.Graph.Formatters.Dot do
         {_e, v1, v2, _l} = :digraph.edge(graph, edge)
         {v1, v2}
       end)
+      |> Enum.sort()
       |> Enum.map(fn {v1, v2} -> "  #{v1.app} -> #{v2.app};" end)
       |> Enum.join("\n")
 
