@@ -139,22 +139,16 @@ defmodule Workspace.TestUtils do
   # creates a simple project fixture in memory
   def project_fixture(config, opts \\ []) do
     workspace_path = Keyword.get(opts, :workspace_path, "/usr/local/workspace")
-    path = Keyword.get(opts, :path, "packages")
 
+    path = Keyword.get(opts, :path, "packages")
     app = Keyword.fetch!(config, :app)
+
     project_path = Path.join([workspace_path, path, Atom.to_string(app)])
 
-    tags = Keyword.get(config, :workspace, []) |> Keyword.get(:tags, [])
+    mix_path = Path.join(project_path, "mix.exs")
+    module = project_module(app)
 
-    %Workspace.Project{
-      app: app,
-      module: project_module(app),
-      config: config,
-      mix_path: Path.join(project_path, "mix.exs"),
-      path: project_path,
-      workspace_path: workspace_path,
-      tags: tags
-    }
+    Workspace.Project.new(workspace_path, mix_path, module, config)
   end
 
   # creates a workspace fixture

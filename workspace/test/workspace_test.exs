@@ -93,6 +93,15 @@ defmodule WorkspaceTest do
       assert reason =~ "mix.exs does not exist"
       assert reason =~ "to be a workspace project. Some errors were detected"
     end
+
+    test "raises with nested workspace" do
+      message = "you are not allowed to have nested workspaces, :foo is defined as :workspace"
+
+      assert_raise ArgumentError, message, fn ->
+        project_a = project_fixture(app: :foo, workspace: [type: :workspace])
+        workspace_fixture([project_a])
+      end
+    end
   end
 
   describe "new!/2" do

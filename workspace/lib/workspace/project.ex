@@ -86,7 +86,6 @@ defmodule Workspace.Project do
   This will raise if the `path` does not correspond to a valid
   mix project.
   """
-  # TODO: check for nested workspaces and raise if needed
   @spec new(mix_path :: String.t(), workspace_path :: String.t()) :: t()
   def new(path, workspace_path) do
     mix_path = mix_path(path)
@@ -96,19 +95,30 @@ defmodule Workspace.Project do
       Path.dirname(mix_path),
       fn module ->
         config = evaluate_config(Mix.Project.config())
-        workspace_config = validate_workspace_project_config!(config)
-
-        %__MODULE__{
-          app: module.project()[:app],
-          module: module,
-          config: config,
-          mix_path: mix_path,
-          path: Path.dirname(mix_path),
-          workspace_path: workspace_path,
-          tags: workspace_config[:tags]
-        }
+        new(workspace_path, mix_path, module, config)
       end
     )
+  end
+
+  @doc false
+  @spec new(
+          workspace_path :: String.t(),
+          mix_path :: String.t(),
+          module :: module(),
+          config :: Keyword.t()
+        ) :: t()
+  def new(workspace_path, mix_path, module, config) do
+    workspace_config = validate_workspace_project_config!(config)
+
+    %__MODULE__{
+      app: config[:app],
+      module: module,
+      config: config,
+      mix_path: mix_path,
+      path: Path.dirname(mix_path),
+      workspace_path: workspace_path,
+      tags: workspace_config[:tags]
+    }
   end
 
   # some config settings are defined as functions in order to be lazily
@@ -123,12 +133,32 @@ defmodule Workspace.Project do
   defp maybe_evaluate(value), do: value
 
   defp validate_workspace_project_config!(config) when is_list(config) do
+    if project_type(config) == :workspace do
+      raise ArgumentError,
+            "you are not allowed to have nested workspaces, " <>
+              "#{inspect(config[:app])} is defined as :workspace"
+    end
+
     workspace_config = config[:workspace] || []
 
     global_config = Keyword.take(workspace_config, Keyword.keys(@workspace_config_schema.schema))
     global_config = NimbleOptions.validate!(global_config, @workspace_config_schema)
 
     Keyword.merge(workspace_config, global_config)
+  end
+
+  @doc """
+  Returns the project type of a project given the mix config.
+
+  The project type is defined under a `:type` attribute in the `:workspace`
+  config. It can take an arbitrary value. If set to `:workspace` it indicates
+  that the project is a root workspace project.
+  """
+  @spec project_type(config :: keyword()) :: nil | atom()
+  def project_type(config) do
+    config
+    |> Keyword.get(:workspace, [])
+    |> Keyword.get(:type)
   end
 
   @doc """

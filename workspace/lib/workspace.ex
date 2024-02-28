@@ -360,9 +360,7 @@ defmodule Workspace do
   end
 
   defp ensure_workspace_set_in_config(config) when is_list(config) do
-    workspace_config = config[:workspace] || []
-
-    if Keyword.keyword?(workspace_config) and workspace_config[:type] == :workspace do
+    if Workspace.Project.project_type(config) == :workspace do
       :ok
     else
       {:error,
