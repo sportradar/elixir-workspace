@@ -7,7 +7,6 @@ defmodule CliOpts.MixProject do
       description: "parse and validate cli options",
       version: "0.1.0",
       elixir: "~> 1.13",
-      # build_path: "../_build",
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
       start_permanent: Mix.env() == :prod,
