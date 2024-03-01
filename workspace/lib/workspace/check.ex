@@ -174,25 +174,22 @@ defmodule Workspace.Check do
           check_fun :: (Workspace.Project.t() -> {atom(), keyword()})
         ) :: [Workspace.Check.Result.t()]
   def check_projects(workspace, check, check_fun) do
-    Enum.reduce(workspace.projects, [], fn {_app, project}, acc ->
-      result =
-        case applicable?(check, project) do
-          true ->
-            {status, metadata} = check_fun.(project)
+    for {_app, project} <- workspace.projects do
+      case applicable?(check, project) do
+        true ->
+          {status, metadata} = check_fun.(project)
 
-            status = maybe_demote_status(status, project, check)
+          status = maybe_demote_status(status, project, check)
 
-            Workspace.Check.Result.new(check, project)
-            |> Workspace.Check.Result.set_status(status)
-            |> Workspace.Check.Result.set_metadata(metadata)
+          Workspace.Check.Result.new(check, project)
+          |> Workspace.Check.Result.set_status(status)
+          |> Workspace.Check.Result.set_metadata(metadata)
 
-          false ->
-            Workspace.Check.Result.new(check, project)
-            |> Workspace.Check.Result.set_status(:skip)
-        end
-
-      [result | acc]
-    end)
+        false ->
+          Workspace.Check.Result.new(check, project)
+          |> Workspace.Check.Result.set_status(:skip)
+      end
+    end
   end
 
   defp applicable?(check, project) do
