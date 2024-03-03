@@ -3,16 +3,5 @@ defmodule CliOptions do
   Documentation for `CliOptions`.
   """
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> CliOptions.hello()
-      :world
-
-  """
-  def hello do
-    :world
-  end
+  def parse(argv, schema), do: CliOptions.Parser.parse(argv, schema)
 end
