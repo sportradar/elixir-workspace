@@ -56,5 +56,67 @@ defmodule CliOptionsTest do
       assert options.args == ["foo.ex", "bar.ex"]
       assert options.extra == ["-b", "-c"]
     end
+
+    test "with option set" do
+      schema = [foo: [type: :string]]
+      argv = ["--foo", "bar"]
+
+      {:ok, options} = CliOptions.parse(argv, schema)
+      assert options.opts == [foo: "bar"]
+    end
+
+    test "with option set but specific long name" do
+      schema = [user: [type: :string, long: "user_name"]]
+
+      # fails with --user
+      {:error, message} = CliOptions.parse(["--user", "john"], schema)
+      assert message == "invalid option \"user\""
+
+      # fails with --user-name
+      {:error, message} = CliOptions.parse(["--user-name", "john"], schema)
+      assert message == "invalid option \"user-name\""
+
+      # must match exactly the long name
+      {:ok, options} = CliOptions.parse(["--user_name", "john"], schema)
+      assert options.opts == [user: "john"]
+    end
+
+    test "with aliases set" do
+      schema = [user: [type: :string, long: "user_name", aliases: ["user-name", "user"]]]
+
+      # fails with --user
+      {:ok, options} = CliOptions.parse(["--user", "john"], schema)
+      assert options.opts == [user: "john"]
+
+      # fails with --user-name
+      {:ok, options} = CliOptions.parse(["--user-name", "john"], schema)
+      assert options.opts == [user: "john"]
+
+      # must match exactly the long name
+      {:ok, options} = CliOptions.parse(["--user_name", "john"], schema)
+      assert options.opts == [user: "john"]
+    end
+
+    test "with short name set" do
+      schema = [user: [type: :string, short: "u"]]
+
+      {:ok, options} = CliOptions.parse(["--user", "john"], schema)
+      assert options.opts == [user: "john"]
+
+      {:ok, options} = CliOptions.parse(["-u", "john"], schema)
+      assert options.opts == [user: "john"]
+
+      assert {:error, _message} = CliOptions.parse(["-U", "john"], schema)
+    end
+
+    test "with short aliases set" do
+      schema = [user: [type: :string, short: "u", short_aliases: ["U"]]]
+
+      {:ok, options} = CliOptions.parse(["-u", "john"], schema)
+      assert options.opts == [user: "john"]
+
+      {:ok, options} = CliOptions.parse(["-U", "john"], schema)
+      assert options.opts == [user: "john"]
+    end
   end
 end

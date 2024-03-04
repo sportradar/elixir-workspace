@@ -8,20 +8,10 @@ defmodule CliOptions.Parser do
     # parse the remaining
     {remaining_argv, extra} = split_extra(argv)
 
-    with {:ok, schema} <- validate_schema(schema),
+    with {:ok, schema} <- CliOptions.Schema.validate(schema),
          {:ok, opts, args} <- parse(remaining_argv, schema, [], []) do
-      {:ok, CliOptions.Options.new(argv, schema[:schema], opts, args, extra)}
+      {:ok, CliOptions.Options.new(argv, schema.schema, opts, args, extra)}
     end
-  end
-
-  # TODO: proper schema validation - move to separate module
-  defp validate_schema(schema) do
-    aliases =
-      Enum.filter(schema, fn {_option, opts} -> opts[:alias] != nil end)
-      |> Enum.map(fn {option, opts} -> {opts[:alias], option} end)
-      |> Enum.into([])
-
-    {:ok, aliases: aliases, schema: schema}
   end
 
   # TODO: tests
@@ -61,15 +51,14 @@ defmodule CliOptions.Parser do
   # in any other case it must be an arg
   defp next([arg | rest], _schema), do: {:arg, arg, rest}
 
-  defp parse_option_alias(option_alias, rest, schema) do
-    with {:ok, option_alias} <- validate_option_alias_length(option_alias),
-         {:ok, option} <- validate_alias(option_alias, schema) do
+  defp parse_option_alias(option, rest, schema) do
+    with {:ok, option} <- validate_option_alias_length(option) do
       parse_option(option, rest, schema)
     end
   end
 
   defp parse_option(option, rest, schema) do
-    with {:ok, option, opts} <- validate_option(option, schema[:schema]),
+    with {:ok, option, opts} <- CliOptions.Schema.ensure_valid_option(option, schema),
          {:ok, args, rest} <- validate_option_args(option, opts, rest) do
       {:option, option, args, rest}
     end
@@ -87,7 +76,10 @@ defmodule CliOptions.Parser do
     if length(args) < min_args do
       {:error, "#{inspect(option)} expected one argument"}
     else
-      {:ok, args, rest}
+      case args do
+        [arg] -> {:ok, arg, rest}
+        args -> {:ok, args, rest}
+      end
     end
   end
 
@@ -114,22 +106,6 @@ defmodule CliOptions.Parser do
 
       _other ->
         {:error, "an option alias must be one character long, got: #{inspect(option_alias)}"}
-    end
-  end
-
-  defp validate_alias(option_alias, schema) do
-    case Keyword.get(schema[:aliases], option_alias) do
-      nil -> {:error, "invalid option alias #{inspect(option_alias)}"}
-      option -> {:ok, option}
-    end
-  end
-
-  defp validate_option(option, schema) do
-    option = String.to_atom(option)
-
-    case Keyword.get(schema, option) do
-      nil -> {:error, "invalid option #{inspect(option)}"}
-      opts -> {:ok, option, opts}
     end
   end
 end
