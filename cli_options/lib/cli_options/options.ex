@@ -1,6 +1,14 @@
 defmodule CliOptions.Options do
   @moduledoc """
   The struct holding the parsed CLI options.
+
+  It contains the following fields:
+
+  * `argv` - the input argv string list
+  * `schema` - the schema used for validation
+  * `opts` - the extracted command line options
+  * `args` - a list of the remaining arguments in `argv` as strings
+  * `extra` - a list of unparsed arguments, if applicable.
   """
 
   @type argv :: [String.t()]

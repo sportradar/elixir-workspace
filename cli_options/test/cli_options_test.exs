@@ -1,6 +1,5 @@
 defmodule CliOptionsTest do
   use ExUnit.Case
-  doctest CliOptions
 
   describe "parse/2" do
     test "with no arguments and no required options" do
