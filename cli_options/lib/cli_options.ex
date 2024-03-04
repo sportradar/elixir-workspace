@@ -66,6 +66,58 @@ defmodule CliOptions do
     * `args` - a list of the remaining arguments in `argv` as strings
     * `extra` - a list of unparsed arguments, if applicable.
 
+  ## Options names and aliases
+
+  By default `CliOptions` will use the hyphen-ized version of the option name
+  as the long name of the option.
+
+      iex> options = CliOptions.parse!(["--user-name", "John"], [user_name: [type: :string]])
+      ...> options.opts
+      [user_name: "John"]
+
+  Additionally you are allowed to set a short version (one-letter string) for the
+  option.
+
+      iex> options = CliOptions.parse!(["-U", "John"], [user_name: [type: :string, short: "U"]])
+      ...> options.opts
+      [user_name: "John"]
+
+  You are also allowed to specifically set a long name for the option. In this case the
+  auto-generated long name from the option name will not valid.
+
+
+      iex> CliOptions.parse(["-U", "John"], [user_name: [type: :string, long: "user"]])
+      {:error, "invalid option \"user\""}
+
+      iex> options = CliOptions.parse!(["--user", "John"], [user_name: [type: :string, long: "user"]])
+      ...> options.opts
+      [user_name: "John"]
+
+  Additionally you can provide an arbitrary number of long and short aliases.
+
+
+      iex> schema = [
+      ...>   user_name: [
+      ...>     type: :string,
+      ...>     short: "u",
+      ...>     aliases: ["user", "user_name"],
+      ...>     short_aliases: ["U"]
+      ...>   ]
+      ...> ]
+
+      # all following argv are equivalent
+      iex> inputs = [
+      ...>   ["--user-name", "John"],
+      ...>   ["--user", "John"],
+      ...>   ["--user_name", "John"],
+      ...>   ["-u", "John"],
+      ...>   ["-U", "John"]
+      ...> ]
+
+      for argv <- inputs, options = CliOptions.parse!(argv, schema) do
+        assert options.opts == [user_name: "John"]
+      end
+
   ## Return separator
 
   The separator `--` implies options should no longer be processed. Every argument
