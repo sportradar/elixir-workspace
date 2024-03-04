@@ -34,6 +34,8 @@ defmodule CliOptions.MixProject do
   end
 
   defp deps do
-    []
+    [
+      {:ex_doc, "== 0.30.9", only: :dev, runtime: false}
+    ]
   end
 end
