@@ -118,6 +118,36 @@ defmodule CliOptions do
         assert options.opts == [user_name: "John"]
       end
 
+  ## Option types
+
+  By default all options are assumed to be strings. If you set a different `:type` then
+  the option will be casted to that type. The supported types are:
+
+  * `:integer` - parses the argument as an integer
+  * `:float` - parses the argument as a float
+  * `:string` - the default, parses the argument as a string
+  * TODO - add boolean, count and custom
+
+  ```elixir
+  iex> schema = [
+  ...>   user: [
+  ...>     type: :string,
+  ...>   ],
+  ...>   age: [
+  ...>     type: :integer,
+  ...>   ],
+  ...>   height: [
+  ...>     type: :float,
+  ...>   ]
+  ...> ]
+
+  iex> CliOptions.parse(["--user", "John", "--age", "34", "--height", "1.75"], schema)
+  %CliOptions.Options{
+    options: [user: "John", age: 34, height: 1.75]
+  }
+  ```
+
+
   ## Return separator
 
   The separator `--` implies options should no longer be processed. Every argument

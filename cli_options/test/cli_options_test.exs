@@ -132,6 +132,29 @@ defmodule CliOptionsTest do
       {:error, message} = CliOptions.parse(["-uv", "john"], [])
       assert message == "an option alias must be one character long, got: \"uv\""
     end
+
+    test "with integer options" do
+      schema = [partition: [type: :integer]]
+
+      {:ok, options} = CliOptions.parse(["--partition", "1"], schema)
+      assert options.opts == [partition: 1]
+
+      {:error, message} = CliOptions.parse(["--partition", "1f"], schema)
+      assert message == ":partition expected an integer argument, got: 1f"
+    end
+
+    test "with float options" do
+      schema = [weight: [type: :float]]
+
+      {:ok, options} = CliOptions.parse(["--weight", "1"], schema)
+      assert options.opts == [weight: 1.0]
+
+      {:ok, options} = CliOptions.parse(["--weight", "1.5"], schema)
+      assert options.opts == [weight: 1.5]
+
+      {:error, message} = CliOptions.parse(["--weight", "bar"], schema)
+      assert message == ":weight expected a float argument, got: bar"
+    end
   end
 
   describe "parse!/2" do

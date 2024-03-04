@@ -53,4 +53,41 @@ defmodule CliOptions.Schema do
         long
     end
   end
+
+  def validate_option_value(args, option, opts) when is_list(args) do
+    values =
+      Enum.reduce_while(args, [], fn arg, acc ->
+        case validate_option_value(arg, option, opts) do
+          {:ok, value} -> {:cont, [value | acc]}
+          {:error, reason} -> {:halt, {:error, reason}}
+        end
+      end)
+
+    case values do
+      {:error, reason} -> {:error, reason}
+      values -> {:ok, Enum.reverse(values)}
+    end
+  end
+
+  def validate_option_value(arg, option, opts) when is_binary(arg) do
+    with {:ok, value} <- validate_type(arg, option, opts[:type]) do
+      {:ok, value}
+    end
+  end
+
+  defp validate_type(arg, option, :integer) do
+    case Integer.parse(arg) do
+      {value, ""} -> {:ok, value}
+      _other -> {:error, ":#{option} expected an integer argument, got: #{arg}"}
+    end
+  end
+
+  defp validate_type(arg, option, :float) do
+    case Float.parse(arg) do
+      {value, ""} -> {:ok, value}
+      _other -> {:error, ":#{option} expected a float argument, got: #{arg}"}
+    end
+  end
+
+  defp validate_type(arg, _option, :string), do: {:ok, arg}
 end

@@ -59,12 +59,13 @@ defmodule CliOptions.Parser do
 
   defp parse_option(option, rest, schema) do
     with {:ok, option, opts} <- CliOptions.Schema.ensure_valid_option(option, schema),
-         {:ok, args, rest} <- validate_option_args(option, opts, rest) do
+         {:ok, args, rest} <- fetch_option_args(option, opts, rest),
+         {:ok, args} <- CliOptions.Schema.validate_option_value(args, option, opts) do
       {:option, option, args, rest}
     end
   end
 
-  defp validate_option_args(option, opts, rest) do
+  defp fetch_option_args(option, opts, rest) do
     # TODO: read maximum from opts
     {args, rest} = next_args_greedy(rest, 1, [])
 
