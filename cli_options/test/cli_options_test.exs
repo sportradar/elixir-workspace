@@ -65,6 +65,15 @@ defmodule CliOptionsTest do
       assert options.opts == [foo: "bar"]
     end
 
+    test "by default undersores in long names are mapped to hyphens" do
+      schema = [user_name: [type: :string]]
+
+      {:ok, options} = CliOptions.parse(["--user-name", "john"], schema)
+      assert options.opts == [user_name: "john"]
+
+      assert {:error, _message} = CliOptions.parse(["--user_name", "john"], schema)
+    end
+
     test "with option set but specific long name" do
       schema = [user: [type: :string, long: "user_name"]]
 
@@ -117,6 +126,26 @@ defmodule CliOptionsTest do
 
       {:ok, options} = CliOptions.parse(["-U", "john"], schema)
       assert options.opts == [user: "john"]
+    end
+
+    test "error with multi-letter alias" do
+      {:error, message} = CliOptions.parse(["-uv", "john"], [])
+      assert message == "an option alias must be one character long, got: \"uv\""
+    end
+  end
+
+  describe "parse!/2" do
+    test "raises in case of error" do
+      assert_raise CliOptions.ParseError, "invalid option \"foo\"", fn ->
+        CliOptions.parse!(["--foo"], [])
+      end
+    end
+
+    test "returns options if successful" do
+      options = CliOptions.parse!(["--foo", "bar"], foo: [type: :string])
+
+      assert %CliOptions.Options{} = options
+      assert options.opts == [foo: "bar"]
     end
   end
 end
