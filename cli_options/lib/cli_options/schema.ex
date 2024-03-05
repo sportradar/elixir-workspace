@@ -13,12 +13,25 @@ defmodule CliOptions.Schema do
   @enforce_keys [:schema, :mappings]
   defstruct schema: [], mappings: []
 
+  # validates the schema, rename to new! similar to nimbleoptiosn
   def validate(schema) do
     # TODO: proper schema validation
 
     mappings = build_mappings(schema)
 
     {:ok, %__MODULE__{schema: schema, mappings: mappings}}
+  end
+
+  def validate(opts, schema) do
+    defaults =
+      Enum.map(schema.schema, fn {key, key_opts} -> {key, key_opts[:default]} end)
+      |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+
+    # TODO: custom validation
+    # merging of multiple keys
+    # required validation
+
+    {:ok, Keyword.merge(defaults, opts)}
   end
 
   def ensure_valid_option(option, schema) do

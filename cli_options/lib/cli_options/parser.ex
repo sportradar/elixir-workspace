@@ -9,7 +9,8 @@ defmodule CliOptions.Parser do
     {remaining_argv, extra} = split_extra(argv)
 
     with {:ok, schema} <- CliOptions.Schema.validate(schema),
-         {:ok, opts, args} <- parse(remaining_argv, schema, [], []) do
+         {:ok, opts, args} <- parse(remaining_argv, schema, [], []),
+         {:ok, opts} <- CliOptions.Schema.validate(opts, schema) do
       {:ok, CliOptions.Options.new(argv, schema.schema, opts, args, extra)}
     end
   end

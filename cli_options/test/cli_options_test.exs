@@ -167,6 +167,22 @@ defmodule CliOptionsTest do
       assert options.opts == [verbose: true, dry_run: true]
       assert options.args == ["1", "2"]
     end
+
+    test "with default values" do
+      schema = [
+        file: [type: :string, default: "mix.exs"],
+        runs: [type: :integer, default: 2],
+        verbose: [type: :boolean]
+      ]
+
+      {:ok, options} = CliOptions.parse(["foo", "bar"], schema)
+      assert options.opts == [file: "mix.exs", runs: 2]
+      assert options.args == ["foo", "bar"]
+
+      {:ok, options} = CliOptions.parse(["--runs", "1", "--verbose", "foo", "bar"], schema)
+      assert options.opts == [file: "mix.exs", runs: 1, verbose: true]
+      assert options.args == ["foo", "bar"]
+    end
   end
 
   describe "parse!/2" do
