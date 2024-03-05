@@ -75,6 +75,10 @@ defmodule CliOptions.Schema do
     end
   end
 
+  def validate_option_value(arg, option, opts) when is_boolean(arg) do
+    {:ok, arg}
+  end
+
   defp validate_type(arg, option, :integer) do
     case Integer.parse(arg) do
       {value, ""} -> {:ok, value}
@@ -90,4 +94,12 @@ defmodule CliOptions.Schema do
   end
 
   defp validate_type(arg, _option, :string), do: {:ok, arg}
+
+  def expected_args(opts) do
+    case opts[:type] do
+      :boolean -> 0
+      :count -> 0
+      _other -> 1
+    end
+  end
 end

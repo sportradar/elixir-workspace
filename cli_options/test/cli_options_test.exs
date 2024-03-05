@@ -155,6 +155,18 @@ defmodule CliOptionsTest do
       {:error, message} = CliOptions.parse(["--weight", "bar"], schema)
       assert message == ":weight expected a float argument, got: bar"
     end
+
+    test "with boolean options" do
+      schema = [verbose: [type: :boolean], dry_run: [type: :boolean]]
+
+      {:ok, options} = CliOptions.parse(["--verbose", "1"], schema)
+      assert options.opts == [verbose: true]
+      assert options.args == ["1"]
+
+      {:ok, options} = CliOptions.parse(["--verbose", "1", "--dry-run", "2"], schema)
+      assert options.opts == [verbose: true, dry_run: true]
+      assert options.args == ["1", "2"]
+    end
   end
 
   describe "parse!/2" do

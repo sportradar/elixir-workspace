@@ -147,6 +147,9 @@ defmodule CliOptions do
   }
   ```
 
+  ## Options with multiple arguments
+
+  TODO: fill this, min_args, max_args append mode etc
 
   ## Return separator
 

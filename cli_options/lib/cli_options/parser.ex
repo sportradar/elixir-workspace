@@ -27,7 +27,7 @@ defmodule CliOptions.Parser do
   defp parse(argv, schema, opts, args) do
     case next(argv, schema) do
       nil ->
-        {:ok, opts, Enum.reverse(args)}
+        {:ok, Enum.reverse(opts), Enum.reverse(args)}
 
       {:option, option, value, rest} ->
         parse(rest, schema, [{option, value} | opts], args)
@@ -66,21 +66,35 @@ defmodule CliOptions.Parser do
   end
 
   defp fetch_option_args(option, opts, rest) do
-    # TODO: read maximum from opts
-    {args, rest} = next_args_greedy(rest, 1, [])
+    # TODO: currently we handle only one item per option, we can extend it with
+    # min max args suppport like clap
+    expected_args = CliOptions.Schema.expected_args(opts)
 
-    # TODO: min args is not the minimum number of expected occurrences of the
-    # option since it may be defined later. It should be either 1 for types
-    # expecting an argument or 0 for booleans / counts
-    min_args = 1
+    {args, rest} = next_args_greedy(rest, expected_args, [])
 
-    if length(args) < min_args do
-      {:error, "#{inspect(option)} expected one argument"}
-    else
-      case args do
-        [arg] -> {:ok, arg, rest}
-        args -> {:ok, args, rest}
-      end
+    # here we take the min with 1 since in case of multiple args
+    # the argument may be passed again later
+    #
+    # for example for a --foo with min_args 2 we could have
+    # * --foo n1 n2
+    # * --foo n1 --foo n2
+    #
+    # the final check of the min args validation will happen once
+    # we have collected all values
+    min_args = min(1, expected_args)
+
+    cond do
+      length(args) < min_args ->
+        {:error, "#{inspect(option)} expected one argument"}
+
+      length(args) == 1 ->
+        {:ok, Enum.at(args, 0), rest}
+
+      args == [] and opts[:type] == :boolean ->
+        {:ok, true, rest}
+
+      true ->
+        {:ok, args, rest}
     end
   end
 
@@ -92,6 +106,8 @@ defmodule CliOptions.Parser do
   # * max args have been read
   #
   # returns the read args and the remaining args in rest
+  defp next_args_greedy(rest, 0, _args), do: {[], rest}
+
   defp next_args_greedy([], max, args), do: {Enum.reverse(args), []}
 
   defp next_args_greedy(rest, max, args) when length(args) == max, do: {Enum.reverse(args), rest}
