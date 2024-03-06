@@ -126,7 +126,7 @@ defmodule CliOptions do
   * `:integer` - parses the argument as an integer
   * `:float` - parses the argument as a float
   * `:string` - the default, parses the argument as a string
-  * TODO - add boolean, count and custom
+  * `:boolean` - parses the argument as a flag, e.g. no option is expected.
 
   ```elixir
   iex> schema = [
@@ -146,6 +146,23 @@ defmodule CliOptions do
     options: [user: "John", age: 34, height: 1.75]
   }
   ```
+
+  ## Default values and required options
+
+  Options can have default values. If no command line argument is provided then the parsed
+  options will return the default value instead. For example:
+
+  TODO: example
+
+  > #### Booleans and counters {: .info}
+  >
+  > Notice that for options of type `:boolean` or `:counter` a default value is always
+  > implicitly set.
+  >
+  > TODO: example
+
+  Additionally you can mark an option as required. In this case an error will be returned if
+  the option is not present in the command line arguments.
 
   ## Options with multiple arguments
 
