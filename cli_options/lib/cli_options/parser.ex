@@ -15,10 +15,6 @@ defmodule CliOptions.Parser do
     end
   end
 
-  # TODO: tests
-  #  - with and without separator
-  #  - with multiple separators
-  #  - without options but with separator 
   defp split_extra(argv), do: split_extra(argv, [])
 
   defp split_extra([], argv), do: {Enum.reverse(argv), []}
@@ -102,7 +98,7 @@ defmodule CliOptions.Parser do
     # min max args suppport like clap
     expected_args = CliOptions.Schema.expected_args(opts)
 
-    {args, rest} = next_args_greedy(rest, expected_args, [])
+    {args, rest} = next_args_greedily(rest, expected_args, [])
 
     # here we take the min with 1 since in case of multiple args
     # the argument may be passed again later
@@ -133,15 +129,15 @@ defmodule CliOptions.Parser do
   # * max args have been read
   #
   # returns the read args and the remaining args in rest
-  defp next_args_greedy(rest, 0, _args), do: {nil, rest}
+  defp next_args_greedily(rest, 0, _args), do: {nil, rest}
 
-  defp next_args_greedy([], max, args), do: {Enum.reverse(args), []}
+  defp next_args_greedily([], max, args), do: {Enum.reverse(args), []}
 
-  defp next_args_greedy(rest, max, args) when length(args) == max, do: {Enum.reverse(args), rest}
+  defp next_args_greedily(rest, max, args) when length(args) == max, do: {Enum.reverse(args), rest}
 
-  defp next_args_greedy(["-" <> _arg | _other] = rest, _max, args), do: {Enum.reverse(args), rest}
+  defp next_args_greedily(["-" <> _arg | _other] = rest, _max, args), do: {Enum.reverse(args), rest}
 
-  defp next_args_greedy([arg | rest], max, args), do: next_args_greedy(rest, max, [arg | args])
+  defp next_args_greedily([arg | rest], max, args), do: next_args_greedily(rest, max, [arg | args])
 
   defp validate_option_alias_length(option_alias) do
     case String.length(option_alias) do
