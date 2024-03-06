@@ -30,8 +30,37 @@ defmodule CliOptions.Schema do
     # TODO: custom validation
     # merging of multiple keys
     # required validation
+    opts = Keyword.merge(defaults, opts)
 
-    {:ok, Keyword.merge(defaults, opts)}
+    with {:ok, opts} <- validate_options(opts, schema),
+         {:ok, opts} <- validate_required(opts, schema) do
+      {:ok, opts}
+    end
+  end
+
+  defp validate_required(opts, schema) do
+    {:ok, opts}
+  end
+
+  def action(option, schema) do
+    opts = Keyword.fetch!(schema, option)
+
+    type = opts[:type]
+    action = opts[:action]
+
+    cond do
+      action != nil ->
+        action
+
+      type == :boolean ->
+        :set_true
+
+      opts[:multiple] ->
+        :append
+
+      true ->
+        :set
+    end
   end
 
   def ensure_valid_option(option, schema) do
@@ -67,6 +96,23 @@ defmodule CliOptions.Schema do
     end
   end
 
+  defp validate_options(opts, schema) do
+    options =
+      Enum.reduce_while(opts, [], fn {option, value}, acc ->
+        option_schema = Keyword.fetch!(schema.schema, option)
+
+        case validate_option_value(value, option, option_schema) do
+          {:ok, value} -> {:cont, [{option, value} | acc]}
+          {:error, reason} -> {:halt, {:error, reason}}
+        end
+      end)
+
+    case options do
+      {:error, reason} -> {:error, reason}
+      opts -> {:ok, Enum.reverse(opts)}
+    end
+  end
+
   def validate_option_value(args, option, opts) when is_list(args) do
     values =
       Enum.reduce_while(args, [], fn arg, acc ->
@@ -91,6 +137,9 @@ defmodule CliOptions.Schema do
   def validate_option_value(arg, option, opts) when is_boolean(arg) do
     {:ok, arg}
   end
+
+  # TODO: instead of this use a maybe_cast and a validate function
+  def validate_option_value(arg, option, opts), do: {:ok, arg}
 
   defp validate_type(arg, option, :integer) do
     case Integer.parse(arg) do

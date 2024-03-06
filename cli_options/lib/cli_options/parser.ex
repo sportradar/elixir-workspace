@@ -31,7 +31,10 @@ defmodule CliOptions.Parser do
         {:ok, Enum.reverse(opts), Enum.reverse(args)}
 
       {:option, option, value, rest} ->
-        parse(rest, schema, [{option, value} | opts], args)
+        case put_option(option, value, opts, schema) do
+          {:error, _reason} = error -> error
+          {:ok, opts} -> parse(rest, schema, opts, args)
+        end
 
       {:arg, arg, rest} ->
         parse(rest, schema, opts, [arg | args])
@@ -39,6 +42,35 @@ defmodule CliOptions.Parser do
       {:error, reason} ->
         {:error, reason}
     end
+  end
+
+  defp put_option(option, value, opts, schema) do
+    action = CliOptions.Schema.action(option, schema.schema)
+    put_option_with_action(action, option, value, opts)
+  end
+
+  defp put_option_with_action(:set_true, option, _value, opts),
+    do: put_option_with_action(:set, option, true, opts)
+
+  defp put_option_with_action(:set_false, option, _value, opts),
+    do: put_option_with_action(:set, option, false, opts)
+
+  defp put_option_with_action(:set, option, [value], opts),
+    do: put_option_with_action(:set, option, value, opts)
+
+  defp put_option_with_action(:set, option, value, opts) do
+    case opts[option] do
+      nil -> {:ok, Keyword.put(opts, option, value)}
+      current -> {:error, "option #{inspect(option)} has already been set with #{current}"}
+    end
+  end
+
+  defp put_option_with_action(:append, option, value, opts) when is_list(value) do
+    {:ok, Keyword.update(opts, option, value, fn existing_value -> existing_value ++ value end)}
+  end
+
+  defp put_option_with_action(:count, option, _value, opts) do
+    {:ok, Keyword.update(opts, option, 1, fn count -> count + 1 end)}
   end
 
   defp next([], schema), do: nil
@@ -60,8 +92,7 @@ defmodule CliOptions.Parser do
 
   defp parse_option(option, rest, schema) do
     with {:ok, option, opts} <- CliOptions.Schema.ensure_valid_option(option, schema),
-         {:ok, args, rest} <- fetch_option_args(option, opts, rest),
-         {:ok, args} <- CliOptions.Schema.validate_option_value(args, option, opts) do
+         {:ok, args, rest} <- fetch_option_args(option, opts, rest) do
       {:option, option, args, rest}
     end
   end
@@ -84,20 +115,15 @@ defmodule CliOptions.Parser do
     # we have collected all values
     min_args = min(1, expected_args)
 
-    cond do
-      length(args) < min_args ->
-        {:error, "#{inspect(option)} expected one argument"}
-
-      length(args) == 1 ->
-        {:ok, Enum.at(args, 0), rest}
-
-      args == [] and opts[:type] == :boolean ->
-        {:ok, true, rest}
-
-      true ->
-        {:ok, args, rest}
+    if args_length(args) < min_args do
+      {:error, "#{inspect(option)} expected at least #{min_args} arguments"}
+    else
+      {:ok, args, rest}
     end
   end
+
+  defp args_length(nil), do: 0
+  defp args_length(args), do: length(args)
 
   # read args from rest greedily
   # it stops parsing when
@@ -107,7 +133,7 @@ defmodule CliOptions.Parser do
   # * max args have been read
   #
   # returns the read args and the remaining args in rest
-  defp next_args_greedy(rest, 0, _args), do: {[], rest}
+  defp next_args_greedy(rest, 0, _args), do: {nil, rest}
 
   defp next_args_greedy([], max, args), do: {Enum.reverse(args), []}
 
