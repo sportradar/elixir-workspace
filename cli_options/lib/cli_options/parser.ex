@@ -133,11 +133,14 @@ defmodule CliOptions.Parser do
 
   defp next_args_greedily([], _max, args), do: {Enum.reverse(args), []}
 
-  defp next_args_greedily(rest, max, args) when length(args) == max, do: {Enum.reverse(args), rest}
+  defp next_args_greedily(rest, max, args) when length(args) == max,
+    do: {Enum.reverse(args), rest}
 
-  defp next_args_greedily(["-" <> _arg | _other] = rest, _max, args), do: {Enum.reverse(args), rest}
+  defp next_args_greedily(["-" <> _arg | _other] = rest, _max, args),
+    do: {Enum.reverse(args), rest}
 
-  defp next_args_greedily([arg | rest], max, args), do: next_args_greedily(rest, max, [arg | args])
+  defp next_args_greedily([arg | rest], max, args),
+    do: next_args_greedily(rest, max, [arg | args])
 
   defp validate_option_alias_length(option_alias) do
     case String.length(option_alias) do

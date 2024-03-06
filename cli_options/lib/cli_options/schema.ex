@@ -22,25 +22,69 @@ defmodule CliOptions.Schema do
     {:ok, %__MODULE__{schema: schema, mappings: mappings}}
   end
 
+  # opts is expected to be a keyword of the form [option: args]
+  # where args a list of the specified args for this option or a single arg
   def validate(opts, schema) do
-    defaults =
-      Enum.map(schema.schema, fn {key, key_opts} -> {key, key_opts[:default]} end)
-      |> Enum.reject(fn {_key, value} -> is_nil(value) end)
-
     # TODO: custom validation
     # merging of multiple keys
     # required validation
-    opts = Keyword.merge(defaults, opts)
+    # opts = Keyword.merge(defaults, opts)
 
-    with {:ok, opts} <- validate_options(opts, schema),
-         {:ok, opts} <- validate_required(opts, schema) do
-      {:ok, opts}
+    result =
+      Enum.reduce_while(schema.schema, [], fn {option, option_schema}, acc ->
+        case validate_option(option, opts[option], option_schema) do
+          {:ok, value} -> {:cont, [{option, value} | acc]}
+          :no_value -> {:cont, acc}
+          {:error, _reason} = error -> {:halt, error}
+        end
+      end)
+
+    case result do
+      {:error, reason} -> {:error, reason}
+      options -> {:ok, Enum.reverse(options)}
     end
   end
 
-  defp validate_required(opts, _schema) do
-    {:ok, opts}
+  defp validate_option(option, value, schema) do
+    value = value || schema[:default]
+
+    with {:ok, value} <- validate_value(option, value, schema),
+         {:ok, value} <- validate_type(schema[:type], option, value) do
+      {:ok, value}
+    end
   end
+
+  defp validate_value(option, value, schema) do
+    cond do
+      value != nil ->
+        {:ok, value}
+
+      Keyword.get(schema, :required, false) ->
+        {:error, "option :#{option} is required"}
+
+      true ->
+        :no_value
+    end
+  end
+
+  defp validate_type(:integer, _option, value) when is_integer(value), do: {:ok, value}
+
+  defp validate_type(:integer, option, value) when is_binary(value) do
+    case Integer.parse(value) do
+      {value, ""} -> {:ok, value}
+      _other -> {:error, ":#{option} expected an integer argument, got: #{value}"}
+    end
+  end
+
+  defp validate_type(:float, option, value) when is_binary(value) do
+    case Float.parse(value) do
+      {value, ""} -> {:ok, value}
+      _other -> {:error, ":#{option} expected a float argument, got: #{value}"}
+    end
+  end
+
+  defp validate_type(:string, _option, value) when is_binary(value), do: {:ok, value}
+  defp validate_type(:boolean, _option, value) when is_boolean(value), do: {:ok, value}
 
   def action(option, schema) do
     opts = Keyword.fetch!(schema, option)
@@ -95,67 +139,6 @@ defmodule CliOptions.Schema do
         long
     end
   end
-
-  defp validate_options(opts, schema) do
-    options =
-      Enum.reduce_while(opts, [], fn {option, value}, acc ->
-        option_schema = Keyword.fetch!(schema.schema, option)
-
-        case validate_option_value(value, option, option_schema) do
-          {:ok, value} -> {:cont, [{option, value} | acc]}
-          {:error, reason} -> {:halt, {:error, reason}}
-        end
-      end)
-
-    case options do
-      {:error, reason} -> {:error, reason}
-      opts -> {:ok, Enum.reverse(opts)}
-    end
-  end
-
-  def validate_option_value(args, option, opts) when is_list(args) do
-    values =
-      Enum.reduce_while(args, [], fn arg, acc ->
-        case validate_option_value(arg, option, opts) do
-          {:ok, value} -> {:cont, [value | acc]}
-          {:error, reason} -> {:halt, {:error, reason}}
-        end
-      end)
-
-    case values do
-      {:error, reason} -> {:error, reason}
-      values -> {:ok, Enum.reverse(values)}
-    end
-  end
-
-  def validate_option_value(arg, option, opts) when is_binary(arg) do
-    with {:ok, value} <- validate_type(arg, option, opts[:type]) do
-      {:ok, value}
-    end
-  end
-
-  def validate_option_value(arg, _option, _opts) when is_boolean(arg) do
-    {:ok, arg}
-  end
-
-  # TODO: instead of this use a maybe_cast and a validate function
-  def validate_option_value(arg, _option, _opts), do: {:ok, arg}
-
-  defp validate_type(arg, option, :integer) do
-    case Integer.parse(arg) do
-      {value, ""} -> {:ok, value}
-      _other -> {:error, ":#{option} expected an integer argument, got: #{arg}"}
-    end
-  end
-
-  defp validate_type(arg, option, :float) do
-    case Float.parse(arg) do
-      {value, ""} -> {:ok, value}
-      _other -> {:error, ":#{option} expected a float argument, got: #{arg}"}
-    end
-  end
-
-  defp validate_type(arg, _option, :string), do: {:ok, arg}
 
   def expected_args(opts) do
     case opts[:type] do
