@@ -183,6 +183,16 @@ defmodule CliOptionsTest do
       assert options.opts == [file: "mix.exs", runs: 1, verbose: true]
       assert options.args == ["foo", "bar"]
     end
+
+    test "with required options" do
+      schema = [file: [type: :string, required: true]]
+
+      {:error, message} = CliOptions.parse([], schema)
+      assert message == "option :file is required"
+
+      {:ok, options} = CliOptions.parse(["--file", "mix.exs"], schema)
+      assert options.opts == [file: "mix.exs"]
+    end
   end
 
   describe "parse!/2" do

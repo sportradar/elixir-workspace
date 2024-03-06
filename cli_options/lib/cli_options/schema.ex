@@ -26,10 +26,6 @@ defmodule CliOptions.Schema do
   # where args a list of the specified args for this option or a single arg
   def validate(opts, schema) do
     # TODO: custom validation
-    # merging of multiple keys
-    # required validation
-    # opts = Keyword.merge(defaults, opts)
-
     result =
       Enum.reduce_while(schema.schema, [], fn {option, option_schema}, acc ->
         case validate_option(option, opts[option], option_schema) do
