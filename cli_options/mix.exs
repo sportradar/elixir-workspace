@@ -20,10 +20,7 @@ defmodule CliOptions.MixProject do
         export: "cli_options",
         output: "../artifacts/coverdata"
       ],
-      docs: [
-        output: "../artifacts/docs/cli_options",
-        formatters: ["html"]
-      ]
+      docs: docs()
     ]
   end
 
@@ -35,7 +32,22 @@ defmodule CliOptions.MixProject do
 
   defp deps do
     [
-      {:ex_doc, "== 0.30.9", only: :dev, runtime: false}
+      {:ex_doc, "== 0.30.9", only: :dev, runtime: false},
+      {:fancy_fences, "~> 0.3.0", only: :dev, runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      output: "../artifacts/docs/cli_options",
+      formatters: ["html"],
+      markdown_processor:
+        {FancyFences,
+         [
+           fences: %{
+             "cli" => {CliOptions.Docs, :cli_fence, []}
+           }
+         ]}
     ]
   end
 end

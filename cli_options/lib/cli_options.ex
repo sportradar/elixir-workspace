@@ -23,7 +23,7 @@ defmodule CliOptions do
 
   # TODO: update docs
 
-  ```elixir
+  ```cli
   schema = [
     foo: [
       type: :string,
@@ -36,20 +36,14 @@ defmodule CliOptions do
     ] 
   ]
 
-  iex> CliOptions.parse!(["--foo", "bar"], schema)
-  %CliOptions.Options{
-    options: [foo: "bar", num: 4]
-  }
+  CliOptions.parse(["--foo", "bar"], schema)
+  >>>
 
-  iex> CliOptions.parse!(["--foo", "bar", "-n", 2], schema)
-  %CliOptions.Options{
-    options: [foo: "bar", num: 2]
-  }
+  CliOptions.parse(["--foo", "bar", "-n", 2], schema)
+  >>>
 
-  iex> CliOptions.parse!(["--foo", "bar", "-n", 2], schema)
-  %CliOptions.Options{
-    options: [foo: "bar", num: 2]
-  }
+  CliOptions.parse(["--foo", "bar", "-n", 2], schema)
+  >>>
   ```
   """
 
@@ -71,52 +65,58 @@ defmodule CliOptions do
   By default `CliOptions` will use the hyphen-ized version of the option name
   as the long name of the option.
 
-      iex> options = CliOptions.parse!(["--user-name", "John"], [user_name: [type: :string]])
-      ...> options.opts
-      [user_name: "John"]
+  ```cli
+  {:ok, options} = CliOptions.parse(["--user-name", "John"], [user_name: [type: :string]])
+  options.opts
+  ```
 
   Additionally you are allowed to set a short version (one-letter string) for the
   option.
 
-      iex> options = CliOptions.parse!(["-U", "John"], [user_name: [type: :string, short: "U"]])
-      ...> options.opts
-      [user_name: "John"]
+  ```cli
+  {:ok, options} = CliOptions.parse(["-U", "John"], [user_name: [type: :string, short: "U"]])
+  options.opts
+  ```
 
   You are also allowed to specifically set a long name for the option. In this case the
   auto-generated long name from the option name will not valid.
 
 
-      iex> CliOptions.parse(["-U", "John"], [user_name: [type: :string, long: "user"]])
-      {:error, "invalid option \"user\""}
+  ```cli
+  CliOptions.parse(["-U", "John"], [user_name: [type: :string, long: "user"]])
+  >>>
 
-      iex> options = CliOptions.parse!(["--user", "John"], [user_name: [type: :string, long: "user"]])
-      ...> options.opts
-      [user_name: "John"]
+  {:ok, options} = CliOptions.parse(["--user", "John"], [user_name: [type: :string, long: "user"]])
+  options.opts
+  >>>
+  ```
 
   Additionally you can provide an arbitrary number of long and short aliases.
 
+  ```cli
+  schema = [
+    user_name: [
+      type: :string,
+      short: "u",
+      aliases: ["user", "user_name"],
+      short_aliases: ["U"]
+    ]
+  ]
 
-      iex> schema = [
-      ...>   user_name: [
-      ...>     type: :string,
-      ...>     short: "u",
-      ...>     aliases: ["user", "user_name"],
-      ...>     short_aliases: ["U"]
-      ...>   ]
-      ...> ]
+  # all following argv are equivalent
+  inputs = [
+    ["--user-name", "John"],
+    ["--user", "John"],
+    ["--user_name", "John"],
+    ["-u", "John"],
+    ["-U", "John"]
+  ]
 
-      # all following argv are equivalent
-      iex> inputs = [
-      ...>   ["--user-name", "John"],
-      ...>   ["--user", "John"],
-      ...>   ["--user_name", "John"],
-      ...>   ["-u", "John"],
-      ...>   ["-U", "John"]
-      ...> ]
-
-      for argv <- inputs, options = CliOptions.parse!(argv, schema) do
-        assert options.opts == [user_name: "John"]
-      end
+  for argv <- inputs, options = CliOptions.parse!(argv, schema) do
+    options.opts == [user_name: "John"]
+  end
+  |> Enum.all?()
+  ```
 
   ## Option types
 
@@ -128,23 +128,21 @@ defmodule CliOptions do
   * `:string` - the default, parses the argument as a string
   * `:boolean` - parses the argument as a flag, e.g. no option is expected.
 
-  ```elixir
-  iex> schema = [
-  ...>   user: [
-  ...>     type: :string,
-  ...>   ],
-  ...>   age: [
-  ...>     type: :integer,
-  ...>   ],
-  ...>   height: [
-  ...>     type: :float,
-  ...>   ]
-  ...> ]
+  ```cli
+  schema = [
+    user: [
+      type: :string,
+    ],
+    age: [
+      type: :integer,
+    ],
+    height: [
+      type: :float,
+    ]
+  ]
 
-  iex> CliOptions.parse(["--user", "John", "--age", "34", "--height", "1.75"], schema)
-  %CliOptions.Options{
-    options: [user: "John", age: 34, height: 1.75]
-  }
+  {:ok, options} = CliOptions.parse(["--user", "John", "--age", "34", "--height", "1.75"], schema)
+  options.opts
   ```
 
   ## Default values and required options
