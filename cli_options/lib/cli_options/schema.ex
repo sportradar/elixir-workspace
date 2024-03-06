@@ -38,7 +38,7 @@ defmodule CliOptions.Schema do
     end
   end
 
-  defp validate_required(opts, schema) do
+  defp validate_required(opts, _schema) do
     {:ok, opts}
   end
 
@@ -134,12 +134,12 @@ defmodule CliOptions.Schema do
     end
   end
 
-  def validate_option_value(arg, option, opts) when is_boolean(arg) do
+  def validate_option_value(arg, _option, _opts) when is_boolean(arg) do
     {:ok, arg}
   end
 
   # TODO: instead of this use a maybe_cast and a validate function
-  def validate_option_value(arg, option, opts), do: {:ok, arg}
+  def validate_option_value(arg, _option, _opts), do: {:ok, arg}
 
   defp validate_type(arg, option, :integer) do
     case Integer.parse(arg) do

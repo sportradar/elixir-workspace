@@ -69,7 +69,7 @@ defmodule CliOptions.Parser do
     {:ok, Keyword.update(opts, option, 1, fn count -> count + 1 end)}
   end
 
-  defp next([], schema), do: nil
+  defp next([], _schema), do: nil
 
   # if it starts with -- or - it must be an option 
   defp next(["--" <> option | rest], schema), do: parse_option(option, rest, schema)
@@ -131,7 +131,7 @@ defmodule CliOptions.Parser do
   # returns the read args and the remaining args in rest
   defp next_args_greedily(rest, 0, _args), do: {nil, rest}
 
-  defp next_args_greedily([], max, args), do: {Enum.reverse(args), []}
+  defp next_args_greedily([], _max, args), do: {Enum.reverse(args), []}
 
   defp next_args_greedily(rest, max, args) when length(args) == max, do: {Enum.reverse(args), rest}
 
