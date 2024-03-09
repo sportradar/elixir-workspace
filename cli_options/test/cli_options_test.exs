@@ -251,6 +251,17 @@ defmodule CliOptionsTest do
 
       assert %CliOptions.Options{} = options
       assert options.opts == [foo: "bar"]
+
+      # with as_tuple flag
+      result = CliOptions.parse!(["--foo", "bar"], [foo: [type: :string]], as_tuple: true)
+      assert result == {[foo: "bar"], [], []}
+
+      result =
+        CliOptions.parse!(["--foo", "bar", "a", "b", "--", "-n", "2"], [foo: [type: :string]],
+          as_tuple: true
+        )
+
+      assert result == {[foo: "bar"], ["a", "b"], ["-n", "2"]}
     end
   end
 end

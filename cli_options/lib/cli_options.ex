@@ -17,11 +17,9 @@ defmodule CliOptions do
 
   ## Usage
 
-  The main function of this module is `parse/2` which parses a list
+  The main function of this module is `parse/3` which parses a list
   of command line options and arguments into a `CliOptions.Options` struct.
   It expects an `argv` string list and the options schema.
-
-  # TODO: update docs
 
   ```cli
   schema = [
@@ -39,15 +37,49 @@ defmodule CliOptions do
   CliOptions.parse(["--foo", "bar"], schema)
   >>>
 
-  CliOptions.parse(["--foo", "bar", "-n", 2], schema)
+  CliOptions.parse(["--foo", "bar", "-n", 2, "foo.ex"], schema)
   >>>
 
-  CliOptions.parse(["--foo", "bar", "-n", 2], schema)
+  CliOptions.parse(["--foo", "bar", "-n", 2, "file.txt", "--", "-n", "1"], schema)
+  >>>
+  ```
+
+  Alternatively you can pass `as_tuple: true` to the `opts` which will return a tuple
+  of the form `{parsed, args, extra}`.
+
+  ```cli
+  schema = [
+    foo: [
+      type: :string,
+      required: true 
+    ],
+    num: [
+      type: :integer,
+      default: 4,
+      short: "n"
+    ] 
+  ]
+
+  CliOptions.parse(["--foo", "bar"], schema, as_tuple: true)
+  >>>
+
+  CliOptions.parse(["--foo", "bar", "-n", 2, "foo.ex"], schema, as_tuple: true)
+  >>>
+
+  CliOptions.parse(
+    ["--foo", "bar", "-n", 2, "file.txt", "--", "-n", "1"],
+    schema,
+    as_tuple: true
+  )
   >>>
   ```
   """
 
   @type argv :: [String.t()]
+
+  @type parsed :: keyword()
+
+  @type extra :: [String.t()]
 
   @doc """
   Parses `argv` according to the provided `schema`.
@@ -59,9 +91,6 @@ defmodule CliOptions do
     * `opts` - the extracted command line options
     * `args` - a list of the remaining arguments in `argv` as strings
     * `extra` - a list of unparsed arguments, if applicable.
-
-  Alternatively you can pass `as_tuple: true` to the `opts` which will return a tuple
-  of the form `{parsed, argv, extra}`.
 
   ## Options names and aliases
 
@@ -124,6 +153,38 @@ defmodule CliOptions do
   end
   |> Enum.all?()
   ```
+
+  > #### Strict parsing by default {: .warning}
+  >
+  > Notice that `CliOptions` will return an error if a not expected option is
+  > encountered. Only options defined in the provided schema are allowed. If you
+  > need to support arbitrary options you will have to add them after the return
+  > separator and handle them in your application code.
+  >
+  > ```cli
+  > schema = [
+  >   file: [
+  >     type: :string,
+  >     required: true 
+  >   ],
+  >   number: [
+  >     type: :integer,
+  >     short: "n"
+  >   ] 
+  > ]
+  >
+  > # parses valid arguments
+  > CliOptions.parse(["--file", "foo.ex", "-n", "2"], schema, as_tuple: true)
+  > >>>
+  >
+  > # error if invalid argument is encountered
+  > CliOptions.parse(["--file", "foo.ex", "-b", "2"], schema, as_tuple: true)
+  > >>>
+  >
+  > # you can add extra arguments after the return separator
+  > CliOptions.parse(["--file", "foo.ex", "--", "-b", "2"], schema, as_tuple: true)
+  > >>>
+  > ```
 
   ## Option types
 
@@ -253,9 +314,17 @@ defmodule CliOptions do
   CliOptions.parse!(["--", "lib", "-n", "--", "bar"], [])
   ```
   """
-  @spec parse(argv :: argv(), schema :: keyword()) ::
-          {:ok, CliOptions.Options.t()} | {:error, String.t()}
-  def parse(argv, schema), do: CliOptions.Parser.parse(argv, schema)
+  @spec parse(argv :: argv(), schema :: keyword(), opts :: keyword()) ::
+          {:ok, CliOptions.Options.t() | {parsed(), argv(), extra()}} | {:error, String.t()}
+  def parse(argv, schema, opts \\ []) do
+    case CliOptions.Parser.parse(argv, schema) do
+      {:ok, options} -> {:ok, format_options(options, opts[:as_tuple])}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp format_options(options, true), do: {options.opts, options.args, options.extra}
+  defp format_options(options, _as_tuple), do: options
 
   @doc """
   Similar as `parse/2` but raises an `CliOptions.ParseError` exception if invalid
@@ -267,9 +336,9 @@ defmodule CliOptions do
 
   TODO: fill it up
   """
-  @spec parse!(argv :: argv(), schema :: keyword()) :: CliOptions.Options.t()
-  def parse!(argv, schema) do
-    case parse(argv, schema) do
+  @spec parse!(argv :: argv(), schema :: keyword(), opts :: keyword()) :: CliOptions.Options.t()
+  def parse!(argv, schema, opts \\ []) do
+    case parse(argv, schema, opts) do
       {:ok, options} -> options
       {:error, reason} -> raise CliOptions.ParseError, reason
     end
