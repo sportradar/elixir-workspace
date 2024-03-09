@@ -195,6 +195,33 @@ defmodule CliOptionsTest do
       {:ok, options} = CliOptions.parse(["--file", "mix.exs"], schema)
       assert options.opts == [file: "mix.exs"]
     end
+
+    test "passing option mulitple times" do
+      schema = [file: [type: :string]]
+
+      {:error, message} = CliOptions.parse(["--file", "foo.ex", "--file", "bar.ex"], schema)
+      assert message == "option :file has already been set with foo.ex"
+
+      # with multiple set to true we can set multiple values
+      schema = [file: [type: :string, multiple: true]]
+
+      {:ok, options} = CliOptions.parse(["--file", "foo.ex", "--file", "bar.ex"], schema)
+      assert options.opts == [file: ["foo.ex", "bar.ex"]]
+
+      # with a single item is still a list
+      {:ok, options} = CliOptions.parse(["--file", "foo.ex"], schema)
+      assert options.opts == [file: ["foo.ex"]]
+
+      # all passed options are casted if needed
+      schema = [number: [type: :integer, multiple: true, short: "n"]]
+
+      {:ok, options} = CliOptions.parse(["--number", "3", "-n", "2", "-n", "1"], schema)
+      assert options.opts == [number: [3, 2, 1]]
+
+      # error if any option is not the proper type
+      {:error, message} = CliOptions.parse(["--number", "3", "-n", "2a", "-n", "1"], schema)
+      assert message == ":number expected an integer argument, got: 2a"
+    end
   end
 
   describe "parse!/2" do

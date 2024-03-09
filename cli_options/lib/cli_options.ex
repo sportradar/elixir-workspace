@@ -167,7 +167,42 @@ defmodule CliOptions do
 
   ## Options with multiple arguments
 
-  TODO: fill this, min_args, max_args append mode etc
+  If you want to pass a cli option multiple times you can set the `:multiple` option set to
+  `true`. In this case every time the option is encountered the value will be appended to
+  the previously encountered values.
+
+  ```cli
+  schema = [
+    file: [
+      type: :string,
+      multiple: true,
+      short: "f"
+    ],
+    number: [
+      type: :integer,
+      multiple: true,
+      short: "n"
+    ]
+  ]
+
+  # all file values are appended to the file option
+  {:ok, options} = CliOptions.parse(["-f", "foo.ex", "--file", "bar.ex", "-n", "1", "-n", "2"], schema)
+  options.opts
+  >>>
+
+  # notice that if an argument is passed once, the value will still be a list
+  {:ok, options} = CliOptions.parse(["-f", "foo.ex"], schema)
+  options.opts
+  >>>
+
+  # all passed items are validated based on the expected type 
+  CliOptions.parse(["-n", "2", "-n", "xyz"], schema)
+  >>>
+
+  # if multiple is not set then an error is returned if an option is passed twice
+  CliOptions.parse(["--file", "foo.ex", "--file", "xyz.ex"], [file: [type: :string]])
+  >>>
+  ```
 
   ## Return separator
 

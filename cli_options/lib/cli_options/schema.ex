@@ -10,7 +10,6 @@ defmodule CliOptions.Schema do
           mappings: %{String.t() => atom()}
         }
 
-  @enforce_keys [:schema, :mappings]
   defstruct schema: [], mappings: []
 
   # validates the schema, rename to new! similar to nimbleoptiosn
@@ -45,7 +44,7 @@ defmodule CliOptions.Schema do
     value = value || schema[:default]
 
     with {:ok, value} <- validate_value(option, value, schema),
-         {:ok, value} <- validate_type(schema[:type], option, value) do
+         {:ok, value} <- validate_type(option_type(schema), option, value) do
       {:ok, value}
     end
   end
@@ -60,6 +59,28 @@ defmodule CliOptions.Schema do
 
       true ->
         :no_value
+    end
+  end
+
+  defp option_type(schema) do
+    case schema[:multiple] do
+      true -> {:list, schema[:type]}
+      _other -> schema[:type]
+    end
+  end
+
+  defp validate_type({:list, type}, option, values) when is_list(values) do
+    result =
+      Enum.reduce_while(values, [], fn value, acc ->
+        case validate_type(type, option, value) do
+          {:ok, value} -> {:cont, [value | acc]}
+          error -> {:halt, error}
+        end
+      end)
+
+    case result do
+      {:error, reason} -> {:error, reason}
+      values -> {:ok, Enum.reverse(values)}
     end
   end
 
