@@ -89,7 +89,11 @@ defmodule CliOptions do
   CliOptions.parse(["-U", "John"], [user_name: [type: :string, long: "user"]])
   >>>
 
-  {:ok, options} = CliOptions.parse(["--user", "John"], [user_name: [type: :string, long: "user"]])
+  {:ok, options} =
+    CliOptions.parse(
+      ["--user", "John"],
+      [user_name: [type: :string, long: "user"]]
+    )
   options.opts
   >>>
   ```
@@ -144,8 +148,37 @@ defmodule CliOptions do
     ]
   ]
 
-  {:ok, options} = CliOptions.parse(["--user", "John", "--age", "34", "--height", "1.75"], schema)
+  {:ok, options} =
+    CliOptions.parse(
+      ["--user", "John", "--age", "34", "--height", "1.75"],
+      schema
+    )
   options.opts
+  ```
+
+  ## Counters
+
+  In some command line applications you may want to count how many times an option is given. In
+  this case no option argument is expected. Instead every time the option is encountered a counter
+  is incremented. You can define such an option by setting the type to `:counter`.
+
+  ```cli
+  schema = [
+    verbosity: [
+      type: :counter,
+      short: "v"
+    ]
+  ]
+
+  # counts the number -v flag is given
+  {:ok, options} = CliOptions.parse(["-v", "-v", "-v"], schema)
+  options.opts
+  >>>
+
+  # if not set it is set to zero
+  {:ok, options} = CliOptions.parse([], schema)
+  options.opts
+  >>>
   ```
 
   ## Default values and required options

@@ -162,7 +162,7 @@ defmodule CliOptionsTest do
       schema = [verbose: [type: :boolean], dry_run: [type: :boolean]]
 
       {:ok, options} = CliOptions.parse(["--verbose", "1"], schema)
-      assert options.opts == [verbose: true]
+      assert options.opts == [verbose: true, dry_run: false]
       assert options.args == ["1"]
 
       {:ok, options} = CliOptions.parse(["--verbose", "1", "--dry-run", "2"], schema)
@@ -178,7 +178,7 @@ defmodule CliOptionsTest do
       ]
 
       {:ok, options} = CliOptions.parse(["foo", "bar"], schema)
-      assert options.opts == [file: "mix.exs", runs: 2]
+      assert options.opts == [file: "mix.exs", runs: 2, verbose: false]
       assert options.args == ["foo", "bar"]
 
       {:ok, options} = CliOptions.parse(["--runs", "1", "--verbose", "foo", "bar"], schema)
@@ -221,6 +221,21 @@ defmodule CliOptionsTest do
       # error if any option is not the proper type
       {:error, message} = CliOptions.parse(["--number", "3", "-n", "2a", "-n", "1"], schema)
       assert message == ":number expected an integer argument, got: 2a"
+    end
+
+    test "counters" do
+      schema = [verbosity: [type: :counter, short: "v"]]
+
+      # if not set it is set to 0
+      {:ok, options} = CliOptions.parse([], schema)
+      assert options.opts == [verbosity: 0]
+
+      # counts number of occurrences
+      {:ok, options} = CliOptions.parse(["-v", "-v"], schema)
+      assert options.opts == [verbosity: 2]
+
+      {:ok, options} = CliOptions.parse(["-v", "-v", "--verbosity"], schema)
+      assert options.opts == [verbosity: 3]
     end
   end
 

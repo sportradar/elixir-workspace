@@ -41,11 +41,22 @@ defmodule CliOptions.Schema do
   end
 
   defp validate_option(option, value, schema) do
-    value = value || schema[:default]
+    value = value_or_default(value, schema)
 
     with {:ok, value} <- validate_value(option, value, schema),
          {:ok, value} <- validate_type(option_type(schema), option, value) do
       {:ok, value}
+    end
+  end
+
+  defp value_or_default(value, _schema) when not is_nil(value), do: value
+
+  defp value_or_default(nil, schema) do
+    cond do
+      schema[:default] != nil -> schema[:default]
+      schema[:type] == :boolean -> false
+      schema[:type] == :counter -> 0
+      true -> nil
     end
   end
 
@@ -84,7 +95,10 @@ defmodule CliOptions.Schema do
     end
   end
 
-  defp validate_type(:integer, _option, value) when is_integer(value), do: {:ok, value}
+  @integer_types [:integer, :counter]
+  defp validate_type(integer_type, _option, value)
+       when integer_type in @integer_types and is_integer(value),
+       do: {:ok, value}
 
   defp validate_type(:integer, option, value) when is_binary(value) do
     case Integer.parse(value) do
@@ -115,6 +129,9 @@ defmodule CliOptions.Schema do
 
       type == :boolean ->
         :set_true
+
+      type == :counter ->
+        :count
 
       opts[:multiple] ->
         :append
@@ -158,10 +175,10 @@ defmodule CliOptions.Schema do
   end
 
   def expected_args(opts) do
-    case opts[:type] do
-      :boolean -> 0
-      :count -> 0
-      _other -> 1
+    cond do
+      opts[:type] == :boolean -> 0
+      opts[:type] == :counter -> 0
+      true -> 1
     end
   end
 end
