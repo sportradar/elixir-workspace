@@ -50,15 +50,18 @@ defmodule CliOptions do
   @type argv :: [String.t()]
 
   @doc """
-  Parses `argv` into a `CliOptions.Options` struct.
+  Parses `argv` according to the provided `schema`.
 
-  The returned struct contains the following:
+  By default a `CliOptions.Options` struct is returned, which contains the following:
 
     * `argv` - the input `argv` string list
     * `schema` - the schema used for validation
     * `opts` - the extracted command line options
     * `args` - a list of the remaining arguments in `argv` as strings
     * `extra` - a list of unparsed arguments, if applicable.
+
+  Alternatively you can pass `as_tuple: true` to the `opts` which will return a tuple
+  of the form `{parsed, argv, extra}`.
 
   ## Options names and aliases
 
@@ -171,18 +174,16 @@ defmodule CliOptions do
   The separator `--` implies options should no longer be processed. Every argument
   after the return separator will be added in the `extra` field of the response.
 
-      iex> CliOptions.parse!(["--", "lib", "-n"], [])
-      %CliOptions.Options{
-        extra: ["lib", "-n"]
-      }
+  ```cli
+  CliOptions.parse!(["--", "lib", "-n"], [])
+  ```
 
   Notice that if the remaining arguments contain another return separator this will
   included in the extra:
 
-      iex> CliOptions.parse!(["--", "lib", "-n", "--", "bar"], [])
-      %CliOptions.Options{
-        extra: ["lib", "-n", "--", "bar"]
-      }
+  ```cli
+  CliOptions.parse!(["--", "lib", "-n", "--", "bar"], [])
+  ```
   """
   @spec parse(argv :: argv(), schema :: keyword()) ::
           {:ok, CliOptions.Options.t()} | {:error, String.t()}
