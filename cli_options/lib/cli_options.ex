@@ -343,4 +343,6 @@ defmodule CliOptions do
       {:error, reason} -> raise CliOptions.ParseError, reason
     end
   end
+
+  def docs(schema, opts \\ []), do: CliOptions.Schema.Docs.generate(schema, opts)
 end
