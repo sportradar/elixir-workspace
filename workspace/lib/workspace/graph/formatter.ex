@@ -30,8 +30,8 @@ defmodule Workspace.Graph.Formatter do
             formatter.render(subgraph, workspace, opts)
         end
       end,
-      external: opts[:external],
-      exclude: opts[:exclude]
+      external: opts[:external] || false,
+      exclude: opts[:exclude] || []
     )
   end
 
