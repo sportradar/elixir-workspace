@@ -5,6 +5,12 @@ defmodule Workspace.Graph.Formatters.Mermaid do
 
   @impl true
   def render(graph, workspace, opts) do
+    to_mermaid(graph, workspace, opts)
+    |> IO.puts()
+  end
+
+  @doc false
+  def to_mermaid(graph, workspace, opts) do
     vertices =
       :digraph.vertices(graph)
       |> Enum.map(fn node -> "  #{node.app}" end)
@@ -32,10 +38,9 @@ defmodule Workspace.Graph.Formatters.Mermaid do
 
     #{edges}
     #{external_node_format(external)}
-    #{maybe_mermaid_node_format(workspace, opts[:show_status])}
+    #{maybe_mermaid_node_format(workspace, opts[:show_status] || false)}
     """
     |> String.trim()
-    |> IO.puts()
   end
 
   defp external_node_format(external) do
