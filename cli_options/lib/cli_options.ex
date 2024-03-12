@@ -334,7 +334,11 @@ defmodule CliOptions do
 
   ## Examples
 
-  TODO: fill it up
+      iex> CliOptions.parse!(["--file", "foo.ex"], [file: [type: :string]], as_tuple: true)
+      {[file: "foo.ex"], [], []}
+
+      iex> CliOptions.parse!([], [file: [type: :string, required: true]], as_tuple: true)
+      ** (CliOptions.ParseError) option :file is required
   """
   @spec parse!(argv :: argv(), schema :: keyword(), opts :: keyword()) :: CliOptions.Options.t()
   def parse!(argv, schema, opts \\ []) do
