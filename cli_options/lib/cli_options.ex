@@ -348,5 +348,26 @@ defmodule CliOptions do
     end
   end
 
+  @doc """
+  Returns documentation for the given schema.
+
+  You can use this to inject documentation in your docstrings. For example,
+  say you have your schema in a mix task:
+
+      @options_schema [...]
+
+  With this, you can use `docs/2` to inject documentation:
+
+  ```markown
+  ## Supported Options
+
+  \#{NimbleOptions.docs(@options_schema)}"
+  ```
+
+  ## Options
+
+    * `:sort` - if set to `true` the options will be sorted alphabetically.
+  """
+  @spec docs(schema :: keyword(), opts :: keyword()) :: String.t()
   def docs(schema, opts \\ []), do: CliOptions.Schema.Docs.generate(schema, opts)
 end
