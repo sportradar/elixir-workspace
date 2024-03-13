@@ -115,6 +115,10 @@ defmodule CliOptions.Schema do
   end
 
   defp validate_type(:string, _option, value) when is_binary(value), do: {:ok, value}
+
+  defp validate_type(:atom, _option, value) when is_binary(value),
+    do: {:ok, String.to_atom(value)}
+
   defp validate_type(:boolean, _option, value) when is_boolean(value), do: {:ok, value}
 
   def action(option, schema) do

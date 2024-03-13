@@ -194,6 +194,7 @@ defmodule CliOptions do
   * `:integer` - parses the argument as an integer
   * `:float` - parses the argument as a float
   * `:string` - the default, parses the argument as a string
+  * `:atom` - converts the arguments to atoms
   * `:boolean` - parses the argument as a flag, e.g. no option is expected.
 
   ```cli

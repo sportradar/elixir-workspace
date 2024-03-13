@@ -170,6 +170,16 @@ defmodule CliOptionsTest do
       assert options.args == ["1", "2"]
     end
 
+    test "with atom options" do
+      schema = [mode: [type: :atom], project: [type: :atom, multiple: true]]
+
+      {:ok, options} = CliOptions.parse(["--mode", "parallel", "--project", "foo"], schema)
+      assert options.opts == [mode: :parallel, project: [:foo]]
+
+      {:ok, options} = CliOptions.parse(["--project", "foo", "--project", "bar"], schema)
+      assert options.opts == [project: [:foo, :bar]]
+    end
+
     test "with default values" do
       schema = [
         file: [type: :string, default: "mix.exs"],
