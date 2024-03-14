@@ -318,6 +318,8 @@ defmodule CliOptions do
   @spec parse(argv :: argv(), schema :: keyword(), opts :: keyword()) ::
           {:ok, CliOptions.Options.t() | {parsed(), argv(), extra()}} | {:error, String.t()}
   def parse(argv, schema, opts \\ []) do
+    schema = CliOptions.Schema.new!(schema)
+
     case CliOptions.Parser.parse(argv, schema) do
       {:ok, options} -> {:ok, format_options(options, opts[:as_tuple])}
       {:error, reason} -> {:error, reason}

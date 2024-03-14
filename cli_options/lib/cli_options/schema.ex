@@ -13,12 +13,45 @@ defmodule CliOptions.Schema do
   defstruct schema: [], mappings: []
 
   # validates the schema, rename to new! similar to nimbleoptiosn
-  def validate(schema) do
+  def new!(schema) do
     # TODO: proper schema validation
 
     mappings = build_mappings(schema)
 
-    {:ok, %__MODULE__{schema: schema, mappings: mappings}}
+    %__MODULE__{schema: schema, mappings: mappings}
+  end
+
+  defp build_mappings(schema) do
+    mappings = %{}
+
+    for {option, opts} <- schema, mapping <- option_mappings(option, opts), reduce: mappings do
+      mappings when is_map_key(mappings, mapping) ->
+        raise ArgumentError,
+              "mapping #{mapping} for option :#{option} is already defined for :#{mappings[mapping]}"
+
+      mappings ->
+        Map.put(mappings, mapping, option)
+    end
+  end
+
+  defp option_mappings(option, opts) do
+    [
+      long_name(opts, option),
+      opts[:short]
+    ]
+    |> Enum.concat(opts[:aliases] || [])
+    |> Enum.concat(opts[:short_aliases] || [])
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp long_name(opts, option) do
+    case opts[:long] do
+      nil ->
+        Atom.to_string(option) |> String.replace("_", "-")
+
+      long ->
+        long
+    end
   end
 
   # opts is expected to be a keyword of the form [option: args]
@@ -149,32 +182,6 @@ defmodule CliOptions.Schema do
     case Map.get(schema.mappings, option) do
       nil -> {:error, "invalid option #{inspect(option)}"}
       option -> {:ok, option, schema.schema[option]}
-    end
-  end
-
-  defp build_mappings(schema) do
-    for {option, opts} <- schema, mapping <- option_mappings(option, opts), into: %{} do
-      {mapping, option}
-    end
-  end
-
-  defp option_mappings(option, opts) do
-    [
-      long_name(opts, option),
-      opts[:short]
-    ]
-    |> Enum.concat(opts[:aliases] || [])
-    |> Enum.concat(opts[:short_aliases] || [])
-    |> Enum.reject(&is_nil/1)
-  end
-
-  defp long_name(opts, option) do
-    case opts[:long] do
-      nil ->
-        Atom.to_string(option) |> String.replace("_", "-")
-
-      long ->
-        long
     end
   end
 
