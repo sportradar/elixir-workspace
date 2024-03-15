@@ -15,14 +15,13 @@ defmodule Mix.Tasks.Workspace.Status do
 
   ## Command line options
 
-  #{CliOpts.docs(@options_schema, sort: true)}
+  #{CliOptions.docs(@options_schema, sort: true)}
   """
   use Mix.Task
 
   @impl Mix.Task
   def run(args) do
-    {:ok, opts} = CliOpts.parse(args, @options_schema)
-    %{parsed: opts, args: _args, extra: _extra, invalid: _invalid} = opts
+    {opts, _args, _extra} = CliOptions.parse!(args, @options_schema, as_tuple: true)
 
     opts
     |> Keyword.merge(show_status: true)
