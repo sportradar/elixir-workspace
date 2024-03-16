@@ -10,6 +10,8 @@ defmodule Workspace.Graph.Formatters.Mermaid do
   end
 
   @doc false
+  @spec to_mermaid(graph :: :digraph.graph(), workspace :: Workspace.State.t(), opts :: keyword()) ::
+          String.t()
   def to_mermaid(graph, workspace, opts) do
     vertices =
       :digraph.vertices(graph)
