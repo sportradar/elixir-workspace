@@ -248,17 +248,46 @@ defmodule CliOptions do
   Options can have default values. If no command line argument is provided then the parsed
   options will return the default value instead. For example:
 
-  TODO: example
+  ```cli
+  schema = [
+    verbose: [
+      type: :boolean,
+      default: true
+    ],
+    retries: [
+      type: :integer,
+      default: 1
+    ] 
+  ]
+
+  {:ok, options} = CliOptions.parse([], schema)
+  options.opts
+  ```
 
   > #### Booleans and counters {: .info}
   >
   > Notice that for options of type `:boolean` or `:counter` a default value is always
   > implicitly set.
   >
-  > TODO: example
+  > ```cli
+  > schema = [verbose: [type: :boolean], level: [type: :counter]]
+  >
+  > {:ok, options} = CliOptions.parse([], schema)
+  > options.opts
+  > ```
 
   Additionally you can mark an option as required. In this case an error will be returned if
   the option is not present in the command line arguments.
+
+  ```cli
+  schema = [file: [type: :string, required: true]]
+
+  CliOptions.parse([], schema)
+  >>>
+
+  {:ok, options} = CliOptions.parse(["--file", "foo.ex"], schema)
+  options.opts
+  ```
 
   ## Options with multiple arguments
 
