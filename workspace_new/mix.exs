@@ -22,7 +22,7 @@ defmodule WorkspaceNew.MixProject do
       ],
       package: [
         maintainers: ["Panagiotis Nezis"],
-        files: ~w(lib templates mix.exs README.md)
+        files: ~w(lib template mix.exs README.md)
       ]
     ]
   end
