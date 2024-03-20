@@ -106,10 +106,10 @@ defmodule Mix.Tasks.Workspace.New do
     create_file(".workspace.exs", template(".workspace.exs", bindings))
   end
 
-  @templates_path Path.expand("../../../template", __DIR__)
-
   defp template(filename, bindings) do
-    template_path = Path.join(@templates_path, filename)
+    template_path =
+      Path.expand("../../../template", __DIR__)
+      |> Path.join(filename)
 
     EEx.eval_file(template_path, bindings)
   end
