@@ -1,10 +1,12 @@
 [
   # Add paths that shall not be considered when generating the workspace graph
-  ignore_paths: [],
+  # By default deps and _build folders are ignored. You are advised to store all
+  # build artifacts under a dedicated folder (e.g. artifacts) which should be ignored.
+  ignore_paths: ~w[deps _build],
   
   # Custom workspace checks for linting your mono-repo at a package level. You can
   # enforce things like common build dirs or required project depenendencies. For
-  # more details chech the Workspace.Check documentation.
+  # more details chech the `Workspace.Check` documentation.
   checks: [
   ],
 
