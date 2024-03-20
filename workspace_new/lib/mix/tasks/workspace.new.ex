@@ -29,6 +29,14 @@ defmodule Mix.Tasks.Workspace.New do
     module: :string
   ]
 
+  root_path = Path.expand("../../../template", __DIR__)
+
+  @template_files ["README.md", ".formatter.exs", ".gitignore", "mix.exs", ".workspace.exs"]
+                  |> Enum.map(fn filename ->
+                    {filename, File.read!(Path.join(root_path, filename))}
+                  end)
+                  |> Enum.into(%{})
+
   @impl true
   def run(argv) do
     {opts, argv} = OptionParser.parse!(argv, strict: @switches)
@@ -99,19 +107,13 @@ defmodule Mix.Tasks.Workspace.New do
       version: get_version(System.version())
     ]
 
-    create_file("README.md", template("README.md", bindings))
-    create_file(".formatter.exs", template(".formatter.exs", bindings))
-    create_file(".gitignore", template(".gitignore", bindings))
-    create_file("mix.exs", template("mix.exs", bindings))
-    create_file(".workspace.exs", template(".workspace.exs", bindings))
+    for {file, content} <- @template_files do
+      create_file(file, template(content, bindings))
+    end
   end
 
-  defp template(filename, bindings) do
-    template_path =
-      Path.expand("../../../template", __DIR__)
-      |> Path.join(filename)
-
-    EEx.eval_file(template_path, bindings)
+  defp template(content, bindings) do
+    EEx.eval_string(content, bindings)
   end
 
   defp get_version(version) do
