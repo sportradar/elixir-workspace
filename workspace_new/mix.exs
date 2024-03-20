@@ -1,3 +1,8 @@
+for path <- :code.get_path(),
+    Regex.match?(~r/workspace_new\-\d+\.\d+\.\d\/ebin$/, List.to_string(path)) do
+  Code.delete_path(path)
+end
+
 defmodule WorkspaceNew.MixProject do
   use Mix.Project
 
