@@ -70,16 +70,20 @@ defmodule Mix.Tasks.Workspace.List do
   end
 
   defp list_workspace_projects(workspace, show_status) do
-    max_project_length =
-      workspace
-      |> Workspace.projects()
-      |> Enum.map(fn project -> inspect(project.app) |> String.length() end)
-      |> Enum.max()
+    projects = Workspace.projects(workspace)
+    max_project_length = max_project_length(projects)
 
-    workspace
-    |> Workspace.projects()
+    projects
     |> Enum.sort_by(& &1.app)
     |> Enum.each(&print_project_info(&1, max_project_length, show_status))
+  end
+
+  defp max_project_length([]), do: 0
+
+  defp max_project_length(projects) do
+    projects
+    |> Enum.map(fn project -> inspect(project.app) |> String.length() end)
+    |> Enum.max()
   end
 
   defp print_project_info(%Workspace.Project{skip: true}, _length, _show_status), do: :ok
