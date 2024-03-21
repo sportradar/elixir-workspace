@@ -16,8 +16,23 @@ defmodule Mix.Tasks.Workspace.StatusTest do
                                      "sample_workspace_committed"
                                    )
 
+  @sample_workspace_no_git_path Path.join(
+                                  Workspace.TestUtils.tmp_path(),
+                                  "sample_workspace_no_git"
+                                )
+
   setup do
     Application.put_env(:elixir, :ansi_enabled, false)
+  end
+
+  test "if no git repo" do
+    message =
+      "status related operations require a git repo, " <>
+        "../../workspace_test_fixtures/sample_workspace_no_git is not a valid git repo"
+
+    assert_raise Mix.Error, message, fn ->
+      StatusTask.run(["--workspace-path", @sample_workspace_no_git_path])
+    end
   end
 
   test "with no changed files" do

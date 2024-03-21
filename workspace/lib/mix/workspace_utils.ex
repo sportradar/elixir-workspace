@@ -16,8 +16,26 @@ defmodule Mix.WorkspaceUtils do
 
   defp maybe_include_status(workspace, opts) do
     case opts[:show_status] do
-      true -> Workspace.Status.update(workspace, base: opts[:base], head: opts[:head])
-      _ -> workspace
+      true ->
+        validate_git_repo!(workspace)
+        Workspace.Status.update(workspace, base: opts[:base], head: opts[:head])
+
+      _ ->
+        workspace
+    end
+  end
+
+  defp validate_git_repo!(workspace) do
+    case Workspace.Git.root(cd: workspace.workspace_path) do
+      {:ok, _path} ->
+        :ok
+
+      {:error, _reason} ->
+        path = Workspace.Utils.Path.relative_to(workspace.workspace_path, File.cwd!())
+
+        Mix.raise(
+          "status related operations require a git repo, #{path} is not a valid git repo"
+        )
     end
   end
 end
