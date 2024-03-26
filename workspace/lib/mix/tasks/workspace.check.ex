@@ -5,8 +5,8 @@ defmodule Mix.Tasks.Workspace.Check do
                     :verbose,
                     :project,
                     :exclude,
-                    :tag,
-                    :exclude_tag
+                    :tags,
+                    :excluded_tags
                   ])
 
   @shortdoc "Runs configured checkers on the current workspace"
@@ -16,7 +16,7 @@ defmodule Mix.Tasks.Workspace.Check do
 
   ## Command Line Options
 
-  #{CliOpts.docs(@options_schema, sort: true)}
+  #{CliOptions.docs(@options_schema, sort: true)}
   """
 
   use Mix.Task
@@ -25,7 +25,7 @@ defmodule Mix.Tasks.Workspace.Check do
 
   @impl Mix.Task
   def run(argv) do
-    %{parsed: opts, args: _args, extra: _extra} = CliOpts.parse!(argv, @options_schema)
+    {opts, _args, _extra} = CliOptions.parse!(argv, @options_schema, as_tuple: true)
 
     workspace = Mix.WorkspaceUtils.load_and_filter_workspace(opts)
 

@@ -2,7 +2,7 @@ defmodule Mix.Tasks.Workspace.Run do
   opts = [
     task: [
       type: :string,
-      alias: :t,
+      short: "t",
       doc: "The task to execute",
       required: true
     ],
@@ -36,14 +36,14 @@ defmodule Mix.Tasks.Workspace.Run do
       expected to be in the form `ENV_VAR_NAME=value`. You can use this multiple times
       for setting multiple variables.\
       """,
-      keep: true
+      multiple: true
     ],
     allow_failure: [
       type: :string,
       doc: """
       Allow the task for this specific project to fail. Can be set more than once. 
       """,
-      keep: true
+      multiple: true
     ],
     early_stop: [
       type: :boolean,
@@ -70,8 +70,8 @@ defmodule Mix.Tasks.Workspace.Run do
                       :config_path,
                       :project,
                       :exclude,
-                      :tag,
-                      :exclude_tag,
+                      :tags,
+                      :excluded_tags,
                       :affected,
                       :modified,
                       :base,
@@ -136,7 +136,7 @@ defmodule Mix.Tasks.Workspace.Run do
 
   ## Command-line Options
 
-  #{CliOpts.docs(@options_schema, sort: true)}
+  #{CliOptions.docs(@options_schema, sort: true)}
 
   ## Filtering tasks
 
@@ -222,8 +222,7 @@ defmodule Mix.Tasks.Workspace.Run do
   def run(args) do
     Mix.Task.reenable("workspace.run")
 
-    {:ok, opts} = CliOpts.parse(args, @options_schema)
-    %{parsed: opts, extra: extra} = opts
+    {opts, _args, extra} = CliOptions.parse!(args, @options_schema, as_tuple: true)
 
     opts =
       Keyword.update(opts, :allow_failure, [], fn projects ->

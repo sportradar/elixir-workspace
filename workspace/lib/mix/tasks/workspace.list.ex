@@ -25,8 +25,8 @@ defmodule Mix.Tasks.Workspace.List do
                       :config_path,
                       :project,
                       :exclude,
-                      :tag,
-                      :exclude_tag,
+                      :tags,
+                      :excluded_tags,
                       :show_status
                     ],
                     opts
@@ -47,15 +47,14 @@ defmodule Mix.Tasks.Workspace.List do
 
   ## Command line options
 
-  #{CliOpts.docs(@options_schema, sort: true)}
+  #{CliOptions.docs(@options_schema, sort: true)}
   """
   use Mix.Task
   alias Workspace.Cli
 
   @impl Mix.Task
   def run(args) do
-    {:ok, opts} = CliOpts.parse(args, @options_schema)
-    %{parsed: opts, args: _args, extra: _extra, invalid: _invalid} = opts
+    {opts, _args, _extra} = CliOptions.parse!(args, @options_schema, as_tuple: true)
 
     opts
     |> Mix.WorkspaceUtils.load_and_filter_workspace()

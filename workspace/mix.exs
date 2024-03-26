@@ -55,7 +55,6 @@ defmodule Workspace.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:cli_opts, path: "../cli_opts/"},
       {:cli_options, path: "../cli_options/"},
       {:nimble_options, "~> 1.0.2"},
       {:jason, "~> 1.4.1", optional: true},

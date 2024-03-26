@@ -19,8 +19,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
                       :base,
                       :head,
                       :exclude,
-                      :tag,
-                      :exclude_tag,
+                      :tags,
+                      :excluded_tags,
                       :verbose
                     ],
                     opts
@@ -199,7 +199,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   ## Command line options
 
-  #{CliOpts.docs(@options_schema, sort: true)}
+  #{CliOptions.docs(@options_schema, sort: true)}
   """
   use Mix.Task
 
@@ -209,8 +209,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   @impl Mix.Task
   def run(args) do
-    {:ok, opts} = CliOpts.parse(args, @options_schema)
-    %{parsed: opts, args: _args, extra: _extra, invalid: []} = opts
+    {opts, _args, _extra} = CliOptions.parse!(args, @options_schema, as_tuple: true)
 
     workspace = Mix.WorkspaceUtils.load_and_filter_workspace(opts)
 

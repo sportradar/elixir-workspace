@@ -5,31 +5,31 @@ defmodule Workspace.CliOptions do
   @default_cli_options [
     project: [
       type: :string,
-      keep: true,
-      alias: :p,
+      multiple: true,
+      short: "p",
       doc:
         "The project name, can be defined multiple times. If not set all projects are considered"
     ],
     exclude: [
       type: :string,
-      alias: :e,
-      keep: true,
+      short: "e",
+      multiple: true,
       doc: "Ignore the given projects"
     ],
-    tag: [
+    tags: [
       type: :string,
-      keep: true,
-      as: :tags,
+      multiple: true,
+      long: "tag",
       doc: """
       If set, only projects with the given tag(s) will be considered. For scoped tags you should
       provide a colon separated string (examples: `shared`, `scope:api`, `type:utils`). For
       excluding a specific tag use `--exclude-tag`
       """
     ],
-    exclude_tag: [
+    excluded_tags: [
       type: :string,
-      keep: true,
-      as: :excluded_tags,
+      multiple: true,
+      long: "exclude-tag",
       doc: """
       If set, any projects with any of the given tag(s) will be excluded. For scoped tags you should
       provide a colon separated string (examples: `shared`, `scope:api`, `type:utils`). For selecting
@@ -38,12 +38,12 @@ defmodule Workspace.CliOptions do
     ],
     affected: [
       type: :boolean,
-      alias: :a,
+      short: "a",
       doc: "Run only on affected projects"
     ],
     modified: [
       type: :boolean,
-      alias: :m,
+      short: "m",
       doc: "Run only on modified projects"
     ],
     verbose: [

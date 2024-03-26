@@ -69,7 +69,7 @@ defmodule Mix.Tasks.Workspace.Graph do
 
   ## Command Line Options
 
-  #{CliOpts.docs(@options_schema, sort: true)}
+  #{CliOptions.docs(@options_schema, sort: true)}
   """
   use Mix.Task
   alias Workspace.Graph.Formatter
@@ -77,8 +77,7 @@ defmodule Mix.Tasks.Workspace.Graph do
 
   @impl Mix.Task
   def run(args) do
-    {:ok, opts} = CliOpts.parse(args, @options_schema)
-    %{parsed: opts} = opts
+    {opts, _args, _extra} = CliOptions.parse!(args, @options_schema, as_tuple: true)
 
     workspace = Mix.WorkspaceUtils.load_and_filter_workspace(opts)
 
