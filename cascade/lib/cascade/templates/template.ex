@@ -32,7 +32,7 @@ defmodule Cascade.Templates.Template do
 
   ## Command line options
 
-  #{CliOpts.docs(@args_schema)}
+  #{CliOptions.docs(@args_schema)}
   """
   use Cascade.Template
 

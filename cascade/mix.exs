@@ -30,7 +30,7 @@ defmodule Cascade.MixProject do
 
   defp deps do
     [
-      {:cli_opts, path: "../cli_opts/"},
+      {:cli_options, path: "../cli_options/"},
       {:ex_doc, "== 0.30.9", only: :dev, runtime: false},
       {:credo, "~> 1.6.7", [only: [:dev, :test], runtime: false]},
       {:dialyxir, "== 1.4.2", only: [:dev], runtime: false},
