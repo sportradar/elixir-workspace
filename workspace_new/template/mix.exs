@@ -12,7 +12,7 @@ defmodule <%= mod %>.MixWorkspace do
         workspace: [
           type: :workspace
         ],
-        lockfile: "workspace.lock" 
+        lockfile: "workspace.lock"
       ]
     end
 
@@ -28,7 +28,6 @@ defmodule <%= mod %>.MixWorkspace do
       [
         # TODO: set proper versions once released
         {:workspace, github: "pnezis/workspace", sparse: "workspace"},
-        {:cli_opts, github: "pnezis/workspace", sparse: "cli_opts", override: true},
         {:cli_options, github: "pnezis/workspace", sparse: "cli_options", override: true}
       ]
     end
