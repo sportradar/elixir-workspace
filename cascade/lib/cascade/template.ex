@@ -22,7 +22,7 @@ defmodule Cascade.Template do
   @doc """
   The CLI arguments (if any) schema of the template.
 
-  It should return a valid `CLIOpts` arguments schema. These CLI options will
+  It should return a valid `CliOptions` arguments schema. These CLI options will
   be automatically parsed and assigned to the template's bindings when invoked
   from the cascade mix task.
 
