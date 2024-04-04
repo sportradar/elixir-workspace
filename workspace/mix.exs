@@ -25,8 +25,13 @@ defmodule Workspace.MixProject do
           Workspace: [
             Workspace,
             Workspace.Config,
+            Workspace.Filtering,
             Workspace.Graph,
-            Workspace.Project
+            Workspace.Graph.Formatter,
+            Workspace.Project,
+            Workspace.State,
+            Workspace.Status,
+            Workspace.Topology
           ],
           "Check APIs": [
             Workspace.Check,
@@ -37,8 +42,13 @@ defmodule Workspace.MixProject do
           ],
           Utilities: [
             Workspace.Cli,
+            Workspace.Export,
             Workspace.Git,
             Workspace.Utils
+          ],
+          "Test Coverage": [
+            Workspace.Coverage.Exporter,
+            Workspace.Coverage.LCOV
           ]
         ]
       ]

@@ -1,7 +1,5 @@
 defmodule Workspace.Utils.Path do
-  @moduledoc """
-  Helper `Path` utilities.
-  """
+  @moduledoc false
 
   @doc """
   Returns `true` if the given `path` is relative, `false` otherwise.

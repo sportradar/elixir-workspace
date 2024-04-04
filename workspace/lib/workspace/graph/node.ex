@@ -1,9 +1,7 @@
 defmodule Workspace.Graph.Node do
-  @moduledoc """
-  A `Workspace.Graph` node.
+  @moduledoc false
 
-  A node represents a workspace package. It can also include external packages.
-  """
+  # A node represents a workspace package. It can also include external packages.
 
   @typedoc """
   A workspace graph node struct.
