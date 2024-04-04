@@ -41,7 +41,7 @@ defmodule WorkspaceNew.MixProject do
 
   defp deps do
     [
-      {:ex_doc, "== 0.30.9", only: :docs}
+      {:ex_doc, "== 0.31.2", only: :docs}
     ]
   end
 end

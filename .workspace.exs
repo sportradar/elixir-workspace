@@ -90,8 +90,8 @@
       opts: [
         deps: [
           # add dependencies in strict alphabetical order
-          {:dialyxir, "== 1.4.2", only: [:dev], runtime: false},
-          {:ex_doc, "== 0.30.9", no_options_check: true},
+          {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
+          {:ex_doc, "== 0.31.2", no_options_check: true},
           {:timex, "== 3.7.7"}
         ]
       ]

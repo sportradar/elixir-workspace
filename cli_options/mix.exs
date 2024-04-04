@@ -32,7 +32,7 @@ defmodule CliOptions.MixProject do
 
   defp deps do
     [
-      {:ex_doc, "== 0.30.9", only: :dev, runtime: false},
+      {:ex_doc, "== 0.31.2", only: :dev, runtime: false},
       {:fancy_fences, "~> 0.3.0", only: :dev, runtime: false}
     ]
   end

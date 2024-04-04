@@ -58,9 +58,9 @@ defmodule Workspace.MixProject do
       {:cli_options, path: "../cli_options/"},
       {:nimble_options, "~> 1.0.2"},
       {:jason, "~> 1.4.1", optional: true},
-      {:ex_doc, "== 0.30.9", only: :dev, runtime: false},
+      {:ex_doc, "== 0.31.2", only: :dev, runtime: false},
       {:credo, "~> 1.6.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "== 1.4.2", only: [:dev], runtime: false},
+      {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
       {:doctor, "~> 0.21.0", only: :dev, runtime: false}
     ]
   end
