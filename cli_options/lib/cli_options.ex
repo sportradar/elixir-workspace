@@ -393,7 +393,7 @@ defmodule CliOptions do
   ```markown
   ## Supported Options
 
-  \#{NimbleOptions.docs(@options_schema)}"
+  \#{CliOptions.docs(@options_schema)}"
   ```
 
   ## Options
