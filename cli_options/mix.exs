@@ -33,7 +33,7 @@ defmodule CliOptions.MixProject do
   defp deps do
     [
       {:ex_doc, "== 0.31.2", only: :dev, runtime: false},
-      {:fancy_fences, "~> 0.3.0", only: :dev, runtime: false}
+      {:fancy_fences, "~> 0.3.1", only: :dev, runtime: false}
     ]
   end
 
@@ -45,7 +45,7 @@ defmodule CliOptions.MixProject do
         {FancyFences,
          [
            fences: %{
-             "cli" => {CliOptions.Docs, :cli_fence, []}
+             "cli" => {FancyFences.Processors, :multi_inspect, [[format: true, iex_prefix: true]]}
            }
          ]}
     ]
