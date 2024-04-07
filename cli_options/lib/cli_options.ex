@@ -17,14 +17,14 @@ defmodule CliOptions do
 
   ## Usage
 
-  The main function of this module is `parse/3` which parses a list
+  The main function of this module is `parse/2` which parses a list
   of command line options and arguments into a tuple of parsed options,
   positional arguments and extra options (anything passed after the `--`
-  separator).. It expects an `argv` string list and the options schema.
+  separator).
 
   ```cli
   schema = [
-    foo: [
+    name: [
       type: :string,
       required: true 
     ],
@@ -35,40 +35,52 @@ defmodule CliOptions do
     ] 
   ]
 
-  CliOptions.parse(["--foo", "bar"], schema)
+  CliOptions.parse(["--name", "foo"], schema)
   >>>
 
-  CliOptions.parse(["--foo", "bar", "-n", 2, "foo.ex"], schema)
+  # with positional arguments
+  CliOptions.parse(["--name", "foo", "-n", "2", "foo.ex"], schema)
   >>>
 
-  CliOptions.parse(["--foo", "bar", "-n", 2, "file.txt", "--", "-n", "1"], schema)
+  # with positional arguments and extra options
+  CliOptions.parse(["--name", "foo", "-n", "2", "file.txt", "--", "-n", "1"], schema)
   >>>
+
+  # with invalid options
+  CliOptions.parse(["--user-name", "foo"], schema)
   ```
 
-  ```cli
-  schema = [
-    foo: [
-      type: :string,
-      required: true 
-    ],
-    num: [
-      type: :integer,
-      default: 4,
-      short: "n"
-    ] 
-  ]
-
-  CliOptions.parse(["--foo", "bar"], schema)
-  >>>
-
-  CliOptions.parse(["--foo", "bar", "-n", 2, "foo.ex"], schema)
-  >>>
-
-  CliOptions.parse(
-    ["--foo", "bar", "-n", 2, "file.txt", "--", "-n", "1"],
-    schema
-  )
-  ```
+  > #### Strict validation {: .warning}
+  >
+  > Notice that `CliOptions` adheres to a strict options validation approach. This
+  > means that an error will be returned in any of the following cases:
+  >
+  > - An invalid option is provided
+  > - An option is provided more times than expected
+  > - The option's type is not valid
+  > - A required option is not provided
+  >
+  > ```cli
+  > schema = [
+  >   number: [type: :integer],
+  >   name: [type: :string, required: true]
+  > ]
+  >
+  > # with invalid option
+  > CliOptions.parse(["--name", "foo", "--invalid"], schema)
+  > >>>
+  >
+  > # with missing required option
+  > CliOptions.parse([], schema)
+  > >>>
+  >
+  > # with invalid type
+  > CliOptions.parse(["--name", "foo", "--number", "asd"], schema)
+  > >>>
+  >
+  > # with option re-definition
+  > CliOptions.parse(["--name", "foo", "--name", "bar"], schema)
+  > ```
   """
 
   @type argv :: [String.t()]
