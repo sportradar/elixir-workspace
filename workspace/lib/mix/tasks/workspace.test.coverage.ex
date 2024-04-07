@@ -209,7 +209,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   @impl Mix.Task
   def run(args) do
-    {opts, _args, _extra} = CliOptions.parse!(args, @options_schema, as_tuple: true)
+    {opts, _args, _extra} = CliOptions.parse!(args, @options_schema)
 
     workspace = Mix.WorkspaceUtils.load_and_filter_workspace(opts)
 

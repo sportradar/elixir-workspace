@@ -42,7 +42,7 @@ defmodule Mix.Tasks.Cascade do
 
   @impl Mix.Task
   def run(argv) do
-    {opts, args, extra} = CliOptions.parse!(argv, @args_schema, as_tuple: true)
+    {opts, args, extra} = CliOptions.parse!(argv, @args_schema)
 
     case args do
       [template] ->

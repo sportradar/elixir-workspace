@@ -21,7 +21,7 @@ defmodule Mix.Tasks.Workspace.Status do
 
   @impl Mix.Task
   def run(args) do
-    {opts, _args, _extra} = CliOptions.parse!(args, @options_schema, as_tuple: true)
+    {opts, _args, _extra} = CliOptions.parse!(args, @options_schema)
 
     opts
     |> Keyword.merge(show_status: true)

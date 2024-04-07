@@ -54,7 +54,7 @@ defmodule Mix.Tasks.Workspace.List do
 
   @impl Mix.Task
   def run(args) do
-    {opts, _args, _extra} = CliOptions.parse!(args, @options_schema, as_tuple: true)
+    {opts, _args, _extra} = CliOptions.parse!(args, @options_schema)
 
     opts
     |> Mix.WorkspaceUtils.load_and_filter_workspace()

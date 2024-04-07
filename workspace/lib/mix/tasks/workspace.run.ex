@@ -222,7 +222,7 @@ defmodule Mix.Tasks.Workspace.Run do
   def run(args) do
     Mix.Task.reenable("workspace.run")
 
-    {opts, _args, extra} = CliOptions.parse!(args, @options_schema, as_tuple: true)
+    {opts, _args, extra} = CliOptions.parse!(args, @options_schema)
 
     opts =
       Keyword.update(opts, :allow_failure, [], fn projects ->

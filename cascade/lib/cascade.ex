@@ -34,7 +34,7 @@ defmodule Cascade do
   defp validate_template_cli_opts(template, args) do
     args_schema = template.args_schema()
 
-    with {:ok, %CliOptions.Options{opts: opts}} <- CliOptions.parse(args, args_schema) do
+    with {:ok, {opts, _args, _extra}} <- CliOptions.parse(args, args_schema) do
       template.validate_cli_opts(opts)
     end
   end

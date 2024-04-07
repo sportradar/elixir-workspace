@@ -25,7 +25,7 @@ defmodule Mix.Tasks.Workspace.Check do
 
   @impl Mix.Task
   def run(argv) do
-    {opts, _args, _extra} = CliOptions.parse!(argv, @options_schema, as_tuple: true)
+    {opts, _args, _extra} = CliOptions.parse!(argv, @options_schema)
 
     workspace = Mix.WorkspaceUtils.load_and_filter_workspace(opts)
 
