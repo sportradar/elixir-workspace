@@ -1,8 +1,10 @@
 defmodule CliOptions.Parser do
   @moduledoc false
 
+  @type parsed_options :: {keyword(), [String.t()], [String.t()]}
+
   @spec parse(argv :: [String.t()], schema :: CliOptions.Schema.t()) ::
-          {:ok, keyword()} | {:error, String.t()}
+          {:ok, parsed_options()} | {:error, String.t()}
   def parse(argv, %CliOptions.Schema{} = schema) do
     # we split the extra args first (anything after the first --) and then
     # parse the remaining
@@ -10,7 +12,7 @@ defmodule CliOptions.Parser do
 
     with {:ok, opts, args} <- parse(remaining_argv, schema, [], []),
          {:ok, opts} <- CliOptions.Schema.validate(opts, schema) do
-      {:ok, CliOptions.Options.new(argv, schema.schema, opts, args, extra)}
+      {:ok, {opts, args, extra}}
     end
   end
 

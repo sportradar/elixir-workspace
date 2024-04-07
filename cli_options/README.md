@@ -47,7 +47,7 @@ schema = [
 Now you can validate some `argv` using `CliOptions.parse/2`.
 
 ```elixir
-iex> CliOptions.parse(["-p", "foo", "--timeout", "30"], schema, as_tuple: true)
+iex> CliOptions.parse(["-p", "foo", "--timeout", "30"], schema)
 {:ok, {[project: "foo", verbose: false, timeout: 30], [], []}}
 ```
 
@@ -58,15 +58,15 @@ If the input is invalid an error will be returned:
 
 ```elixir
 # invalid type
-iex> CliOptions.parse(["-p", "foo", "--timeout", "a30"], schema, as_tuple: true)
+iex> CliOptions.parse(["-p", "foo", "--timeout", "a30"], schema)
 {:error, ":timeout expected an integer argument, got: a"}
 
 # missing required argument
-iex> CliOptions.parse([], schema, as_tuple: true)
+iex> CliOptions.parse([], schema)
 {:error, "option :project is required"}
 
 # with undefined argument
-iex> CliOptions.parse(["-p", "foo", "--other", "x"], schema, as_tuple: true)
+iex> CliOptions.parse(["-p", "foo", "--other", "x"], schema)
 {:error, "invalid option other"}
 ```
 

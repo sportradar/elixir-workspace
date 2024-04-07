@@ -8,71 +8,55 @@ defmodule CliOptionsTest do
       schema = []
       argv = []
 
-      {:ok, options} = CliOptions.parse(argv, schema)
-      assert options.argv == argv
-      assert options.schema == schema
-      assert options.args == []
-      assert options.extra == []
+      assert {:ok, {[], [], []}} = CliOptions.parse(argv, schema)
     end
 
     test "with extra arguments and no required options" do
       schema = []
       argv = ["--", "--foo", "bar"]
 
-      {:ok, options} = CliOptions.parse(argv, schema)
-      assert options.argv == argv
-      assert options.schema == schema
-      assert options.args == []
-      assert options.extra == ["--foo", "bar"]
+      assert {:ok, {[], [], extra}} = CliOptions.parse(argv, schema)
+      assert extra == ["--foo", "bar"]
     end
 
     test "with extra arguments containing separator" do
       schema = []
       argv = ["--", "--foo", "bar", "--", "-b"]
 
-      {:ok, options} = CliOptions.parse(argv, schema)
-      assert options.argv == argv
-      assert options.schema == schema
-      assert options.args == []
-      assert options.extra == ["--foo", "bar", "--", "-b"]
+      assert {:ok, {[], [], extra}} = CliOptions.parse(argv, schema)
+      assert extra == ["--foo", "bar", "--", "-b"]
     end
 
     test "with arguments no options" do
       schema = []
       argv = ["foo.ex", "bar.ex", "baz.ex"]
 
-      {:ok, options} = CliOptions.parse(argv, schema)
-      assert options.argv == argv
-      assert options.schema == schema
-      assert options.args == ["foo.ex", "bar.ex", "baz.ex"]
-      assert options.extra == []
+      assert {:ok, {[], args, []}} = CliOptions.parse(argv, schema)
+      assert args == ["foo.ex", "bar.ex", "baz.ex"]
     end
 
     test "with arguments and extra" do
       schema = []
       argv = ["foo.ex", "bar.ex", "--", "-b", "-c"]
 
-      {:ok, options} = CliOptions.parse(argv, schema)
-      assert options.argv == argv
-      assert options.schema == schema
-      assert options.args == ["foo.ex", "bar.ex"]
-      assert options.extra == ["-b", "-c"]
+      assert {:ok, {[], args, extra}} = CliOptions.parse(argv, schema)
+      assert args == ["foo.ex", "bar.ex"]
+      assert extra == ["-b", "-c"]
     end
 
     test "with option set" do
       schema = [foo: [type: :string]]
       argv = ["--foo", "bar"]
 
-      {:ok, options} = CliOptions.parse(argv, schema)
-      assert options.opts == [foo: "bar"]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(argv, schema)
+      assert opts == [foo: "bar"]
     end
 
     test "by default undersores in long names are mapped to hyphens" do
       schema = [user_name: [type: :string]]
 
-      {:ok, options} = CliOptions.parse(["--user-name", "john"], schema)
-      assert options.opts == [user_name: "john"]
-
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--user-name", "john"], schema)
+      assert opts == [user_name: "john"]
       assert {:error, _message} = CliOptions.parse(["--user_name", "john"], schema)
     end
 
@@ -80,42 +64,40 @@ defmodule CliOptionsTest do
       schema = [user: [type: :string, long: "user_name"]]
 
       # fails with --user
-      {:error, message} = CliOptions.parse(["--user", "john"], schema)
+      assert {:error, message} = CliOptions.parse(["--user", "john"], schema)
       assert message == "invalid option \"user\""
 
       # fails with --user-name
-      {:error, message} = CliOptions.parse(["--user-name", "john"], schema)
+      assert {:error, message} = CliOptions.parse(["--user-name", "john"], schema)
       assert message == "invalid option \"user-name\""
 
       # must match exactly the long name
-      {:ok, options} = CliOptions.parse(["--user_name", "john"], schema)
-      assert options.opts == [user: "john"]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--user_name", "john"], schema)
+      assert opts == [user: "john"]
     end
 
     test "with aliases set" do
       schema = [user: [type: :string, long: "user_name", aliases: ["user-name", "user"]]]
 
-      # fails with --user
-      {:ok, options} = CliOptions.parse(["--user", "john"], schema)
-      assert options.opts == [user: "john"]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--user", "john"], schema)
+      assert opts == [user: "john"]
 
-      # fails with --user-name
-      {:ok, options} = CliOptions.parse(["--user-name", "john"], schema)
-      assert options.opts == [user: "john"]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--user-name", "john"], schema)
+      assert opts == [user: "john"]
 
       # must match exactly the long name
-      {:ok, options} = CliOptions.parse(["--user_name", "john"], schema)
-      assert options.opts == [user: "john"]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--user_name", "john"], schema)
+      assert opts == [user: "john"]
     end
 
     test "with short name set" do
       schema = [user: [type: :string, short: "u"]]
 
-      {:ok, options} = CliOptions.parse(["--user", "john"], schema)
-      assert options.opts == [user: "john"]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--user", "john"], schema)
+      assert opts == [user: "john"]
 
-      {:ok, options} = CliOptions.parse(["-u", "john"], schema)
-      assert options.opts == [user: "john"]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["-u", "john"], schema)
+      assert opts == [user: "john"]
 
       assert {:error, _message} = CliOptions.parse(["-U", "john"], schema)
     end
@@ -123,61 +105,67 @@ defmodule CliOptionsTest do
     test "with short aliases set" do
       schema = [user: [type: :string, short: "u", short_aliases: ["U"]]]
 
-      {:ok, options} = CliOptions.parse(["-u", "john"], schema)
-      assert options.opts == [user: "john"]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["-u", "john"], schema)
+      assert opts == [user: "john"]
 
-      {:ok, options} = CliOptions.parse(["-U", "john"], schema)
-      assert options.opts == [user: "john"]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["-U", "john"], schema)
+      assert opts == [user: "john"]
     end
 
     test "error with multi-letter alias" do
-      {:error, message} = CliOptions.parse(["-uv", "john"], [])
+      assert {:error, message} = CliOptions.parse(["-uv", "john"], [])
       assert message == "an option alias must be one character long, got: \"uv\""
     end
 
     test "with integer options" do
       schema = [partition: [type: :integer]]
 
-      {:ok, options} = CliOptions.parse(["--partition", "1"], schema)
-      assert options.opts == [partition: 1]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--partition", "1"], schema)
+      assert opts == [partition: 1]
 
-      {:error, message} = CliOptions.parse(["--partition", "1f"], schema)
+      assert {:error, message} = CliOptions.parse(["--partition", "1f"], schema)
       assert message == ":partition expected an integer argument, got: 1f"
     end
 
     test "with float options" do
       schema = [weight: [type: :float]]
 
-      {:ok, options} = CliOptions.parse(["--weight", "1"], schema)
-      assert options.opts == [weight: 1.0]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--weight", "1"], schema)
+      assert opts == [weight: 1.0]
 
-      {:ok, options} = CliOptions.parse(["--weight", "1.5"], schema)
-      assert options.opts == [weight: 1.5]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--weight", "1.5"], schema)
+      assert opts == [weight: 1.5]
 
-      {:error, message} = CliOptions.parse(["--weight", "bar"], schema)
+      assert {:error, message} = CliOptions.parse(["--weight", "bar"], schema)
       assert message == ":weight expected a float argument, got: bar"
     end
 
     test "with boolean options" do
       schema = [verbose: [type: :boolean], dry_run: [type: :boolean]]
 
-      {:ok, options} = CliOptions.parse(["--verbose", "1"], schema)
-      assert options.opts == [verbose: true, dry_run: false]
-      assert options.args == ["1"]
+      assert {:ok, {opts, args, []}} = CliOptions.parse(["--verbose", "1"], schema)
+      assert opts == [verbose: true, dry_run: false]
+      assert args == ["1"]
 
-      {:ok, options} = CliOptions.parse(["--verbose", "1", "--dry-run", "2"], schema)
-      assert options.opts == [verbose: true, dry_run: true]
-      assert options.args == ["1", "2"]
+      assert {:ok, {opts, args, []}} =
+               CliOptions.parse(["--verbose", "1", "--dry-run", "2"], schema)
+
+      assert opts == [verbose: true, dry_run: true]
+      assert args == ["1", "2"]
     end
 
     test "with atom options" do
       schema = [mode: [type: :atom], project: [type: :atom, multiple: true]]
 
-      {:ok, options} = CliOptions.parse(["--mode", "parallel", "--project", "foo"], schema)
-      assert options.opts == [mode: :parallel, project: [:foo]]
+      assert {:ok, {opts, [], []}} =
+               CliOptions.parse(["--mode", "parallel", "--project", "foo"], schema)
 
-      {:ok, options} = CliOptions.parse(["--project", "foo", "--project", "bar"], schema)
-      assert options.opts == [project: [:foo, :bar]]
+      assert opts == [mode: :parallel, project: [:foo]]
+
+      assert {:ok, {opts, [], []}} =
+               CliOptions.parse(["--project", "foo", "--project", "bar"], schema)
+
+      assert opts == [project: [:foo, :bar]]
     end
 
     test "with default values" do
@@ -187,49 +175,59 @@ defmodule CliOptionsTest do
         verbose: [type: :boolean]
       ]
 
-      {:ok, options} = CliOptions.parse(["foo", "bar"], schema)
-      assert options.opts == [file: "mix.exs", runs: 2, verbose: false]
-      assert options.args == ["foo", "bar"]
+      assert {:ok, {opts, args, []}} = CliOptions.parse(["foo", "bar"], schema)
+      assert opts == [file: "mix.exs", runs: 2, verbose: false]
+      assert args == ["foo", "bar"]
 
-      {:ok, options} = CliOptions.parse(["--runs", "1", "--verbose", "foo", "bar"], schema)
-      assert options.opts == [file: "mix.exs", runs: 1, verbose: true]
-      assert options.args == ["foo", "bar"]
+      assert {:ok, {opts, args, []}} =
+               CliOptions.parse(["--runs", "1", "--verbose", "foo", "bar"], schema)
+
+      assert opts == [file: "mix.exs", runs: 1, verbose: true]
+      assert args == ["foo", "bar"]
     end
 
     test "with required options" do
       schema = [file: [type: :string, required: true]]
 
-      {:error, message} = CliOptions.parse([], schema)
+      assert {:error, message} = CliOptions.parse([], schema)
       assert message == "option :file is required"
 
-      {:ok, options} = CliOptions.parse(["--file", "mix.exs"], schema)
-      assert options.opts == [file: "mix.exs"]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--file", "mix.exs"], schema)
+      assert opts == [file: "mix.exs"]
     end
 
     test "passing option mulitple times" do
       schema = [file: [type: :string]]
 
-      {:error, message} = CliOptions.parse(["--file", "foo.ex", "--file", "bar.ex"], schema)
+      assert {:error, message} =
+               CliOptions.parse(["--file", "foo.ex", "--file", "bar.ex"], schema)
+
       assert message == "option :file has already been set with foo.ex"
 
       # with multiple set to true we can set multiple values
       schema = [file: [type: :string, multiple: true]]
 
-      {:ok, options} = CliOptions.parse(["--file", "foo.ex", "--file", "bar.ex"], schema)
-      assert options.opts == [file: ["foo.ex", "bar.ex"]]
+      assert {:ok, {opts, [], []}} =
+               CliOptions.parse(["--file", "foo.ex", "--file", "bar.ex"], schema)
+
+      assert opts == [file: ["foo.ex", "bar.ex"]]
 
       # with a single item is still a list
-      {:ok, options} = CliOptions.parse(["--file", "foo.ex"], schema)
-      assert options.opts == [file: ["foo.ex"]]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--file", "foo.ex"], schema)
+      assert opts == [file: ["foo.ex"]]
 
       # all passed options are casted if needed
       schema = [number: [type: :integer, multiple: true, short: "n"]]
 
-      {:ok, options} = CliOptions.parse(["--number", "3", "-n", "2", "-n", "1"], schema)
-      assert options.opts == [number: [3, 2, 1]]
+      assert {:ok, {opts, [], []}} =
+               CliOptions.parse(["--number", "3", "-n", "2", "-n", "1"], schema)
+
+      assert opts == [number: [3, 2, 1]]
 
       # error if any option is not the proper type
-      {:error, message} = CliOptions.parse(["--number", "3", "-n", "2a", "-n", "1"], schema)
+      assert {:error, message} =
+               CliOptions.parse(["--number", "3", "-n", "2a", "-n", "1"], schema)
+
       assert message == ":number expected an integer argument, got: 2a"
     end
 
@@ -237,15 +235,15 @@ defmodule CliOptionsTest do
       schema = [verbosity: [type: :counter, short: "v"]]
 
       # if not set it is set to 0
-      {:ok, options} = CliOptions.parse([], schema)
-      assert options.opts == [verbosity: 0]
+      assert {:ok, {opts, [], []}} = CliOptions.parse([], schema)
+      assert opts == [verbosity: 0]
 
       # counts number of occurrences
-      {:ok, options} = CliOptions.parse(["-v", "-v"], schema)
-      assert options.opts == [verbosity: 2]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["-v", "-v"], schema)
+      assert opts == [verbosity: 2]
 
-      {:ok, options} = CliOptions.parse(["-v", "-v", "--verbosity"], schema)
-      assert options.opts == [verbosity: 3]
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["-v", "-v", "--verbosity"], schema)
+      assert opts == [verbosity: 3]
     end
   end
 
@@ -259,17 +257,11 @@ defmodule CliOptionsTest do
     test "returns options if successful" do
       options = CliOptions.parse!(["--foo", "bar"], foo: [type: :string])
 
-      assert %CliOptions.Options{} = options
-      assert options.opts == [foo: "bar"]
-
-      # with as_tuple flag
-      result = CliOptions.parse!(["--foo", "bar"], [foo: [type: :string]], as_tuple: true)
-      assert result == {[foo: "bar"], [], []}
+      assert {opts, [], []} = options
+      assert opts == [foo: "bar"]
 
       result =
-        CliOptions.parse!(["--foo", "bar", "a", "b", "--", "-n", "2"], [foo: [type: :string]],
-          as_tuple: true
-        )
+        CliOptions.parse!(["--foo", "bar", "a", "b", "--", "-n", "2"], foo: [type: :string])
 
       assert result == {[foo: "bar"], ["a", "b"], ["-n", "2"]}
     end
