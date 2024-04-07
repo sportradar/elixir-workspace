@@ -10,7 +10,7 @@ defmodule CliOptions.MixProject do
       app: @app,
       version: @version,
       description: @description,
-      elixir: "~> 1.13",
+      elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       deps_path: "../artifacts/deps",
@@ -20,7 +20,10 @@ defmodule CliOptions.MixProject do
         export: "cli_options",
         output: "../artifacts/coverdata"
       ],
-      docs: docs()
+      docs: docs(),
+      package: [
+        maintainers: ["Panagiotis Nezis"]
+      ]
     ]
   end
 

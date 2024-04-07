@@ -1,6 +1,35 @@
 [
   ignore_paths: [".elixir-tools", "artifacts", "cover"],
   checks: [
+    # General package validations
+    [
+      module: Workspace.Checks.ValidateConfig,
+      description: "all projects must have a description set",
+      opts: [
+        validate: fn config ->
+          case config[:description] do
+            nil -> {:error, "no :description set"}
+            description when is_binary(description) -> {:ok, ""}
+            other -> {:error, "description must be binary, got: #{inspect(other)}"}
+          end
+        end
+      ]
+    ],
+    [
+      module: Workspace.Checks.ValidateConfig,
+      description: "all projects must have a maintainer set",
+      opts: [
+        validate: fn config ->
+          package = config[:package] || []
+
+          case package[:maintainers] do
+            value when value in [nil, []] -> {:error, ":maintainers must be set under :package"}
+            maintainers -> {:ok, "maintainers set to: #{inspect(maintainers)}"}
+          end
+        end
+      ]
+    ],
+    # Build paths checks
     [
       module: Workspace.Checks.ValidateConfigPath,
       description: "all projects must have a common dependencies path",
@@ -17,6 +46,7 @@
         expected_path: "artifacts/build"
       ]
     ],
+    # Documentation related checks
     [
       module: Workspace.Checks.ValidateConfigPath,
       description: "all projects must have a common docs output path",
@@ -39,29 +69,17 @@
     ],
     [
       module: Workspace.Checks.ValidateConfig,
-      description: "all projects must have elixir set to 1.13",
+      description: "all projects must have elixir set to 1.15",
       opts: [
         validate: fn config ->
           case config[:elixir] do
-            "~> 1.13" -> {:ok, ""}
-            other -> {:error, "expected :elixir to be ~> 1.13, got #{other}"}
+            "~> 1.15" -> {:ok, ""}
+            other -> {:error, "expected :elixir to be ~> 1.15, got #{other}"}
           end
         end
       ]
     ],
-    [
-      module: Workspace.Checks.ValidateConfig,
-      description: "all projects must have a description set",
-      opts: [
-        validate: fn config ->
-          case config[:description] do
-            nil -> {:error, "no :description set"}
-            description when is_binary(description) -> {:ok, ""}
-            other -> {:error, "description must be binary, got: #{inspect(other)}"}
-          end
-        end
-      ]
-    ],
+    # Testing related checks
     [
       module: Workspace.Checks.ValidateConfigPath,
       description: "all projects must have a common coverage output path",
@@ -84,6 +102,7 @@
         end
       ]
     ],
+    # Dependencies checks
     [
       module: Workspace.Checks.DependenciesVersion,
       description: "mono-repo dependencies versions",

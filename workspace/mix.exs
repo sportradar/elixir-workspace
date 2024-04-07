@@ -6,8 +6,11 @@ defmodule Workspace.MixProject do
       app: :workspace,
       description: "tooling for managing elixir mono-repos",
       version: "0.1.0",
-      elixir: "~> 1.13",
+      elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
+      package: [
+        maintainers: ["Panagiotis Nezis"]
+      ],
       deps: deps(),
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",

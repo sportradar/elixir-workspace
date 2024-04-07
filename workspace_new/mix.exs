@@ -11,7 +11,7 @@ defmodule WorkspaceNew.MixProject do
       app: :workspace_new,
       description: "workspace generator",
       version: "0.1.0",
-      elixir: "~> 1.13",
+      elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       deps_path: "../artifacts/deps",

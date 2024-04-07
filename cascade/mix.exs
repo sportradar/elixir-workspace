@@ -5,7 +5,7 @@ defmodule Cascade.MixProject do
     [
       app: :cascade,
       version: "0.1.0",
-      elixir: "~> 1.13",
+      elixir: "~> 1.15",
       description: "generate code from templates",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -18,6 +18,9 @@ defmodule Cascade.MixProject do
       test_coverage: [
         export: "cascade",
         output: "../artifacts/coverdata"
+      ],
+      package: [
+        maintainers: ["Panagiotis Nezis"]
       ]
     ]
   end
