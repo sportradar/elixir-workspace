@@ -1,0 +1,67 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - elixir: "1.15.6"
+            otp: "26.1"
+            lint: true
+          - elixir: "1.14.5"
+            otp: "25.3"
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+
+      - uses: actions/cache@v2
+        with:
+          path: |
+            artifacts/deps
+            artifacts/build
+          key: ${{ runner.os }}-mix-${{matrix.elixir}}-${{matrix.otp}}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions@noreply.github.com"
+          git config --global user.name "github-actions"
+          git config --global init.defaultBranch "main"
+
+      - name: Get root dependencies
+        run: mix deps.get
+
+      - name: Get workspace dependencies
+        run: mix workspace.run -t deps.get
+
+      - name: Compile dependencies
+        run: mix workspace.run -t deps.compile -- --skip-local-deps
+
+      - name: Compile with warnings enabled
+        run: mix workspace.run -t compile -- --force --warnings-as-errors
+        if: ${{ matrix.lint }}
+
+      - name: Check code formatted
+        run: mix workspace.run -t format -- --check-formatted
+        if: ${{ matrix.lint }}
+
+      - name: Tests
+        run: mix workspace.run -t test -- --cover --warnings-as-errors
+
+      - name: Coverage
+        run: mix workspace.test.coverage
+
+      - name: Check docs
+        run: mix workspace.run -t docs -- -f html
+        if: ${{ matrix.lint }}
