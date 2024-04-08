@@ -60,6 +60,17 @@ defmodule CliOptionsTest do
       assert {:error, _message} = CliOptions.parse(["--user_name", "john"], schema)
     end
 
+    test "with value for option missing" do
+      schema = [user: [type: :string], verbose: [type: :boolean]]
+
+      # with value not set
+      assert {:error, message} = CliOptions.parse(["--user"], schema)
+      assert message == ":user expected at least 1 arguments"
+
+      assert {:error, message} = CliOptions.parse(["--user", "--verbose"], schema)
+      assert message == ":user expected at least 1 arguments"
+    end
+
     test "with option set but specific long name" do
       schema = [user: [type: :string, long: "user_name"]]
 
