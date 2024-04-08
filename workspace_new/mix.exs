@@ -23,7 +23,7 @@ defmodule WorkspaceNew.MixProject do
       ],
       test_coverage: [
         export: "workspace_new",
-        output: "../artifacts/coverdata"
+        output: "../artifacts/coverdata/workspace_new"
       ],
       package: [
         maintainers: ["Panagiotis Nezis"],

@@ -29,6 +29,18 @@
         end
       ]
     ],
+    [
+      module: Workspace.Checks.ValidateConfig,
+      description: "minimum elixir version",
+      opts: [
+        validate: fn config ->
+          case config[:elixir] do
+            "~> 1.15" -> {:ok, ""}
+            other -> {:error, "expected :elixir to be ~> 1.15, got #{other}"}
+          end
+        end
+      ]
+    ],
     # Build paths checks
     [
       module: Workspace.Checks.ValidateConfigPath,
@@ -67,37 +79,46 @@
         end
       ]
     ],
+    # Testing related checks
     [
       module: Workspace.Checks.ValidateConfig,
-      description: "minimum elixir version",
+      description: "all projects must have test_coverage[:output] properly set",
       opts: [
         validate: fn config ->
-          case config[:elixir] do
-            "~> 1.15" -> {:ok, ""}
-            other -> {:error, "expected :elixir to be ~> 1.15, got #{other}"}
+          coverage_opts = config[:test_coverage] || []
+          output = coverage_opts[:output]
+
+          cond do
+            is_nil(output) ->
+              {:error, ":output option not defined under :test_coverage settings"}
+
+            not String.ends_with?(output, Atom.to_string(config[:app])) ->
+              {:error, ":output must point to a folder with the same name as the app name"}
+
+            true ->
+              {:ok, ""}
           end
         end
       ]
     ],
-    # Testing related checks
-    [
-      module: Workspace.Checks.ValidateConfigPath,
-      description: "all projects must have a common coverage output path",
-      opts: [
-        config_attribute: [:test_coverage, :output],
-        expected_path: "artifacts/coverdata"
-      ]
-    ],
     [
       module: Workspace.Checks.ValidateConfig,
-      description: "all projects must have test coverage export option set",
+      description: "all projects must have test_coverage[:export] properly set",
       opts: [
         validate: fn config ->
           coverage_opts = config[:test_coverage] || []
+          export = coverage_opts[:export]
 
-          case coverage_opts[:export] do
-            nil -> {:error, "export option not defined under :test_coverage settings"}
-            _value -> {:ok, ""}
+          cond do
+            export == nil ->
+              {:error, "export option not defined under :test_coverage settings"}
+
+            is_binary(export) and String.starts_with?(export, Atom.to_string(config[:app])) ->
+              {:ok, "output properly set to #{export}"}
+
+            true ->
+              {:error,
+               "invalid value for output, it should be a binary starting with #{config[:app]}, got: #{inspect(export)}"}
           end
         end
       ]

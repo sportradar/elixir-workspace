@@ -18,7 +18,7 @@ defmodule CliOptions.MixProject do
       deps: deps(),
       test_coverage: [
         export: "cli_options",
-        output: "../artifacts/coverdata"
+        output: "../artifacts/coverdata/cli_options"
       ],
       docs: docs(),
       package: [

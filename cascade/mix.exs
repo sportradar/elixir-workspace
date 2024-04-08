@@ -17,7 +17,7 @@ defmodule Cascade.MixProject do
       ],
       test_coverage: [
         export: "cascade",
-        output: "../artifacts/coverdata"
+        output: "../artifacts/coverdata/cascade"
       ],
       package: [
         maintainers: ["Panagiotis Nezis"]
