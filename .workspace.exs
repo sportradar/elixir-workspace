@@ -69,7 +69,7 @@
     ],
     [
       module: Workspace.Checks.ValidateConfig,
-      description: "all projects must have elixir set to 1.15",
+      description: "minimum elixir version",
       opts: [
         validate: fn config ->
           case config[:elixir] do
