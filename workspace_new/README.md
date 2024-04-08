@@ -1,6 +1,6 @@
 # mix workspace.new
 
-Provides `workspace.new` installer as an archive.
+Provides `workspace.new` scaffolder as an archive.
 
 ## Installation
 

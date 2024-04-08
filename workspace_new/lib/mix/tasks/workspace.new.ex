@@ -14,10 +14,33 @@ defmodule Mix.Tasks.Workspace.New do
 
   ## Options
 
-    * `--app` - the name of the OTP application
+    * `--app` - the name of the workspace
 
     * `--module` - the name of the base mix workspace module in
       the generated skeleton
+
+  In most cases you will not need to pass any options.
+
+  ## Examples
+
+      $ mix workspace.new my_workspace
+
+  Would generate the following structure:
+
+  ```text
+  my_workspace
+  ├── .formatter.exs
+  ├── .gitignore
+  ├── .workspace.exs
+  ├── README.md
+  └── mix.exs
+  ```
+
+  You can now add normal mix projects within your workspace
+  using the `mix new` command and update your workspace config
+  by editing the `.workspace.exs` configuration file.
+
+  For more details check the `Workspace` docs.
   """
 
   use Mix.Task
