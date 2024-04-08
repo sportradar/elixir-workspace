@@ -189,6 +189,19 @@ defmodule CliOptionsTest do
       assert opts == [project: [:foo, :bar]]
     end
 
+    test "with allowed values set" do
+      schema = [
+        mode: [type: :atom, allowed: ["fast", "slow"]]
+      ]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--mode", "fast"], schema)
+      assert opts == [mode: :fast]
+
+      # with not allowed value
+      assert {:error, message} = CliOptions.parse(["--mode", "other"], schema)
+      assert message == "invalid value \"other\" for :mode, allowed: [\"fast\", \"slow\"]"
+    end
+
     test "with default values" do
       schema = [
         file: [type: :string, default: "mix.exs"],

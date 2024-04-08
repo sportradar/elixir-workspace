@@ -19,6 +19,7 @@ defmodule CliOptions.Schema.Validation do
          :ok <- ensure_boolean_or_nil(opts[:required], :required),
          :ok <- ensure_boolean_or_nil(opts[:multiple], :multiple),
          :ok <- ensure_binary_or_nil(opts[:doc], :doc),
+         :ok <- ensure_binary_list_or_nil(opts[:allowed], :allowed),
          {:ok, opts} <- validate_default_value(opts) do
       {option, opts}
     else
@@ -35,7 +36,8 @@ defmodule CliOptions.Schema.Validation do
     :required,
     :multiple,
     :aliases,
-    :short_aliases
+    :short_aliases,
+    :allowed
   ]
   defp validate_keys(keys) do
     invalid_keys = keys -- @valid_option_keys
@@ -82,6 +84,9 @@ defmodule CliOptions.Schema.Validation do
 
   defp ensure_binary(value, name),
     do: {:error, "#{inspect(name)} should be a string, got: #{inspect(value)}"}
+
+  defp ensure_binary_list_or_nil(nil, _name), do: :ok
+  defp ensure_binary_list_or_nil(values, name), do: ensure_binary_list(values, name)
 
   defp ensure_binary_list([], _name), do: :ok
 

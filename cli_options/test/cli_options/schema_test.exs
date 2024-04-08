@@ -132,6 +132,16 @@ defmodule CliOptions.SchemaTest do
       assert_raise ArgumentError, message, fn ->
         CliOptions.Schema.new!(schema)
       end
+
+      # allowed values
+      schema = [foo: [allowed: ["ff", 1]]]
+
+      message =
+        "invalid schema for :foo, :allowed expected a list of strings, got a non string item: 1"
+
+      assert_raise ArgumentError, message, fn ->
+        CliOptions.Schema.new!(schema)
+      end
     end
 
     test "with duplicate aliases" do

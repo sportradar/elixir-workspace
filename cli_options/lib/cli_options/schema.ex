@@ -70,6 +70,7 @@ defmodule CliOptions.Schema do
     value = value_or_default(value, schema)
 
     with {:ok, value} <- validate_value(option, value, schema),
+         :ok <- maybe_validate_allowed_value(option, value, schema[:allowed]),
          {:ok, value} <- validate_type(option_type(schema), option, value) do
       {:ok, value}
     end
@@ -88,6 +89,18 @@ defmodule CliOptions.Schema do
 
       true ->
         :no_value
+    end
+  end
+
+  defp maybe_validate_allowed_value(_option, _value, nil), do: :ok
+
+  defp maybe_validate_allowed_value(option, value, allowed) when is_binary(value) do
+    case value in allowed do
+      true ->
+        :ok
+
+      false ->
+        {:error, "invalid value #{inspect(value)} for :#{option}, allowed: #{inspect(allowed)}"}
     end
   end
 
