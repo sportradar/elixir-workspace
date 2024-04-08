@@ -146,7 +146,7 @@ defmodule CliOptions.Schema do
 
     cond do
       type == :boolean ->
-        :set_true
+        :negate
 
       type == :counter ->
         :count

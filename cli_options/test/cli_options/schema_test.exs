@@ -163,5 +163,23 @@ defmodule CliOptions.SchemaTest do
         CliOptions.Schema.new!(schema)
       end
     end
+
+    test "default values are properly set for booleans counters" do
+      # without default values set
+      schema = [foo: [type: :boolean], bar: [type: :counter]]
+
+      %CliOptions.Schema{schema: schema} = CliOptions.Schema.new!(schema)
+
+      assert schema[:foo][:default] == false
+      assert schema[:bar][:default] == 0
+
+      # default values have precedence
+      schema = [foo: [type: :boolean, default: true], bar: [type: :counter, default: 3]]
+
+      %CliOptions.Schema{schema: schema} = CliOptions.Schema.new!(schema)
+
+      assert schema[:foo][:default] == true
+      assert schema[:bar][:default] == 3
+    end
   end
 end

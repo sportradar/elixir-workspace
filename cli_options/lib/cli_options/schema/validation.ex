@@ -130,5 +130,4 @@ defmodule CliOptions.Schema.Validation do
   defp validate_type_match(:float, value), do: is_float(value)
   defp validate_type_match(:atom, value), do: is_atom(value)
   defp validate_type_match(:boolean, value), do: is_boolean(value)
-
 end

@@ -154,6 +154,16 @@ defmodule CliOptionsTest do
       assert args == ["1", "2"]
     end
 
+    test "if a boolean is set to a default value of true it is negated" do
+      schema = [no_check: [type: :boolean, default: true]]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--no-check"], schema)
+      assert opts == [no_check: false]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse([], schema)
+      assert opts == [no_check: true]
+    end
+
     test "with atom options" do
       schema = [mode: [type: :atom], project: [type: :atom, multiple: true]]
 

@@ -43,14 +43,18 @@ defmodule CliOptions.Parser do
 
   defp put_option(option, value, opts, schema) do
     action = CliOptions.Schema.action(option, schema.schema)
+
+    value =
+      maybe_default_value(schema.schema[option][:type], value, schema.schema[option][:default])
+
     put_option_with_action(action, option, value, opts)
   end
 
-  defp put_option_with_action(:set_true, option, _value, opts),
-    do: put_option_with_action(:set, option, true, opts)
+  defp maybe_default_value(:boolean, _value, default), do: default
+  defp maybe_default_value(_type, value, _default), do: value
 
-  defp put_option_with_action(:set_false, option, _value, opts),
-    do: put_option_with_action(:set, option, false, opts)
+  defp put_option_with_action(:negate, option, value, opts),
+    do: put_option_with_action(:set, option, !value, opts)
 
   defp put_option_with_action(:set, option, [value], opts),
     do: put_option_with_action(:set, option, value, opts)
