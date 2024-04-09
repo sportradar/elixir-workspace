@@ -50,7 +50,10 @@ defmodule CliOptions.MixProject do
            fences: %{
              "cli" => {FancyFences.Processors, :multi_inspect, [[format: true, iex_prefix: true]]}
            }
-         ]}
+         ]},
+      extras: [
+        "README.md": [title: "Overview"]
+      ]
     ]
   end
 end

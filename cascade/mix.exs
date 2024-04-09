@@ -11,10 +11,7 @@ defmodule Cascade.MixProject do
       deps: deps(),
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
-      docs: [
-        output: "../artifacts/docs/cascade",
-        formatters: ["html"]
-      ],
+      docs: docs(),
       test_coverage: [
         export: "cascade",
         output: "../artifacts/coverdata/cascade"
@@ -38,6 +35,16 @@ defmodule Cascade.MixProject do
       {:credo, "~> 1.6.7", [only: [:dev, :test], runtime: false]},
       {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
       {:doctor, "~> 0.21.0", [only: :dev, runtime: false]}
+    ]
+  end
+
+  defp docs do
+    [
+      output: "../artifacts/docs/cascade",
+      formatters: ["html"],
+      extras: [
+        "README.md": [title: "Overview"]
+      ]
     ]
   end
 end

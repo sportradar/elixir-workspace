@@ -20,41 +20,7 @@ defmodule Workspace.MixProject do
         export: "workspace",
         output: "../artifacts/coverdata/workspace"
       ],
-      docs: [
-        output: "../artifacts/docs/workspace",
-        formatters: ["html"],
-        before_closing_body_tag: &before_closing_body_tag/1,
-        groups_for_modules: [
-          Workspace: [
-            Workspace,
-            Workspace.Config,
-            Workspace.Filtering,
-            Workspace.Graph,
-            Workspace.Graph.Formatter,
-            Workspace.Project,
-            Workspace.State,
-            Workspace.Status,
-            Workspace.Topology
-          ],
-          "Check APIs": [
-            Workspace.Check,
-            Workspace.Check.Result
-          ],
-          Checks: [
-            ~r"Workspace.Checks.*"
-          ],
-          Utilities: [
-            Workspace.Cli,
-            Workspace.Export,
-            Workspace.Git,
-            Workspace.Utils
-          ],
-          "Test Coverage": [
-            Workspace.Coverage.Exporter,
-            Workspace.Coverage.LCOV
-          ]
-        ]
-      ]
+      docs: docs()
     ]
   end
 
@@ -80,6 +46,47 @@ defmodule Workspace.MixProject do
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp docs do
+    [
+      output: "../artifacts/docs/workspace",
+      formatters: ["html"],
+      before_closing_body_tag: &before_closing_body_tag/1,
+      extras: [
+        "README.md": [title: "Overview"]
+      ],
+      groups_for_modules: [
+        Workspace: [
+          Workspace,
+          Workspace.Config,
+          Workspace.Filtering,
+          Workspace.Graph,
+          Workspace.Graph.Formatter,
+          Workspace.Project,
+          Workspace.State,
+          Workspace.Status,
+          Workspace.Topology
+        ],
+        "Check APIs": [
+          Workspace.Check,
+          Workspace.Check.Result
+        ],
+        Checks: [
+          ~r"Workspace.Checks.*"
+        ],
+        Utilities: [
+          Workspace.Cli,
+          Workspace.Export,
+          Workspace.Git,
+          Workspace.Utils
+        ],
+        "Test Coverage": [
+          Workspace.Coverage.Exporter,
+          Workspace.Coverage.LCOV
+        ]
+      ]
+    ]
+  end
 
   defp before_closing_body_tag(:html) do
     """

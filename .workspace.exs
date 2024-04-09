@@ -79,6 +79,20 @@
         end
       ]
     ],
+    [
+      module: Workspace.Checks.ValidateConfig,
+      description: "common files must be in docs extras",
+      opts: [
+        validate: fn config ->
+          extras = get_in(config, [:docs, :extras])
+
+          cond do
+            is_nil(extras[:"README.md"]) -> {:error, "README.md must be present in docs extras"}
+            true -> {:ok, "all extra files are present"}
+          end
+        end
+      ]
+    ],
     # Testing related checks
     [
       module: Workspace.Checks.ValidateConfig,

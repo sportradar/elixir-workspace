@@ -17,10 +17,7 @@ defmodule WorkspaceNew.MixProject do
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
       preferred_cli_env: [docs: :docs],
-      docs: [
-        output: "../artifacts/docs/workspace_new",
-        formatters: ["html"]
-      ],
+      docs: docs(),
       test_coverage: [
         export: "workspace_new",
         output: "../artifacts/coverdata/workspace_new"
@@ -42,6 +39,16 @@ defmodule WorkspaceNew.MixProject do
   defp deps do
     [
       {:ex_doc, "== 0.31.2", only: :docs}
+    ]
+  end
+
+  defp docs do
+    [
+      output: "../artifacts/docs/workspace_new",
+      formatters: ["html"],
+      extras: [
+        "README.md": [title: "Overview"]
+      ]
     ]
   end
 end
