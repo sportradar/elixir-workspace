@@ -121,13 +121,13 @@ defmodule CliOptions.Schema do
 
   ## Examples
 
-      iex> CliOptions.Schema.new!([name: [type: :string, short: "U"], vebose: [type: :boolean]])
+      iex> CliOptions.Schema.new!([name: [type: :string, short: "U"], verbose: [type: :boolean]])
       %CliOptions.Schema{
         schema: [
           name: [short_aliases: [], aliases: [], long: "name", type: :string, short: "U"],
-          vebose: [default: false, short_aliases: [], aliases: [], long: "vebose", type: :boolean]
+          verbose: [default: false, short_aliases: [], aliases: [], long: "verbose", type: :boolean]
         ],
-        mappings: %{"U" => :name, "name" => :name, "vebose" => :vebose}
+        mappings: %{"U" => :name, "name" => :name, "verbose" => :verbose}
       }
 
       iex> CliOptions.Schema.new!([name: [type: :invalid]])
