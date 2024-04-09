@@ -44,7 +44,8 @@ defmodule Cascade.MixProject do
       output: "../artifacts/docs/cascade",
       formatters: ["html"],
       extras: [
-        "README.md": [title: "Overview"]
+        "README.md": [title: "Overview"],
+        "CHANGELOG.md": [title: "Changelog"]
       ]
     ]
   end

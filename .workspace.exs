@@ -87,8 +87,14 @@
           extras = get_in(config, [:docs, :extras])
 
           cond do
-            is_nil(extras[:"README.md"]) -> {:error, "README.md must be present in docs extras"}
-            true -> {:ok, "all extra files are present"}
+            is_nil(extras[:"README.md"]) ->
+              {:error, "README.md must be present in docs extras"}
+
+            is_nil(extras[:"CHANGELOG.md"]) ->
+              {:error, "CHANGELOG.md must be present in docs extras"}
+
+            true ->
+              {:ok, "all extra files are present"}
           end
         end
       ]

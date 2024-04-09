@@ -54,7 +54,8 @@ defmodule Workspace.MixProject do
       formatters: ["html"],
       before_closing_body_tag: &before_closing_body_tag/1,
       extras: [
-        "README.md": [title: "Overview"]
+        "README.md": [title: "Overview"],
+        "CHANGELOG.md": [title: "Changelog"]
       ],
       groups_for_modules: [
         Workspace: [

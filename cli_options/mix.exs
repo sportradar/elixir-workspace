@@ -53,7 +53,8 @@ defmodule CliOptions.MixProject do
            }
          ]},
       extras: [
-        "README.md": [title: "Overview"]
+        "README.md": [title: "Overview"],
+        "CHANGELOG.md": [title: "Changelog"]
       ]
     ]
   end

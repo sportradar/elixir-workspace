@@ -48,7 +48,8 @@ defmodule WorkspaceNew.MixProject do
       output: "../artifacts/docs/workspace_new",
       formatters: ["html"],
       extras: [
-        "README.md": [title: "Overview"]
+        "README.md": [title: "Overview"],
+        "CHANGELOG.md": [title: "Changelog"]
       ]
     ]
   end
