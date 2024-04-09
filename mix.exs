@@ -40,9 +40,9 @@ defmodule Workspace.MixWorkspace do
     credo_config = Path.join(File.cwd!(), ".credo.exs")
 
     [
-      "workspace.format": [
+      format: [
         "format",
-        "workspace.run -t format"
+        "workspace.run -t format --modified"
       ],
       credo: [
         "workspace.run -t credo --exclude workspace_new --exclude cascade -- --config-file #{credo_config} --strict"
