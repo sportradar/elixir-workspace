@@ -92,11 +92,49 @@ defmodule CliOptions do
   @doc """
   Parses `argv` according to the provided `schema`.
 
-  A three element tuple of the form `{opts, args, extra}` is returned, where:
+  `schema` can be either a `CliOptions.Schema` struct, or a keyword list. In
+  the latter case it will be first initialized to a `CliOptions.Schema`.
+
+  If the provided CLI arguments are valid, then an `{:ok, parsed}` tuple is
+  returned, where `parsed` is a three element tuple of the form `{opts, args, extra}`,
+  where:
 
     * `opts` - the extracted command line options
     * `args` - a list of the remaining arguments in `argv` as strings
     * `extra` - a list of unparsed arguments, if applicable.
+
+  If validation fails, an `{:error, message}` tuple will be returned.
+
+  > #### Creating the schema at compile time {: .tip}
+  >
+  > To avoid the extra cost of initializing the schema, it is possible to create
+  > the schema once, and then use that valid schema directly. This is done by
+  > using the `CliOptions.Schema.new!/1` function first, and then passing the
+  > returned schema to `parse/2`.
+  >
+  > Usually you will define the schema as a module attribute and then use it in
+  > your mix task.
+  >
+  > ```elixir
+  > defmodule Mix.Tasks.MyTask do
+  >   use Mix.Task
+  >
+  >   schema = [
+  >     user_name: [type: :string],
+  >     verbose: [type: :boolean]
+  >   ]
+  >
+  >   @schema CliOptions.Schema.new!(schema)
+  >
+  >   @impl Mix.Task
+  >   def run(argv) do
+  >     {opts, args, extra} = CliOptions.parse!(args, @schema)
+  >    
+  >     # your task code here
+  >   end
+  > end
+  > ```
+
 
   ## Options names and aliases
 
