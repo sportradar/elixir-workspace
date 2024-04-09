@@ -212,7 +212,7 @@ defmodule Workspace do
   >   - If a workspace is used by multiple teams and contains multiple apps, you
   > should select a specific top level app when building the project. This will
   > ignore all other irrelevant apps.
-  >   - When changing a specific set of projects, you should use `:modified` fo
+  >   - When changing a specific set of projects, you should use `:modified` for
   > formatting the code since everything else is not affected. 
   >   - Similarly for testing you should use the `:affected` filtering since a
   > change on a project may affect all parents.
