@@ -1,6 +1,8 @@
 defmodule CliOptions.SchemaTest do
   use ExUnit.Case
 
+  doctest CliOptions.Schema
+
   describe "new!" do
     test "with non keyword schema" do
       assert_raise ArgumentError, "schema was expected to be a keyword list, got: \"foo\"", fn ->

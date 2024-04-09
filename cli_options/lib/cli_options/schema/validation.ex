@@ -5,6 +5,25 @@ defmodule CliOptions.Schema.Validation do
   # we are manually validating the schema for now, could be delegated to NimbleOptions
   # but we want to avoid external dependencies. If it goes out of hand we may consider
   # refactoring it accordingly
+
+  @valid_option_keys [
+    :type,
+    :long,
+    :short,
+    :doc,
+    :default,
+    :required,
+    :multiple,
+    :aliases,
+    :short_aliases,
+    :allowed
+  ]
+
+  @valid_types [:string, :boolean, :integer, :float, :counter, :atom]
+
+  @spec valid_types() :: [atom()]
+  def valid_types, do: @valid_types
+
   @spec validate!(schema :: keyword()) :: keyword()
   def validate!(schema) do
     for {option, opts} <- schema do
@@ -27,18 +46,6 @@ defmodule CliOptions.Schema.Validation do
     end
   end
 
-  @valid_option_keys [
-    :type,
-    :long,
-    :short,
-    :doc,
-    :default,
-    :required,
-    :multiple,
-    :aliases,
-    :short_aliases,
-    :allowed
-  ]
   defp validate_keys(keys) do
     invalid_keys = keys -- @valid_option_keys
 
@@ -47,8 +54,6 @@ defmodule CliOptions.Schema.Validation do
       invalid -> {:error, "the following schema keys are not supported: #{inspect(invalid)}"}
     end
   end
-
-  @valid_types [:string, :boolean, :integer, :float, :counter, :atom]
 
   defp validate_type(opts) do
     opts = Keyword.put_new(opts, :type, :string)

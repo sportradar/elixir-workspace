@@ -191,11 +191,12 @@ defmodule CliOptions do
   By default all options are assumed to be strings. If you set a different `:type` then
   the option will be casted to that type. The supported types are:
 
+  * `:string` - the default, parses the argument as a string
   * `:integer` - parses the argument as an integer
   * `:float` - parses the argument as a float
-  * `:string` - the default, parses the argument as a string
   * `:atom` - converts the arguments to atoms
   * `:boolean` - parses the argument as a flag, e.g. no option is expected.
+  * `:counter` - treats the argument as a flag that increases an associated counter
 
   ```cli
   schema = [
