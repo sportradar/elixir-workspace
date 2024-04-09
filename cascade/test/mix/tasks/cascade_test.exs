@@ -17,7 +17,7 @@ defmodule Mix.Tasks.CascadeTest do
     in_tmp(tmp_dir, "new_template", fn ->
       capture_io(fn -> Mix.Tasks.Cascade.run(["template", "--", "--name", "foo"]) end)
 
-      assert_file(tmp_dir, "new_template/templates/foo/README.md", fn file ->
+      assert_file(tmp_dir, "new_template/templates/foo/PLACEHOLDER.md", fn file ->
         assert file =~ "## About"
         assert file =~ "This is a placeholder"
       end)

@@ -17,14 +17,21 @@ defmodule Mix.Tasks.Cascade.Help do
     Mix.shell().info("")
     list_templates()
     Mix.shell().info("")
-    Mix.shell().info(["Run ", :yellow, "mix cascade NAME", :reset, " to generate a template"])
+
+    Mix.shell().info([
+      "Run ",
+      :yellow,
+      "mix cascade NAME",
+      :reset,
+      " to generate code from the given template"
+    ])
 
     Mix.shell().info([
       "Run ",
       :yellow,
       "mix cascade.help NAME",
       :reset,
-      " to see help of a specific template"
+      " to see help for a specific template"
     ])
   end
 

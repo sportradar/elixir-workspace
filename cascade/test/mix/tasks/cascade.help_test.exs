@@ -26,8 +26,8 @@ defmodule Mix.Tasks.Cascade.HelpTest do
     assert captured =~ "template_no_docs  #"
     assert captured =~ "template          # Generates a new template"
     assert captured =~ "no_docs           #"
-    assert captured =~ "Run mix cascade NAME to generate a template"
-    assert captured =~ "Run mix cascade.help NAME to see help of a specific template"
+    assert captured =~ "Run mix cascade NAME to generate code from the given template"
+    assert captured =~ "Run mix cascade.help NAME to see help for a specific template"
   end
 
   test "cascade.help TEMPLATE" do
