@@ -86,7 +86,8 @@ defmodule Workspace.MixProject do
           Workspace.Coverage.Exporter,
           Workspace.Coverage.LCOV
         ]
-      ]
+      ],
+      skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
     ]
   end
 

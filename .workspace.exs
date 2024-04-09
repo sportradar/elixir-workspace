@@ -111,6 +111,24 @@
         end
       ]
     ],
+    [
+      module: Workspace.Checks.ValidateConfig,
+      description: "CHANGELOG must be in the skip_undefined_reference_warnings_on list",
+      opts: [
+        validate: fn config ->
+          skipped = get_in(config, [:docs, :skip_undefined_reference_warnings_on]) || []
+
+          case "CHANGELOG.md" in skipped do
+            true ->
+              {:ok, "CHANGELOG included in :skip_undefined_reference_warnings_on"}
+
+            false ->
+              {:error,
+               "CHANGELOG.md should be included under :skip_undefined_reference_warnings_on"}
+          end
+        end
+      ]
+    ],
     # Testing related checks
     [
       module: Workspace.Checks.ValidateConfig,

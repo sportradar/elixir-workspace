@@ -55,7 +55,8 @@ defmodule CliOptions.MixProject do
       extras: [
         "README.md": [title: "Overview"],
         "CHANGELOG.md": [title: "Changelog"]
-      ]
+      ],
+      skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
     ]
   end
 end
