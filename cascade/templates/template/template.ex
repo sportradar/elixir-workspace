@@ -1,5 +1,9 @@
 defmodule <%= module %> do
-  @moduledoc false
+  @shortdoc "TODO: Add shortdoc"
+
+  @moduledoc """
+  TODO: Add a detailed description about your template
+  """
   use Cascade.Template
 
   @assets_path Path.expand(Path.join(<%= inspect(relative_assets_to_templates_path) %>, <%= inspect(name) %>), __DIR__) 
