@@ -7,9 +7,11 @@ templates. It's main features are:
 
 - **Templates as code** - all template files are evaluated using `EEx`, the actual
 generation code can be modified by overriding the default implementation. 
-- **`mix.cascade`** - a helper mix task for generating code from a template, it
+- **`mix cascade`** - a helper mix task for generating code from a template, it
 supports parsing of CLI options, and automatically generated help message from
 the template file.
+- **`mix cascade.help`** - automatically generate help for your custom templates,
+similar to `mix help`
 
 ## Usage
 
@@ -17,13 +19,13 @@ You can generate a new template under your mix project by running:
 
 ```bash
 $ mix cascade template -- --name my_template
-* creating templates/my_template/README.md
+* creating templates/my_template/PLACEHOLDER.md
 * creating lib/cascade/templates/my_template.ex
 ```
 
 This generates two files:
 
-- The actual template code, which by default is located under `lib/cascade/template/{template_name}`
+- The actual template code, which by default is located under `lib/cascade/templates/{template_name}`
 - A sample template `README.md` file under `templates/{template_name}`
 
 If you now run `mix cascade.help` you will see the newly added template
@@ -33,15 +35,45 @@ in the list of available templates:
 $ mix cascade.help
 The following templates are available:
 
-  my_template  #
-  template     # Generates a new template
+  my_template  # TODO: Add shortdoc
+  template     # Generates \a new template
+
+Run mix cascade NAME to generate code from the given template
+Run mix cascade.help NAME to see help for a specific template
 ```
 
 You can generate some code using the `my_template` template by running:
 
 ```bash
-$ mix cascade.help 
+$ mix cascade my_template
 ```
+
+This will generate all code associated to the given template. In this case it
+will only generate the `PLACEHOLDER.md` which was added by the `mix cascade`
+command.
+
+You can check the help message of the newly created template by running:
+
+```bash
+$ mix cascade.help my_template
+```
+
+### Implementing your template
+
+You are now free to implement your actual template logic. You are able to:
+
+- Add any asset under the the template's assets folder (in our example
+`templates/my_template`).
+- The assets can be plain files or `EEx` templates. In the latter case
+they will be evaluated during generation and properly expanded.
+- Define a set of CLI arguments that your template expected. `mix cascade`
+will validate these options automatically. Notice that by default the
+`CliOptions` package is used for defining the CLI arguments.
+- Implement any custom logic in your template's module.
+- Have automatically generated docs for your template through the
+`mix cascade.help` task.
+
+For more details check the `Cascade.Template` docs.
 
 ## Installation
 
