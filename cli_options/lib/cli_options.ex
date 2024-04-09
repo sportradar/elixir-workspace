@@ -337,15 +337,18 @@ defmodule CliOptions do
   CliOptions.parse!(["--", "lib", "-n", "--", "bar"], [])
   ```
   """
-  @spec parse(argv :: argv(), schema :: keyword()) ::
+  @spec parse(argv :: argv(), schema :: keyword() | CliOptions.Schema.t()) ::
           {:ok, parsed_options()} | {:error, String.t()}
-  def parse(argv, schema) do
-    schema = CliOptions.Schema.new!(schema)
-
+  def parse(argv, %CliOptions.Schema{} = schema) do
     case CliOptions.Parser.parse(argv, schema) do
       {:ok, options} -> {:ok, options}
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  def parse(argv, schema) do
+    schema = CliOptions.Schema.new!(schema)
+    parse(argv, schema)
   end
 
   @doc """
@@ -362,7 +365,7 @@ defmodule CliOptions do
       iex> CliOptions.parse!([], [file: [type: :string, required: true]])
       ** (CliOptions.ParseError) option :file is required
   """
-  @spec parse!(argv :: argv(), schema :: keyword()) :: parsed_options()
+  @spec parse!(argv :: argv(), schema :: keyword() | CliOptions.Schema.t()) :: parsed_options()
   def parse!(argv, schema) do
     case parse(argv, schema) do
       {:ok, options} -> options
