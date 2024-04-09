@@ -59,7 +59,7 @@ defmodule CliOptions.Schema.Validation do
     opts = Keyword.put_new(opts, :type, :string)
     type = Keyword.fetch!(opts, :type)
 
-    case type in @valid_types do
+    case type in valid_types() do
       true -> {:ok, opts}
       false -> {:error, "invalid type #{inspect(type)}"}
     end
