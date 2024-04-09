@@ -71,7 +71,7 @@ defmodule Cascade.Templates.Template do
   @impl Cascade.Template
   def destination_path(asset_path, root_path, opts) do
     case asset_path do
-      "README.md" ->
+      "PLACEHOLDER.md" ->
         Path.join([root_path, opts[:assets_path], opts[:name], asset_path])
 
       "template.ex" ->

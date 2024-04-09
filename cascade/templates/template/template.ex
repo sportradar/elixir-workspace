@@ -2,7 +2,7 @@ defmodule <%= module %> do
   @moduledoc false
   use Cascade.Template
 
-  @assets_path Path.expand(<%= inspect(relative_assets_to_templates_path) %>, __DIR__) 
+  @assets_path Path.expand(Path.join(<%= inspect(relative_assets_to_templates_path) %>, <%= inspect(name) %>), __DIR__) 
 
   @impl Cascade.Template
   def assets_path, do: @assets_path
