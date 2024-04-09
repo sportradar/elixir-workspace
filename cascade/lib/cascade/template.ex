@@ -89,7 +89,9 @@ defmodule Cascade.Template do
 
   It expects a file path, the template's config and the user provided CLI arguments and
   is expected to return the destination path for this specific asset. The `asset_path` is
-  the template file's path with respect to the `assets`. For example for the following
+  the template file's path with respect to the `assets`.
+
+  This will be called for all template files. For example for the following `foo`
   template:
 
       templates/foo
