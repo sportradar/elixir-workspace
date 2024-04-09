@@ -2,7 +2,7 @@
 
 An opinionated command line arguments parser.
 
-`CliOptions` is an alternative to `OptionsParser` that allows you to validate CLI
+`CliOptions` is an alternative to `OptionParser` that allows you to validate CLI
 arguments based on a definition. Out of the box you get a polished CLI experience
 including:
 
