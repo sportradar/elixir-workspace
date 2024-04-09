@@ -40,6 +40,7 @@ defmodule Cascade.MixProject do
 
   defp docs do
     [
+      main: "readme",
       output: "../artifacts/docs/cascade",
       formatters: ["html"],
       extras: [

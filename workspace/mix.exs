@@ -49,6 +49,7 @@ defmodule Workspace.MixProject do
 
   defp docs do
     [
+      main: "readme",
       output: "../artifacts/docs/workspace",
       formatters: ["html"],
       before_closing_body_tag: &before_closing_body_tag/1,

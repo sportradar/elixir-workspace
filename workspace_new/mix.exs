@@ -44,6 +44,7 @@ defmodule WorkspaceNew.MixProject do
 
   defp docs do
     [
+      main: "readme",
       output: "../artifacts/docs/workspace_new",
       formatters: ["html"],
       extras: [

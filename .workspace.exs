@@ -93,6 +93,18 @@
         end
       ]
     ],
+    [
+      module: Workspace.Checks.ValidateConfig,
+      description: "readme must be the main entry for all docs",
+      opts: [
+        validate: fn config ->
+          case get_in(config, [:docs, :main]) do
+            "readme" -> {:ok, "readme is the main entry point"}
+            other -> {:error, "expected readme as the main page for docs, got: #{inspect(other)}"}
+          end
+        end
+      ]
+    ],
     # Testing related checks
     [
       module: Workspace.Checks.ValidateConfig,

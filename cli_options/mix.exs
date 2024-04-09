@@ -42,6 +42,7 @@ defmodule CliOptions.MixProject do
 
   defp docs do
     [
+      main: "readme",
       output: "../artifacts/docs/cli_options",
       formatters: ["html"],
       markdown_processor:
