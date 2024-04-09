@@ -17,6 +17,7 @@ defmodule Workspace.MixProject do
       dialyzer: [plt_add_apps: [:mix]],
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [
+        threshold: 98,
         export: "workspace",
         output: "../artifacts/coverdata/workspace"
       ],

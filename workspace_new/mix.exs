@@ -19,6 +19,7 @@ defmodule WorkspaceNew.MixProject do
       preferred_cli_env: [docs: :docs],
       docs: docs(),
       test_coverage: [
+        threshold: 100,
         export: "workspace_new",
         output: "../artifacts/coverdata/workspace_new"
       ],

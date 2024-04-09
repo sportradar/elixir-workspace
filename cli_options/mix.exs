@@ -17,6 +17,7 @@ defmodule CliOptions.MixProject do
       build_path: "../artifacts/build",
       deps: deps(),
       test_coverage: [
+        threshold: 100,
         export: "cli_options",
         output: "../artifacts/coverdata/cli_options"
       ],

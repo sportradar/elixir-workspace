@@ -13,6 +13,7 @@ defmodule Cascade.MixProject do
       build_path: "../artifacts/build",
       docs: docs(),
       test_coverage: [
+        threshold: 100,
         export: "cascade",
         output: "../artifacts/coverdata/cascade"
       ],

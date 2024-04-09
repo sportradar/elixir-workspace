@@ -58,6 +58,19 @@
         expected_path: "artifacts/build"
       ]
     ],
+    # Dependencies checks
+    [
+      module: Workspace.Checks.DependenciesVersion,
+      description: "mono-repo dependencies versions",
+      opts: [
+        deps: [
+          # add dependencies in strict alphabetical order
+          {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
+          {:ex_doc, "== 0.31.2", no_options_check: true},
+          {:timex, "== 3.7.7"}
+        ]
+      ]
+    ],
     # Documentation related checks
     [
       module: Workspace.Checks.ValidateConfigPath,
@@ -173,23 +186,27 @@
         end
       ]
     ],
-    # Dependencies checks
     [
-      module: Workspace.Checks.DependenciesVersion,
-      description: "mono-repo dependencies versions",
+      module: Workspace.Checks.ValidateConfig,
+      description: "all projects must have a minimum coverage threshold of 98",
       opts: [
-        deps: [
-          # add dependencies in strict alphabetical order
-          {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
-          {:ex_doc, "== 0.31.2", no_options_check: true},
-          {:timex, "== 3.7.7"}
-        ]
+        validate: fn config ->
+          coverage_opts = config[:test_coverage] || []
+          threshold = coverage_opts[:threshold] || 0
+
+          if threshold >= 98 do
+            {:ok, "threshold is at #{threshold}%"}
+          else
+            {:error, "threshold must be at least 98, got: #{threshold}"}
+          end
+        end
       ]
     ]
   ],
   test_coverage: [
     allow_failure: [:workspace],
-    threshold: 40,
+    threshold: 98,
+    warning_threshold: 99,
     exporters: [
       lcov: fn workspace, coverage_stats ->
         Workspace.Coverage.LCOV.export(workspace, coverage_stats,
