@@ -52,7 +52,7 @@ defmodule CliOptionsTest do
       assert opts == [foo: "bar"]
     end
 
-    test "by default undersores in long names are mapped to hyphens" do
+    test "by default underscores in long names are mapped to hyphens" do
       schema = [user_name: [type: :string]]
 
       assert {:ok, {opts, [], []}} = CliOptions.parse(["--user-name", "john"], schema)
@@ -230,7 +230,7 @@ defmodule CliOptionsTest do
       assert opts == [file: "mix.exs"]
     end
 
-    test "passing option mulitple times" do
+    test "passing option multiple times" do
       schema = [file: [type: :string]]
 
       assert {:error, message} =

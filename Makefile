@@ -29,11 +29,11 @@ new-install: ## Installs the latest workspace.new locally
 .PHONE: spell
 spell: ## Run cspell on project
 	@echo "=> spell-checking lib folders"
-	@cspell lint **/lib/**/*.ex **/lib/*.ex
+	@cspell lint --gitignore **/lib/**/*.ex **/lib/*.ex
 	@echo "=> spell-checking test folders"
-	@cspell lint "**/test/**/*.exs" "**/test/**/*.ex"
+	@cspell lint --gitignore "**/test/**/*.exs" "**/test/**/*.ex"
 	@echo "=> spell-checking docs"
-	@cspell lint **/*.md *.md
+	@cspell lint --gitignore **/*.md *.md
 
 .PHONE: format
 format: ## Format the workspace

@@ -8,7 +8,7 @@ defmodule Workspace.Status do
 
   * `:modified` - if any of the project's files has been modified
   * `:affected` - if any of the project's dependencies is modified
-  * `:unaffected` - if the project and any of it's dependencis have
+  * `:unaffected` - if the project and any of it's dependencies have
   not been modified.
 
   > #### Git repository {: .info}

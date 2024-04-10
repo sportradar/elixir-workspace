@@ -10,7 +10,7 @@ defmodule Workspace.Export do
 
   By default only the `workspace_path` and the `projects` are included.
 
-  Notice that skipped projects are not inlcuded.
+  Notice that skipped projects are not included.
   """
   @spec to_json(workspace :: Workspace.State.t()) :: String.t()
   def to_json(workspace) do

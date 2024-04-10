@@ -5,7 +5,7 @@ defmodule Workspace do
   `Workspace` provides a set of tools for working with multiple projects under
   the same git repo. Using path dependencies between the projects and the
   provided tools you can effectively work on massive codebases properly
-  splitted into reusable packages.
+  split into reusable packages.
 
   ## Structuring a folder as a workspace root
 
@@ -39,7 +39,7 @@ defmodule Workspace do
     * it is not included in the ignored projects or ignored paths in the
     workspace config
 
-  Assuming the folder stucture:
+  Assuming the folder structure:
 
   ```
   my_workspace
@@ -118,7 +118,7 @@ defmodule Workspace do
   project graph is a directed acyclic graph where each vertex is a project
   and each edge a dependency between the two projects.
 
-  The workspace graph is constructed implicitely upon workspace's creation
+  The workspace graph is constructed implicitly upon workspace's creation
   in order to ensure that all path dependencies are valid and decorate
   each project with graph metadata.
 
@@ -198,7 +198,7 @@ defmodule Workspace do
     * `:modified` - returns only the modified projects, e.g. projects for which
     the code has changed
     * `:affected` - returns all affected projects. Affected projects are the
-    modifed ones plus the 
+    modified ones plus the 
 
   `:modified` and `:affected` can be combined with the global filtering options.
 

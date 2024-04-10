@@ -36,7 +36,7 @@ codebase.
 `Workspace` provides a set of tools for working with multiple projects under
 the same git repo. Using path dependencies between the projects and the
 provided tools you can effectively work on massive codebases properly
-splitted into reusable packages.
+split into reusable packages.
 
 ### Core features
 
@@ -220,8 +220,8 @@ ERROR :string_utils - version mismatches for the following dependencies: [:ex_do
 ## Installation
 
 If you want to manually create the workspace root project and not you the
-`:workspace_new` scaffolder, then you need to add `workspace` as a top level
-dependency:
+`:workspace_new` scaffolding tool, then you need to add `workspace` as a
+top level dependency:
 
 ```elixir
 def deps do

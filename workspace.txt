@@ -1,1 +1,21 @@
 # Workspace custom cpell dictionary
+# please add words in alphabetical order
+ansicode
+ansidata
+codebases
+coverdata
+docstring
+docstrings
+extname
+incentivized
+iolist
+ized
+keyfind
+neighbour
+neighbours
+nofile
+stringlist
+subdirs
+subfolders
+toplevel
+invάλ # dummy test string

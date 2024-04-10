@@ -234,7 +234,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     end)
 
     newline()
-    log(highlight("analysing coverage data", :bright), prefix: :header)
+    log(highlight("analyzing coverage data", :bright), prefix: :header)
 
     coverage_stats =
       workspace

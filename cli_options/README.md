@@ -77,7 +77,7 @@ valid schema. You can use it directly in the `@moduledoc` of your mix tasks as
 following:
 
 ```elixir
-defmoudle Mix.Tasks.SomeTask do
+defmodule Mix.Tasks.SomeTask do
   schema = [...]
 
   @moduledoc """

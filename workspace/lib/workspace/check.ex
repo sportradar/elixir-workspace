@@ -163,7 +163,7 @@ defmodule Workspace.Check do
   Helper function for running a check on all projects of a workspace.
 
   The function must return `{:ok, metadata}` or `{:error, metadata}`. It returns
-  a `Check.Result` for each checked preject.
+  a `Check.Result` for each checked project.
 
   It takes care of transforming the function output to a `Check.Result` struct
   and handling ignored projects...

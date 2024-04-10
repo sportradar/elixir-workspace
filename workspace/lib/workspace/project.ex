@@ -314,7 +314,7 @@ defmodule Workspace.Project do
     do: Workspace.Utils.Path.relative_to(path, workspace_path)
 
   # returns an "app name" for the given mix.exs file, it is the
-  # folder name containing the project. We need a conistent app name
+  # folder name containing the project. We need a consistent app name
   # for each mix.exs in order to avoid warnings for module redefinitions
   # when Mix.project.in_project is used.
   #

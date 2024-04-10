@@ -63,7 +63,7 @@ defmodule Mix.Tasks.Cascade.HelpTest do
       "Unexpected arguments, expected \"mix cascade.help\" or \"mix cascade.help TEMPLATE\""
 
     assert_raise Mix.Error, message, fn ->
-      Mix.Tasks.Cascade.Help.run(["--invalidff"])
+      Mix.Tasks.Cascade.Help.run(["--invalid"])
     end
 
     assert_raise Mix.Error, message, fn ->

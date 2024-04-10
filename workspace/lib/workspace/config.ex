@@ -3,7 +3,7 @@ defmodule Workspace.Config do
     threshold: [
       type: :non_neg_integer,
       doc: """
-      The overall coverage thresdold for the workspace. If the overall test coverage is below this
+      The overall coverage threshold for the workspace. If the overall test coverage is below this
       value then the `workspace.test.coverage` command is considered failed. Notice
       that the overall test coverage percentage is calculated only on the enabled projects.
       """,

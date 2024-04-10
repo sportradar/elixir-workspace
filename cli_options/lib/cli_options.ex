@@ -421,7 +421,7 @@ defmodule CliOptions do
 
   With this, you can use `docs/2` to inject documentation:
 
-  ```markown
+  ```markdown
   ## Supported Options
 
   \#{CliOptions.docs(@options_schema)}"

@@ -18,7 +18,7 @@ defmodule Workspace.Cli do
   @doc """
   Helper function for logging a message with a title
 
-  Each log message conists of the following sections:
+  Each log message consists of the following sections:
 
   - `prefix` a prefix for each log message, defaults to "==> ". Can be
   configured through the `prefix` option. If set to `false` no prefix
@@ -68,7 +68,7 @@ defmodule Workspace.Cli do
 
   The message can be a rich formatted list. On top of the default elixir
   styles, various `workspace` related styles are supported for consistency
-  across the cli apps. For more details on the supported style spectifications
+  across the cli apps. For more details on the supported style specifications
   check `format_style/1`.
 
   ## Options
@@ -229,7 +229,7 @@ defmodule Workspace.Cli do
     * `:modified` - `✚` (bright red)
     * `:affected` - `●` (bright yellow)
     * `:unaffected` - `✔` (:bright green)
-  * `:defaule_style` - can be used to change the default style (`:light_cyan`)
+  * `:default_style` - can be used to change the default style (`:light_cyan`)
   """
   @spec project_name(project :: Workspace.Project.t(), opts :: keyword()) :: IO.ANSI.ansidata()
   def project_name(project, opts \\ []) do

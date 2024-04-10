@@ -100,7 +100,7 @@ defmodule CliOptions.Parser do
 
   defp fetch_option_args(option, opts, rest) do
     # TODO: currently we handle only one item per option, we can extend it with
-    # min max args suppport like clap
+    # min max args support like clap
     expected_args = CliOptions.Schema.expected_args(opts)
 
     {args, rest} = next_args_greedily(rest, expected_args, [])
@@ -130,7 +130,7 @@ defmodule CliOptions.Parser do
   # it stops parsing when
   #
   # * the rest is empty
-  # * an option or alias is ecountered
+  # * an option or alias is encountered
   # * max args have been read
   #
   # returns the read args and the remaining args in rest

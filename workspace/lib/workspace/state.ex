@@ -8,7 +8,7 @@ defmodule Workspace.State do
   fields:
 
     * `:projects` - a map of the form `%{atom => Workspace.Project.t()}` where
-    the key is the defined project name. It includes all detected workpsace
+    the key is the defined project name. It includes all detected workspace
     projects excluding any ignored ones.
     * `:cwd` - the directory from which the generation of the workspace struct
     occurred.

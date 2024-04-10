@@ -207,7 +207,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
   end
 
   describe "environment variables" do
-    test "raises if inproper configuration of environment variables" do
+    test "raises if improper configuration of environment variables" do
       args = ["-p", "package_default_a", "--verbose", "--env-var", "FOO" | @default_run_task]
 
       expected_message =

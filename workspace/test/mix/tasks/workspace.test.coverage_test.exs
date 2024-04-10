@@ -53,7 +53,7 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
         ":package_a - importing cover results from package_a/cover/package_a.coverdata",
         ":package_b - importing cover results from package_b/cover/package_b.coverdata",
         ":package_c - importing cover results from package_c/cover/package_c.coverdata",
-        "==> analysing coverage data",
+        "==> analyzing coverage data",
         ":package_a - total coverage 100.00% [threshold 90%]",
         ":package_b - total coverage 50.00% [threshold 90%]",
         "50.00%   PackageB (1/2 lines)",
@@ -96,7 +96,7 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
       [
         "==> importing cover results",
         ":package_a - importing cover results from package_a/cover/package_a.coverdata",
-        "==> analysing coverage data",
+        "==> analyzing coverage data",
         ":package_a - total coverage 100.00% [threshold 90%]",
         "==> workspace coverage 100.00% [threshold 90%]"
       ]
@@ -143,7 +143,7 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
       [
         "==> importing cover results",
         ":package_a - importing cover results from package_a/cover/package_a.coverdata",
-        "==> analysing coverage data",
+        "==> analyzing coverage data",
         ":package_a - total coverage 100.00% [threshold 90%]",
         "100.00%  PackageA (1/1 lines)",
         "==> workspace coverage 100.00% [threshold 90%]"
@@ -191,7 +191,7 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
         ":package_a - importing cover results from package_a/cover/package_a.coverdata",
         ":package_b - importing cover results from package_b/cover/package_b.coverdata",
         ":package_c - importing cover results from package_c/cover/package_c.coverdata",
-        "==> analysing coverage data",
+        "==> analyzing coverage data",
         ":package_a - total coverage 100.00% [threshold 90%]",
         ":package_b - total coverage 50.00% [threshold 90%]",
         ":package_c - total coverage 25.00% [threshold 90%]",
@@ -237,7 +237,7 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
         ":package_a - importing cover results from package_a/cover/package_a.coverdata",
         ":package_b - importing cover results from package_b/cover/package_b.coverdata",
         ":package_c - importing cover results from package_c/cover/package_c.coverdata",
-        "==> analysing coverage data",
+        "==> analyzing coverage data",
         ":package_a - total coverage 100.00% [threshold 90%]",
         ":package_b - total coverage 50.00% [threshold 90%]",
         "50.00%   PackageB (1/2 lines)",
@@ -281,14 +281,14 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
       )
 
     # TODO change format of missing coverdata
-    # make it a warning and add warnings-as-arrors flag
+    # make it a warning and add warnings-as-errors flag
     expected =
       [
         "==> importing cover results",
         "package_a - could not find .coverdata file in any of the paths:",
         "package_b - could not find .coverdata file in any of the paths:",
         "package_c - could not find .coverdata file in any of the paths:",
-        "==> analysing coverage data",
+        "==> analyzing coverage data",
         ":package_a - total coverage 0.00% [threshold 90%]",
         "0.00%    PackageA (0/1 lines)",
         ":package_b - total coverage 0.00% [threshold 90%]",

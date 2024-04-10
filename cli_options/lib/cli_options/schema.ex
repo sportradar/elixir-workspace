@@ -115,7 +115,7 @@ defmodule CliOptions.Schema do
 
   defstruct schema: [], mappings: []
 
-  # validates the schema, rename to new! similar to nimbleoptiosn
+  # validates the schema, rename to new! similar to nimble_options
   @doc """
   Validates the schema.
 
