@@ -35,5 +35,39 @@ defmodule Workspace.ConfigTest do
       assert {:error, message} = Config.validate(checks: [[]])
       assert message =~ "required :module option not found"
     end
+
+    test "fails with invalid check options" do
+      config = [
+        checks: [
+          [
+            module: Workspace.Checks.ValidateConfig,
+            description: "a dummy test",
+            opts: [
+              valid: fn _config -> {:ok, ""} end
+            ]
+          ]
+        ]
+      ]
+
+      assert {:error, message} = Config.validate(config)
+      assert message =~ "failed to validate checks"
+    end
+
+    test "other options are ignored" do
+      config = [
+        ignore_projects: [:foo],
+        ignore_paths: ["foo", "bar"],
+        checks: [],
+        test_coverage: [
+          threshold: 30,
+          allow_failure: [:foo]
+        ],
+        my_option: 1,
+        another_option: [x: 2]
+      ]
+
+      assert {:ok, validated_config} = Config.validate(config)
+      assert Keyword.equal?(validated_config, config)
+    end
   end
 end

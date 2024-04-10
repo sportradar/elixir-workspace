@@ -81,6 +81,12 @@ defmodule Workspace.Config do
   The following configuration options are supported:
 
   #{NimbleOptions.docs(@options_schema)}
+
+  > #### Extra Options {: .info}
+  >
+  > Notice that the validation will **not fail** if any extra configuration option
+  > is present. This way various plugins or mix tasks may define their own options
+  > that can be read from this configuration.
   """
 
   @doc """
@@ -117,8 +123,12 @@ defmodule Workspace.Config do
   end
 
   defp validate_config(config) when is_list(config) do
-    case NimbleOptions.validate(config, @options_schema) do
-      {:ok, config} -> {:ok, config}
+    default_options_config = Keyword.take(config, Keyword.keys(@options_schema.schema))
+
+    # we only validate default options since extra options may be added by
+    # plugins
+    case NimbleOptions.validate(default_options_config, @options_schema) do
+      {:ok, default_options_config} -> {:ok, Keyword.merge(config, default_options_config)}
       {:error, %NimbleOptions.ValidationError{message: message}} -> {:error, message}
     end
   end
