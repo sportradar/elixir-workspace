@@ -74,13 +74,64 @@ defmodule Workspace.Config do
                   )
 
   @moduledoc """
-  A struct holding workspace configuration.
+  The workspace configuration.
+
+  The workspace configuration is specified usually in a `.workspace.exs` file in the
+  root of your workspace. This is the place to:
+
+    * Configure your workspace checks (`Workspace.Check`)
+    * Specify paths or projects to be ignored during the workspace graph generation
+    * Define overall workspace coverage thresholds
+    * Define any other configuration option may be needed by a third party plugin.
+
+  It is expected to be a keyword list with an arbitrary set of configuration options.
 
   ## Options
 
-  The following configuration options are supported:
+  The following configuration options are supported by default:
 
   #{NimbleOptions.docs(@options_schema)}
+
+  A simple example of a `.workspace.exs` follows:
+
+  ```elixir
+  [
+    ignore_paths: ["deps", "artifacts", "cover"],
+    checks: [
+      # Add your checks here
+      [
+        module: Workspace.Checks.ValidateConfig,
+        description: "all projects must have a description set",
+        opts: [
+          validate: fn config ->
+            case config[:description] do
+              nil -> {:error, "no :description set"}
+              description when is_binary(description) -> {:ok, ""}
+              other -> {:error, "description must be binary, got: \#{inspect(other)}"}
+            end
+          end
+        ]
+      ]
+    ],
+    test_coverage: [
+      allow_failure: [:foo],
+      threshold: 98,
+      warning_threshold: 99,
+      exporters: [
+        lcov: fn workspace, coverage_stats ->
+          Workspace.Coverage.LCOV.export(workspace, coverage_stats,
+            output_path: "artifacts/coverage"
+          )
+        end
+      ]
+    ],
+    my_awesome_plugin_options: [
+      x: 1,
+      y: 2
+    ]
+  ]
+  ```
+
 
   > #### Extra Options {: .info}
   >
@@ -110,10 +161,14 @@ defmodule Workspace.Config do
   A `config` is valid if:
 
   - it follows the workspace config schema
-  - every check is valid, for more details check `Workspace.Check.validate/1`
+  - every check configuration is valid according to it's own schema. For more details
+  check `Workspace.Check.validate/1`.
 
   Returns either `{:ok, config}` with the updated `config` is it is valid, or
   `{:error, message}` in case of errors.
+
+  Notice that only the default options are validated, since the config may be used by
+  plugins for setting custom options.
   """
   @spec validate(config :: keyword()) :: {:ok, keyword()} | {:error, binary()}
   def validate(config) do
