@@ -156,7 +156,8 @@ defmodule Workspace.TestUtils do
     workspace_path = Keyword.get(opts, :workspace_path, "/usr/local/workspace")
     mix_path = Path.join(workspace_path, "mix.exs")
 
-    Workspace.State.new(workspace_path, mix_path, [], projects)
+    {:ok, workspace} = Workspace.new(workspace_path, mix_path, [], projects)
+    workspace
   end
 
   defp project_module(app) do

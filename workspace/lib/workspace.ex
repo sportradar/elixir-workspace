@@ -335,6 +335,13 @@ defmodule Workspace do
     with {:ok, config} <- Workspace.Config.validate(config_or_path),
          :ok <- ensure_workspace(workspace_mix_path),
          projects <- Workspace.Finder.projects(workspace_path, config) do
+      new(workspace_path, workspace_mix_path, config, projects)
+    end
+  end
+
+  @doc false
+  def new(workspace_path, workspace_mix_path, config, projects) do
+    with {:ok, projects} <- ensure_unique_names(projects) do
       workspace = Workspace.State.new(workspace_path, workspace_mix_path, config, projects)
       Workspace.Cli.debug("initialized a workspace with #{length(projects)} projects")
 
@@ -375,6 +382,42 @@ defmodule Workspace do
              type: :workspace
            ]
        """}
+    end
+  end
+
+  defp ensure_unique_names(projects) do
+    invalid_projects =
+      projects
+      |> Enum.group_by(& &1.app)
+      |> Enum.filter(fn {_app, projects} -> length(projects) > 1 end)
+
+    case invalid_projects do
+      [] ->
+        {:ok, projects}
+
+      invalid ->
+        error_message =
+          Enum.map(invalid, fn {app, projects} ->
+            paths =
+              Enum.map(
+                projects,
+                &Workspace.Utils.Path.relative_to(&1.mix_path, &1.workspace_path)
+              )
+              |> Enum.join(", ")
+
+            "* #{inspect(app)} is defined under: #{paths}"
+          end)
+          |> Enum.join("\n")
+
+        error_message =
+          """
+          You are not allowed to have multiple projects with the same name under
+          the same workspace.
+
+          #{error_message}
+          """
+
+        {:error, error_message}
     end
   end
 

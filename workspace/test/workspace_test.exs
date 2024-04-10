@@ -14,30 +14,6 @@ defmodule WorkspaceTest do
     %{workspace: workspace}
   end
 
-  # describe "config/1" do
-  #   test "warning with invalid file" do
-  #     assert capture_io(:stderr, fn ->
-  #              config = Workspace.config("invalid.exs")
-  #              assert config == []
-  #            end) =~ "file not found"
-  #   end
-  #
-  #   test "with incorrect contents" do
-  #     assert capture_io(:stderr, fn ->
-  #              config = Workspace.config("test/fixtures/configs/invalid_contents.exs")
-  #              # TODO: check why config is empty in this case and not the default
-  #              assert config == []
-  #            end) =~ "unknown options [:invalid], valid options are:"
-  #   end
-  #
-  #   test "with valid config" do
-  #     config = Workspace.config("test/fixtures/configs/valid.exs")
-  #     assert is_list(config)
-  #     assert config[:ignore_projects] == [Dummy.MixProject, Foo.MixProject]
-  #     assert config[:ignore_paths] == ["path/to/foo"]
-  #   end
-  # end
-  #
   describe "new/2" do
     test "creates a workspace struct" do
       {:ok, workspace} = Workspace.new(@sample_workspace_path)
@@ -101,6 +77,20 @@ defmodule WorkspaceTest do
         project_a = project_fixture(app: :foo, workspace: [type: :workspace])
         workspace_fixture([project_a])
       end
+    end
+
+    test "error if two projects have the same name" do
+      project_a = project_fixture([app: :foo], path: "packages")
+      project_b = project_fixture([app: :foo], path: "tools")
+
+      assert {:error, message} = Workspace.new("", "foo/mix.exs", [], [project_a, project_b])
+
+      assert message == """
+             You are not allowed to have multiple projects with the same name under
+             the same workspace.
+
+             * :foo is defined under: packages/foo/mix.exs, tools/foo/mix.exs
+             """
     end
   end
 
