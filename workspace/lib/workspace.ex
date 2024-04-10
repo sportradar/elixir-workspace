@@ -301,9 +301,10 @@ defmodule Workspace do
   @doc """
   Creates a new `Workspace` from the given workspace path
 
-  `config` can be one of the following:
+  `config_or_path` can be one of the following:
 
-    * A path relative to the workspace `path` with the workspace config
+    * A path relative to the workspace root path pointing to the workspace config
+    (`.workspace.exs` in most cases)
     * A keyword list with the config
 
   The workspace is created by finding all valid mix projects under
@@ -312,12 +313,12 @@ defmodule Workspace do
   Returns `{:ok, workspace}` in case of success, or `{:error, reason}`
   if something fails.
   """
-  @spec new(path :: binary(), config :: keyword() | binary()) ::
+  @spec new(path :: binary(), config_or_path :: keyword() | binary()) ::
           {:ok, Workspace.State.t()} | {:error, binary()}
-  def new(path, config \\ [])
+  def new(path, config_or_path \\ [])
 
-  def new(path, config_path) when is_binary(config_path) do
-    config_path = Workspace.Utils.Path.relative_to(config_path, Path.expand(path))
+  def new(path, config_or_path) when is_binary(config_or_path) do
+    config_path = Workspace.Utils.Path.relative_to(config_or_path, Path.expand(path))
     config_path = Path.join(path, config_path)
 
     with {:ok, config} <- Workspace.Config.load(config_path) do
@@ -325,13 +326,13 @@ defmodule Workspace do
     end
   end
 
-  def new(path, config) when is_list(config) do
+  def new(path, config_or_path) when is_list(config_or_path) do
     workspace_mix_path = Path.join(path, "mix.exs") |> Path.expand()
     workspace_path = Path.dirname(workspace_mix_path)
 
     Workspace.Cli.debug("initializing workspace under #{path}")
 
-    with {:ok, config} <- Workspace.Config.validate(config),
+    with {:ok, config} <- Workspace.Config.validate(config_or_path),
          :ok <- ensure_workspace(workspace_mix_path),
          projects <- Workspace.Finder.projects(workspace_path, config) do
       workspace = Workspace.State.new(workspace_path, workspace_mix_path, config, projects)
