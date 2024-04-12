@@ -21,7 +21,9 @@ defmodule CliOptions.Schema.Validation do
 
   @valid_types [:string, :boolean, :integer, :float, :counter, :atom]
 
-  @spec valid_types() :: [atom()]
+  @type cli_option_type :: :string | :boolean | :integer | :float | :counter | :atom
+
+  @spec valid_types() :: [cli_option_type(), ...]
   def valid_types, do: @valid_types
 
   @spec validate!(schema :: keyword()) :: keyword()

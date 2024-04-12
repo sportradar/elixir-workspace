@@ -275,7 +275,7 @@ defmodule CliOptions.Schema do
   defp validate_type(:boolean, _option, value) when is_boolean(value), do: {:ok, value}
 
   @doc false
-  @spec action(option :: atom(), schema :: t()) :: :negate | :count | :append | :set
+  @spec action(option :: atom(), schema :: keyword()) :: :negate | :count | :append | :set
   def action(option, schema) do
     opts = Keyword.fetch!(schema, option)
 
@@ -297,8 +297,8 @@ defmodule CliOptions.Schema do
   end
 
   @doc false
-  @spec ensure_valid_option(option :: atom(), schema :: t()) ::
-          {:ok, keyword()} | {:error, String.t()}
+  @spec ensure_valid_option(option :: String.t(), schema :: t()) ::
+          {:ok, atom(), keyword()} | {:error, String.t()}
   def ensure_valid_option(option, schema) do
     case Map.get(schema.mappings, option) do
       nil -> {:error, "invalid option #{inspect(option)}"}
