@@ -186,9 +186,17 @@ defmodule Workspace.Project do
 
   @valid_statuses [:undefined, :modified, :affected, :unaffected]
 
+  @doc """
+  Sets the status of the given `project`.
+  """
+  @spec set_status(project :: t(), status :: atom()) :: t()
   def set_status(project, status) when status in @valid_statuses,
     do: %Workspace.Project{project | status: status}
 
+  @doc """
+  Flags the given `project` as root project or not.
+  """
+  @spec set_root?(project :: t(), root? :: boolean()) :: t()
   def set_root?(project, root?) when is_boolean(root?),
     do: %Workspace.Project{project | root?: root?}
 
@@ -334,6 +342,7 @@ defmodule Workspace.Project do
 
   If the file does not exist or the filename is not `mix.exs` it will raise.
   """
+  @spec ensure_mix_file!(path :: String.t()) :: :ok
   def ensure_mix_file!(path) do
     cond do
       Path.basename(path) != "mix.exs" ->
