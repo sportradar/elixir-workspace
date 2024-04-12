@@ -340,6 +340,12 @@ defmodule Workspace do
   end
 
   @doc false
+  @spec new(
+          workspace_path :: String.t(),
+          workspace_mix_path :: String.t(),
+          config :: keyword(),
+          projects :: [Workspace.Project.t()]
+        ) :: {:ok, Workspace.State.t()} | {:error, String.t()}
   def new(workspace_path, workspace_mix_path, config, projects) do
     with {:ok, projects} <- ensure_unique_names(projects) do
       workspace = Workspace.State.new(workspace_path, workspace_mix_path, config, projects)

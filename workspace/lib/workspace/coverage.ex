@@ -1,6 +1,7 @@
 defmodule Workspace.Coverage do
   @moduledoc false
 
+  @doc false
   def project_coverage_stats(coverage, project) do
     # coverage per project's module
     project_modules =
@@ -17,6 +18,7 @@ defmodule Workspace.Coverage do
   end
 
   # TODO: refactor, code repetition with previous function
+  @doc false
   def summarize_line_coverage(coverage, workspace) do
     coverage
     |> Enum.reject(fn {module, app, _function_data, _line_data} ->
@@ -28,6 +30,7 @@ defmodule Workspace.Coverage do
     |> summarize_line_coverage()
   end
 
+  @doc false
   def summarize_line_coverage(coverage) do
     line_stats =
       coverage

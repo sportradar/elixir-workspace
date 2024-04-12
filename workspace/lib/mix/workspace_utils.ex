@@ -5,6 +5,7 @@ defmodule Mix.WorkspaceUtils do
   # common cli arguments
 
   @doc false
+  @spec load_and_filter_workspace(opts :: keyword()) :: Workspace.State.t()
   def load_and_filter_workspace(opts) do
     workspace_path = Keyword.get(opts, :workspace_path, File.cwd!())
     config_path = Keyword.fetch!(opts, :config_path)

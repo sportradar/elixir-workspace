@@ -36,6 +36,10 @@ defmodule Workspace.Check.Result do
             # should be set by checkers
             meta: []
 
+  @doc """
+  Initializes a check results struct for the given `check` and `project`
+  """
+  @spec new(check :: keyword(), project :: Workspace.Project.t()) :: t()
   def new(check, project) do
     %__MODULE__{
       module: check[:module],

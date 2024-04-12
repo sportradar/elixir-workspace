@@ -52,6 +52,24 @@ defmodule Workspace.State do
             graph: nil,
             status_updated?: false
 
+  @doc """
+  Initializes a new workspace from the given settings.
+
+  It expects the following:
+
+  - `path` is the root path of the workspace
+  - `mix_path` is the root mix file, usually a `mix.exs` in the `path`
+  - `config` is the workspace configuration
+  - `projects` is a list of workspace projects
+
+  Notice that *no validation is applied* at this level.
+  """
+  @spec new(
+          path :: String.t(),
+          mix_path :: String.t(),
+          config :: keyword(),
+          projects :: [Workspace.Project.t()]
+        ) :: t()
   def new(path, mix_path, config, projects) do
     graph = Workspace.Graph.digraph(projects)
     projects = update_projects_topology(projects, graph)
