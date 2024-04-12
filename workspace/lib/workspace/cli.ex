@@ -187,7 +187,8 @@ defmodule Workspace.Cli do
   @doc """
   Returns the color code for the given status.
   """
-  @spec status_color(status :: atom()) :: atom()
+  @spec status_color(status :: :error | :error_ignore | :ok | :skip | :warn) ::
+          :green | :magenta | :red | :white | :yellow
   def status_color(:error), do: :red
   def status_color(:error_ignore), do: :magenta
   def status_color(:ok), do: :green

@@ -212,7 +212,7 @@ defmodule Workspace.Graph do
   """
   @spec subgraph(
           graph :: :digraph.graph(),
-          project :: Workspace.Project.t(),
+          project :: atom(),
           proximity :: pos_integer()
         ) :: :digraph.graph()
   def subgraph(graph, project, proximity) do

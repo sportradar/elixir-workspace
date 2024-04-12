@@ -99,7 +99,7 @@ defmodule Workspace.Check do
   If not set the options will not be validated and all keyword lists will be considered
   valid. It is advised to define it for better handling of errors.
   """
-  @callback schema() :: keyword() | nil
+  @callback schema() :: NimbleOptions.t() | nil
 
   @optional_callbacks [schema: 0]
 

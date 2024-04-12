@@ -40,5 +40,7 @@ defmodule Workspace.Export do
       to your dependency list.
       """
     end
+
+    :ok
   end
 end

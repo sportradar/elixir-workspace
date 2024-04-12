@@ -51,11 +51,11 @@ defmodule Workspace.Project do
           module: module(),
           config: keyword(),
           mix_path: binary(),
-          path: binary(),
+          path: String.t(),
           workspace_path: binary(),
           status: :undefined | :unaffected | :modified | :affected,
           root?: nil | boolean(),
-          changes: [{Path.t(), Workspace.Git.change_type()}],
+          changes: nil | [{Path.t(), Workspace.Git.change_type()}],
           tags: [tag()]
         }
 
@@ -102,8 +102,8 @@ defmodule Workspace.Project do
 
   @doc false
   @spec new(
-          workspace_path :: String.t(),
-          mix_path :: String.t(),
+          workspace_path :: binary(),
+          mix_path :: binary(),
           module :: module(),
           config :: Keyword.t()
         ) :: t()
