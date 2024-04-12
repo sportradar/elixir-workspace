@@ -88,7 +88,7 @@ defmodule Workspace.State do
     roots = Workspace.Graph.source_projects(graph)
 
     Enum.map(projects, fn project ->
-      Workspace.Project.set_root?(project, project.app in roots)
+      Workspace.Project.set_root(project, project.app in roots)
     end)
   end
 

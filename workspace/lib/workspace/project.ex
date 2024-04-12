@@ -196,8 +196,8 @@ defmodule Workspace.Project do
   @doc """
   Flags the given `project` as root project or not.
   """
-  @spec set_root?(project :: t(), root? :: boolean()) :: t()
-  def set_root?(project, root?) when is_boolean(root?),
+  @spec set_root(project :: t(), root? :: boolean()) :: t()
+  def set_root(project, root?) when is_boolean(root?),
     do: %Workspace.Project{project | root?: root?}
 
   @doc """
