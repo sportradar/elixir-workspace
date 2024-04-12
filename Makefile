@@ -26,7 +26,7 @@ new-install: ## Installs the latest workspace.new locally
 
 ##@ Linting
 
-.PHONE: spell
+.PHONY: spell
 spell: ## Run cspell on project
 	@echo "=> spell-checking lib folders"
 	@cspell lint -c assets/cspell/cspell.json --gitignore **/lib/**/*.ex **/lib/*.ex
@@ -35,17 +35,24 @@ spell: ## Run cspell on project
 	@echo "=> spell-checking docs"
 	@cspell lint -c assets/cspell/cspell.json --gitignore **/*.md *.md
 
-.PHONE: format
+.PHONY: format
 format: ## Format the workspace
 	mix workspace.run -t format
 
+.PHONY: doctor
+doctor: ## Runs doctor on all projects
+	mix workspace.run -t doctor --exclude workspace_new -- --failed --config-file $(PWD)/assets/doctor.exs
+
+.PHONY: credo
+creod: ## Runs credo on all projects
+	mix workspace.run -t credo --exclude workspace_new --exclude cascade -- --config-file $(PWD)/assets/credo.exs --strict
+
 .PHONY: lint
-lint: ## Run linters suite on project
+lint: ## Run full linters suite on project
 	mix workspace.check
 	mix workspace.run -t format -- --check-formatted
 	mix workspace.run -t xref -- graph --format cycles --fail-above 0
-	mix credo
-	mix workspace.run -t doctor --exclude workspace_new --exclude cascade -- --failed
+	mix workspace.run -t credo --exclude workspace_new --exclude cascade -- --config-file $(PWD)/assets/credo.exs --strict
 
 ##@ Documentation
 
