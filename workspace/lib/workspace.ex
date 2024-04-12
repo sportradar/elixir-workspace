@@ -403,17 +403,16 @@ defmodule Workspace do
 
       invalid ->
         error_message =
-          Enum.map(invalid, fn {app, projects} ->
+          Enum.map_join(invalid, "\n", fn {app, projects} ->
             paths =
-              Enum.map(
+              Enum.map_join(
                 projects,
+                ", ",
                 &Workspace.Utils.Path.relative_to(&1.mix_path, &1.workspace_path)
               )
-              |> Enum.join(", ")
 
             "* #{inspect(app)} is defined under: #{paths}"
           end)
-          |> Enum.join("\n")
 
         error_message =
           """

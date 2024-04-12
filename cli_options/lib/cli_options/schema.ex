@@ -193,9 +193,8 @@ defmodule CliOptions.Schema do
     value = value_or_default(value, schema)
 
     with {:ok, value} <- validate_value(option, value, schema),
-         :ok <- maybe_validate_allowed_value(option, value, schema[:allowed]),
-         {:ok, value} <- validate_type(option_type(schema), option, value) do
-      {:ok, value}
+         :ok <- maybe_validate_allowed_value(option, value, schema[:allowed]) do
+      validate_type(option_type(schema), option, value)
     end
   end
 

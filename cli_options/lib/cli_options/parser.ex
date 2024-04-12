@@ -76,7 +76,7 @@ defmodule CliOptions.Parser do
 
   defp next([], _schema), do: nil
 
-  # if it starts with -- or - it must be an option 
+  # if it starts with -- or - it must be an option
   defp next(["--" <> option | rest], schema), do: parse_option(option, rest, schema)
 
   defp next(["-" <> option_alias | rest], schema),

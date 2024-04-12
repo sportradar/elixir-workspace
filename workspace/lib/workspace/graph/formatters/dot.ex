@@ -12,8 +12,7 @@ defmodule Workspace.Graph.Formatters.Dot do
         {v1, v2}
       end)
       |> Enum.sort()
-      |> Enum.map(fn {v1, v2} -> "  #{v1.app} -> #{v2.app};" end)
-      |> Enum.join("\n")
+      |> Enum.map_join("\n", fn {v1, v2} -> "  #{v1.app} -> #{v2.app};" end)
 
     """
     digraph G {
