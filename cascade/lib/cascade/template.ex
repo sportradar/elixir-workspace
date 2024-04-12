@@ -185,7 +185,7 @@ defmodule Cascade.Template do
 
   Returns the moduledoc or `nil`.
   """
-  @spec moduledoc(module :: module()) :: String.t() | nil | false
+  @spec moduledoc(module :: module()) :: String.t() | false
   def moduledoc(module) when is_atom(module) do
     case Code.fetch_docs(module) do
       {:docs_v1, _, _, _, %{"en" => moduledoc}, _, _} -> moduledoc

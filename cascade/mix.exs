@@ -12,6 +12,9 @@ defmodule Cascade.MixProject do
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
       docs: docs(),
+      dialyzer: [
+        plt_add_apps: [:eex, :mix]
+      ],
       test_coverage: [
         threshold: 100,
         export: "cascade",
