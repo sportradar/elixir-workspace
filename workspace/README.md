@@ -190,12 +190,12 @@ All checks implement the `Workspace.Check` behaviour and can be configured
 in your `.workspace.exs` file. `Workspace` comes with some default checks
 that among other, allow you to:
 
-* Ensuring that [specific dependencies are set](`Workspace.Checks.EnsureDependencies`)
+* Ensure that [specific dependencies are set](`Workspace.Checks.EnsureDependencies`)
 on all projects, e.g. `ex_doc`.
-* Ensuring that external [dependencies versions match the expected ones](`Workspace.Checks.DependenciesVersion`).
-* Ensures that [no forbidden dependencies are defined](`Workspace.Checks.ForbiddenDeps`).
-* [Validating arbitrarily](`Workspace.Checks.ValidateConfig`) the projects' config objects.
-* [Enforcing boundaries](`Workspace.Checks.EnforceBoundaries`) between workspace projects.
+* Ensure that external [dependencies versions match the expected ones](`Workspace.Checks.DependenciesVersion`).
+* Verify that [no forbidden dependencies are defined](`Workspace.Checks.ForbiddenDeps`).
+* [Validate arbitrarily](`Workspace.Checks.ValidateConfig`) the projects' config objects.
+* [Enforce boundaries](`Workspace.Checks.EnforceBoundaries`) between workspace projects.
 
 You could also implement your own checks, incorporating any custom validation
 logic you may wish.
