@@ -44,7 +44,7 @@ doctor: ## Runs doctor on all projects
 	mix workspace.run -t doctor --exclude workspace_new -- --failed --config-file $(PWD)/assets/doctor.exs
 
 .PHONY: credo
-creod: ## Runs credo on all projects
+credo: ## Runs credo on all projects
 	mix workspace.run -t credo --exclude workspace_new --exclude cascade -- --config-file $(PWD)/assets/credo.exs --strict
 
 .PHONY: lint
