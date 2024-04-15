@@ -1,23 +1,39 @@
 defmodule Workspace.Checks.ValidateConfigPath do
+  @schema NimbleOptions.new!(
+            config_attribute: [
+              type: {:or, [:atom, {:list, :atom}]},
+              doc: """
+              The configuration attribute to check. This can either be a
+              single atom or a list of atoms for nested config options.
+              """,
+              required: true
+            ],
+            expected_path: [
+              type: {:or, [:string, {:fun, 1}]},
+              doc: """
+              Relative path with respect to the workspace root. This
+              can either be a relative path with respect to workspace root or an
+              anonymous function taking as input a `Workspace.Project` and returning
+              a dynamic expected path.
+              """
+            ]
+          )
   @moduledoc """
   Checks that the given path is properly configured
 
-  This is useful in cases you want to specify a common path for some of
-  your project's artifacts, e.g. `deps_path` or `build_path`. This will
-  check that the configuration option of the given project matches the
-  expected path. Notice that the expected path is always considered to
-  be relative to the project's workspace path.
+  > #### Common use case {: .tip}
+  >
+  > This is useful in cases you want to specify a common path for some of
+  > your project's artifacts, e.g. `deps_path` or `build_path`. This will
+  > check that the configuration option of the given project matches the
+  > expected path. Notice that the expected path is always considered to
+  > be relative to the project's workspace path.
 
   ## Configuration
 
-  It expects the following configuration parameters:
+  #{NimbleOptions.docs(@schema)}
 
-  * `:config_attribute` - the configuration attribute to check, this can
-  either be a single atom or a list of atoms for nested config options.
-  * `:expected_path` - relative path with respect to the workspace root. This
-  can either be a relative path with respect to workspace root or an
-  anonymous function taking as input a `Workspace.Project` and returning
-  a dynamic expected path.
+  ## Example
 
   In order to configure this checker add the following, under `checkers`,
   in your `workspace.exs`:
@@ -31,6 +47,9 @@ defmodule Workspace.Checks.ValidateConfigPath do
   ```
   """
   @behaviour Workspace.Check
+
+  @impl Workspace.Check
+  def schema, do: @schema
 
   @impl Workspace.Check
   def check(workspace, check) do

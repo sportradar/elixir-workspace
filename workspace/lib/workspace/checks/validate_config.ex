@@ -19,6 +19,15 @@ defmodule Workspace.Checks.ValidateConfig do
   This is a generic check since you can define any arbitrary check for
   the given config.
 
+  > #### Common use cases {: .tip}
+  >
+  > This check can be used to verify any high level setting of your Mix projects
+  > like:
+  >
+  > - Ensure that the test coverage threshold is above a limit
+  > - A package maintainer is defined
+  > - All projects have a description set
+
   ## Configuration
 
   #{NimbleOptions.docs(@schema)}

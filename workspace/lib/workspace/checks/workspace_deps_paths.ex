@@ -2,9 +2,11 @@ defmodule Workspace.Checks.WorkspaceDepsPaths do
   @moduledoc """
   Checks that the relative paths of workspace dependencies are valid.
 
-  Since workspace supports arbitraty nested paths, it is a common operation to
-  move around workspace projects. This sanity check will validate that all relative
-  paths are valid without having to compile the whole workspace.
+  > #### Common use case {: .tip}
+  >
+  > Since workspace supports arbitraty nested paths, it is a common operation to
+  > move around workspace projects. This sanity check will validate that all relative
+  > paths are valid without having to compile the whole workspace.
 
   ## Example
 

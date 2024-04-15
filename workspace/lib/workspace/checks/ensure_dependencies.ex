@@ -10,11 +10,19 @@ defmodule Workspace.Checks.EnsureDependencies do
               """
             ]
           )
+
   @moduledoc """
   Checks that the given dependencies are defined.
 
-  This check can be used to ensure that all projects or a subset of your
-  mono-repo projects have some required dependencies defined.
+  > #### Common use case {: .tip}
+  >
+  > This check can be used to ensure that all projects or a subset of your
+  > mono-repo projects have some required dependencies defined.
+  > For example you can use it to ensure that all projects depend on `:ex_doc`.
+  >
+  > This only checks that the dependency is defined, no matter what it's
+  > version is. To enforce additionally a specific version you can use
+  > `Workspace.Checks.DependenciesVersion`.
 
   ## Configuration
 

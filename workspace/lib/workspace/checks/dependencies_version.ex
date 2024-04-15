@@ -1,17 +1,28 @@
 defmodule Workspace.Checks.DependenciesVersion do
+  hex_dep_tuple = {:or, [{:tuple, [:atom, :string]}, {:tuple, [:atom, :string, :keyword_list]}]}
+  keyword_dep_tuple = {:tuple, [:atom, :keyword_list]}
+
+  @schema NimbleOptions.new!(
+            deps: [
+              type: {:list, {:or, [hex_dep_tuple, keyword_dep_tuple]}},
+              doc: "List of expected dependency versions",
+              required: true
+            ]
+          )
+
   @moduledoc """
   Checks that the configured dependencies versions match the expected ones
 
-  This check can be used in order to ensure common dependencies versions and
-  options across all projects of your mono-repo.
+  > #### Common use cases {: .tip}
+  >
+  > This check can be used in order to ensure common dependencies versions and
+  > options across all projects of your mono-repo.
 
   ## Configuration
 
-  It expects the following configuration parameters:
+  #{NimbleOptions.docs(@schema)}
 
-  * `:deps` - a list of expected dependencies tuples. 
-
-  ## Custom deps options
+  ### Custom deps options
 
   Except the standard deps options supported by mix you can also set the
   following options which specify how the check will be applied on a
@@ -22,7 +33,7 @@ defmodule Workspace.Checks.DependenciesVersion do
   rest of the options will be checked. If set to a list the options will be
   checked for all projects except of those in the list.
 
-  For example:
+  ## Example
 
   ```elixir
   [
@@ -43,6 +54,9 @@ defmodule Workspace.Checks.DependenciesVersion do
   """
   # TODO: handle path dependencies specially
   @behaviour Workspace.Check
+
+  @impl Workspace.Check
+  def schema, do: @schema
 
   @check_deps_keys [:no_options_check]
 
