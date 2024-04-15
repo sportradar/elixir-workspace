@@ -74,6 +74,8 @@ defmodule Workspace.GraphTest do
              :package_i,
              :package_k
            ]
+
+    assert Graph.source_projects(workspace) == Graph.source_projects(workspace.graph)
   end
 
   test "sink_projects/1", %{workspace: workspace} do
@@ -84,6 +86,8 @@ defmodule Workspace.GraphTest do
              :package_j,
              :package_k
            ]
+
+    assert Graph.sink_projects(workspace) == Graph.sink_projects(workspace.graph)
   end
 
   describe "affected/2" do

@@ -2,17 +2,29 @@ defmodule Workspace.Graph do
   @moduledoc """
   Workspace path dependencies graph and helper utilities
 
-  ## Internal representation of the graph
-
-  Each graph node is a tuple of the form `{package_name, package_type}` where
-  `package_type` is one of:
-
-    * `:workspace` - for workspace internal projects
-    * `:external` - for external projects / dependencies
+  > #### Internal graph representation {: .neutral}
+  >
+  > Each graph node is an internal struct, holding the project name, the type
+  > of the project (e.g. workspace or external dependency) and an arbitrary
+  > set of metadata.
 
   By default `:workspace` dependencies will always be included in the graph. On the
   other hand `:external` dependencies will be included only if the `:external`
   option is set to `true` during graph's construction.
+
+  ## Usage
+
+  This module provides `with_digraph/3` and `digraph/2` for constructing the
+  workspace graph from a workspace, and a set of helper utilites operating
+  on a graph.
+
+      workspace = Workspace.new!("/path/to/workspace")
+
+      # construct the graph, including external dependencies
+      graph = Workspace.Graph.digraph(workspace, external: true)
+
+      # get graph leaves
+      Workspace.Graph.sink_projects(graph)
   """
 
   @type vertices :: [:digraph.vertex()]
@@ -44,7 +56,7 @@ defmodule Workspace.Graph do
   Generates a graph of the given workspace.
 
   Notice that you need to manually delete the graph. Prefer instead
-  `with_digraph/2`.
+  `with_digraph/3`.
 
   ## Options
 
@@ -143,12 +155,11 @@ defmodule Workspace.Graph do
   Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
   """
-  @spec source_projects(workspace :: Workspace.State.t() | :digraph.graph()) :: [atom()]
-  def source_projects(workspace) when is_struct(workspace, Workspace.State) do
-    with_digraph(workspace, fn graph ->
-      source_projects(graph)
-    end)
-  end
+  @spec source_projects(workspace_or_graph :: Workspace.State.t() | :digraph.graph()) :: [atom()]
+  def source_projects(workspace_or_graph)
+
+  def source_projects(workspace) when is_struct(workspace, Workspace.State),
+    do: source_projects(workspace.graph)
 
   def source_projects(graph) do
     graph
@@ -162,13 +173,16 @@ defmodule Workspace.Graph do
   Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
   """
-  @spec sink_projects(workspace :: Workspace.State.t()) :: [atom()]
-  def sink_projects(workspace) do
-    with_digraph(workspace, fn graph ->
-      graph
-      |> :digraph.sink_vertices()
-      |> Enum.map(& &1.app)
-    end)
+  @spec sink_projects(workspace_or_graph :: Workspace.State.t() | :digraph.graph()) :: [atom()]
+  def sink_projects(workspace_or_graph)
+
+  def sink_projects(workspace) when is_struct(workspace, Workspace.State),
+    do: sink_projects(workspace.graph)
+
+  def sink_projects(graph) do
+    graph
+    |> :digraph.sink_vertices()
+    |> Enum.map(& &1.app)
   end
 
   @doc """
