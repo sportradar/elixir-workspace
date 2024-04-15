@@ -1,6 +1,43 @@
 defmodule Workspace.Coverage.LCOV do
   @moduledoc """
-  lcov coverage exporter.
+  [`lcov`](https://github.com/linux-test-project/lcov) coverage exporter.
+
+  > #### Using `lcov` with `genhtml` {: .tip}
+  >
+  > You can combine the `lcov` exporter, with the `genhtml` command in order
+  > to generate an `HTML` coverage report for your complete workspace codebase.
+  >
+  > From the workspace `Makefile`:
+  >
+  > ```
+  > .PHONY: coverage
+  > coverage: ## Generates coverage report
+  >   mix workspace.run -t test -- --cover
+  >   mix workspace.test.coverage
+  >   genhtml artifacts/coverage/lcoverage.lcov -o artifacts/coverage --prefic ${PWD}
+  > ```
+
+  ## Options
+
+  The following options are supported:
+
+  * `:filename` - the `.lcov` filename, defaults to `coverage.lcov`
+  * `:output_path` - the output path, defaults to `cover` under the current directory
+
+  ## Usage
+
+  In order to enable `LCOV` coverage exporter you can add the following
+  to your workspace's `:test_coverage, :exporters` config:
+
+      test_coverage: [
+        exporters: [
+          lcov: fn workspace, coverage_stats ->
+            Workspace.Coverage.LCOV.export(workspace, coverage_stats,
+              output_path: "artifacts/coverage"
+            )
+          end
+        ]
+      ]
   """
 
   @behaviour Workspace.Coverage.Exporter
