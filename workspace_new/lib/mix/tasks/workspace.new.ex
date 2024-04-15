@@ -123,7 +123,7 @@ defmodule Mix.Tasks.Workspace.New do
     end
   end
 
-  defp generate(app, mod, _path) do
+  defp generate(app, mod, path) do
     bindings = [
       app: app,
       mod: mod,
@@ -133,6 +133,31 @@ defmodule Mix.Tasks.Workspace.New do
     for {file, content} <- @template_files do
       create_file(file, template(content, bindings))
     end
+
+    """
+
+    You workspace was created successfully. You can use `mix` to add
+    workspace projects within it and the `workspace.*` commands to
+    work with it:
+
+        cd #{path}
+        mix deps.get && mix compile
+
+        # you can add as many internal projects as you wish
+        # at any subfolder of #{path}
+        mix new package_a
+        mix new package_b
+
+        # test all projects
+        mix workspace.run -t test
+
+    For more details on a specific command run `mix help command`. You
+    can list all workspace commands with:
+
+        mix help --search workspace
+    """
+    |> String.trim_trailing()
+    |> Mix.shell().info()
   end
 
   defp template(content, bindings) do
