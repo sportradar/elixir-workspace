@@ -10,7 +10,7 @@ To install from Hex, run:
 mix archive.install hex workspace_new
 ```
 
-To build and install it locally:
+To build and install it locally, run from within the `workspace_new` path:
 
 ```bash
 # remove any existing version
