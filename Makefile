@@ -7,11 +7,22 @@ help: ## Display this help.
     printf "\nUsage:\n  make \033[36m<target>\033[0m\n" \
   } \
   /^[a-zA-Z_0-9-]+:.*?##/ { \
-    printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2 \
+    printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2 \
   } \
   /^##@/ { \
     printf "\n\033[1m%s\033[0m\n", substr($$0, 5) \
   } ' $(MAKEFILE_LIST)
+
+##@ Bootstrapping
+
+.PHONY: setup
+setup: ## Gets and compiles all dependencies
+	@echo "==> Compiling workspace"
+	@mix deps.get
+	@mix compile
+	@echo "==> Getting projects dependencies"
+	@mix workspace.run -t deps.get
+	@mix workspace.run -t deps.compile -- --skip-local-deps
 
 ##@ Utilities
 
@@ -24,7 +35,54 @@ new-install: ## Installs the latest workspace.new locally
 	mix archive.uninstall --force workspace_new
 	cd workspace_new && MIX_ENV=prod mix do archive.build, archive.install --force
 
+##@ Testing
+
+.PHONY: test
+test: ## Test the complete codebase
+	mix workspace.run -t test -- --warnings-as-errors
+
+.PHONY: coverage
+coverage: ## Generates coverage report
+	-mix workspace.run -t test -- --cover --trace
+	mix workspace.test.coverage || true
+	genhtml artifacts/coverage/coverage.lcov -o artifacts/coverage --flat --prefix ${PWD}
+	open artifacts/coverage/index.html
+
+##@ Documentation
+
+.PHONY: docs
+docs: ## Generates docs for the complete workspace
+	mix workspace.run -t docs
+
 ##@ Linting
+
+.PHONY: compile-warnings
+compile-warnings: ## Checks that there are no compilation warnings
+	mix workspace.run -t compile -- --force --wanrings-as-errors
+
+.PHONY: check
+check: ## Runs workspace checks
+	mix workspace.check
+
+.PHONY: format
+format: ## Format the workspace
+	mix workspace.run -t format
+
+.PHONY: format-check
+format-check: ## Checks elixir workspace projects format
+	mix workspace.run -t format -- --check-formatted
+
+.PHONY: doctor
+doctor: ## Runs doctor on all projects
+	mix workspace.run -t doctor --exclude workspace_new -- --failed --config-file $(PWD)/assets/doctor.exs
+
+.PHONY: credo
+credo: ## Runs credo on all projects
+	mix workspace.run -t credo --exclude workspace_new --exclude cascade -- --config-file $(PWD)/assets/credo.exs --strict
+
+.PHONY: xref
+xref: ## Ensures that no cycles are present
+	mix workspace.run -t xref -- graph --format cycles --fail-above 0
 
 .PHONY: spell
 spell: ## Run cspell on project
@@ -35,40 +93,13 @@ spell: ## Run cspell on project
 	@echo "=> spell-checking docs"
 	@cspell lint -c assets/cspell/cspell.json --gitignore **/*.md *.md
 
-.PHONY: format
-format: ## Format the workspace
-	mix workspace.run -t format
+LINT_CI_DEPS := check compile-warnings format-check xref test
 
-.PHONY: doctor
-doctor: ## Runs doctor on all projects
-	mix workspace.run -t doctor --exclude workspace_new -- --failed --config-file $(PWD)/assets/doctor.exs
+.PHONY: ci
+ci: $(LINT_CI_DEPS) ## Run CI linters suite on project
+	@mix workspace.test.coverage
 
-.PHONY: credo
-credo: ## Runs credo on all projects
-	mix workspace.run -t credo --exclude workspace_new --exclude cascade -- --config-file $(PWD)/assets/credo.exs --strict
+LINT_FULL_DEPS := $(LINT_CI_DEPS) doctor credo spell
 
 .PHONY: lint
-lint: ## Run full linters suite on project
-	mix workspace.check
-	mix workspace.run -t format -- --check-formatted
-	mix workspace.run -t xref -- graph --format cycles --fail-above 0
-	mix workspace.run -t credo --exclude workspace_new --exclude cascade -- --config-file $(PWD)/assets/credo.exs --strict
-
-##@ Documentation
-
-.PHONY: docs
-docs: ## Generates docs for the complete workspace
-	mix workspace.run -t docs
-
-##@ Testing
-
-.PHONY: test
-test: ## Test the complete codebase
-	mix workspace.run -t test
-
-.PHONY: coverage
-coverage: ## Generates coverage report
-	-mix workspace.run -t test -- --cover --trace
-	mix workspace.test.coverage || true
-	genhtml artifacts/coverage/coverage.lcov -o artifacts/coverage --flat --prefix ${PWD}
-	open artifacts/coverage/index.html
+lint: $(LINT_FULL_DEPS) ## Run the full linters suite
