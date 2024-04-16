@@ -35,6 +35,11 @@ new-install: ## Installs the latest workspace.new locally
 	mix archive.uninstall --force workspace_new
 	cd workspace_new && MIX_ENV=prod mix do archive.build, archive.install --force
 
+.PHONY: clean
+clean: ## Cleans build artifacts
+	@echo "==> Removing artifacts"
+	rm -rf artifacts/
+
 ##@ Testing
 
 .PHONY: test
