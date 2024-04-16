@@ -15,7 +15,7 @@ defmodule Workspace.Graph do
   ## Usage
 
   This module provides `with_digraph/3` and `digraph/2` for constructing the
-  workspace graph from a workspace, and a set of helper utilites operating
+  workspace graph from a workspace, and a set of helper utilities operating
   on a graph.
 
       workspace = Workspace.new!("/path/to/workspace")
