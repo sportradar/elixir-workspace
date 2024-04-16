@@ -23,9 +23,17 @@ defmodule CliOptions.Schema.Validation do
 
   @type cli_option_type :: :string | :boolean | :integer | :float | :counter | :atom
 
+  @doc """
+  Returns the valid types.
+  """
   @spec valid_types() :: [cli_option_type(), ...]
   def valid_types, do: @valid_types
 
+  @doc """
+  Validates that the given keyword list is a valid schema.
+
+  Raises an `ArgumentError` if the schema is invalid.
+  """
   @spec validate!(schema :: keyword()) :: keyword()
   def validate!(schema) do
     for {option, opts} <- schema do

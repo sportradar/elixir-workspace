@@ -3,6 +3,7 @@ defmodule CliOptions.Parser do
 
   @type parsed_options :: {keyword(), [String.t()], [String.t()]}
 
+  @doc false
   @spec parse(argv :: [String.t()], schema :: CliOptions.Schema.t()) ::
           {:ok, parsed_options()} | {:error, String.t()}
   def parse(argv, %CliOptions.Schema{} = schema) do
