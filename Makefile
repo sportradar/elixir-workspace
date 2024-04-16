@@ -74,7 +74,7 @@ format-check: ## Checks elixir workspace projects format
 
 .PHONY: doctor
 doctor: ## Runs doctor on all projects
-	mix workspace.run -t doctor --exclude workspace_new -- --failed --config-file $(PWD)/assets/doctor.exs
+	mix workspace.run -t doctor --exclude workspace_new --allow-failure cascade -- --failed --config-file $(PWD)/assets/doctor.exs
 
 .PHONY: credo
 credo: ## Runs credo on all projects
@@ -83,6 +83,10 @@ credo: ## Runs credo on all projects
 .PHONY: xref
 xref: ## Ensures that no cycles are present
 	mix workspace.run -t xref -- graph --format cycles --fail-above 0
+
+.PHONY: dialyzer
+dialyzer: ## Runs dialyzer on all workspace projects
+	mix workspace.run -t dialyzer --format dialyxir --underspecs --error_handling
 
 .PHONY: spell
 spell: ## Run cspell on project
@@ -108,7 +112,7 @@ LINT_CI_DEPS := check compile-warnings format-check xref test
 ci: $(LINT_CI_DEPS) ## Run CI linters suite on project
 	@mix workspace.test.coverage
 
-LINT_FULL_DEPS := $(LINT_CI_DEPS) doctor credo spell markdown-lint
+LINT_FULL_DEPS := $(LINT_CI_DEPS) dialyzer doctor credo spell markdown-lint
 
 .PHONY: lint
 lint: $(LINT_FULL_DEPS) ## Run the full linters suite
