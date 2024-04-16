@@ -47,8 +47,7 @@ defmodule Workspace.MixWorkspace do
       credo: [
         "workspace.run -t credo --exclude workspace_new --exclude cascade -- --config-file #{credo_config} --strict"
       ],
-      # "deps.get": ["workspace.run -t deps.get"],
-      test: ["workspace.run -t test -- --cover"],
+      test: ["workspace.run -t test --affected -- --cover"],
       "test.coverage": ["workspace.test.coverage"]
     ]
   end
