@@ -41,6 +41,10 @@ new-install: ## Installs the latest workspace.new locally
 test: ## Test the complete codebase
 	mix workspace.run -t test -- --warnings-as-errors
 
+.PHONY: test-cover
+test-cover: ## Test the complete codebase with cover enabled
+	mix workspace.run -t test -- --cover --warnings-as-errors
+
 .PHONY: coverage
 coverage: ## Generates coverage report
 	-mix workspace.run -t test -- --cover --trace
@@ -108,7 +112,7 @@ markdown-lint: ## Lints `markdown` files
 
 ##@ Linting suites
 
-LINT_CI_DEPS := check compile-warnings format-check xref test
+LINT_CI_DEPS := check compile-warnings format-check xref test-cover
 
 .PHONY: ci
 ci: $(LINT_CI_DEPS) ## Run CI linters suite on project
