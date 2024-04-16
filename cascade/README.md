@@ -5,13 +5,13 @@ Generate code from templates.
 `Cascade` provides an easy to use interface for generating code from a set of
 templates. It's main features are:
 
-- **Templates as code** - all template files are evaluated using `EEx`, the actual
-generation code can be modified by overriding the default implementation. 
-- **`mix cascade`** - a helper mix task for generating code from a template, it
-supports parsing of CLI options, and automatically generated help message from
-the template file.
-- **`mix cascade.help`** - automatically generate help for your custom templates,
-similar to `mix help`
+  - *Templates as code* - all template files are evaluated using `EEx`, the actual
+  generation code can be modified by overriding the default implementation.
+  - `mix cascade` - a helper mix task for generating code from a template, it
+  supports parsing of CLI options, and automatically generated help message from
+  the template file.
+  - `mix cascade.help` - automatically generate help for your custom templates,
+  similar to `mix help`
 
 ## Usage
 
@@ -25,8 +25,9 @@ $ mix cascade template -- --name my_template
 
 This generates two files:
 
-- The actual template code, which by default is located under `lib/cascade/templates/{template_name}`
-- A sample template `README.md` file under `templates/{template_name}`
+  - The actual template code, which by default is located under
+  `lib/cascade/templates/{template_name}`
+  - A sample template `README.md` file under `templates/{template_name}`
 
 If you now run `mix cascade.help` you will see the newly added template
 in the list of available templates:
@@ -62,16 +63,16 @@ $ mix cascade.help my_template
 
 You are now free to implement your actual template logic. You are able to:
 
-- Add any asset under the the template's assets folder (in our example
-`templates/my_template`).
-- The assets can be plain files or `EEx` templates. In the latter case
-they will be evaluated during generation and properly expanded.
-- Define a set of CLI arguments that your template expected. `mix cascade`
-will validate these options automatically. Notice that by default the
-`CliOptions` package is used for defining the CLI arguments.
-- Implement any custom logic in your template's module.
-- Have automatically generated docs for your template through the
-`mix cascade.help` task.
+  - Add any asset under the the template's assets folder (in our example
+  `templates/my_template`).
+  - The assets can be plain files or `EEx` templates. In the latter case
+  they will be evaluated during generation and properly expanded.
+  - Define a set of CLI arguments that your template expected. `mix cascade`
+  will validate these options automatically. Notice that by default the
+  `CliOptions` package is used for defining the CLI arguments.
+  - Implement any custom logic in your template's module.
+  - Have automatically generated docs for your template through the
+  `mix cascade.help` task.
 
 For more details check the `Cascade.Template` docs.
 
@@ -91,4 +92,3 @@ end
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at <https://hexdocs.pm/cascade>.
-

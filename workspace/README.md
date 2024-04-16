@@ -11,25 +11,25 @@
 
 Monorepos on big codebases offer several potential benefits:
 
-- **Code Sharing** - Developers can easily share code and components across
-projects within the same repository, promoting code reuse and reducing duplication.
-- **Consistent Versioning** - All components in the monorepo can share the same
-versioning scheme, ensuring consistency and compatibility.
-- **Simplified Dependency Management** - Since all dependencies are managed
-within a single repository, dependency management can be more straightforward
-compared to managing dependencies across multiple repositories.
-- **Streamlined Build and Continuous Integration** - With all code in one place,
-build processes and continuous integration (CI) pipelines can be more efficient,
-as changes to any part of the codebase can trigger only the CI steps **affected
-by this change**. Additionally any change to any component is immediately tested
-across all packages using the modified component.
-- **Improved Collaboration** - Developers can more easily collaborate on different
-parts of the system since all code is accessible within the same repository.
-- **Modular Design and Architectural Consistency** - With all related projects and
-components housed together, developers are incentivized to create modular, reusable
-code that adheres to consistent architectural patterns. This promotes better
-design practices and helps maintain a cohesive architecture across the entire
-codebase.
+  * **Code Sharing** - Developers can easily share code and components across
+  projects within the same repository, promoting code reuse and reducing duplication.
+  * **Consistent Versioning** - All components in the monorepo can share the same
+  versioning scheme, ensuring consistency and compatibility.
+  * **Simplified Dependency Management** - Since all dependencies are managed
+  within a single repository, dependency management can be more straightforward
+  compared to managing dependencies across multiple repositories.
+  * **Streamlined Build and Continuous Integration** - With all code in one place,
+  build processes and continuous integration (CI) pipelines can be more efficient,
+  as changes to any part of the codebase can trigger only the CI steps **affected
+  by this change**. Additionally any change to any component is immediately tested
+  across all packages using the modified component.
+  * **Improved Collaboration** - Developers can more easily collaborate on different
+  parts of the system since all code is accessible within the same repository.
+  * **Modular Design and Architectural Consistency** - With all related projects and
+  components housed together, developers are incentivized to create modular, reusable
+  code that adheres to consistent architectural patterns. This promotes better
+  design practices and helps maintain a cohesive architecture across the entire
+  codebase.
 
 ## Overview
 
@@ -40,18 +40,20 @@ split into reusable packages.
 
 ### Core features
 
-* **Non intrusive** - zero dependencies for your elixir projects.
-* **Run tasks efficiently** - includes a `mix workspace.run` command for
-orchestrating where each task will be executed; test only affected projects
-by a change, format only modified projects, or partition your executions,
-reducing significantly CI times.
-* **Enforced boundaries** - tag your projects and enforce boundaries
-between projects, facilitating architectural consistency.
-* **Consistency Checks** - includes a `mix workspace.check` command
-for linting your workspace; ensure that all projects have the same versions
-of external dependencies, or that all projects have valid maintainers.
-* **Arbitrary folder structure** - you can create your projects wherever you
-wish under the workspace root, no assumptions are made.
+The core features of `Workspace` are:
+
+  * **Non intrusive** - zero dependencies for your elixir projects.
+  * **Run tasks efficiently** - includes a `mix workspace.run` command for
+  orchestrating where each task will be executed; test only affected projects
+  by a change, format only modified projects, or partition your executions,
+  reducing significantly CI times.
+  * **Enforced boundaries** - tag your projects and enforce boundaries
+  between projects, facilitating architectural consistency.
+  * **Consistency Checks** - includes a `mix workspace.check` command
+  for linting your workspace; ensure that all projects have the same versions
+  of external dependencies, or that all projects have valid maintainers.
+  * **Arbitrary folder structure** - you can create your projects wherever you
+  wish under the workspace root, no assumptions are made.
 
 ### The workspace folder structure
 
@@ -153,10 +155,10 @@ all (or some) of them is a key feature of `Workspace`.
 
 `mix workspace.run` allows you to:
 
-- Run a task against all or a subset of projects.
-- Run tasks only on projects based on their status and workspace graph topology.
-- Filter projects based on tags.
-- Partitioning runs for parallelizing CI steps.
+  * Run a task against all or a subset of projects.
+  * Run tasks only on projects based on their status and workspace graph topology.
+  * Filter projects based on tags.
+  * Partitioning runs for parallelizing CI steps.
 
 For example:
 
@@ -190,12 +192,12 @@ All checks implement the `Workspace.Check` behaviour and can be configured
 in your `.workspace.exs` file. `Workspace` comes with some default checks
 that among other, allow you to:
 
-* Ensure that [specific dependencies are set](`Workspace.Checks.EnsureDependencies`)
-on all projects, e.g. `ex_doc`.
-* Ensure that external [dependencies versions match the expected ones](`Workspace.Checks.DependenciesVersion`).
-* Verify that [no forbidden dependencies are defined](`Workspace.Checks.ForbiddenDeps`).
-* [Validate arbitrarily](`Workspace.Checks.ValidateConfig`) the projects' config objects.
-* [Enforce boundaries](`Workspace.Checks.EnforceBoundaries`) between workspace projects.
+  * Ensure that [specific dependencies are set](`Workspace.Checks.EnsureDependencies`)
+  on all projects, e.g. `ex_doc`.
+  * Ensure that external [dependencies versions match the expected ones](`Workspace.Checks.DependenciesVersion`).
+  * Verify that [no forbidden dependencies are defined](`Workspace.Checks.ForbiddenDeps`).
+  * [Validate arbitrarily](`Workspace.Checks.ValidateConfig`) the projects' config objects.
+  * [Enforce boundaries](`Workspace.Checks.EnforceBoundaries`) between workspace projects.
 
 You could also implement your own checks, incorporating any custom validation
 logic you may wish.

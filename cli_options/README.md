@@ -109,5 +109,5 @@ be found at <https://hexdocs.pm/cli_options>.
 
 ## Acknowledgements
 
-- The awesome [`clap`](https://docs.rs/clap/latest/clap/) Rust CLI parser.
-- [`nimble_options`](https://github.com/dashbitco/nimble_options).
+  * The awesome [`clap`](https://docs.rs/clap/latest/clap/) Rust CLI parser.
+  * [`nimble_options`](https://github.com/dashbitco/nimble_options).
