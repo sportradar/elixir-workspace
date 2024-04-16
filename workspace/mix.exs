@@ -68,6 +68,7 @@ defmodule Workspace.MixProject do
   defp docs do
     [
       main: "readme",
+      canonical: "http://hexdocs.pm/#{@app}",
       output: "../artifacts/docs/workspace",
       formatters: ["html"],
       source_url_pattern: "#{@repo_url}/blob/#{@app}/v#{@version}/#{@app}/%{path}#L%{line}",

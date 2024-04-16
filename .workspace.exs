@@ -145,6 +145,23 @@
     ],
     [
       module: Workspace.Checks.ValidateConfig,
+      description: "all projects must have the :canonical option properly set",
+      opts: [
+        validate: fn config ->
+          canonical = get_in(config, [:docs, :canonical])
+          expected = "http://hexdocs.pm/#{config[:app]}"
+
+          if canonical == expected do
+            {:ok, ":canonical properly set to #{canonical}"}
+          else
+            {:error,
+             "invalid :canonical value, expected: #{expected}, got: #{inspect(canonical)}"}
+          end
+        end
+      ]
+    ],
+    [
+      module: Workspace.Checks.ValidateConfig,
       description: "common files must be in docs extras",
       opts: [
         validate: fn config ->
