@@ -93,13 +93,22 @@ spell: ## Run cspell on project
 	@echo "=> spell-checking docs"
 	@cspell lint -c assets/cspell/cspell.json --gitignore **/*.md *.md
 
+.PHONY: markdown-lint
+markdown-lint: ## Lints `markdown` files
+	markdownlint \
+		-c assets/markdownlint.yaml \
+		-i artifacts/ \
+		-i deps/ \
+		-i _build/ \
+		**/*.md
+
 LINT_CI_DEPS := check compile-warnings format-check xref test
 
 .PHONY: ci
 ci: $(LINT_CI_DEPS) ## Run CI linters suite on project
 	@mix workspace.test.coverage
 
-LINT_FULL_DEPS := $(LINT_CI_DEPS) doctor credo spell
+LINT_FULL_DEPS := $(LINT_CI_DEPS) doctor credo spell markdown-lint
 
 .PHONY: lint
 lint: $(LINT_FULL_DEPS) ## Run the full linters suite
