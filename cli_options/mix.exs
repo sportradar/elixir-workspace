@@ -21,10 +21,13 @@ defmodule CliOptions.MixProject do
         export: "cli_options",
         output: "../artifacts/coverdata/cli_options"
       ],
-      docs: docs(),
       package: [
         maintainers: ["Panagiotis Nezis"]
-      ]
+      ],
+
+      # Docs
+      name: "CliOptions",
+      docs: docs()
     ]
   end
 

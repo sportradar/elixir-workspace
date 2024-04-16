@@ -17,7 +17,6 @@ defmodule WorkspaceNew.MixProject do
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
       preferred_cli_env: [docs: :docs],
-      docs: docs(),
       test_coverage: [
         threshold: 100,
         export: "workspace_new",
@@ -26,7 +25,11 @@ defmodule WorkspaceNew.MixProject do
       package: [
         maintainers: ["Panagiotis Nezis"],
         files: ~w(lib template mix.exs README.md)
-      ]
+      ],
+
+      # Docs
+      name: "WorkspaceNew",
+      docs: docs()
     ]
   end
 

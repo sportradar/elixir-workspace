@@ -4,8 +4,8 @@ defmodule Workspace.MixProject do
   def project do
     [
       app: :workspace,
-      description: "tooling for managing elixir mono-repos",
       version: "0.1.0",
+      description: "tooling for managing elixir mono-repos",
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       package: [
@@ -21,6 +21,9 @@ defmodule Workspace.MixProject do
         export: "workspace",
         output: "../artifacts/coverdata/workspace"
       ],
+
+      # Docs
+      name: "Workspace",
       docs: docs()
     ]
   end

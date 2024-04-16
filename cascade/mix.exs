@@ -11,7 +11,6 @@ defmodule Cascade.MixProject do
       deps: deps(),
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
-      docs: docs(),
       dialyzer: [
         plt_add_apps: [:eex, :mix]
       ],
@@ -22,7 +21,11 @@ defmodule Cascade.MixProject do
       ],
       package: [
         maintainers: ["Panagiotis Nezis"]
-      ]
+      ],
+
+      # Docs
+      name: "Cascade",
+      docs: docs()
     ]
   end
 

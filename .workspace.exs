@@ -17,6 +17,19 @@
     ],
     [
       module: Workspace.Checks.ValidateConfig,
+      description: "all projects must have a name set",
+      opts: [
+        validate: fn config ->
+          case config[:name] do
+            nil -> {:error, "no :name set"}
+            name when is_binary(name) -> {:ok, "name set to #{name}"}
+            other -> {:error, "description must be binary, got: #{inspect(other)}"}
+          end
+        end
+      ]
+    ],
+    [
+      module: Workspace.Checks.ValidateConfig,
       description: "all projects must have a maintainer set",
       opts: [
         validate: fn config ->
