@@ -6,26 +6,30 @@ defmodule Cascade.MixProject do
       app: :cascade,
       version: "0.1.0",
       elixir: "~> 1.15",
-      description: "generate code from templates",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
-      dialyzer: [
-        plt_add_apps: [:eex, :mix]
-      ],
+
+      # Tests
       test_coverage: [
         threshold: 100,
         export: "cascade",
         output: "../artifacts/coverdata/cascade"
       ],
-      package: [
-        maintainers: ["Panagiotis Nezis"]
-      ],
+
+      # Hex
+      description: "Generate code from templates",
+      package: package(),
 
       # Docs
       name: "Cascade",
-      docs: docs()
+      docs: docs(),
+
+      # Linters
+      dialyzer: [
+        plt_add_apps: [:eex, :mix]
+      ]
     ]
   end
 
@@ -42,6 +46,12 @@ defmodule Cascade.MixProject do
       {:credo, "== 1.7.5", [only: [:dev, :test], runtime: false]},
       {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
       {:doctor, "~> 0.21.0", [only: :dev, runtime: false]}
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["Panagiotis Nezis"]
     ]
   end
 

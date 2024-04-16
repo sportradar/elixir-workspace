@@ -9,21 +9,23 @@ defmodule CliOptions.MixProject do
     [
       app: @app,
       version: @version,
-      description: @description,
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
       deps: deps(),
+
+      # Tests
       test_coverage: [
         threshold: 100,
         export: "cli_options",
         output: "../artifacts/coverdata/cli_options"
       ],
-      package: [
-        maintainers: ["Panagiotis Nezis"]
-      ],
+
+      # Hex
+      description: @description,
+      package: package(),
 
       # Docs
       name: "CliOptions",
@@ -44,6 +46,12 @@ defmodule CliOptions.MixProject do
       {:credo, "== 1.7.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
       {:doctor, "~> 0.21.0", only: :dev, runtime: false}
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["Panagiotis Nezis"]
     ]
   end
 

@@ -9,7 +9,6 @@ defmodule WorkspaceNew.MixProject do
   def project do
     [
       app: :workspace_new,
-      description: "workspace generator",
       version: "0.1.0",
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
@@ -17,15 +16,17 @@ defmodule WorkspaceNew.MixProject do
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
       preferred_cli_env: [docs: :docs],
+
+      # Tests
       test_coverage: [
         threshold: 100,
         export: "workspace_new",
         output: "../artifacts/coverdata/workspace_new"
       ],
-      package: [
-        maintainers: ["Panagiotis Nezis"],
-        files: ~w(lib template mix.exs README.md)
-      ],
+
+      # Hex
+      description: "A mix task for scaffolding empty workspace projects",
+      package: package(),
 
       # Docs
       name: "WorkspaceNew",
@@ -43,6 +44,13 @@ defmodule WorkspaceNew.MixProject do
   defp deps do
     [
       {:ex_doc, "== 0.32.0", only: :docs}
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["Panagiotis Nezis"],
+      files: ~w(lib template mix.exs README.md)
     ]
   end
 

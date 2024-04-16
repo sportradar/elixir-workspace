@@ -5,26 +5,30 @@ defmodule Workspace.MixProject do
     [
       app: :workspace,
       version: "0.1.0",
-      description: "tooling for managing elixir mono-repos",
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
-      package: [
-        maintainers: ["Panagiotis Nezis"]
-      ],
       deps: deps(),
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
-      dialyzer: [plt_add_apps: [:mix]],
       elixirc_paths: elixirc_paths(Mix.env()),
+
+      # Tests
       test_coverage: [
         threshold: 98,
         export: "workspace",
         output: "../artifacts/coverdata/workspace"
       ],
 
+      # Hex
+      description: "Tools for managing elixir mono-repos",
+      package: package(),
+
       # Docs
       name: "Workspace",
-      docs: docs()
+      docs: docs(),
+
+      # Linters
+      dialyzer: [plt_add_apps: [:mix]]
     ]
   end
 
@@ -35,7 +39,12 @@ defmodule Workspace.MixProject do
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
+  defp package do
+    [
+      maintainers: ["Panagiotis Nezis"]
+    ]
+  end
+
   defp deps do
     [
       {:cli_options, path: "../cli_options/"},
