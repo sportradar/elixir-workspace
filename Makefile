@@ -54,7 +54,7 @@ coverage: ## Generates coverage report
 docs: ## Generates docs for the complete workspace
 	mix workspace.run -t docs
 
-##@ Linting
+##@ Linting steps
 
 .PHONY: compile-warnings
 compile-warnings: ## Checks that there are no compilation warnings
@@ -105,6 +105,8 @@ markdown-lint: ## Lints `markdown` files
 		-i deps/ \
 		-i _build/ \
 		**/*.md
+
+##@ Linting suites
 
 LINT_CI_DEPS := check compile-warnings format-check xref test
 
