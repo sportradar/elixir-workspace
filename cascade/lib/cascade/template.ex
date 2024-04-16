@@ -139,6 +139,7 @@ defmodule Cascade.Template do
   @doc """
   Generates a template
   """
+  @spec generate(template :: atom(), output_path :: String.t(), opts :: keyword()) :: :ok
   def generate(template, output_path, opts) do
     output_path = Path.expand(output_path)
 

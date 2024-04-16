@@ -15,6 +15,15 @@ defmodule Cascade do
     Enum.map(template_modules, fn module -> {module.name(), module} end)
   end
 
+  @doc """
+  Generate the code associated to the given template `name`.
+
+  `root_path` is expected to be the root directory under which the template
+  will be generated. `opts` can be an arbitrary keyword list corresponding
+  to the command line options passed to the `mix cascade` task.
+  """
+  @spec generate(name :: atom(), root_path :: String.t(), opts :: keyword()) ::
+          {:error, String.t()} | :ok
   def generate(name, root_path, opts \\ []) do
     with {:ok, template} <- template_from_name(name),
          {:ok, opts} <- validate_template_cli_opts(template, opts) do
