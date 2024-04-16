@@ -9,7 +9,7 @@
         validate: fn config ->
           case config[:description] do
             nil -> {:error, "no :description set"}
-            description when is_binary(description) -> {:ok, ""}
+            description when is_binary(description) -> {:ok, "description set to #{description}"}
             other -> {:error, "description must be binary, got: #{inspect(other)}"}
           end
         end
@@ -35,7 +35,7 @@
       opts: [
         validate: fn config ->
           case config[:elixir] do
-            "~> 1.15" -> {:ok, ""}
+            "~> 1.15" -> {:ok, "minimum elixir version set"}
             other -> {:error, "expected :elixir to be ~> 1.15, got #{other}"}
           end
         end
@@ -85,7 +85,7 @@
       opts: [
         validate: fn config ->
           case config[:docs][:formatters] do
-            ["html"] -> {:ok, ""}
+            ["html"] -> {:ok, "only html present in formatters"}
             other -> {:error, "expected :docs :formatters to be html, got #{inspect(other)}"}
           end
         end
@@ -227,7 +227,7 @@
               {:error, ":output must point to a folder with the same name as the app name"}
 
             true ->
-              {:ok, ""}
+              {:ok, "coverage output set to #{output}"}
           end
         end
       ]
