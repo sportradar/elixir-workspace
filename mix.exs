@@ -37,7 +37,7 @@ defmodule Workspace.MixWorkspace do
   end
 
   defp aliases do
-    credo_config = Path.join(File.cwd!(), ".credo.exs")
+    credo_config = Path.join(File.cwd!(), "assets/credo.exs")
 
     [
       format: [
