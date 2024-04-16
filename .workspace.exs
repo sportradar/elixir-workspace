@@ -106,6 +106,28 @@
     ],
     [
       module: Workspace.Checks.ValidateConfig,
+      description: "all projects must have a valid source_url_pattern",
+      opts: [
+        validate: fn config ->
+          url_pattern = get_in(config, [:docs, :source_url_pattern])
+
+          repo_url = "https://github.com/pnezis/workspace"
+          app = Keyword.fetch!(config, :app)
+          version = Keyword.fetch!(config, :version)
+
+          expected_url = "#{repo_url}/blob/#{app}/v#{version}/#{app}/%{path}#L%{line}"
+
+          if url_pattern == expected_url do
+            {:ok, ":source_url_pattern correctly set to #{url_pattern}"}
+          else
+            {:error,
+             "invalid :source_url_pattern, expected #{expected_url}, got: #{inspect(url_pattern)}"}
+          end
+        end
+      ]
+    ],
+    [
+      module: Workspace.Checks.ValidateConfig,
       description: "common files must be in docs extras",
       opts: [
         validate: fn config ->

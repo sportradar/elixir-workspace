@@ -4,6 +4,7 @@ defmodule CliOptions.MixProject do
   @app :cli_options
   @version "0.1.0"
   @description "An opinionated cli options parser"
+  @repo_url "https://github.com/pnezis/workspace"
 
   def project do
     [
@@ -60,6 +61,7 @@ defmodule CliOptions.MixProject do
       main: "readme",
       output: "../artifacts/docs/cli_options",
       formatters: ["html"],
+      source_url_pattern: "#{@repo_url}/blob/#{@app}/v#{@version}/#{@app}/%{path}#L%{line}",
       markdown_processor:
         {FancyFences,
          [

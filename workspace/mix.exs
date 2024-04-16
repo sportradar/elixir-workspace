@@ -1,10 +1,14 @@
 defmodule Workspace.MixProject do
   use Mix.Project
 
+  @app :workspace
+  @version "0.1.0"
+  @repo_url "https://github.com/pnezis/workspace"
+
   def project do
     [
-      app: :workspace,
-      version: "0.1.0",
+      app: @app,
+      version: @version,
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -65,6 +69,7 @@ defmodule Workspace.MixProject do
       main: "readme",
       output: "../artifacts/docs/workspace",
       formatters: ["html"],
+      source_url_pattern: "#{@repo_url}/blob/#{@app}/v#{@version}/#{@app}/%{path}#L%{line}",
       before_closing_body_tag: &before_closing_body_tag/1,
       extras: [
         "README.md": [title: "Overview"],
