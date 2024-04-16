@@ -34,7 +34,8 @@ defmodule WorkspaceNew.MixProject do
 
       # Docs
       name: "WorkspaceNew",
-      docs: docs()
+      docs: docs(),
+      source_url: @repo_url
     ]
   end
 

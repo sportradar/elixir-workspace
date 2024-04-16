@@ -30,6 +30,7 @@ defmodule Workspace.MixProject do
       # Docs
       name: "Workspace",
       docs: docs(),
+      source_url: @repo_url,
 
       # Linters
       dialyzer: [plt_add_apps: [:mix]]

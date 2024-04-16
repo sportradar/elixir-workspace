@@ -30,7 +30,8 @@ defmodule CliOptions.MixProject do
 
       # Docs
       name: "CliOptions",
-      docs: docs()
+      docs: docs(),
+      source_url: @repo_url
     ]
   end
 

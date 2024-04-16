@@ -29,6 +29,7 @@ defmodule Cascade.MixProject do
       # Docs
       name: "Cascade",
       docs: docs(),
+      source_url: @repo_url,
 
       # Linters
       dialyzer: [
