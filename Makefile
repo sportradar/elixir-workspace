@@ -70,6 +70,7 @@ compile-warnings: ## Checks that there are no compilation warnings
 	mix workspace.run -t compile -- --force --wanrings-as-errors
 
 .PHONY: check
+check: export WORKSPACE_DEV := true
 check: ## Runs workspace checks
 	mix workspace.check
 
@@ -82,10 +83,12 @@ format-check: ## Checks elixir workspace projects format
 	mix workspace.run -t format -- --check-formatted
 
 .PHONY: doctor
+doctor: export WORKSPACE_DEV := true
 doctor: ## Runs doctor on all projects
 	mix workspace.run -t doctor --exclude workspace_new --allow-failure cascade -- --failed --config-file $(PWD)/assets/doctor.exs
 
 .PHONY: credo
+credo: export WORKSPACE_DEV := true
 credo: ## Runs credo on all projects
 	mix workspace.run -t credo --exclude workspace_new --exclude cascade -- --config-file $(PWD)/assets/credo.exs --strict
 
@@ -94,8 +97,9 @@ xref: ## Ensures that no cycles are present
 	mix workspace.run -t xref -- graph --format cycles --fail-above 0
 
 .PHONY: dialyzer
+dialyzer: export WORKSPACE_DEV := true
 dialyzer: ## Runs dialyzer on all workspace projects
-	mix workspace.run -t dialyzer --format dialyxir --underspecs --error_handling
+	mix workspace.run -t dialyzer -- --format dialyxir --underspecs --error_handling
 
 .PHONY: spell
 spell: ## Run cspell on project
