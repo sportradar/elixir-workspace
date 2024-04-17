@@ -56,11 +56,11 @@ defmodule Workspace.MixProject do
       {:nimble_options, "== 1.1.0"},
       {:jason, "~> 1.4.1", optional: true},
       {:ex_doc, "== 0.32.0", only: :dev, runtime: false},
-      linter_deps()
+      maybe_linter_deps()
     ])
   end
 
-  defp linter_deps do
+  defp maybe_linter_deps do
     case System.get_env("WORKSPACE_DEV") do
       "true" ->
         [
