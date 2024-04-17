@@ -50,7 +50,7 @@ defmodule Cascade.MixProject do
       {:ex_doc, "== 0.32.0", only: :dev, runtime: false},
       {:credo, "== 1.7.5", [only: [:dev, :test], runtime: false]},
       {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
-      {:doctor, "~> 0.21.0", [only: :dev, runtime: false]}
+      {:doctor, "== 0.21.0", [only: :dev, runtime: false]}
     ]
   end
 

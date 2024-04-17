@@ -66,7 +66,9 @@
         deps: [
           # add dependencies in strict alphabetical order
           {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
-          {:ex_doc, "== 0.32.0", no_options_check: true}
+          {:ex_doc, "== 0.32.0", no_options_check: true},
+          {:credo, "== 1.7.5", no_options_check: true},
+          {:doctor, "== 0.21.0", no_options_check: true}
         ]
       ]
     ],
