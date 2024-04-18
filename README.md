@@ -1,6 +1,16 @@
 # Overview
 
-This repository holds the following projects:
+A `workspace` holding the `workspace`.
+
+`Workspace` provides a set of tools for working with multiple projects under
+the same git repo. Using path dependencies between the projects and the
+provided tools you can effectively work on massive codebases properly
+split into reusable packages.
+
+## Folder Structure
+
+This repository is structured as a workspace, with all internal packages as
+top-level folders. The following packages are included:
 
   * [`workspace`](workspace/README.md) - A toolbox for managing elixir monorepos
   * [`workspace_new`](workspace_new/README.md) - Workspace installer
