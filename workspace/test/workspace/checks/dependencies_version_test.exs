@@ -8,11 +8,11 @@ defmodule Workspace.Checks.DependenciesVersionTest do
         module: DependenciesVersion,
         opts: [
           deps: [
-            {:foo, "== 0.1", only: :dev},
-            {:bar, "== 0.2", only: :dev, no_options_check: true},
-            {:baz, "== 0.3", only: :dev, no_options_check: [:package_a]},
-            {:ban, "== 0.4"},
-            {:git, github: "test/test"}
+            foo: [version: "== 0.1", options: [only: :dev]],
+            bar: [version: "== 0.2"],
+            baz: [version: "== 0.3"],
+            ban: [version: "== 0.4"],
+            git: [version: [github: "test/test"]]
           ]
         ]
       )
@@ -65,89 +65,27 @@ defmodule Workspace.Checks.DependenciesVersionTest do
     assert_check_status(results, :package_c, :error)
     assert_check_status(results, :package_d, :error)
 
-    expected_package_a = [
-      "all dependencies versions match the expected ones"
+    assert_plain_result(results, :package_a, "all dependencies versions match the expected ones")
+
+    expected_b = [
+      "version mismatches for the following dependencies: [:foo]",
+      "→ :foo expected [version: \"== 0.1\", options: [only: :dev]] got {\"== 0.1\", [only: :test]}"
     ]
 
-    assert_formatted_result(results, :package_a, expected_package_a)
+    assert_plain_result(results, :package_b, expected_b)
 
-    expected_package_b = [
-      "version mismatches for the following dependencies: ",
-      :yellow,
-      "[:foo, :baz]",
-      :reset,
-      "\n",
-      "    → ",
-      :yellow,
-      ":foo",
-      :reset,
-      " expected ",
-      :light_cyan,
-      "{\"== 0.1\", [only: :dev], []}",
-      :reset,
-      " got ",
-      :light_cyan,
-      "{\"== 0.1\", [only: :test]}",
-      :reset,
-      "\n",
-      "    → ",
-      :yellow,
-      ":baz",
-      :reset,
-      " expected ",
-      :light_cyan,
-      "{\"== 0.3\", [only: :dev], [no_options_check: [:package_a]]}",
-      :reset,
-      " got ",
-      :light_cyan,
-      "{\"== 0.3\", [only: :test]}",
-      :reset
+    expected_c = [
+      "version mismatches for the following dependencies: [:ban]",
+      "→ :ban expected [version: \"== 0.4\"] got {\"== 0.3\", []}"
     ]
 
-    assert_formatted_result(results, :package_b, expected_package_b)
+    assert_plain_result(results, :package_c, expected_c)
 
-    expected_package_c = [
-      "version mismatches for the following dependencies: ",
-      :yellow,
-      "[:ban]",
-      :reset,
-      "\n",
-      "    → ",
-      :yellow,
-      ":ban",
-      :reset,
-      " expected ",
-      :light_cyan,
-      "{\"== 0.4\", [], []}",
-      :reset,
-      " got ",
-      :light_cyan,
-      "{\"== 0.3\", []}",
-      :reset
+    expected_d = [
+      "version mismatches for the following dependencies: [:git]",
+      "→ :git expected [version: [github: \"test/test\"]] got {[github: \"test/test\", branch: \"test\"], []}"
     ]
 
-    assert_formatted_result(results, :package_c, expected_package_c)
-
-    expected_package_d = [
-      "version mismatches for the following dependencies: ",
-      :yellow,
-      "[:git]",
-      :reset,
-      "\n",
-      "    → ",
-      :yellow,
-      ":git",
-      :reset,
-      " expected ",
-      :light_cyan,
-      "{nil, [github: \"test/test\"], []}",
-      :reset,
-      " got ",
-      :light_cyan,
-      "{nil, [branch: \"test\", github: \"test/test\"]}",
-      :reset
-    ]
-
-    assert_formatted_result(results, :package_d, expected_package_d)
+    assert_plain_result(results, :package_d, expected_d)
   end
 end

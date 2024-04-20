@@ -1,12 +1,39 @@
 defmodule Workspace.Checks.DependenciesVersion do
-  hex_dep_tuple = {:or, [{:tuple, [:atom, :string]}, {:tuple, [:atom, :string, :keyword_list]}]}
-  keyword_dep_tuple = {:tuple, [:atom, :keyword_list]}
+  dependencies_schema = [
+    *: [
+      type: :keyword_list,
+      keys: [
+        version: [
+          type: {:or, [:string, :non_empty_keyword_list]},
+          type_doc: "`t:String.t/0` or `t:Keyword.t/0`",
+          doc: """
+          The required version of the package. This can either be a string indicating
+          hex version numbers or a keyword list for git or path dependencies.
+          """,
+          required: true
+        ],
+        options: [
+          type: :keyword_list,
+          doc: """
+          Other options of the dependencies definition that should also match. This is
+          useful in case you to ensure for example that specific dependencies are loaded
+          only in the `:dev` environment. In order to do this, you have to set the `:options`
+          to `[only: :test]`.
+
+          If not set only the version will be checked.
+          """
+        ]
+      ]
+    ]
+  ]
 
   @schema NimbleOptions.new!(
             deps: [
-              type: {:list, {:or, [hex_dep_tuple, keyword_dep_tuple]}},
-              doc: "List of expected dependency versions",
-              required: true
+              type: :non_empty_keyword_list,
+              doc: """
+              Defines the required dependencies versions across the workspace.
+              """,
+              keys: dependencies_schema
             ]
           )
 
@@ -40,13 +67,19 @@ defmodule Workspace.Checks.DependenciesVersion do
     module: Workspace.Checks.DependenciesVersion,
     opts: [
       deps: [
-        # checks both version and options
-        {:ex_doc, "== 0.28.3", only: :dev, runtime: false}
-        # checks only version for all projects
-        {:ex_doc, "== 0.28.3", no_options_check: true}
-        # checks only version for :foo, both version and options
-        # for the other projects
-        {:ex_doc, "== 0.28.3", only: :dev, runtime: false, no_options_check: [:foo]}
+        # checks version and :only and :runtime options
+        ex_doc: [
+          version: "== 0.28.3",
+          options: [:only, :runtime]
+        ],
+        # checks only version
+        ex_doc: [
+          version: "== 0.28.3",
+        ],
+        # checks a git dependency version
+        ex_doc: [
+          version: [github: "elixir-lang/ex_doc"]
+        ]
       ]
     ]
   ]
@@ -58,17 +91,9 @@ defmodule Workspace.Checks.DependenciesVersion do
   @impl Workspace.Check
   def schema, do: @schema
 
-  @check_deps_keys [:no_options_check]
-
   @impl Workspace.Check
   def check(workspace, check) do
-    expected_deps =
-      Keyword.fetch!(check[:opts], :deps)
-      |> parse_deps()
-      |> Enum.map(fn {dep, {version, opts}} ->
-        {check_opts, opts} = Keyword.split(opts, @check_deps_keys)
-        {dep, {version, opts, check_opts}}
-      end)
+    expected_deps = Keyword.fetch!(check[:opts], :deps)
 
     Workspace.Check.check_projects(workspace, check, fn project ->
       check_dependencies_versions(project, expected_deps)
@@ -76,10 +101,10 @@ defmodule Workspace.Checks.DependenciesVersion do
   end
 
   defp check_dependencies_versions(project, expected_deps) do
-    configured_deps = parse_deps(project.config[:deps])
+    project_deps = Enum.map(project.config[:deps], &split_dep_tuple/1)
 
     mismatches =
-      configured_deps
+      project_deps
       |> Enum.map(fn dep -> check_dependency_version(project.app, dep, expected_deps) end)
       |> Enum.filter(fn result ->
         case result do
@@ -90,15 +115,9 @@ defmodule Workspace.Checks.DependenciesVersion do
       |> Enum.map(fn {:error, dep} -> dep end)
 
     case mismatches do
-      [] -> {:ok, check_metadata(mismatches, configured_deps, expected_deps)}
-      mismatches -> {:error, check_metadata(mismatches, configured_deps, expected_deps)}
+      [] -> {:ok, check_metadata(mismatches, project_deps, expected_deps)}
+      mismatches -> {:error, check_metadata(mismatches, project_deps, expected_deps)}
     end
-  end
-
-  defp parse_deps(deps) do
-    deps
-    |> Enum.map(&split_dep_tuple/1)
-    |> Enum.map(fn {dep, version, opts} -> {dep, {version, Enum.sort(opts)}} end)
   end
 
   defp split_dep_tuple(dep) do
@@ -113,45 +132,64 @@ defmodule Workspace.Checks.DependenciesVersion do
         {dep_name, version, []}
 
       {opts} when is_list(opts) ->
-        {dep_name, nil, opts}
+        {version_opts, rest_opts} = Keyword.split(opts, [:git, :path, :github, :branch])
+
+        {dep_name, version_opts, rest_opts}
     end
   end
 
-  defp check_dependency_version(app, {dep, {version, options}}, expected) do
+  defp check_dependency_version(_app, {dep, version, options}, expected) do
     if Keyword.has_key?(expected, dep) do
-      {expected_version, expected_options, check_opts} = expected[dep]
-
-      cond do
-        # if we have a version mismatch it is an error
-        expected_version != version ->
-          {:error, dep}
-
-        # if no_options_check is set we are fine
-        check_opts[:no_options_check] == true ->
-          :ok
-
-        # if no_options_check is set for this project we are fine
-        app in Keyword.get(check_opts, :no_options_check, []) ->
-          :ok
-
-        # options must match if we haven't returned already
-        expected_options != options ->
-          {:error, dep}
-
-        # in any other case we have a match
-        true ->
-          :ok
+      with true <- check_versions_match(version, expected[dep]),
+           true <- maybe_check_options_match(options, expected[dep]) do
+        :ok
+      else
+        false -> {:error, dep}
       end
     else
       :ok
     end
   end
 
+  defp check_versions_match(version, expected) do
+    expected_version = Keyword.fetch!(expected, :version)
+
+    version == expected_version
+  end
+
+  defp maybe_check_options_match(options, expected) do
+    case expected[:options] do
+      nil ->
+        true
+
+      expected_options ->
+        expected_options == options
+    end
+
+    # if Keyword.has_key?(expected, dep) do
+    #   cond do
+    #     # if we have a version mismatch it is an error
+    #     expected[dep][:version] != version ->
+    #       {:error, dep}
+    #
+    #     # # options must match if we haven't returned already
+    #     # expected_options != options ->
+    #     #   {:error, dep}
+    #
+    #     # in any other case we have a match
+    #     true ->
+    #       :ok
+    #   end
+    # else
+    #   :ok
+    # end
+  end
+
   defp check_metadata(mismatches, configured, expected) do
     [
       mismatches: mismatches,
-      configured: Keyword.take(configured, mismatches),
-      expected: Keyword.take(expected, mismatches)
+      configured: Enum.map(configured, fn {name, version, opts} -> {name, {version, opts}} end),
+      expected: expected
     ]
   end
 
