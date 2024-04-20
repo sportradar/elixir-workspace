@@ -65,10 +65,13 @@
       opts: [
         deps: [
           # add dependencies in strict alphabetical order
-          {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
-          {:ex_doc, "== 0.32.0", no_options_check: true},
-          {:credo, "== 1.7.5", no_options_check: true},
-          {:doctor, "== 0.21.0", no_options_check: true}
+          dialyxir: [
+            version: "== 1.4.3",
+            options: [only: [:dev], runtime: false]
+          ],
+          ex_doc: [version: "== 0.32.0"],
+          credo: [version: "== 1.7.5"],
+          doctor: [version: "== 0.21.0"]
         ]
       ]
     ],
