@@ -42,6 +42,7 @@ defmodule Workspace.CheckCase do
 
     plain_result =
       result.module.format_result(result)
+      |> Enum.reject(&is_atom/1)
       |> IO.ANSI.format(false)
       |> :erlang.iolist_to_binary()
       |> String.split("\n")
