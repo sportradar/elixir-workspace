@@ -21,22 +21,7 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
     results = ValidateConfigPath.check(workspace, check)
 
     assert_check_status(results, :foo, :error)
-
-    expected = [
-      "expected ",
-      :light_cyan,
-      ":a_path",
-      :reset,
-      " to be ",
-      :light_cyan,
-      "../../artifacts/test",
-      :reset,
-      ", got: ",
-      :light_cyan,
-      "nil"
-    ]
-
-    assert_formatted_result(results, :foo, expected)
+    assert_plain_result(results, :foo, "expected :a_path to be ../../artifacts/test, got: nil")
   end
 
   test "error if config variable is not correctly configured", %{check: check} do
@@ -47,21 +32,11 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
 
     assert_check_status(results, :foo, :error)
 
-    expected = [
-      "expected ",
-      :light_cyan,
-      ":a_path",
-      :reset,
-      " to be ",
-      :light_cyan,
-      "../../artifacts/test",
-      :reset,
-      ", got: ",
-      :light_cyan,
-      "foo/bar"
-    ]
-
-    assert_formatted_result(results, :foo, expected)
+    assert_plain_result(
+      results,
+      :foo,
+      "expected :a_path to be ../../artifacts/test, got: foo/bar"
+    )
   end
 
   test "error if config variable is not a proper path", %{check: check} do
@@ -72,21 +47,11 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
 
     assert_check_status(results, :foo, :error)
 
-    expected = [
-      "expected ",
-      :light_cyan,
-      ":a_path",
-      :reset,
-      " to be ",
-      :light_cyan,
-      "../../artifacts/test",
-      :reset,
-      ", got: ",
-      :light_cyan,
-      "[1, 2, 3]"
-    ]
-
-    assert_formatted_result(results, :foo, expected)
+    assert_plain_result(
+      results,
+      :foo,
+      "expected :a_path to be ../../artifacts/test, got: [1, 2, 3]"
+    )
   end
 
   test "ok if variable is properly configured", %{check: check} do
@@ -96,17 +61,7 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
     results = ValidateConfigPath.check(workspace, check)
 
     assert_check_status(results, :foo, :ok)
-
-    expected = [
-      :light_cyan,
-      ":a_path",
-      :reset,
-      " is set to ",
-      :light_cyan,
-      "../../artifacts/test"
-    ]
-
-    assert_formatted_result(results, :foo, expected)
+    assert_plain_result(results, :foo, ":a_path is set to ../../artifacts/test")
   end
 
   test "works with nested keys" do
@@ -125,17 +80,7 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
     results = ValidateConfigPath.check(workspace, check)
 
     assert_check_status(results, :foo, :ok)
-
-    expected = [
-      :light_cyan,
-      "[:deep, :config, :path]",
-      :reset,
-      " is set to ",
-      :light_cyan,
-      "../../artifacts/test"
-    ]
-
-    assert_formatted_result(results, :foo, expected)
+    assert_plain_result(results, :foo, "[:deep, :config, :path] is set to ../../artifacts/test")
   end
 
   test "error if not proper nested config" do
@@ -155,21 +100,11 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
 
     assert_check_status(results, :foo, :error)
 
-    expected = [
-      "expected ",
-      :light_cyan,
-      "[:deep, :config, :path]",
-      :reset,
-      " to be ",
-      :light_cyan,
-      "../../artifacts/test",
-      :reset,
-      ", got: ",
-      :light_cyan,
-      "nil"
-    ]
-
-    assert_formatted_result(results, :foo, expected)
+    assert_plain_result(
+      results,
+      :foo,
+      "expected [:deep, :config, :path] to be ../../artifacts/test, got: nil"
+    )
   end
 
   test "works with dynamic expected paths" do
@@ -189,20 +124,10 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
 
     assert_check_status(results, :foo, :error)
 
-    expected = [
-      "expected ",
-      :light_cyan,
-      "[:a_path]",
-      :reset,
-      " to be ",
-      :light_cyan,
-      "../../artifacts/test/foo",
-      :reset,
-      ", got: ",
-      :light_cyan,
-      "../../artifacts/test"
-    ]
-
-    assert_formatted_result(results, :foo, expected)
+    assert_plain_result(
+      results,
+      :foo,
+      "expected [:a_path] to be ../../artifacts/test/foo, got: ../../artifacts/test"
+    )
   end
 end

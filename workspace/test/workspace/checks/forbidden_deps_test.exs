@@ -22,14 +22,11 @@ defmodule Workspace.Checks.ForbiddenDepsTest do
 
     assert_check_status(results, :test, :error)
 
-    expected = [
-      "the following forbidden dependencies were detected: ",
-      :light_cyan,
-      "[:foo]",
-      :reset
-    ]
-
-    assert_formatted_result(results, :test, expected)
+    assert_plain_result(
+      results,
+      :test,
+      "the following forbidden dependencies were detected: [:foo]"
+    )
   end
 
   test "no error if no forbidden deps are set", %{check: check} do
@@ -39,9 +36,6 @@ defmodule Workspace.Checks.ForbiddenDepsTest do
     results = check[:module].check(workspace, check)
 
     assert_check_status(results, :test, :ok)
-
-    expected = ["no forbidden dependencies were detected"]
-
-    assert_formatted_result(results, :test, expected)
+    assert_plain_result(results, :test, "no forbidden dependencies were detected")
   end
 end

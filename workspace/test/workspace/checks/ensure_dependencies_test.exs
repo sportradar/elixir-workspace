@@ -22,14 +22,11 @@ defmodule Workspace.Checks.EnsureDependenciesTest do
 
     assert_check_status(results, :test, :error)
 
-    expected = [
-      "the following required dependencies are missing: ",
-      :light_cyan,
-      "[:foo, :bar]",
-      :reset
-    ]
-
-    assert_formatted_result(results, :test, expected)
+    assert_plain_result(
+      results,
+      :test,
+      "the following required dependencies are missing: [:foo, :bar]"
+    )
   end
 
   test "no error if all dependencies are present", %{check: check} do
@@ -39,9 +36,6 @@ defmodule Workspace.Checks.EnsureDependenciesTest do
     results = EnsureDependencies.check(workspace, check)
 
     assert_check_status(results, :test, :ok)
-
-    expected = ["all required dependencies are present"]
-
-    assert_formatted_result(results, :test, expected)
+    assert_plain_result(results, :test, "all required dependencies are present")
   end
 end

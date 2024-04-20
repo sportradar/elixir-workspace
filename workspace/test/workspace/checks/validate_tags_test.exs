@@ -22,14 +22,11 @@ defmodule Workspace.Checks.ValidateTagsTest do
 
     assert_check_status(results, :test, :error)
 
-    expected = [
-      "the following tags are not allowed: ",
-      :light_red,
-      "[:bar, {:foo, :baz}]",
-      :reset
-    ]
-
-    assert_formatted_result(results, :test, expected)
+    assert_plain_result(
+      results,
+      :test,
+      "the following tags are not allowed: [:bar, {:foo, :baz}]"
+    )
   end
 
   test "no error if no forbidden tags are set", %{check: check} do
@@ -39,10 +36,7 @@ defmodule Workspace.Checks.ValidateTagsTest do
     results = check[:module].check(workspace, check)
 
     assert_check_status(results, :test, :ok)
-
-    expected = ["all tags are valid"]
-
-    assert_formatted_result(results, :test, expected)
+    assert_plain_result(results, :test, "all tags are valid")
   end
 
   test "no error if no tags are set", %{check: check} do
@@ -52,9 +46,6 @@ defmodule Workspace.Checks.ValidateTagsTest do
     results = check[:module].check(workspace, check)
 
     assert_check_status(results, :test, :ok)
-
-    expected = ["all tags are valid"]
-
-    assert_formatted_result(results, :test, expected)
+    assert_plain_result(results, :test, "all tags are valid")
   end
 end

@@ -21,23 +21,11 @@ defmodule Workspace.Checks.WorkspaceDepsPathsTest do
     assert_check_status(results, :bar, :error)
 
     expected = [
-      "path mismatches for the following dependencies: ",
-      "\n",
-      "    → ",
-      :yellow,
-      ":foo",
-      :reset,
-      " expected ",
-      :light_cyan,
-      "\"../../packages/foo\"",
-      :reset,
-      " got ",
-      :light_cyan,
-      "\"../foo\"",
-      :reset
+      "path mismatches for the following dependencies:",
+      "→ :foo expected \"../../packages/foo\" got \"../foo\""
     ]
 
-    assert_formatted_result(results, :bar, expected)
+    assert_plain_result(results, :bar, expected)
   end
 
   test "no error if all relative paths are valid", %{check: check} do
@@ -49,9 +37,6 @@ defmodule Workspace.Checks.WorkspaceDepsPathsTest do
 
     assert_check_status(results, :foo, :ok)
     assert_check_status(results, :bar, :ok)
-
-    expected = ["all workspace dependencies have a valid path"]
-
-    assert_formatted_result(results, :foo, expected)
+    assert_plain_result(results, :foo, "all workspace dependencies have a valid path")
   end
 end

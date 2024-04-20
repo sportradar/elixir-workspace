@@ -50,22 +50,11 @@ defmodule Workspace.Checks.EnforceBoundariesTest do
     assert_check_status(results, :bar, :ok)
     assert_check_status(results, :baz, :ok)
 
-    expected = [
-      "a project tagged with ",
-      :tag,
-      ":foo",
-      :reset,
-      " can only depend on projects tagged with ",
-      :tag,
-      "scope:shared",
-      :reset,
-      " - invalid dependencies: ",
-      :project,
-      ":bar",
-      :reset
-    ]
-
-    assert_formatted_result(results, :foo, expected)
+    assert_plain_result(
+      results,
+      :foo,
+      "a project tagged with :foo can only depend on projects tagged with scope:shared - invalid dependencies: :bar"
+    )
 
     # no error if at least one tag is allowed
     {:ok, check} =
@@ -100,22 +89,11 @@ defmodule Workspace.Checks.EnforceBoundariesTest do
     assert_check_status(results, :bar, :ok)
     assert_check_status(results, :baz, :ok)
 
-    expected = [
-      "a project tagged with ",
-      :tag,
-      ":foo",
-      :reset,
-      " cannot depend on projects tagged with ",
-      :tag,
-      ":bar",
-      :reset,
-      " - invalid dependencies: ",
-      :project,
-      ":bar",
-      :reset
-    ]
-
-    assert_formatted_result(results, :foo, expected)
+    assert_plain_result(
+      results,
+      :foo,
+      "a project tagged with :foo cannot depend on projects tagged with :bar - invalid dependencies: :bar"
+    )
 
     # no error if at least one tag is allowed
     {:ok, check} =
