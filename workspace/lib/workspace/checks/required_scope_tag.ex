@@ -90,11 +90,11 @@ defmodule Workspace.Checks.RequiredScopeTag do
 
   def format_result(%Workspace.Check.Result{status: :ok, meta: meta}) do
     [
-      "defined tags with ",
+      "tags with scope ",
       :light_cyan,
       inspect(meta[:scope]),
       :reset,
-      "scope: ",
+      " defined: ",
       :light_green,
       inspect(meta[:tags]),
       :reset
@@ -102,7 +102,7 @@ defmodule Workspace.Checks.RequiredScopeTag do
   end
 
   defp error_reason(:missing, scope, _tags),
-    do: ["missing tag with scope: ", :light_red, inspect(scope), :reset]
+    do: ["missing tag with scope ", :light_red, inspect(scope), :reset]
 
   defp error_reason(:multiple, scope, tags),
     do: [
