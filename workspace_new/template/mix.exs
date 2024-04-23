@@ -27,8 +27,8 @@ defmodule <%= mod %>.MixWorkspace do
     defp deps do
       [
         # TODO: set proper versions once released
-        {:workspace, github: "pnezis/workspace", sparse: "workspace"},
-        {:cli_options, github: "pnezis/workspace", sparse: "cli_options", override: true}
+        {:workspace, github: "sportradar/elixir-workspace", sparse: "workspace"},
+        {:cli_options, github: "sportradar/elixir-workspace", sparse: "cli_options", override: true}
       ]
     end
   end
