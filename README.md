@@ -97,3 +97,7 @@ make docs
 
 This will produce `html` documentation for all workspace projects, under
 the `artifacts/docs` directory.
+
+## License
+
+All packages are licensed under the MIT license.
