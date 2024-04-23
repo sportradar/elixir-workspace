@@ -37,7 +37,7 @@ defmodule Cascade.Utils do
   def relative_to(path, cwd) do
     cond do
       relative?(path) ->
-        path
+        IO.chardata_to_string(path)
 
       true ->
         split_path = path |> Path.expand() |> Path.split()

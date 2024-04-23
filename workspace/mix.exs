@@ -155,11 +155,9 @@ defmodule Workspace.MixProject do
 
   defp before_closing_body_tag(:epub), do: ""
 
-
   defp dialyzer do
     [
-      plt_core_path: "../artifacts/plts",
-      plt_file: {:no_warn, "../artifacts/plts/workspace.plt"},
+      plt_file: {:no_warn, "../artifacts/plts/workspace"},
       plt_add_deps: :apps_direct,
       plt_add_apps: [:mix],
       flags: [

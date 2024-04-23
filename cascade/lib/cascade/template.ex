@@ -139,7 +139,7 @@ defmodule Cascade.Template do
   @doc """
   Generates a template
   """
-  @spec generate(template :: atom(), output_path :: String.t(), opts :: keyword()) :: :ok
+  @spec generate(template :: module(), output_path :: String.t(), opts :: keyword()) :: :ok
   def generate(template, output_path, opts) do
     output_path = Path.expand(output_path)
 
@@ -154,6 +154,8 @@ defmodule Cascade.Template do
 
       Mix.Generator.create_file(destination_path, body, force: true)
     end
+
+    :ok
   end
 
   defp template_assets(template) do

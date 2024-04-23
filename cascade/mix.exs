@@ -32,9 +32,7 @@ defmodule Cascade.MixProject do
       source_url: @repo_url,
 
       # Linters
-      dialyzer: [
-        plt_add_apps: [:eex, :mix]
-      ]
+      dialyzer: dialyzer()
     ]
   end
 
@@ -87,6 +85,23 @@ defmodule Cascade.MixProject do
         LICENSE: [title: "License"]
       ],
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
+    ]
+  end
+
+  defp dialyzer do
+    [
+      plt_core_path: "../artifacts/plts",
+      plt_local_path: "../artifacts/plts",
+      plt_file: {:no_warn, "../artifacts/plts/cascade"},
+      plt_add_deps: :apps_direct,
+      plt_add_apps: [:eex, :mix],
+      flags: [
+        "-Werror_handling",
+        "-Wextra_return",
+        "-Wmissing_return",
+        "-Wunknown",
+        "-Wunderspecs"
+      ]
     ]
   end
 end
