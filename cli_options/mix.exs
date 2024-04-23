@@ -45,25 +45,13 @@ defmodule CliOptions.MixProject do
   end
 
   defp deps do
-    List.flatten([
+    [
       {:ex_doc, "== 0.32.0", only: :dev, runtime: false},
       {:fancy_fences, "~> 0.3.1", only: :dev, runtime: false},
-      maybe_linter_deps()
-    ])
-  end
-
-  defp maybe_linter_deps do
-    case System.get_env("WORKSPACE_DEV") do
-      "true" ->
-        [
-          {:credo, "== 1.7.5", only: [:dev, :test], runtime: false},
-          {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
-          {:doctor, "== 0.21.0", only: :dev, runtime: false}
-        ]
-
-      _disabled ->
-        []
-    end
+      {:credo, "== 1.7.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
+      {:doctor, "== 0.21.0", only: :dev, runtime: false}
+    ]
   end
 
   defp package do
