@@ -35,7 +35,10 @@ defmodule WorkspaceNew.MixProject do
       # Docs
       name: "WorkspaceNew",
       docs: docs(),
-      source_url: @repo_url
+      source_url: @repo_url,
+
+      # Linters
+      dialyzer: dialyzer()
     ]
   end
 
@@ -77,6 +80,23 @@ defmodule WorkspaceNew.MixProject do
         LICENSE: [title: "License"]
       ],
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
+    ]
+  end
+
+  defp dialyzer do
+    [
+      plt_core_path: "../artifacts/plts",
+      plt_local_path: "../artifacts/plts",
+      plt_file: {:no_warn, "../artifacts/plts/workspace_new"},
+      plt_add_deps: :apps_direct,
+      plt_add_apps: [:eex, :mix],
+      flags: [
+        "-Werror_handling",
+        "-Wextra_return",
+        "-Wmissing_return",
+        "-Wunknown",
+        "-Wunderspecs"
+      ]
     ]
   end
 end

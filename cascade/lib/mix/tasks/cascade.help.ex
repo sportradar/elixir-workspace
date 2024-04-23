@@ -37,7 +37,7 @@ defmodule Mix.Tasks.Cascade.Help do
 
   def run(["-" <> _arg]) do
     Mix.raise(
-      "Unexpected arguments, expected \"mix cascade.help\" or \"mix cascade.help TEMPLATE\""
+      ~s'Unexpected arguments, expected "mix cascade.help" or "mix cascade.help TEMPLATE"'
     )
   end
 
@@ -61,7 +61,7 @@ defmodule Mix.Tasks.Cascade.Help do
 
   def run(_other) do
     Mix.raise(
-      "Unexpected arguments, expected \"mix cascade.help\" or \"mix cascade.help TEMPLATE\""
+      ~s'Unexpected arguments, expected "mix cascade.help" or "mix cascade.help TEMPLATE"'
     )
   end
 

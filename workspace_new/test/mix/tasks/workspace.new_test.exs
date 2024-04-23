@@ -3,6 +3,8 @@ defmodule Mix.Tasks.Workspace.NewTest do
 
   import ExUnit.CaptureIO
 
+  alias Mix.Tasks.Workspace.New
+
   @moduletag :tmp_dir
 
   setup context do
@@ -16,7 +18,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
   describe "valid options" do
     test "new workspace", %{tmp_dir: tmp_dir} do
       in_tmp(tmp_dir, fn ->
-        capture_io(fn -> Mix.Tasks.Workspace.New.run(["hello_workspace"]) end)
+        capture_io(fn -> New.run(["hello_workspace"]) end)
 
         assert_file(tmp_dir, "hello_workspace/mix.exs", fn file ->
           assert file =~ "defmodule HelloWorkspace.MixWorkspace do"
@@ -36,7 +38,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
 
     test "with module set", %{tmp_dir: tmp_dir} do
       in_tmp(tmp_dir, fn ->
-        capture_io(fn -> Mix.Tasks.Workspace.New.run(["hello_workspace", "--module", "Hello"]) end)
+        capture_io(fn -> New.run(["hello_workspace", "--module", "Hello"]) end)
 
         assert_file(tmp_dir, "hello_workspace/mix.exs", ~r/defmodule Hello.MixWorkspace/)
         assert_file(tmp_dir, "hello_workspace/mix.exs", ~r/workspace: \[/)
@@ -55,7 +57,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
     test "with app name set", %{tmp_dir: tmp_dir} do
       in_tmp(tmp_dir, fn ->
         capture_io(fn ->
-          Mix.Tasks.Workspace.New.run([
+          New.run([
             "hello_workspace",
             "--app",
             "hello",
@@ -86,7 +88,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
         assert_raise Mix.Error,
                      ~r"Application name must start with a lowercase ASCII letter, followed by lowercase",
                      fn ->
-                       Mix.Tasks.Workspace.New.run(["003"])
+                       New.run(["003"])
                      end
       end)
 
@@ -94,7 +96,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
         assert_raise Mix.Error,
                      ~r"Application name must start with a lowercase ASCII letter, followed by lowercase",
                      fn ->
-                       Mix.Tasks.Workspace.New.run(["invA"])
+                       New.run(["invA"])
                      end
       end)
 
@@ -102,7 +104,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
         assert_raise Mix.Error,
                      ~r"Application name must start with a lowercase ASCII letter, followed by lowercase",
                      fn ->
-                       Mix.Tasks.Workspace.New.run(["invάλ"])
+                       New.run(["invάλ"])
                      end
       end)
 
@@ -110,7 +112,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
         assert_raise Mix.Error,
                      ~r"Application name must start with a lowercase ASCII letter, followed by lowercase",
                      fn ->
-                       Mix.Tasks.Workspace.New.run(["invalid_!@#"])
+                       New.run(["invalid_!@#"])
                      end
       end)
     end
@@ -120,7 +122,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
         assert_raise Mix.Error,
                      ~r"Application name must start with a lowercase ASCII letter, followed by lowercase",
                      fn ->
-                       Mix.Tasks.Workspace.New.run(["path", "--app", "003invalid"])
+                       New.run(["path", "--app", "003invalid"])
                      end
       end)
     end
@@ -128,7 +130,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
     test "with an invalid module name", %{tmp_dir: tmp_dir} do
       in_tmp(tmp_dir, "invalid_module", fn ->
         assert_raise Mix.Error, ~r"Module name must be a valid Elixir alias", fn ->
-          Mix.Tasks.Workspace.New.run(["valid", "--module", "not.valid"])
+          New.run(["valid", "--module", "not.valid"])
         end
       end)
     end
@@ -138,7 +140,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
         assert_raise Mix.Error,
                      ~r/Module name Mix is already taken, please choose another name/,
                      fn ->
-                       Mix.Tasks.Workspace.New.run(["mix"])
+                       New.run(["mix"])
                      end
       end)
     end
@@ -148,7 +150,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
         assert_raise Mix.Error,
                      ~r/Module name Mix is already taken, please choose another name/,
                      fn ->
-                       Mix.Tasks.Workspace.New.run(["valid", "--app", "mix"])
+                       New.run(["valid", "--app", "mix"])
                      end
       end)
     end
@@ -156,7 +158,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
     test "with an already taken module name from the module option", %{tmp_dir: tmp_dir} do
       in_tmp(tmp_dir, "existing_module", fn ->
         assert_raise Mix.Error, ~r"Module name Mix.Tasks.Workspace.New is already taken", fn ->
-          Mix.Tasks.Workspace.New.run(["valid", "--module", "Mix.Tasks.Workspace.New"])
+          New.run(["valid", "--module", "Mix.Tasks.Workspace.New"])
         end
       end)
     end
@@ -166,7 +168,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
         assert_raise Mix.Error,
                      "Expected PATH to be given, please use `mix workspace.new PATH`",
                      fn ->
-                       Mix.Tasks.Workspace.New.run([])
+                       New.run([])
                      end
       end)
     end
@@ -178,7 +180,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
         assert_raise Mix.Error,
                      "Directory my_app already exists, please select another directory for your workspace",
                      fn ->
-                       Mix.Tasks.Workspace.New.run(["my_app"])
+                       New.run(["my_app"])
                      end
       end)
     end

@@ -85,12 +85,12 @@ format-check: ## Checks elixir workspace projects format
 .PHONY: doctor
 doctor: export WORKSPACE_DEV := true
 doctor: ## Runs doctor on all projects
-	mix workspace.run -t doctor --exclude workspace_new --allow-failure cascade -- --failed --config-file $(PWD)/assets/doctor.exs
+	mix workspace.run -t doctor --allow-failure cascade -- --failed --config-file $(PWD)/assets/doctor.exs
 
 .PHONY: credo
 credo: export WORKSPACE_DEV := true
 credo: ## Runs credo on all projects
-	mix workspace.run -t credo --exclude workspace_new --exclude cascade -- --config-file $(PWD)/assets/credo.exs --strict
+	mix workspace.run -t credo -- --config-file $(PWD)/assets/credo.exs --strict
 
 .PHONY: xref
 xref: ## Ensures that no cycles are present

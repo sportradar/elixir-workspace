@@ -3,6 +3,8 @@ defmodule Mix.Tasks.Cascade.HelpTest do
 
   import ExUnit.CaptureIO
 
+  alias Mix.Tasks.Cascade.Help
+
   defmodule TemplateNoDocs do
     use Cascade.Template
 
@@ -20,7 +22,7 @@ defmodule Mix.Tasks.Cascade.HelpTest do
   test "lists all templates" do
     captured =
       capture_io(fn ->
-        Mix.Tasks.Cascade.Help.run([])
+        Help.run([])
       end)
 
     assert captured =~ "template_no_docs  #"
@@ -33,7 +35,7 @@ defmodule Mix.Tasks.Cascade.HelpTest do
   test "cascade.help TEMPLATE" do
     captured =
       capture_io(fn ->
-        Mix.Tasks.Cascade.Help.run(["template"])
+        Help.run(["template"])
       end)
 
     assert captured =~ "mix cascade template"
@@ -43,7 +45,7 @@ defmodule Mix.Tasks.Cascade.HelpTest do
   test "with a template without docs" do
     captured =
       capture_io(fn ->
-        Mix.Tasks.Cascade.Help.run(["no_docs"])
+        Help.run(["no_docs"])
       end)
 
     assert String.trim(captured) == "mix cascade no_docs"
@@ -54,7 +56,7 @@ defmodule Mix.Tasks.Cascade.HelpTest do
       "No template `invalid` found. Run \"mix cascade.help\" to get a list of available templates"
 
     assert_raise Mix.Error, message, fn ->
-      Mix.Tasks.Cascade.Help.run(["invalid"])
+      Help.run(["invalid"])
     end
   end
 
@@ -63,11 +65,11 @@ defmodule Mix.Tasks.Cascade.HelpTest do
       "Unexpected arguments, expected \"mix cascade.help\" or \"mix cascade.help TEMPLATE\""
 
     assert_raise Mix.Error, message, fn ->
-      Mix.Tasks.Cascade.Help.run(["--invalid"])
+      Help.run(["--invalid"])
     end
 
     assert_raise Mix.Error, message, fn ->
-      Mix.Tasks.Cascade.Help.run(["foo", "bar"])
+      Help.run(["foo", "bar"])
     end
   end
 end
