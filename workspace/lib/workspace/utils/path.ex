@@ -24,11 +24,11 @@ defmodule Workspace.Utils.Path do
 
   Both paths are expanded before returning the relative path.
   """
-  @spec relative_to(path :: binary(), cwd :: binary()) :: binary()
+  @spec relative_to(path :: Path.t(), cwd :: Path.t()) :: binary()
   def relative_to(path, cwd) do
     cond do
       relative?(path) ->
-        path
+        IO.chardata_to_string(path)
 
       true ->
         split_path = path |> Path.expand() |> Path.split()

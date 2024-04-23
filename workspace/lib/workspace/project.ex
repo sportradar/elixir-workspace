@@ -239,7 +239,7 @@ defmodule Workspace.Project do
   considered affected.
   """
   @spec affected(project :: t()) :: t()
-  def affected(project) do
+  def affected(project) when is_struct(project, Workspace.Project) do
     case project.status do
       :modified -> project
       _other -> %__MODULE__{project | status: :affected}

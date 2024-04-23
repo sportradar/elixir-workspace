@@ -33,7 +33,7 @@ defmodule Workspace.MixProject do
       source_url: @repo_url,
 
       # Linters
-      dialyzer: [plt_add_apps: [:mix]]
+      dialyzer: dialyzer()
     ]
   end
 
@@ -154,4 +154,21 @@ defmodule Workspace.MixProject do
   end
 
   defp before_closing_body_tag(:epub), do: ""
+
+
+  defp dialyzer do
+    [
+      plt_core_path: "../artifacts/plts",
+      plt_file: {:no_warn, "../artifacts/plts/workspace.plt"},
+      plt_add_deps: :apps_direct,
+      plt_add_apps: [:mix],
+      flags: [
+        "-Werror_handling",
+        "-Wextra_return",
+        "-Wmissing_return",
+        "-Wunknown",
+        "-Wunderspecs"
+      ]
+    ]
+  end
 end
