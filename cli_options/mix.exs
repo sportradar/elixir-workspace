@@ -4,7 +4,7 @@ defmodule CliOptions.MixProject do
   @app :cli_options
   @version "0.1.0"
   @description "An opinionated cli options parser"
-  @repo_url "https://github.com/pnezis/workspace"
+  @repo_url "https://github.com/sportradar/elixir-workspace"
 
   def project do
     [

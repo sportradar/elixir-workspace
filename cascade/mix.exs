@@ -2,7 +2,7 @@ defmodule Cascade.MixProject do
   use Mix.Project
 
   @app :cascade
-  @repo_url "https://github.com/pnezis/workspace"
+  @repo_url "https://github.com/sportradar/elixir-workspace"
   @version "0.1.0"
 
   def project do

@@ -8,7 +8,7 @@ defmodule WorkspaceNew.MixProject do
 
   @app :workspace_new
   @version "0.1.0"
-  @repo_url "https://github.com/pnezis/workspace"
+  @repo_url "https://github.com/sportradar/elixir-workspace"
 
   def project do
     [

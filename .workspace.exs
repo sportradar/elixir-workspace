@@ -116,7 +116,7 @@
         validate: fn config ->
           url_pattern = get_in(config, [:docs, :source_url_pattern])
 
-          repo_url = "https://github.com/pnezis/workspace"
+          repo_url = "https://github.com/sportradar/elixir-workspace"
           app = Keyword.fetch!(config, :app)
           version = Keyword.fetch!(config, :version)
 
@@ -136,7 +136,7 @@
       description: "all projects must have the same source_url set",
       opts: [
         validate: fn config ->
-          expected_url = "https://github.com/pnezis/workspace"
+          expected_url = "https://github.com/sportradar/elixir-workspace"
 
           case config[:source_url] do
             ^expected_url ->
