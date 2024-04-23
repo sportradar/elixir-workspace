@@ -179,6 +179,9 @@
             is_nil(extras[:"CHANGELOG.md"]) ->
               {:error, "CHANGELOG.md must be present in docs extras"}
 
+            is_nil(extras[:"LICENSE"]) ->
+              {:error, "LICENSE must be present in docs extras"}
+
             true ->
               {:ok, "all extra files are present"}
           end

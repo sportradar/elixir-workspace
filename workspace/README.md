@@ -246,3 +246,10 @@ def project do
 ]
 end
 ```
+
+## License
+
+Copyright (c) 2023 Panagiotis Nezis, Sportradar
+
+Workspace is released under the MIT License. See the [LICENSE](LICENSE) file for more
+details.

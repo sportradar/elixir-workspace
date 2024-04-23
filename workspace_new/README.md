@@ -29,3 +29,10 @@ mix workspace.new PATH
 ```
 
 and it will scaffold an empty workspace under `PATH`.
+
+## License
+
+Copyright (c) 2023 Panagiotis Nezis, Sportradar
+
+`:workspace_new` is released under the MIT License. See the [LICENSE](LICENSE) file for more
+details.

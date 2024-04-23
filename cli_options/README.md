@@ -111,3 +111,10 @@ be found at <https://hexdocs.pm/cli_options>.
 
   * The awesome [`clap`](https://docs.rs/clap/latest/clap/) Rust CLI parser.
   * [`nimble_options`](https://github.com/dashbitco/nimble_options).
+
+## License
+
+Copyright (c) 2023 Panagiotis Nezis, Sportradar
+
+`CliOptions` is released under the MIT License. See the [LICENSE](LICENSE) file for more
+details.

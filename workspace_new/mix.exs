@@ -68,7 +68,8 @@ defmodule WorkspaceNew.MixProject do
       source_url_pattern: "#{@repo_url}/blob/#{@app}/v#{@version}/#{@app}/%{path}#L%{line}",
       extras: [
         "README.md": [title: "Overview"],
-        "CHANGELOG.md": [title: "Changelog"]
+        "CHANGELOG.md": [title: "Changelog"],
+        "LICENSE": [title: "License"]
       ],
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
     ]

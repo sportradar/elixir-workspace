@@ -87,7 +87,8 @@ defmodule Workspace.MixProject do
       before_closing_body_tag: &before_closing_body_tag/1,
       extras: [
         "README.md": [title: "Overview"],
-        "CHANGELOG.md": [title: "Changelog"]
+        "CHANGELOG.md": [title: "Changelog"],
+        "LICENSE": [title: "License"]
       ],
       groups_for_modules: [
         Workspace: [
