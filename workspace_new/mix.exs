@@ -56,6 +56,7 @@ defmodule WorkspaceNew.MixProject do
     [
       maintainers: ["Panagiotis Nezis"],
       licenses: ["MIT"],
+      links: %{"GitHub" => @repo_url},
       files: ~w(lib template mix.exs README.md)
     ]
   end
@@ -70,7 +71,7 @@ defmodule WorkspaceNew.MixProject do
       extras: [
         "README.md": [title: "Overview"],
         "CHANGELOG.md": [title: "Changelog"],
-        "LICENSE": [title: "License"]
+        LICENSE: [title: "License"]
       ],
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
     ]

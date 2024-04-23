@@ -45,6 +45,24 @@
     ],
     [
       module: Workspace.Checks.ValidateConfig,
+      description: "all packages must have the correct GitHub link",
+      opts: [
+        validate: fn config ->
+          package = config[:package] || []
+          links = package[:links] || %{}
+
+          case links["GitHub"] do
+            "https://github.com/sportradar/elixir-workspace" ->
+              {:ok, "GitHub link properly set"}
+
+            other ->
+              {:error, "invalid GitHub link: #{inspect(other)}"}
+          end
+        end
+      ]
+    ],
+    [
+      module: Workspace.Checks.ValidateConfig,
       description: "minimum elixir version",
       opts: [
         validate: fn config ->
@@ -193,7 +211,7 @@
             is_nil(extras[:"CHANGELOG.md"]) ->
               {:error, "CHANGELOG.md must be present in docs extras"}
 
-            is_nil(extras[:"LICENSE"]) ->
+            is_nil(extras[:LICENSE]) ->
               {:error, "LICENSE must be present in docs extras"}
 
             true ->

@@ -47,7 +47,8 @@ defmodule Workspace.MixProject do
   defp package do
     [
       maintainers: ["Panagiotis Nezis"],
-      licenses: ["MIT"]
+      licenses: ["MIT"],
+      links: %{"GitHub" => @repo_url}
     ]
   end
 
@@ -89,7 +90,7 @@ defmodule Workspace.MixProject do
       extras: [
         "README.md": [title: "Overview"],
         "CHANGELOG.md": [title: "Changelog"],
-        "LICENSE": [title: "License"]
+        LICENSE: [title: "License"]
       ],
       groups_for_modules: [
         Workspace: [

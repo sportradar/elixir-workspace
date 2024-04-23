@@ -69,7 +69,8 @@ defmodule Cascade.MixProject do
   defp package do
     [
       maintainers: ["Panagiotis Nezis"],
-      licenses: ["MIT"]
+      licenses: ["MIT"],
+      links: %{"GitHub" => @repo_url}
     ]
   end
 
@@ -83,7 +84,7 @@ defmodule Cascade.MixProject do
       extras: [
         "README.md": [title: "Overview"],
         "CHANGELOG.md": [title: "Changelog"],
-        "LICENSE": [title: "License"]
+        LICENSE: [title: "License"]
       ],
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
     ]
