@@ -65,7 +65,8 @@ defmodule CliOptions.MixProject do
 
   defp package do
     [
-      maintainers: ["Panagiotis Nezis"]
+      maintainers: ["Panagiotis Nezis"],
+      licenses: ["MIT"]
     ]
   end
 

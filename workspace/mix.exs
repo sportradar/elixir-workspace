@@ -46,7 +46,8 @@ defmodule Workspace.MixProject do
 
   defp package do
     [
-      maintainers: ["Panagiotis Nezis"]
+      maintainers: ["Panagiotis Nezis"],
+      licenses: ["MIT"]
     ]
   end
 

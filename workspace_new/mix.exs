@@ -55,6 +55,7 @@ defmodule WorkspaceNew.MixProject do
   defp package do
     [
       maintainers: ["Panagiotis Nezis"],
+      licenses: ["MIT"],
       files: ~w(lib template mix.exs README.md)
     ]
   end

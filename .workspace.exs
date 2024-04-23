@@ -31,6 +31,20 @@
     ],
     [
       module: Workspace.Checks.ValidateConfig,
+      description: "all projects must have licenses set to MIT",
+      opts: [
+        validate: fn config ->
+          package = config[:package] || []
+
+          case package[:licenses] do
+            ["MIT"] -> {:ok, "license set to MIT"}
+            other -> {:error, "invalid licenses, expected [\"MIT\"], got #{inspect(other)}"}
+          end
+        end
+      ]
+    ],
+    [
+      module: Workspace.Checks.ValidateConfig,
       description: "minimum elixir version",
       opts: [
         validate: fn config ->
