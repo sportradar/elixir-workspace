@@ -2,10 +2,9 @@
 
 A `workspace` holding the `workspace`.
 
-`Workspace` provides a set of tools for working with multiple projects under
-the same git repo. Using path dependencies between the projects and the
-provided tools you can effectively work on massive codebases properly
-split into reusable packages.
+`Workspace` provides a set of tools for working with **elixir monorepos**.
+Using path dependencies between the projects and the provided tools you can
+effectively work on massive codebases properly split into reusable packages.
 
 ## Folder Structure
 
@@ -15,89 +14,20 @@ top-level folders. The following packages are included:
   * [`workspace`](workspace/README.md) - A toolbox for managing elixir monorepos
   * [`workspace_new`](workspace_new/README.md) - Workspace installer
   * [`cli_options`](cli_options/README.md) - An opinionated cli options parser
-  * [`cascade`](cascade/README.md) - A scaffolding library 
+  * [`cascade`](cascade/README.md) - A scaffolding library
 
 ## Contributing
 
-We invite contributions to `Workspace`. Once you have forked and pulled the
-repo you can setup the project by running:
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for contribution
+and development guidelines and our [Code of Conduct](CODE_OF_CONDUCT.md), and then:
 
-```bash
-make setup
-```
-
-This will download and compile all external dependencies.
-
-### Running tests
-
-You can run all tests by running (in the root folder):
-
-```bash
-make test
-```
-
-Alternatively you can use the helper `mix alias` that will only run tests
-on affected projects
-
-```bash
-mix test
-```
-
-If you want to run all tests of a single project, you can use the
-`mix workspace.run` command:
-
-```bash
-mix workspace.run -t test -p PROJECT_NAME
-```
-
-Additionally you can generate the coverage report by running:
-
-```bash
-make coverage
-```
-
-This runs all workspace tests and requires `genhtml` in order to
-render the `HTML` coverage report.
-
-### Linting
-
-In order to run the full linter's suite you can run:
-
-```bash
-make lint
-```
-
-Additionally we use [`cspell`](https://cspell.org/) for detecting spelling
-mistakes. In order to run it (given that you have it installed):
-
-```bash
-make spell
-```
-
-We use [`markdownlint`](https://github.com/DavidAnson/markdownlint) to lint
-`*.md` files. In order to run it:
-
-```bash
-make markdown-lint
-```
-
-You can see all available `make` commands by running:
-
-```bash
-make help
-```
-
-### Building documentation
-
-In order to build the documentation run the following from the root folder:
-
-```bash
-make docs
-```
-
-This will produce `html` documentation for all workspace projects, under
-the `artifacts/docs` directory.
+  * Fork it (<https://github.com/sportradar/elixir-workspace/fork>)
+  * Create your feature branch (`git checkout -b my-new-feature`)
+  * Commit your changes (`git commit -am 'Add some feature'`)
+  * Push to the branch (`git push origin my-new-feature`)
+  * Create a new Pull Request
 
 ## License
 
-All packages are licensed under the MIT license.
+All packages are licensed under the MIT license. Check the `LICENSE` file of each
+package for more details.
