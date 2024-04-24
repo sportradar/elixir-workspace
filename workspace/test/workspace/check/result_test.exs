@@ -30,6 +30,8 @@ defmodule Workspace.Check.ResultTest do
   test "new/2", %{check: check, project: project} do
     result = Result.new(check, project)
 
+    assert result == %Result{module: CheckModule, check: check, project: project}
+
     assert result.module == CheckModule
     assert result.check == check
     assert result.project == project
