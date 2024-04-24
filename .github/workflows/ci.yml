@@ -62,13 +62,22 @@ jobs:
           fi
 
       - name: Get workspace dependencies
-        run: mix workspace.run -t deps.get ${{env.AFFECTED_ARGS}}
+        run: |
+          shopt -s expand_aliases
+          alias mix='elixir --erl "-elixir ansi_enabled true" -S mix'
+          mix workspace.run -t deps.get ${{env.AFFECTED_ARGS}}
 
       - name: Compile dependencies
-        run: mix workspace.run -t deps.compile ${{env.AFFECTED_ARGS}} -- --skip-local-deps
+        run: |
+          shopt -s expand_aliases
+          alias mix='elixir --erl "-elixir ansi_enabled true" -S mix'
+          mix workspace.run -t deps.compile ${{env.AFFECTED_ARGS}} -- --skip-local-deps
 
       - name: Compile with warnings enabled
-        run: mix workspace.run -t compile ${{env.AFFECTED_ARGS}} -- --force --warnings-as-errors
+        run: |
+          shopt -s expand_aliases
+          alias mix='elixir --erl "-elixir ansi_enabled true" -S mix'
+          mix workspace.run -t compile ${{env.AFFECTED_ARGS}} -- --force --warnings-as-errors
         if: ${{ matrix.lint }}
 
       - name: Check code formatted
@@ -79,7 +88,10 @@ jobs:
         if: ${{ matrix.lint }}
 
       - name: Tests
-        run: mix workspace.run -t test ${{env.AFFECTED_ARGS}} -- --cover --warnings-as-errors
+        run: |
+          shopt -s expand_aliases
+          alias mix='elixir --erl "-elixir ansi_enabled true" -S mix'
+          mix workspace.run -t test ${{env.AFFECTED_ARGS}} -- --cover --warnings-as-errors
 
       - name: Coverage
         run: |
@@ -88,5 +100,8 @@ jobs:
           mix workspace.test.coverage ${{env.AFFECTED_ARGS}}
 
       - name: Check docs
-        run: mix workspace.run -t docs ${{env.MODIFIED_ARGS}} -- -f html
+        run: |
+          shopt -s expand_aliases
+          alias mix='elixir --erl "-elixir ansi_enabled true" -S mix'
+          mix workspace.run -t docs ${{env.MODIFIED_ARGS}} -- -f html
         if: ${{ matrix.lint }}
