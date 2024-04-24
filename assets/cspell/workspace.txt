@@ -14,7 +14,10 @@ ized
 keyfind
 neighbour
 neighbours
+nezis
 nofile
+panagiotis
+sportradar
 stringlist
 subdirs
 subfolders
