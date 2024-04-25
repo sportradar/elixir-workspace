@@ -37,15 +37,10 @@ defmodule Workspace.MixWorkspace do
   end
 
   defp aliases do
-    credo_config = Path.join(File.cwd!(), "assets/credo.exs")
-
     [
       format: [
         "format",
         "workspace.run -t format --modified"
-      ],
-      credo: [
-        "workspace.run -t credo --exclude workspace_new --exclude cascade -- --config-file #{credo_config} --strict"
       ],
       test: ["workspace.run -t test --affected -- --cover"],
       "test.coverage": ["workspace.test.coverage"]
