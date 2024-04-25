@@ -54,7 +54,7 @@ test-cover: ## Test the complete codebase with cover enabled
 coverage: ## Generates coverage report
 	-mix workspace.run -t test -- --cover --trace
 	mix workspace.test.coverage || true
-	genhtml artifacts/coverage/coverage.lcov -o artifacts/coverage --flat --prefix ${PWD}
+	genhtml artifacts/coverage/coverage.lcov -o artifacts/coverage --flat --prefix "${PWD}"
 	open artifacts/coverage/index.html
 
 ##@ Documentation
@@ -85,12 +85,12 @@ format-check: ## Checks elixir workspace projects format
 .PHONY: doctor
 doctor: export WORKSPACE_DEV := true
 doctor: ## Runs doctor on all projects
-	mix workspace.run -t doctor --allow-failure cascade -- --failed --config-file $(PWD)/assets/doctor.exs
+	mix workspace.run -t doctor --allow-failure cascade -- --failed --config-file "$(PWD)"/assets/doctor.exs
 
 .PHONY: credo
 credo: export WORKSPACE_DEV := true
 credo: ## Runs credo on all projects
-	mix workspace.run -t credo -- --config-file $(PWD)/assets/credo.exs --strict
+	mix workspace.run -t credo -- --config-file "$(PWD)"/assets/credo.exs --strict
 
 .PHONY: xref
 xref: ## Ensures that no cycles are present
