@@ -31,7 +31,9 @@ defmodule Workspace.Checks.DependenciesVersion do
             deps: [
               type: :non_empty_keyword_list,
               doc: """
-              Defines the required dependencies versions across the workspace.
+              Defines the required dependencies versions across the workspace. Each key
+              corresponds to the name of an external dependency, and the value should be
+              a keyword list which accepts the following options:
               """,
               keys: dependencies_schema
             ]
@@ -48,17 +50,6 @@ defmodule Workspace.Checks.DependenciesVersion do
   ## Configuration
 
   #{NimbleOptions.docs(@schema)}
-
-  ### Custom deps options
-
-  Except the standard deps options supported by mix you can also set the
-  following options which specify how the check will be applied on a
-  dependency level:
-
-  * `:no_options_check` - can either be a `boolean` or a list of atoms
-  corresponding to projects. If set to `false` only the version and not the
-  rest of the options will be checked. If set to a list the options will be
-  checked for all projects except of those in the list.
 
   ## Example
 
@@ -165,24 +156,6 @@ defmodule Workspace.Checks.DependenciesVersion do
       expected_options ->
         expected_options == options
     end
-
-    # if Keyword.has_key?(expected, dep) do
-    #   cond do
-    #     # if we have a version mismatch it is an error
-    #     expected[dep][:version] != version ->
-    #       {:error, dep}
-    #
-    #     # # options must match if we haven't returned already
-    #     # expected_options != options ->
-    #     #   {:error, dep}
-    #
-    #     # in any other case we have a match
-    #     true ->
-    #       :ok
-    #   end
-    # else
-    #   :ok
-    # end
   end
 
   defp check_metadata(mismatches, configured, expected) do
