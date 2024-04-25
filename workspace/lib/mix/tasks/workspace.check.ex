@@ -135,6 +135,12 @@ defmodule Mix.Tasks.Workspace.Check do
 
   defp check_message(%Workspace.Check.Result{status: :skip}), do: " - check skipped"
 
+  # format result handles only success and error, we want the error message for
+  # warnings
+  defp check_message(%Workspace.Check.Result{status: :warn} = result) do
+    Workspace.Check.Result.set_status(result, :error) |> check_message()
+  end
+
   defp check_message(result) do
     case result.module.format_result(result) do
       [] -> []
