@@ -31,9 +31,7 @@ defmodule Mix.Tasks.Workspace.Check do
 
     ensure_checks(workspace.config[:checks])
 
-    log("running #{length(workspace.config[:checks])} workspace checks on the workspace",
-      prefix: :header
-    )
+    log("running #{length(workspace.config[:checks])} workspace checks on the workspace")
 
     newline()
 

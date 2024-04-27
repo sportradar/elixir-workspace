@@ -20,7 +20,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
 
   test "runs all configured checks" do
     expected = [
-      "==> running 4 workspace checks on the workspace",
+      "running 4 workspace checks on the workspace",
       "==> C000 check deps_path",
       "ERROR :package_a - expected :deps_path to be ../deps, got: deps",
       "ERROR :package_b - expected :deps_path to be ../deps, got: deps",
@@ -68,7 +68,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
 
   test "with --verbose flag on" do
     expected = [
-      "==> running 4 workspace checks on the workspace",
+      "running 4 workspace checks on the workspace",
       "==> C000 check deps_path",
       "ERROR :package_a - expected :deps_path to be ../deps, got: deps test/fixtures/sample_workspace/package_a",
       "ERROR :package_b - expected :deps_path to be ../deps, got: deps",

@@ -207,7 +207,7 @@ command:
 
 ```bash
 $ mix workspace.check
-==> running 4 workspace checks on the workspace
+running 4 workspace checks on the workspace
 
 ==> C000 validate workspace relative path dependencies
 ==> C001 all projects must have a description set
