@@ -40,10 +40,10 @@ defmodule Workspace.ConfigTest do
       config = [
         checks: [
           [
-            module: Workspace.Checks.ValidateConfig,
+            module: Workspace.Checks.ValidateProject,
             description: "a dummy test",
             opts: [
-              valid: fn _config -> {:ok, ""} end
+              valid: fn _project -> {:ok, ""} end
             ]
           ]
         ]

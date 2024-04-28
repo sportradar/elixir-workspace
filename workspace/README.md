@@ -196,7 +196,7 @@ that among other, allow you to:
   on all projects, e.g. `ex_doc`.
   * Ensure that external [dependencies versions match the expected ones](`Workspace.Checks.DependenciesVersion`).
   * Verify that [no forbidden dependencies are defined](`Workspace.Checks.ForbiddenDeps`).
-  * [Validate arbitrarily](`Workspace.Checks.ValidateConfig`) the projects' config objects.
+  * [Validate arbitrarily](`Workspace.Checks.ValidateProject`) the projects' config objects.
   * [Enforce boundaries](`Workspace.Checks.EnforceBoundaries`) between workspace projects.
 
 You could also implement your own checks, incorporating any custom validation

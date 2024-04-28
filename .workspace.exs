@@ -3,11 +3,11 @@
   checks: [
     # General package validations
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all projects must have a description set",
       opts: [
-        validate: fn config ->
-          case config[:description] do
+        validate: fn project ->
+          case project.config[:description] do
             nil -> {:error, "no :description set"}
             description when is_binary(description) -> {:ok, "description set to #{description}"}
             other -> {:error, "description must be binary, got: #{inspect(other)}"}
@@ -16,10 +16,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all projects must have a maintainer set",
       opts: [
-        validate: fn config ->
+        validate: fn project ->
+          config = project.config
           package = config[:package] || []
 
           case package[:maintainers] do
@@ -30,10 +31,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all projects must have licenses set to MIT",
       opts: [
-        validate: fn config ->
+        validate: fn project ->
+          config = project.config
           package = config[:package] || []
 
           case package[:licenses] do
@@ -44,10 +46,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all packages must have the correct GitHub link",
       opts: [
-        validate: fn config ->
+        validate: fn project ->
+          config = project.config
           package = config[:package] || []
           links = package[:links] || %{}
 
@@ -62,11 +65,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "minimum elixir version",
       opts: [
-        validate: fn config ->
-          case config[:elixir] do
+        validate: fn project ->
+          case project.config[:elixir] do
             "~> 1.15" -> {:ok, "minimum elixir version set"}
             other -> {:error, "expected :elixir to be ~> 1.15, got #{other}"}
           end
@@ -117,11 +120,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all projects must have only html docs formatters",
       opts: [
-        validate: fn config ->
-          case config[:docs][:formatters] do
+        validate: fn project ->
+          case project.config[:docs][:formatters] do
             ["html"] -> {:ok, "only html present in formatters"}
             other -> {:error, "expected :docs :formatters to be html, got #{inspect(other)}"}
           end
@@ -129,11 +132,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all projects must have a name set",
       opts: [
-        validate: fn config ->
-          case config[:name] do
+        validate: fn project ->
+          case project.config[:name] do
             nil -> {:error, "no :name set"}
             name when is_binary(name) -> {:ok, "name set to #{name}"}
             other -> {:error, "description must be binary, got: #{inspect(other)}"}
@@ -142,10 +145,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all projects must have a valid source_url_pattern",
       opts: [
-        validate: fn config ->
+        validate: fn project ->
+          config = project.config
           url_pattern = get_in(config, [:docs, :source_url_pattern])
 
           repo_url = "https://github.com/sportradar/elixir-workspace"
@@ -164,13 +168,13 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all projects must have the same source_url set",
       opts: [
-        validate: fn config ->
+        validate: fn project ->
           expected_url = "https://github.com/sportradar/elixir-workspace"
 
-          case config[:source_url] do
+          case project.config[:source_url] do
             ^expected_url ->
               {:ok, ":source_url properly set"}
 
@@ -181,10 +185,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all projects must have the :canonical option properly set",
       opts: [
-        validate: fn config ->
+        validate: fn project ->
+          config = project.config
           canonical = get_in(config, [:docs, :canonical])
           expected = "http://hexdocs.pm/#{config[:app]}"
 
@@ -198,10 +203,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "common files must be in docs extras",
       opts: [
-        validate: fn config ->
+        validate: fn project ->
+          config = project.config
           extras = get_in(config, [:docs, :extras])
 
           cond do
@@ -221,11 +227,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "readme must be the main entry for all docs",
       opts: [
-        validate: fn config ->
-          case get_in(config, [:docs, :main]) do
+        validate: fn project ->
+          case get_in(project.config, [:docs, :main]) do
             "readme" -> {:ok, "readme is the main entry point"}
             other -> {:error, "expected readme as the main page for docs, got: #{inspect(other)}"}
           end
@@ -233,11 +239,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "CHANGELOG must be in the skip_undefined_reference_warnings_on list",
       opts: [
-        validate: fn config ->
-          skipped = get_in(config, [:docs, :skip_undefined_reference_warnings_on]) || []
+        validate: fn project ->
+          skipped = get_in(project.config, [:docs, :skip_undefined_reference_warnings_on]) || []
 
           case "CHANGELOG.md" in skipped do
             true ->
@@ -252,10 +258,11 @@
     ],
     # Testing related checks
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all projects must have test_coverage[:output] properly set",
       opts: [
-        validate: fn config ->
+        validate: fn project ->
+          config = project.config
           coverage_opts = config[:test_coverage] || []
           output = coverage_opts[:output]
 
@@ -273,10 +280,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all projects must have test_coverage[:export] properly set",
       opts: [
-        validate: fn config ->
+        validate: fn project ->
+          config = project.config
           coverage_opts = config[:test_coverage] || []
           export = coverage_opts[:export]
 
@@ -295,10 +303,11 @@
       ]
     ],
     [
-      module: Workspace.Checks.ValidateConfig,
+      module: Workspace.Checks.ValidateProject,
       description: "all projects must have a minimum coverage threshold of 98",
       opts: [
-        validate: fn config ->
+        validate: fn project ->
+          config = project.config
           coverage_opts = config[:test_coverage] || []
           threshold = coverage_opts[:threshold] || 0
 

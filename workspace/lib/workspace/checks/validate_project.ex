@@ -1,11 +1,11 @@
-defmodule Workspace.Checks.ValidateConfig do
+defmodule Workspace.Checks.ValidateProject do
   @schema NimbleOptions.new!(
             validate: [
               type: {:fun, 1},
               required: true,
               doc: """
-              An anonymous function of arity 1 for validating a project's config. The project's
-              config is passed as input to the user provided function. It must return one of:
+              An anonymous function of arity 1 for validating a workspace project. The project's
+              struct is passed as input to the user provided function. It must return one of:
 
               - `{:ok, message :: String.t()}` in case of success
               - `{:error, message :: String.t()}` in case of error
@@ -14,10 +14,13 @@ defmodule Workspace.Checks.ValidateConfig do
           )
 
   @moduledoc """
-  Checks that the given config is valid
+  Checks that the given project is valid
 
   This is a generic check since you can define any arbitrary check for
-  the given config.
+  the given project.
+
+  It expects an anonymous of arity 1 to be provided that will accept a `Workspace.Project`
+  as input. 
 
   > #### Common use cases {: .tip}
   >
@@ -39,7 +42,7 @@ defmodule Workspace.Checks.ValidateConfig do
 
   ```elixir
   [
-    module: Workspace.Checks.ValidateConfig,
+    module: Workspace.Checks.ValidateProject,
     description: "all projects must have elixir version set to 1.13",
     opts: [
       validate: fn config ->
@@ -62,7 +65,7 @@ defmodule Workspace.Checks.ValidateConfig do
     validate_fun = Keyword.fetch!(check[:opts], :validate)
 
     Workspace.Check.check_projects(workspace, check, fn project ->
-      case validate_fun.(project.config) do
+      case validate_fun.(project) do
         {status, message} when status in [:ok, :error, :skip] and is_binary(message) ->
           {status, [message: message]}
 

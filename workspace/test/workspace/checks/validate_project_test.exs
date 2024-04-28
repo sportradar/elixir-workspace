@@ -1,6 +1,6 @@
-defmodule Workspace.Checks.ValidateConfigTest do
+defmodule Workspace.Checks.ValidateProjectTest do
   use Workspace.CheckCase
-  alias Workspace.Checks.ValidateConfig
+  alias Workspace.Checks.ValidateProject
 
   setup do
     %{workspace: Workspace.new!("test/fixtures/sample_workspace")}
@@ -8,7 +8,7 @@ defmodule Workspace.Checks.ValidateConfigTest do
 
   test "raises if no validate function is set" do
     check = [
-      module: ValidateConfig,
+      module: ValidateProject,
       opts: []
     ]
 
@@ -20,7 +20,7 @@ defmodule Workspace.Checks.ValidateConfigTest do
 
   test "with wrong function arity" do
     check = [
-      module: ValidateConfig,
+      module: ValidateProject,
       opts: [validate: fn -> :ok end]
     ]
 
@@ -33,14 +33,14 @@ defmodule Workspace.Checks.ValidateConfigTest do
   test "runs the given validation function", %{workspace: workspace} do
     {:ok, check} =
       Workspace.Check.validate(
-        module: ValidateConfig,
+        module: ValidateProject,
         opts: [
-          validate: fn config -> {:error, "an error detected for #{config[:app]}"} end
+          validate: fn project -> {:error, "an error detected for #{project.config[:app]}"} end
         ],
         only: [:package_a]
       )
 
-    results = ValidateConfig.check(workspace, check)
+    results = ValidateProject.check(workspace, check)
     assert_check_status(results, :package_a, :error)
     assert_check_meta(results, :package_a, message: "an error detected for package_a")
     assert_formatted_result(results, :package_a, "an error detected for package_a")
@@ -56,9 +56,9 @@ defmodule Workspace.Checks.ValidateConfigTest do
   } do
     {:ok, check} =
       Workspace.Check.validate(
-        module: ValidateConfig,
+        module: ValidateProject,
         opts: [
-          validate: fn _config -> {:invalid, "invalid"} end
+          validate: fn _project -> {:invalid, "invalid"} end
         ],
         only: [:package_a]
       )
@@ -68,7 +68,7 @@ defmodule Workspace.Checks.ValidateConfigTest do
     one of [:ok, :error, :skip], got: invalid\
     """
 
-    assert_raise ArgumentError, message, fn -> ValidateConfig.check(workspace, check) end
+    assert_raise ArgumentError, message, fn -> ValidateProject.check(workspace, check) end
   end
 
   test "raises if the validation function does not return a binary message", %{
@@ -76,9 +76,9 @@ defmodule Workspace.Checks.ValidateConfigTest do
   } do
     {:ok, check} =
       Workspace.Check.validate(
-        module: ValidateConfig,
+        module: ValidateProject,
         opts: [
-          validate: fn _config -> {:error, :error} end
+          validate: fn _project -> {:error, :error} end
         ],
         only: [:package_a]
       )
@@ -88,7 +88,7 @@ defmodule Workspace.Checks.ValidateConfigTest do
     message must be a string, got: :error\
     """
 
-    assert_raise ArgumentError, message, fn -> ValidateConfig.check(workspace, check) end
+    assert_raise ArgumentError, message, fn -> ValidateProject.check(workspace, check) end
   end
 
   test "raises if the validation function does not return a proper tuple", %{
@@ -96,9 +96,9 @@ defmodule Workspace.Checks.ValidateConfigTest do
   } do
     {:ok, check} =
       Workspace.Check.validate(
-        module: ValidateConfig,
+        module: ValidateProject,
         opts: [
-          validate: fn _config -> {:error, :error, :error} end
+          validate: fn _project -> {:error, :error, :error} end
         ],
         only: [:package_a]
       )
@@ -106,6 +106,6 @@ defmodule Workspace.Checks.ValidateConfigTest do
     message =
       "validate function must return a {status, message} tuple, got {:error, :error, :error}"
 
-    assert_raise ArgumentError, message, fn -> ValidateConfig.check(workspace, check) end
+    assert_raise ArgumentError, message, fn -> ValidateProject.check(workspace, check) end
   end
 end

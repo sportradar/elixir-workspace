@@ -53,8 +53,8 @@ defmodule Workspace.CheckTest do
   describe "properly handles statuses" do
     test "returns the actual status if no allow_failure is set", %{workspace: workspace} do
       check =
-        check_fixture(fn config ->
-          case config[:app] do
+        check_fixture(fn project ->
+          case project.config[:app] do
             :foo -> {:ok, ""}
             :bar -> {:error, "an error"}
           end
@@ -67,7 +67,7 @@ defmodule Workspace.CheckTest do
     end
 
     test "demotes all statuses if allow_failure is set to true", %{workspace: workspace} do
-      check = check_fixture(fn _config -> {:error, "an error"} end, allow_failure: true)
+      check = check_fixture(fn _project -> {:error, "an error"} end, allow_failure: true)
 
       results = check[:module].check(workspace, check)
 
@@ -76,7 +76,7 @@ defmodule Workspace.CheckTest do
     end
 
     test "demotes status if allow_failure is set for specific project", %{workspace: workspace} do
-      check = check_fixture(fn _config -> {:error, "an error"} end, allow_failure: [:bar])
+      check = check_fixture(fn _project -> {:error, "an error"} end, allow_failure: [:bar])
 
       results = check[:module].check(workspace, check)
 
@@ -85,7 +85,7 @@ defmodule Workspace.CheckTest do
     end
 
     test "raises if invalid status", %{workspace: workspace} do
-      check = check_fixture(fn _config -> {:invalid, "an error"} end, allow_failure: true)
+      check = check_fixture(fn _project -> {:invalid, "an error"} end, allow_failure: true)
 
       message = """
       validate function must return a {status, message} tuple where status \
@@ -100,9 +100,9 @@ defmodule Workspace.CheckTest do
     check_config =
       Keyword.merge(
         [
-          module: Workspace.Checks.ValidateConfig,
+          module: Workspace.Checks.ValidateProject,
           opts: [
-            validate: fn config -> fun.(config) end
+            validate: fn project -> fun.(project) end
           ]
         ],
         opts

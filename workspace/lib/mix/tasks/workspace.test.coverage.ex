@@ -47,11 +47,11 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   ```elixir
   [
-    module: Workspace.Checks.ValidateConfig,
+    module: Workspace.Checks.ValidateProject,
     description: "all projects must have test coverage export option set",
     opts: [
       validate: fn config ->
-        coverage_opts = config[:test_coverage] || []
+        coverage_opts = project.config[:test_coverage] || []
         case coverage_opts[:export] do
           nil -> {:error, "export option not defined under :test_coverage settings"}
           _value -> {:ok, ""}
@@ -71,10 +71,11 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   >
   > ```elixir 
   > [
-  >   module: Workspace.Checks.ValidateConfig,
+  >   module: Workspace.Checks.ValidateProject,
   >   description: "all projects must have test_coverage[:output] properly set",
   >   opts: [
-  >     validate: fn config ->
+  >     validate: fn project ->
+  >       config = project.config
   >       coverage_opts = config[:test_coverage] || []
   >       output = coverage_opts[:output]
   >

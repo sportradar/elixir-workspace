@@ -55,11 +55,11 @@ defmodule Mix.Tasks.Workspace.Check do
 
           checks: [
             [
-              module: Workspace.Checks.ValidateConfig,
+              module: Workspace.Checks.ValidateProject,
               description: "all projects must have a description set",
               opts: [
-                validate: fn config ->
-                  case config[:description] do
+                validate: fn project ->
+                  case project.config[:description] do
                     nil -> {:error, "no :description set"}
                     description when is_binary(description) -> {:ok, ""}
                     other -> {:error, "description must be binary}
