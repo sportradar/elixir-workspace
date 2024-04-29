@@ -90,7 +90,7 @@ doctor: ## Runs doctor on all projects
 .PHONY: credo
 credo: export WORKSPACE_DEV := true
 credo: ## Runs credo on all projects
-	mix workspace.run -t credo -- --config-file "$(PWD)/assets/credo.exs --strict"
+	mix workspace.run -t credo -- --config-file "$(PWD)/assets/credo.exs" --strict
 
 .PHONY: xref
 xref: ## Ensures that no cycles are present
