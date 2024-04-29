@@ -176,7 +176,6 @@ defmodule Workspace.TestUtils do
   end
 
   # formats the ansidata message to a string
-  # TODO: maybe move to a public function
   def format_ansi(message) do
     IO.ANSI.format(message) |> :erlang.iolist_to_binary()
   end

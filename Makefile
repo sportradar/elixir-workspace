@@ -28,7 +28,12 @@ setup: ## Gets and compiles all dependencies
 
 .PHONY: todos
 todos: ## Find TODOs in the codebase
-	@rg TODO
+	@rg \
+		-g !Makefile \
+		-g !assets/credo.exs \
+		-g !cascade/templates/template/template.ex \
+		-g !workspace_new/template/README.md \
+		TODO
 
 .PHONY: new-install
 new-install: ## Installs the latest workspace.new locally
