@@ -3,7 +3,7 @@ defmodule WorkspaceTest do
   import Workspace.TestUtils
   doctest Workspace
 
-  @sample_workspace_path "test/fixtures/sample_workspace"
+  @sample_workspace_path fixture_path(:sample_workspace)
 
   setup do
     project_a = project_fixture(app: :foo)

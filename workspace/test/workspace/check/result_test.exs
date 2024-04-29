@@ -3,7 +3,7 @@ defmodule Workspace.Check.ResultTest do
 
   alias Workspace.Check.Result
 
-  @sample_workspace_path "test/fixtures/sample_workspace"
+  @sample_workspace_path Workspace.TestUtils.fixture_path(:sample_workspace)
 
   defmodule CheckModule do
     @behaviour Workspace.Check

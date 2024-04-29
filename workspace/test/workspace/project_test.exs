@@ -6,7 +6,7 @@ defmodule Workspace.ProjectTest do
   alias Workspace.Project
   doctest Workspace.Project
 
-  @sample_workspace_path "test/fixtures/sample_workspace"
+  @sample_workspace_path Workspace.TestUtils.fixture_path(:sample_workspace)
 
   describe "new/2" do
     test "creates a valid project" do

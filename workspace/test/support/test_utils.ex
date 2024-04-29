@@ -9,7 +9,9 @@ defmodule Workspace.TestUtils do
 
   def fixture_path, do: Path.expand("../fixtures", __DIR__)
 
-  def fixture_path(fixture), do: Path.join(fixture_path(), fixture)
+  def fixture_path(:sample_workspace), do: fixture_path("sample_workspace")
+
+  def fixture_path(fixture) when is_binary(fixture), do: Path.join(fixture_path(), fixture)
 
   # tmp folders are created by default in a workspace_test_fixtures folder
   # at the same level as the git repo

@@ -4,9 +4,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
 
   alias Mix.Tasks.Workspace.Check, as: CheckTask
 
-  # TODO: this is used in many places, add helper function to get
-  # fixtures path and project
-  @sample_workspace_path "test/fixtures/sample_workspace"
+  @sample_workspace_path fixture_path(:sample_workspace)
 
   setup do
     Application.put_env(:elixir, :ansi_enabled, false)
