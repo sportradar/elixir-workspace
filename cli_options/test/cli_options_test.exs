@@ -101,6 +101,13 @@ defmodule CliOptionsTest do
       assert opts == [user: "john"]
     end
 
+    test "long names do not interfer with aliases" do
+      schema = [user: [type: :string, long: "u"], update: [type: :boolean, short: "u"]]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--u", "john", "-u"], schema)
+      assert opts == [user: "john", update: true]
+    end
+
     test "with short name set" do
       schema = [user: [type: :string, short: "u"]]
 
@@ -263,6 +270,9 @@ defmodule CliOptionsTest do
                CliOptions.parse(["--number", "3", "-n", "2a", "-n", "1"], schema)
 
       assert message == ":number expected an integer argument, got: 2a"
+
+      # with num_args set
+      assert {}
     end
 
     test "counters" do

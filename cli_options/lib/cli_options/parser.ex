@@ -78,7 +78,7 @@ defmodule CliOptions.Parser do
   defp next([], _schema), do: nil
 
   # if it starts with -- or - it must be an option
-  defp next(["--" <> option | rest], schema), do: parse_option(option, rest, schema)
+  defp next(["--" <> option | rest], schema), do: parse_option(option, :long, rest, schema)
 
   defp next(["-" <> option_alias | rest], schema),
     do: parse_option_alias(option_alias, rest, schema)
@@ -88,12 +88,13 @@ defmodule CliOptions.Parser do
 
   defp parse_option_alias(option, rest, schema) do
     with {:ok, option} <- validate_option_alias_length(option) do
-      parse_option(option, rest, schema)
+      parse_option(option, :short, rest, schema)
     end
   end
 
-  defp parse_option(option, rest, schema) do
-    with {:ok, option, opts} <- CliOptions.Schema.ensure_valid_option(option, schema),
+  defp parse_option(option, short_or_long, rest, schema) do
+    with {:ok, option, opts} <-
+           CliOptions.Schema.ensure_valid_option(option, short_or_long, schema),
          {:ok, args, rest} <- fetch_option_args(option, opts, rest) do
       {:option, option, args, rest}
     end

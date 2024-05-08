@@ -174,6 +174,10 @@ defmodule CliOptions.SchemaTest do
       assert_raise ArgumentError, "mapping s for option :bar is already defined for :foo", fn ->
         CliOptions.Schema.new!(schema)
       end
+
+      # long short do not interfere
+      schema = [foo: [type: :string, long: "f"], bar: [type: :string, short_aliases: ["f"]]]
+      assert %CliOptions.Schema{} = CliOptions.Schema.new!(schema)
     end
 
     test "default values are properly set for booleans counters" do

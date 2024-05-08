@@ -110,10 +110,11 @@ defmodule CliOptions.Schema do
   """
   @type t :: %__MODULE__{
           schema: keyword(),
-          mappings: %{String.t() => atom()}
+          long_mappings: %{String.t() => atom()},
+          short_mappings: %{String.t() => atom()}
         }
 
-  defstruct schema: [], mappings: []
+  defstruct schema: [], long_mappings: [], short_mappings: []
 
   # validates the schema, rename to new! similar to nimble_options
   @doc """
@@ -127,7 +128,8 @@ defmodule CliOptions.Schema do
           name: [short_aliases: [], aliases: [], long: "name", type: :string, short: "U"],
           verbose: [default: false, short_aliases: [], aliases: [], long: "verbose", type: :boolean]
         ],
-        mappings: %{"U" => :name, "name" => :name, "verbose" => :verbose}
+        long_mappings: %{"name" => :name, "verbose" => :verbose},
+        short_mappings: %{"U" => :name}
       }
 
       iex> CliOptions.Schema.new!([name: [type: :invalid]])
@@ -140,15 +142,16 @@ defmodule CliOptions.Schema do
     end
 
     schema = CliOptions.Schema.Validation.validate!(schema)
-    mappings = build_mappings(schema)
+    long_mappings = build_mappings(schema, &long_mappings/1)
+    short_mappings = build_mappings(schema, &short_mappings/1)
 
-    %__MODULE__{schema: schema, mappings: mappings}
+    %__MODULE__{schema: schema, long_mappings: long_mappings, short_mappings: short_mappings}
   end
 
-  defp build_mappings(schema) do
+  defp build_mappings(schema, mappings_function) do
     mappings = %{}
 
-    for {option, opts} <- schema, mapping <- option_mappings(opts), reduce: mappings do
+    for {option, opts} <- schema, mapping <- mappings_function.(opts), reduce: mappings do
       mappings when is_map_key(mappings, mapping) ->
         raise ArgumentError,
               "mapping #{mapping} for option :#{option} is already defined for :#{mappings[mapping]}"
@@ -158,12 +161,18 @@ defmodule CliOptions.Schema do
     end
   end
 
-  defp option_mappings(opts) do
+  defp long_mappings(opts) do
     [
-      opts[:long],
-      opts[:short]
+      opts[:long]
     ]
     |> Enum.concat(opts[:aliases])
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp short_mappings(opts) do
+    [
+      opts[:short]
+    ]
     |> Enum.concat(opts[:short_aliases])
     |> Enum.reject(&is_nil/1)
   end
@@ -297,14 +306,17 @@ defmodule CliOptions.Schema do
   end
 
   @doc false
-  @spec ensure_valid_option(option :: String.t(), schema :: t()) ::
+  @spec ensure_valid_option(option :: String.t(), short_or_long :: :long | :short, schema :: t()) ::
           {:ok, atom(), keyword()} | {:error, String.t()}
-  def ensure_valid_option(option, schema) do
-    case Map.get(schema.mappings, option) do
+  def ensure_valid_option(option, short_or_long, schema) do
+    case short_or_long_get(option, short_or_long, schema) do
       nil -> {:error, "invalid option #{inspect(option)}"}
       option -> {:ok, option, schema.schema[option]}
     end
   end
+
+  defp short_or_long_get(option, :long, schema), do: Map.get(schema.long_mappings, option)
+  defp short_or_long_get(option, :short, schema), do: Map.get(schema.short_mappings, option)
 
   @doc false
   @spec expected_args(opts :: keyword()) :: integer()
