@@ -215,7 +215,7 @@ defmodule CliOptions.SchemaTest do
     end
 
     test "default value validations" do
-      schema = CliOptions.Schema.Validation.schema()
+      schema = CliOptions.Schema.schema()
 
       {:in, valid_types} = schema.schema[:type][:type]
 
