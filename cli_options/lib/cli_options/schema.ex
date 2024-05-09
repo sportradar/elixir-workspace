@@ -7,100 +7,7 @@ defmodule CliOptions.Schema do
   The following are the options supported in a schema. They are used for validating
   passed command line arguments:
 
-    * `:type` (`t:atom/0`) - The type of the argument. Can be one of
-    #{inspect(CliOptions.Schema.Validation.valid_types())}. If not set defaults to `:string`.
-
-      ```cli
-      schema = [
-        name: [type: :string],
-        retries: [type: :integer],
-        interval: [type: :float],
-        debug: [type: :boolean],
-        verbose: [type: :counter],
-        mode: [type: :atom]
-      ]
-
-      CliOptions.parse!(
-        ["--name", "foo", "--retries", "3", "--interval", "2.5", "--debug"],
-        schema
-      )
-      >>>
-
-      CliOptions.parse!(
-        ["--verbose", "--verbose", "--mode", "parallel"],
-        schema
-      )
-      ```
-
-    * `:long` (`t:String.t/0`) - The long name for the option, it is expected to be provided as `--{long_name}`. If not
-    set defaults to the option name itself, casted to string with underscores replaced by dashes. 
-
-      ```cli
-      schema = [
-        # long not set, it is set to --user-name
-        user_name: [type: :string],
-        # you can explicitly set a long name with underscores if needed
-        another_user_name: [type: :string, long: "another_user_name"]
-      ]
-
-      CliOptions.parse!(["--user-name", "John", "--another_user_name", "Jack"], schema)
-      ```
-
-    * `:short` (`t:String.t/0`) - An optional short name for the option. It is expected
-    to be a single letter string.
-
-      ```cli
-      schema = [user_name: [short: "U"]]
-
-      CliOptions.parse!(["-U", "John"], schema)
-      ```
-
-    * `:aliases` (list of `t:String.t/0`) - Long aliases for the option. It is expected
-    to be a list of strings. 
-
-      ```cli
-      schema = [user_name: [aliases: ["user_name"]]]
-
-      # with the default long name
-      CliOptions.parse!(["--user-name", "John"], schema)
-      >>>
-
-      # with an alias
-      CliOptions.parse!(["--user_name", "John"], schema)
-      ```
-
-    * `:short_aliases` (list of `t:String.t/0`) - Similar to `:aliases`, but for short names.
-    * `:doc` (`t:String.t/0`) - The documentation for the CLI option. Can be any markdown
-    string. This will be used in the automatically generate options documentation.
-    * `:default` (`t:term/0`) - The default value for the CLI option if that option is not
-    provided in the CLI arguments. This is validated according to the given `:type`.
-
-      ```cli
-      schema = [user_name: [default: "John"]]
-
-      # with no option provided
-      CliOptions.parse!([], schema)
-      >>>
-
-      # provided CLI options override the default value
-      CliOptions.parse!(["--user-name", "Jack"], schema)
-      >>>
-      ```
-
-    * `:required` (`t:boolean/0`) - Defines if the option is required or not. An exception
-    will be raised if a required option is not provided in the CLI arguments.
-
-    * `:multiple` (`t:boolean/0`) - If set to `true` an option can be provided multiple
-    times. Defaults to `false`.
-
-      ```cli
-      schema = [project: [multiple: true]]
-
-      CliOptions.parse!(["--project", "foo", "--project", "bar"], schema)
-      ```
-
-    * `:allowed` (list of `t:String.t/0`) - A set of allowed values for the option. If any
-    other value is given an exception will be raised during parsing.
+  #{NimbleOptions.docs(CliOptions.Schema.Validation.schema())}
   """
 
   @typedoc """
@@ -116,7 +23,6 @@ defmodule CliOptions.Schema do
 
   defstruct schema: [], long_mappings: [], short_mappings: []
 
-  # validates the schema, rename to new! similar to nimble_options
   @doc """
   Validates the schema.
 
@@ -125,15 +31,15 @@ defmodule CliOptions.Schema do
       iex> CliOptions.Schema.new!([name: [type: :string, short: "U"], verbose: [type: :boolean]])
       %CliOptions.Schema{
         schema: [
-          name: [short_aliases: [], aliases: [], long: "name", type: :string, short: "U"],
-          verbose: [default: false, short_aliases: [], aliases: [], long: "verbose", type: :boolean]
+          name: [long: "name", multiple: false, required: false, short_aliases: [], aliases: [], type: :string, short: "U"],
+          verbose: [long: "verbose", default: false, multiple: false, required: false, short_aliases: [], aliases: [], type: :boolean]
         ],
         long_mappings: %{"name" => :name, "verbose" => :verbose},
         short_mappings: %{"U" => :name}
       }
 
       iex> CliOptions.Schema.new!([name: [type: :invalid]])
-      ** (ArgumentError) invalid schema for :name, invalid type :invalid
+      ** (ArgumentError) invalid schema for :name, invalid value for :type option: expected one of [:string, :boolean, :integer, :float, :counter, :atom], got: :invalid
   """
   @spec new!(schema :: keyword()) :: t()
   def new!(schema) do

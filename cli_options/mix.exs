@@ -46,6 +46,7 @@ defmodule CliOptions.MixProject do
 
   defp deps do
     [
+      {:nimble_options, "~> 1.1"},
       {:ex_doc, "== 0.32.0", only: :dev, runtime: false},
       {:fancy_fences, "~> 0.3.1", only: :dev, runtime: false},
       {:credo, "== 1.7.5", only: [:dev, :test], runtime: false},
