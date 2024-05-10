@@ -55,7 +55,7 @@ defmodule Workspace.MixProject do
   defp deps do
     [
       {:cli_options, path: "../cli_options/"},
-      {:nimble_options, "== 1.1.0"},
+      {:nimble_options, "~> 1.1.0"},
       {:jason, "~> 1.4.1", optional: true},
       {:ex_doc, "== 0.32.0", only: :dev, runtime: false},
       {:credo, "== 1.7.5", only: [:dev, :test], runtime: false},

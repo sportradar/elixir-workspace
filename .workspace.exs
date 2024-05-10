@@ -99,7 +99,8 @@
       description: "mono-repo dependencies versions",
       opts: [
         deps: [
-          # add dependencies in strict alphabetical order
+          nimble_options: [version: "~> 1.1.0"],
+          # dev dependencies
           dialyxir: [
             version: "== 1.4.3",
             options: [only: [:dev], runtime: false]
