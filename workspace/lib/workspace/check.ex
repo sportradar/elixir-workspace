@@ -73,9 +73,131 @@ defmodule Workspace.Check do
   ]
   ```
 
-  ## Implementing a `Workspace.Check`
+  ## The `Workspace.Check` behaviour
 
-  TODO
+  In order to implement and use a custom check you need to:
+
+    1. Define a module implementing the `Workspace.Check` behaviour.
+    2. Include your check in the workspace configuration.
+
+  ### The schema
+
+  Let's implement a simple check that verifies that all workspace projects
+  have a description set.
+
+  ```elixir
+  defmodule MyCheck do
+    @behaviour Workspace.Check
+
+    # ...callbacks implementation...
+  end
+  ```
+
+  We will start by defining the check's schema. This is expected to be a
+  `NimbleOptions` schema with the custom options of your check. For the needs
+  of this guide we will assume that we support a single option:
+
+  ```elixir
+  @impl Workspace.Check
+  def schema do
+    schema = [
+      must_end_with_period: [
+        type: :boolean,
+        doc: "If set the description must end with a period",
+        default: false
+      ]
+    ]
+
+    NimbleOptions.new!(schema)
+  end
+  ```
+
+  > #### Schema as module attribute {: .tip}
+  >
+  > Instead of defining the schema directly in the `c:schema/0` callback it
+  > is advised to define it as a module attribute. This way you can auto-generate
+  > documentation in your check's `moduledoc`:
+  >
+  > ```elixir
+  > defmodule MyCheck do
+  >   @behaviour Workspace.Check
+  >
+  >   @schema NimbleOptions.new!(
+  >     must_end_with_period: [
+  >       type: :boolean,
+  >       doc: "If set the description must end with a period",
+  >       default: false
+  >     ] 
+  >   )
+  >
+  >   @moduledoc \"""
+  >   My check's documentation
+  >
+  >   ## Options
+  >
+  >   \#{NimbleOptions.docs(@schema)}
+  >   \"""
+  > 
+  >   @impl Workspace.Check
+  >   def schema, do: @schema
+  > end
+  > ```
+
+  ### The check
+
+  We can now implement the `c:check/2` callback which is responsbible for the
+  actual check logic. In our simple example we only need to verify that the
+  `:description` is set in each project's config.
+
+  The `c:check/2` callback is expected to return a list of check results. You
+  can use the `check_projects/3` helper method.
+
+  ```elixir
+  @impl Workspace.Check
+  def check(workspace, check) do
+    must_end_with_period = Keyword.fetch!(check[:opts], :must_end_with_period)
+
+    Workspace.Check.check_projects(workspace, check, fn project ->
+      description = project.config[:description]
+
+      cond do
+        not is_binary(description) ->
+          {:error, description: description, message: "description must be a string"}
+
+        must_end_with_period and not String.ends_with?(description, ".") ->
+          {:error, description: description, message: "description must end with a period"}
+
+        true ->
+          {:ok, description: description}
+      end
+    end)
+  end
+  ```
+
+  Notice that the `check_projects/3` helper expects the inner function to return
+  `:ok`, `:error` tuples where the second element is check metadata. These metadata are
+  used by the `c:format_result/1` callback for pretty printing the check status
+  message per project.
+
+  ```elixir
+  @impl Workspace.Check
+  def format_result(%Workspace.Check.Result{status: :ok, meta: metadata}) do
+    "description set to \#{metadata[:description]}"
+  end
+
+  def format_result(%Workspace.Check.Result{status: :error, meta: metadata}) do
+    message = metadata[:message]
+    description = metadata[:description]
+
+    [message, ", got: ", :red, inspect(description), :reset]
+  end
+  ```
+
+  Notice how we use `IO.ANSI` escape sequences for pretty printing the invalid
+  project description.
+
+  For more examples you can check the implementation of the checks provided by
+  the workspace.
   """
 
   @doc """
@@ -166,7 +288,7 @@ defmodule Workspace.Check do
   a `Check.Result` for each checked project.
 
   It takes care of transforming the function output to a `Check.Result` struct
-  and handling ignored projects...
+  and handling ignored projects.
   """
   @spec check_projects(
           workspace :: Workspace.State.t(),
