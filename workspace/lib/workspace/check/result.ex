@@ -1,8 +1,8 @@
 defmodule Workspace.Check.Result do
   @moduledoc """
-  A checker's result
+  A struct holding a check's result.
 
-  Contains info about the checked project if applicable, the checker config
+  Contains info about the checked project if applicable, the check's config
   and the check status and metadata.
   """
 
