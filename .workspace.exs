@@ -105,8 +105,8 @@
             version: "== 1.4.3",
             options: [only: [:dev], runtime: false]
           ],
-          ex_doc: [version: "== 0.32.0"],
-          credo: [version: "== 1.7.5"],
+          ex_doc: [version: "== 0.32.2"],
+          credo: [version: "== 1.7.6"],
           doctor: [version: "== 0.21.0"]
         ]
       ]
