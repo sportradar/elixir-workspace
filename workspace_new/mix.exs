@@ -19,7 +19,6 @@ defmodule WorkspaceNew.MixProject do
       deps: deps(),
       deps_path: "../artifacts/deps",
       build_path: "../artifacts/build",
-      preferred_cli_env: [docs: :docs],
 
       # Tests
       test_coverage: [
@@ -51,7 +50,7 @@ defmodule WorkspaceNew.MixProject do
 
   defp deps do
     [
-      {:ex_doc, "== 0.32.2", only: :docs},
+      {:ex_doc, "== 0.32.2", only: :dev, runtime: false},
       {:credo, "== 1.7.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
       {:doctor, "== 0.21.0", only: :dev, runtime: false}
