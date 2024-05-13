@@ -26,9 +26,7 @@ defmodule <%= mod %>.MixWorkspace do
     # Run "mix help deps" to learn about dependencies.
     defp deps do
       [
-        # TODO: set proper versions once released
-        {:workspace, github: "sportradar/elixir-workspace", sparse: "workspace"},
-        {:cli_options, github: "sportradar/elixir-workspace", sparse: "cli_options", override: true}
+        {:workspace, "~> 0.1.0"}
       ]
     end
   end
