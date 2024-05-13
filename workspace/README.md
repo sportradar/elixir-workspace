@@ -1,5 +1,9 @@
 # Workspace
 
+[![Hex.pm](https://img.shields.io/hexpm/v/workspace.svg)](https://hex.pm/packages/workspace)
+[![hex.pm](https://img.shields.io/hexpm/l/workspace.svg)](https://hex.pm/packages/workspace)
+[![Documentation](https://img.shields.io/badge/-Documentation-blueviolet)](https://hexdocs.pm/workspace/index.html)
+
 `Workspace` provides a set of tools for working with **elixir monorepos**.
 
 > #### What is a monorepo? {: .neutral}

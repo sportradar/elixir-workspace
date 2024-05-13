@@ -1,5 +1,9 @@
 # mix workspace.new
 
+[![Hex.pm](https://img.shields.io/hexpm/v/workspace_new.svg)](https://hex.pm/packages/workspace_new)
+[![hex.pm](https://img.shields.io/hexpm/l/workspace_new.svg)](https://hex.pm/packages/workspace_new)
+[![Documentation](https://img.shields.io/badge/-Documentation-blueviolet)](https://hexdocs.pm/workspace_new/index.html)
+
 Provides a `workspace.new` scaffolding tool as an archive.
 
 ## Installation

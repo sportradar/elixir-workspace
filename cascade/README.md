@@ -1,5 +1,9 @@
 # Cascade
 
+[![Hex.pm](https://img.shields.io/hexpm/v/cascade.svg)](https://hex.pm/packages/cascade)
+[![hex.pm](https://img.shields.io/hexpm/l/cascade.svg)](https://hex.pm/packages/cascade)
+[![Documentation](https://img.shields.io/badge/-Documentation-blueviolet)](https://hexdocs.pm/cascade/index.html)
+
 Generate code from templates.
 
 `Cascade` provides an easy to use interface for generating code from a set of
