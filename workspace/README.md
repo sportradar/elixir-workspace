@@ -192,14 +192,16 @@ All checks implement the `Workspace.Check` behaviour and can be configured
 in your `.workspace.exs` file. `Workspace` comes with some default checks
 that among other, allow you to:
 
-  * Ensure that [specific dependencies are set](`Workspace.Checks.EnsureDependencies`)
+  * Ensure that [specific dependencies are set](https://hexdocs.pm/workspace/Workspace.Checks.EnsureDependencies.html)
   on all projects, e.g. `ex_doc`.
-  * Ensure that external [dependencies versions match the expected ones](`Workspace.Checks.DependenciesVersion`).
-  * Verify that [no forbidden dependencies are defined](`Workspace.Checks.ForbiddenDeps`).
-  * [Validate arbitrarily](`Workspace.Checks.ValidateProject`) the projects' config objects.
-  * [Enforce boundaries](`Workspace.Checks.EnforceBoundaries`) between workspace projects.
+  * Ensure that external [dependencies versions match the expected ones](https://hexdocs.pm/workspace/Workspace.Checks.DependenciesVersion.html).
+  * Verify that [no forbidden dependencies are defined](https://hexdocs.pm/workspace/Workspace.Checks.ForbiddenDeps.html).
+  * [Validate arbitrarily](https://hexdocs.pm/workspace/Workspace.Checks.ValidateProject.html)
+  the projects' config objects.
+  * [Enforce boundaries](https://hexdocs.pm/workspace/Workspace.Checks.EnforceBoundaries.html)
+  between workspace projects.
 
-You could also implement your own checks, incorporating any custom validation
+You can also implement your own checks, incorporating any custom validation
 logic you may wish.
 
 You can run the checks against your workspace through the `mix workspace.check`
