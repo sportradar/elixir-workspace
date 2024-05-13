@@ -16,9 +16,9 @@ defmodule Workspace.Checks.DependenciesVersion do
           type: :keyword_list,
           doc: """
           Other options of the dependencies definition that should also match. This is
-          useful in case you to ensure for example that specific dependencies are loaded
-          only in the `:dev` environment. In order to do this, you have to set the `:options`
-          to `[only: :test]`.
+          useful, in case you want to ensure for example, that specific dependencies are
+          loaded only in the `:dev` environment. In order to do this, you have to set the
+          `:options` to `[only: :dev]`.
 
           If not set only the version will be checked.
           """
@@ -61,7 +61,7 @@ defmodule Workspace.Checks.DependenciesVersion do
         # checks version and :only and :runtime options
         ex_doc: [
           version: "== 0.28.3",
-          options: [:only, :runtime]
+          options: [only: :dev, runtime: true]
         ],
         # checks only version
         ex_doc: [
