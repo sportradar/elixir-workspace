@@ -221,8 +221,8 @@ defmodule Workspace do
 
   > #### Visualizing what is affected {: .tip}
   >
-  > You can use the `--show-status` flag in most of `workspace` to indicate what
-  > is unchanged, modified or affected.
+  > You can use the `--show-status` flag in most of `workspace` commands to indicate
+  > what is unchanged, modified or affected.
   >
   > For instance if you have changed `package_f` and `package_d` you can visualize
   > the graph using `workspace.graph --format mermaid --show-status`
@@ -279,7 +279,7 @@ defmodule Workspace do
 
   The following environment variables are supported:
 
-  * `WORKSPACE_DEBUG` - if then debug information will be printed.
+  * `WORKSPACE_DEBUG` - if set then debug information will be printed.
 
   Environment variables that are not meant to hold a value (and act basically as
   flags) should be set to either `1` or `true`, for example:
