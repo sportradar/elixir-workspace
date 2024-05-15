@@ -65,7 +65,92 @@ defmodule Mix.Tasks.Workspace.Graph do
 
       $ mix workspace.graph
 
-  If no dependency is given, it uses the tree defined in the `mix.exs` file.
+  ## Formatters
+
+  By default the graph will be pretty printed in the terminal:
+
+      $ mix workspace.graph
+      :api
+      ├── :accounts
+      │   └── :ecto_utils
+      ├── :cli_tools
+      └── :orders
+          ├── :string_utils
+          └── :warehouse
+              └── :ecto_utils
+      :back_office
+      └── :cli_tools
+
+  You can also format it as `mermaid` or `dot`:
+
+      $ mix workspace.graph --format dot
+      digraph G {
+        accounts -> ecto_utils;
+        api -> accounts;
+        api -> cli_tools;
+        api -> orders;
+        back_office -> cli_tools;
+        orders -> string_utils;
+        orders -> warehouse;
+        warehouse -> ecto_utils;
+      }
+
+  ## Showing project's statuses
+
+  If you pass the `--show-status` flag the project statuses are also
+  included.
+
+      $ mix workspace.graph --show-status
+      :api ✚
+      ├── :accounts ✔
+      │   └── :ecto_utils ✔
+      ├── :cli_tools ✚
+      └── :orders ✔
+          ├── :string_utils ✔
+          └── :warehouse ✔
+              └── :ecto_utils ✔
+      :back_office ●
+      └── :cli_tools ✚
+
+  The following color coding is used:
+
+  * Modified projects are shown in **red color**
+  * Affected projects are shown in **orange color**
+
+  ## Focusing the graph around a project
+
+  You can focus the graph around a single project by passing the `--focus`
+  option.
+
+      $ mix workspace.graph --focus api
+      :api
+      ├── :accounts
+      ├── :cli_tools
+      └── :orders
+
+  This will print the graph around `cli_tools` including only it's children
+  and parents that have a distance of 1 edge from it. You can widen the
+  picture by setting the `--proximity` flag.
+
+  ## External dependencies
+
+  By default only the workspace projects are included in the graph. You
+  can however include the external dependencies by passing the `--external`
+  flag:
+
+      $ mix workspace.graph --external
+      :api
+      ├── :accounts
+      │   └── :ecto_utils
+      │       └── :poison (external)
+      ├── :cli_tools
+      └── :orders
+          ├── :string_utils
+          │   └── :ex_doc (external)
+          └── :warehouse
+              └── :ecto_utils
+      :back_office
+      └── :cli_tools
 
   ## Command Line Options
 
