@@ -87,10 +87,38 @@ defmodule Mix.Tasks.Workspace.Run do
   @moduledoc """
   Run a mix task on one or more workspace projects.
 
-  Monorepos can have hundreds of projects so being able to run a task against all
-  or a subset of them is a key feature of `Workspace`.
+  You need to specify the task to be executed with the `--task, -t` option:
 
-  ## The project graph
+      $ mix workspace.run -t format
+
+  This will run `mix format` on all projects of the workspace. You can also select
+  the projects to run, or exclude specific projects:
+
+      # Run format only on foo and bar
+      $ mix workspace.run -t format -p foo -p bar
+
+      # Run format on all projects except foo
+      $ mix workspace.run -t format -e foo
+
+  ### Passing options to tasks
+
+  You can pass task specific options after the return separator (`--`). For example:
+
+      $ mix workspace.run -t format -p foo -p bar -- --check-formatted
+      
+  ## Command-line Options
+
+  #{CliOptions.docs(@options_schema, sort: true)}
+
+  ## Filtering runs
+
+  Monorepos can have hundreds of projects so being able to run a task against all
+  or a subset of them is a key feature of Workspace.
+
+  One of the key features of `workspace.run` is the flexibility regarding the projects
+  on which the task will be executed.
+
+  ### The project graph
 
   The core concept of `Workspace` is the project graph. This is a directed acyclic
   graphs depicting the internal project dependencies. This is used by all tasks
@@ -131,17 +159,10 @@ defmodule Mix.Tasks.Workspace.Run do
   > - In the main branch it makes sense to run the full suite on the
   > complete workspace.
 
-  Check `Workspace` for more details. In order to visualize the graph of the current
-  workspace check the `workspace.graph` task.
+  In order to visualize the graph of the current workspace check the `mix workspace.graph`
+  task.
 
-  ## Command-line Options
-
-  #{CliOptions.docs(@options_schema, sort: true)}
-
-  ## Filtering tasks
-
-  One of the key features of `workspace.run` is the flexibility regarding the projects
-  on which the task will be executed.
+  ### Filtering examples
 
   Let's see some examples:
 
@@ -191,11 +212,6 @@ defmodule Mix.Tasks.Workspace.Run do
 
   You can set multiple environment variables by setting the `--env-var` multiple times.
 
-  ## Dry running a task
-
-  You can set the `--dry-run` option in order to dry run the task, e.g. to check the
-  sequence of mix tasks that will be invoked.
-
   ## Early stopping
 
   You can set the `--early-stop` flag in order to immediately terminate the command if
@@ -210,6 +226,11 @@ defmodule Mix.Tasks.Workspace.Run do
 
       # Run lint on all projects but ignore the output status of project foo
       $ mix workspace.run -t lint --allow-failure foo
+
+  ## Dry running a task
+
+  You can set the `--dry-run` option in order to dry run the task, e.g. to check the
+  sequence of mix tasks that will be invoked.
   """
 
   use Mix.Task
