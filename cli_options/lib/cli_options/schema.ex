@@ -141,6 +141,10 @@ defmodule CliOptions.Schema do
       A set of allowed values for the option. If any other value is given an exception
       will be raised during parsing.
       """
+    ],
+    hidden: [
+      type: :boolean,
+      doc: "If set to `true` the option will not be included in the generated docs"
     ]
   ]
 

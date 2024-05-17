@@ -24,6 +24,10 @@ defmodule CliOptions.Schema.DocsTest do
     with_dash: [
       type: :boolean,
       doc: "a key with a dash"
+    ],
+    hidden_option: [
+      type: :boolean,
+      hidden: true
     ]
   ]
 

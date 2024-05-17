@@ -5,11 +5,15 @@ defmodule CliOptions.Schema.Docs do
   @spec generate(schema :: keyword(), opts :: keyword()) :: String.t()
   def generate(schema, opts) do
     schema
+    |> remove_hidden_options()
     |> maybe_sort(Keyword.get(opts, :sort, false))
     |> Enum.reduce([], &maybe_option_doc/2)
     |> Enum.reverse()
     |> Enum.join("\n")
   end
+
+  defp remove_hidden_options(schema),
+    do: Enum.reject(schema, fn {_key, opts} -> opts[:hidden] end)
 
   defp maybe_sort(schema, true), do: Enum.sort_by(schema, fn {key, _value} -> key end, :asc)
   defp maybe_sort(schema, _other), do: schema
