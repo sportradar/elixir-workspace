@@ -431,6 +431,13 @@ defmodule CliOptions do
 
     * `:sort` - if set to `true` the options will be sorted alphabetically.
   """
-  @spec docs(schema :: keyword(), opts :: keyword()) :: String.t()
-  def docs(schema, opts \\ []), do: CliOptions.Docs.generate(schema, opts)
+  @spec docs(schema :: keyword() | CliOptions.Schema.t(), opts :: keyword()) :: String.t()
+  def docs(schema, opts \\ [])
+
+  def docs(%CliOptions.Schema{} = schema, opts), do: CliOptions.Docs.generate(schema, opts)
+
+  def docs(schema, opts) when is_list(schema) do
+    schema = CliOptions.Schema.new!(schema)
+    docs(schema, opts)
+  end
 end

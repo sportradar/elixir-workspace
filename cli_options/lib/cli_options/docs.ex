@@ -2,9 +2,9 @@ defmodule CliOptions.Docs do
   @moduledoc false
 
   @doc false
-  @spec generate(schema :: keyword(), opts :: keyword()) :: String.t()
-  def generate(schema, opts) do
-    schema
+  @spec generate(schema :: CliOptions.Schema.t(), opts :: keyword()) :: String.t()
+  def generate(%CliOptions.Schema{} = schema, opts) do
+    schema.schema
     |> remove_hidden_options()
     |> maybe_sort(Keyword.get(opts, :sort, false))
     |> Enum.reduce([], &maybe_option_doc/2)
@@ -19,11 +19,7 @@ defmodule CliOptions.Docs do
   defp maybe_sort(schema, _other), do: schema
 
   defp maybe_option_doc({key, schema}, acc) do
-    if schema[:doc] == false do
-      acc
-    else
-      option_doc({key, schema}, acc)
-    end
+    option_doc({key, schema}, acc)
   end
 
   defp option_doc({key, schema}, acc) do
@@ -33,6 +29,7 @@ defmodule CliOptions.Docs do
         "`#{key_doc(key, schema)}`",
         "(`#{schema[:type]}`)",
         "-",
+        maybe_deprecated(schema),
         maybe_required(schema),
         key_body_doc(schema)
       ]
@@ -52,9 +49,16 @@ defmodule CliOptions.Docs do
   defp format_key(key), do: String.replace("#{key}", "_", "-")
 
   defp maybe_alias(schema) do
-    case schema[:alias] do
+    case schema[:short] do
       nil -> ""
       alias -> ", -#{alias}"
+    end
+  end
+
+  defp maybe_deprecated(schema) do
+    case schema[:deprecated] do
+      nil -> nil
+      message -> "*DEPRECATED #{message}*"
     end
   end
 
@@ -78,20 +82,21 @@ defmodule CliOptions.Docs do
       maybe_allowed(schema),
       maybe_default(schema)
     ]
-    |> Enum.join("")
+    |> Enum.reject(fn part -> is_nil(part) or part == "" end)
+    |> Enum.join(" ")
   end
 
   defp maybe_allowed(schema) do
     case schema[:allowed] do
       nil -> ""
-      allowed -> "   Allowed values: `#{inspect(allowed)}`."
+      allowed -> "Allowed values: `#{inspect(allowed)}`."
     end
   end
 
   defp maybe_default(schema) do
     case schema[:default] do
       nil -> ""
-      default -> "   [default: `#{default}`]"
+      default -> "[default: `#{default}`]"
     end
   end
 end

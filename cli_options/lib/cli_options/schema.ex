@@ -111,7 +111,7 @@ defmodule CliOptions.Schema do
       type: :string,
       doc: """
       The documentation for the CLI option. Can be any markdown string. This will be
-      used in the automatically generate options documentation.
+      used in the automatically generated options documentation.
       """
     ],
     required: [

@@ -7,7 +7,7 @@ defmodule CliOptions.DocsTest do
     ],
     project: [
       type: :string,
-      alias: :p,
+      short: "p",
       required: true,
       doc: "The project to use",
       multiple: true
@@ -16,10 +16,6 @@ defmodule CliOptions.DocsTest do
       type: :string,
       default: "parallel",
       allowed: ["parallel", "serial"]
-    ],
-    ignore: [
-      type: :boolean,
-      doc: false
     ],
     with_dash: [
       type: :boolean,
@@ -35,10 +31,10 @@ defmodule CliOptions.DocsTest do
     test "test schema" do
       expected =
         """
-        * `--verbose` (`boolean`) -
+        * `--verbose` (`boolean`) - [default: `false`]
         * `--project, -p...` (`string`) - Required. The project to use
-        * `--mode` (`string`) -    Allowed values: `["parallel", "serial"]`.   [default: `parallel`]
-        * `--with-dash` (`boolean`) - a key with a dash
+        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `parallel`]
+        * `--with-dash` (`boolean`) - a key with a dash [default: `false`]
         """
         |> String.trim()
 
@@ -48,14 +44,30 @@ defmodule CliOptions.DocsTest do
     test "with sorting enabled" do
       expected =
         """
-        * `--mode` (`string`) -    Allowed values: `["parallel", "serial"]`.   [default: `parallel`]
+        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `parallel`]
         * `--project, -p...` (`string`) - Required. The project to use
-        * `--verbose` (`boolean`) -
-        * `--with-dash` (`boolean`) - a key with a dash
+        * `--verbose` (`boolean`) - [default: `false`]
+        * `--with-dash` (`boolean`) - a key with a dash [default: `false`]
         """
         |> String.trim()
 
       assert CliOptions.docs(@test_schema, sort: true) == expected
+    end
+
+    test "prints deprecation info" do
+      schema = [
+        old: [type: :string, doc: "old option", deprecated: "use --new"],
+        new: [type: :string, doc: "new option"]
+      ]
+
+      expected =
+        """
+        * `--old` (`string`) - *DEPRECATED use --new* old option
+        * `--new` (`string`) - new option
+        """
+        |> String.trim()
+
+      assert CliOptions.docs(schema) == expected
     end
   end
 end
