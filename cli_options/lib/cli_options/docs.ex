@@ -22,16 +22,16 @@ defmodule CliOptions.Docs do
     option_doc({key, schema}, acc)
   end
 
-  defp option_doc({key, schema}, acc) do
+  defp option_doc({_key, schema}, acc) do
     doc =
       [
         "*",
-        "`#{key_doc(key, schema)}`",
+        "`#{option_name_doc(schema)}`",
         "(`#{schema[:type]}`)",
         "-",
         maybe_deprecated(schema),
         maybe_required(schema),
-        key_body_doc(schema)
+        option_body_doc(schema)
       ]
       |> Enum.filter(&is_binary/1)
       |> Enum.map(&String.trim_trailing/1)
@@ -41,17 +41,23 @@ defmodule CliOptions.Docs do
     [doc | acc]
   end
 
-  defp key_doc(key, schema) do
-    "--#{format_key(key)}#{maybe_alias(schema)}"
+  defp option_name_doc(schema) do
+    [
+      format_long(schema),
+      format_short(schema)
+    ]
+    |> Enum.reject(&is_nil/1)
+    |> Enum.map(&String.trim_trailing/1)
+    |> Enum.join(", ")
     |> maybe_repeating(schema)
   end
 
-  defp format_key(key), do: String.replace("#{key}", "_", "-")
+  defp format_long(schema), do: "--#{Keyword.fetch!(schema, :long)}"
 
-  defp maybe_alias(schema) do
+  defp format_short(schema) do
     case schema[:short] do
-      nil -> ""
-      alias -> ", -#{alias}"
+      nil -> nil
+      alias -> "-#{alias}"
     end
   end
 
@@ -76,7 +82,7 @@ defmodule CliOptions.Docs do
     end
   end
 
-  defp key_body_doc(schema) do
+  defp option_body_doc(schema) do
     [
       schema[:doc],
       maybe_allowed(schema),

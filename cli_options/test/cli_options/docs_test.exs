@@ -69,5 +69,17 @@ defmodule CliOptions.DocsTest do
 
       assert CliOptions.docs(schema) == expected
     end
+
+    test "custom long name is used" do
+      schema = [var: [doc: "a var", long: "variable"]]
+
+      expected =
+        """
+        * `--variable` (`string`) - a var
+        """
+        |> String.trim()
+
+      assert CliOptions.docs(schema) == expected
+    end
   end
 end
