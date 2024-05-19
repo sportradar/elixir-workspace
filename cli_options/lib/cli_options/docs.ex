@@ -86,7 +86,8 @@ defmodule CliOptions.Docs do
     [
       schema[:doc],
       maybe_allowed(schema),
-      maybe_default(schema)
+      maybe_default(schema),
+      maybe_aliases(schema)
     ]
     |> Enum.reject(fn part -> is_nil(part) or part == "" end)
     |> Enum.join(" ")
@@ -103,6 +104,21 @@ defmodule CliOptions.Docs do
     case schema[:default] do
       nil -> ""
       default -> "[default: `#{default}`]"
+    end
+  end
+
+  defp maybe_aliases(schema) do
+    aliases = Enum.map(schema[:aliases], fn a -> "`--#{a}`" end)
+    short_aliases = Enum.map(schema[:short_aliases], fn a -> "`-#{a}`" end)
+
+    case aliases ++ short_aliases do
+      [] ->
+        nil
+
+      aliases ->
+        aliases_string = Enum.join(aliases, ", ")
+
+        "[aliases: #{aliases_string}]"
     end
   end
 end

@@ -81,5 +81,19 @@ defmodule CliOptions.DocsTest do
 
       assert CliOptions.docs(schema) == expected
     end
+
+    test "aliases are included in doc" do
+      schema = [
+        var: [doc: "a var", aliases: ["var1", "var2"], short: "v", short_aliases: ["V", "u"]]
+      ]
+
+      expected =
+        """
+        * `--var, -v` (`string`) - a var [aliases: `--var1`, `--var2`, `-V`, `-u`]
+        """
+        |> String.trim()
+
+      assert CliOptions.docs(schema) == expected
+    end
   end
 end
