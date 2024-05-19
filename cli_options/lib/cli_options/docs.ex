@@ -13,7 +13,7 @@ defmodule CliOptions.Docs do
   end
 
   defp remove_hidden_options(schema),
-    do: Enum.reject(schema, fn {_key, opts} -> opts[:hidden] end)
+    do: Enum.reject(schema, fn {_key, opts} -> opts[:doc] == false end)
 
   defp maybe_sort(schema, true), do: Enum.sort_by(schema, fn {key, _value} -> key end, :asc)
   defp maybe_sort(schema, _other), do: schema

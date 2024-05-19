@@ -23,7 +23,7 @@ defmodule CliOptions.DocsTest do
     ],
     hidden_option: [
       type: :boolean,
-      hidden: true
+      doc: false
     ]
   ]
 

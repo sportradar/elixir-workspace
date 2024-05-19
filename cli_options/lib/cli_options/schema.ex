@@ -108,10 +108,12 @@ defmodule CliOptions.Schema do
       default: []
     ],
     doc: [
-      type: :string,
+      type: {:or, [:string, {:in, [false]}]},
+      type_doc: "`t:String.t/0` or `false`",
       doc: """
       The documentation for the CLI option. Can be any markdown string. This will be
-      used in the automatically generated options documentation.
+      used in the automatically generated options documentation. If set to `false`
+      then the option will not be included in the generated docs.
       """
     ],
     required: [
@@ -141,10 +143,6 @@ defmodule CliOptions.Schema do
       A set of allowed values for the option. If any other value is given an exception
       will be raised during parsing.
       """
-    ],
-    hidden: [
-      type: :boolean,
-      doc: "If set to `true` the option will not be included in the generated docs"
     ],
     deprecated: [
       type: :string,
