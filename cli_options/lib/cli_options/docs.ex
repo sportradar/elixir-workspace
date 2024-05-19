@@ -1,4 +1,4 @@
-defmodule CliOptions.Schema.Docs do
+defmodule CliOptions.Docs do
   @moduledoc false
 
   @doc false

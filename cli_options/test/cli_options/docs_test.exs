@@ -1,4 +1,4 @@
-defmodule CliOptions.Schema.DocsTest do
+defmodule CliOptions.DocsTest do
   use ExUnit.Case
 
   @test_schema [

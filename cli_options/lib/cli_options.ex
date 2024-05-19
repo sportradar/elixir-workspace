@@ -432,5 +432,5 @@ defmodule CliOptions do
     * `:sort` - if set to `true` the options will be sorted alphabetically.
   """
   @spec docs(schema :: keyword(), opts :: keyword()) :: String.t()
-  def docs(schema, opts \\ []), do: CliOptions.Schema.Docs.generate(schema, opts)
+  def docs(schema, opts \\ []), do: CliOptions.Docs.generate(schema, opts)
 end
