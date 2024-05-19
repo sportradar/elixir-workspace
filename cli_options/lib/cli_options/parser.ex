@@ -92,13 +92,22 @@ defmodule CliOptions.Parser do
     end
   end
 
-  defp parse_option(option, short_or_long, rest, schema) do
+  defp parse_option(cli_option, short_or_long, rest, schema) do
     with {:ok, option, opts} <-
-           CliOptions.Schema.ensure_valid_option(option, short_or_long, schema),
+           CliOptions.Schema.ensure_valid_option(cli_option, short_or_long, schema),
          {:ok, args, rest} <- fetch_option_args(option, opts, rest) do
+      if deprecation_message = Keyword.get(opts, :deprecated) do
+        IO.warn(
+          "#{render_option(cli_option, short_or_long)} is deprecated, " <> deprecation_message
+        )
+      end
+
       {:option, option, args, rest}
     end
   end
+
+  defp render_option(option, :short), do: "-" <> option
+  defp render_option(option, :long), do: "--" <> option
 
   defp fetch_option_args(option, opts, rest) do
     # TODO: currently we handle only one item per option, we can extend it with

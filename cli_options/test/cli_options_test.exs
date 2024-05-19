@@ -310,4 +310,35 @@ defmodule CliOptionsTest do
       assert result == {[foo: "bar"], ["a", "b"], ["-n", "2"]}
     end
   end
+
+  describe ":deprecated" do
+    import ExUnit.CaptureIO
+
+    test "warns when given deprecated argument is given" do
+      schema = [
+        foo: [deprecated: "use --bar"],
+        verbose: [type: :boolean, short: "v", deprecated: "do not use"]
+      ]
+
+      captured =
+        capture_io(:stderr, fn ->
+          options = CliOptions.parse!(["--foo", "value", "-v"], schema)
+
+          assert options == {[foo: "value", verbose: true], [], []}
+        end)
+
+      assert captured =~ "--foo is deprecated, use --bar"
+      assert captured =~ "-v is deprecated, do not use"
+    end
+
+    test "does not warn when not given" do
+      schema = [context: [deprecated: "Use something else"]]
+
+      assert capture_io(:stderr, fn ->
+               options = CliOptions.parse!([], schema)
+
+               assert options == {[], [], []}
+             end) == ""
+    end
+  end
 end

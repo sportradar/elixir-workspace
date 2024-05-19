@@ -145,6 +145,13 @@ defmodule CliOptions.Schema do
     hidden: [
       type: :boolean,
       doc: "If set to `true` the option will not be included in the generated docs"
+    ],
+    deprecated: [
+      type: :string,
+      doc: """
+      Defines a message to indicate that the option is deprecated. The message will
+      be displayed as a warning when passing the item.
+      """
     ]
   ]
 
