@@ -28,9 +28,17 @@ defmodule CliOptions.Docs do
 
   defp option_doc({key, schema}, acc) do
     doc =
-      """
-      * `#{key_doc(key, schema)}` (`#{schema[:type]}`) - #{maybe_required(schema)}#{key_body_doc(schema)}
-      """
+      [
+        "*",
+        "`#{key_doc(key, schema)}`",
+        "(`#{schema[:type]}`)",
+        "-",
+        maybe_required(schema),
+        key_body_doc(schema)
+      ]
+      |> Enum.filter(&is_binary/1)
+      |> Enum.map(&String.trim_trailing/1)
+      |> Enum.join(" ")
       |> String.trim_trailing()
 
     [doc | acc]
@@ -53,7 +61,7 @@ defmodule CliOptions.Docs do
   defp maybe_required(schema) do
     case schema[:required] do
       true -> "Required. "
-      _ -> ""
+      _ -> nil
     end
   end
 
