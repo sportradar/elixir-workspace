@@ -43,8 +43,8 @@ defmodule CliOptions.Docs do
 
   defp option_name_doc(schema) do
     [
-      format_long(schema),
-      format_short(schema)
+      format_short(schema),
+      format_long(schema)
     ]
     |> Enum.reject(&is_nil/1)
     |> Enum.map(&String.trim_trailing/1)

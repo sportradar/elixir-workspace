@@ -32,7 +32,7 @@ defmodule CliOptions.DocsTest do
       expected =
         """
         * `--verbose` (`boolean`) - [default: `false`]
-        * `--project, -p...` (`string`) - Required. The project to use
+        * `-p, --project...` (`string`) - Required. The project to use
         * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `parallel`]
         * `--with-dash` (`boolean`) - a key with a dash [default: `false`]
         """
@@ -45,7 +45,7 @@ defmodule CliOptions.DocsTest do
       expected =
         """
         * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `parallel`]
-        * `--project, -p...` (`string`) - Required. The project to use
+        * `-p, --project...` (`string`) - Required. The project to use
         * `--verbose` (`boolean`) - [default: `false`]
         * `--with-dash` (`boolean`) - a key with a dash [default: `false`]
         """
@@ -89,7 +89,7 @@ defmodule CliOptions.DocsTest do
 
       expected =
         """
-        * `--var, -v` (`string`) - a var [aliases: `--var1`, `--var2`, `-V`, `-u`]
+        * `-v, --var` (`string`) - a var [aliases: `--var1`, `--var2`, `-V`, `-u`]
         """
         |> String.trim()
 
