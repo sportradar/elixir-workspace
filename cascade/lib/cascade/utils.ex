@@ -10,6 +10,7 @@ defmodule Cascade.Utils do
       end)
 
     for module <- modules,
+        Code.ensure_loaded?(module),
         behaviour in (module.module_info(:attributes)[:behaviour] || []) do
       module
     end
