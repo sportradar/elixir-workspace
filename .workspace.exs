@@ -99,13 +99,13 @@
       description: "mono-repo dependencies versions",
       opts: [
         deps: [
-          nimble_options: [version: "~> 1.1.0"],
+          nimble_options: [version: "~> 1.1.1"],
           # dev dependencies
           dialyxir: [
             version: "== 1.4.3",
             options: [only: [:dev], runtime: false]
           ],
-          ex_doc: [version: "== 0.32.2"],
+          ex_doc: [version: "== 0.33.0"],
           credo: [version: "== 1.7.6"],
           doctor: [version: "== 0.21.0"]
         ]
