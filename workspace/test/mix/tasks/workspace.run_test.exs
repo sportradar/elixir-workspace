@@ -505,38 +505,4 @@ defmodule Mix.Tasks.Workspace.RunTest do
       System.delete_env("WORKSPACE_RUN_PARTITION")
     end
   end
-
-  describe "execution mode" do
-    test "with in-project execution mode" do
-      args = [
-        "-p",
-        "package_default_a",
-        "-p",
-        "package_default_b",
-        "--execution-mode",
-        "in-project" | @default_run_task
-      ]
-
-      captured =
-        capture_io(fn ->
-          RunTask.run(args)
-        end)
-
-      assert_cli_output_match(captured, [
-        ":package_default_a - mix format --check-formatted mix.exs",
-        ":package_default_b - mix format --check-formatted mix.exs"
-      ])
-    end
-
-    test "raises with invalid execution mode" do
-      args = ["--execution-mode", "invalid" | @default_run_task]
-
-      expected_message =
-        "invalid execution mode invalid, only `process` and `in-project` are supported"
-
-      assert_raise_and_capture_io(Mix.Error, expected_message, fn ->
-        RunTask.run(args)
-      end)
-    end
-  end
 end

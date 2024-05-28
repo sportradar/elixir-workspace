@@ -6,20 +6,6 @@ defmodule Mix.Tasks.Workspace.Run do
       doc: "The task to execute",
       required: true
     ],
-    execution_mode: [
-      type: :string,
-      default: "process",
-      doc: """
-      The execution mode. It supports the following values:
-
-        - `process` - every subcommand will be executed as a different process, this
-        is the preferred mode for most mix tasks
-        - `in-project` - invokes `Mix.Task.run` from the workspace in the given project
-        without creating a new process (**notice that this is experimental and may not work properly
-        for some commands**)
-
-      """
-    ],
     only_roots: [
       type: :boolean,
       doc: "If set, the task will be executed only on graph's root nodes."
@@ -339,28 +325,7 @@ defmodule Mix.Tasks.Workspace.Run do
     )
 
     if not options[:dry_run] do
-      do_run_task(project, options)
-    end
-  end
-
-  defp do_run_task(project, options) do
-    case options[:execution_mode] do
-      "process" ->
-        cmd(options[:task], options[:argv], project, options[:env])
-
-      "in-project" ->
-        Mix.Project.in_project(
-          project.app,
-          project.path,
-          fn _mixfile ->
-            Mix.Task.run(options[:task], options[:argv])
-          end
-        )
-
-      other ->
-        Mix.raise(
-          "invalid execution mode #{other}, only `process` and `in-project` are supported"
-        )
+      cmd(options[:task], options[:argv], project, options[:env])
     end
   end
 
