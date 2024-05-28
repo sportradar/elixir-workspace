@@ -29,17 +29,18 @@ defmodule Mix.Tasks.Workspace.Run do
       doc: "If set it will not execute the command, useful for testing and debugging.",
       default: false
     ],
-    env_var: [
+    env_vars: [
       type: :string,
       doc: """
       Optional environment variables to be set before command execution. They are
       expected to be in the form `ENV_VAR_NAME=value`. You can use this multiple times
       for setting multiple variables.\
       """,
+      long: "env-var",
       multiple: true
     ],
     allow_failure: [
-      type: :string,
+      type: :atom,
       doc: """
       Allow the task for this specific project to fail. Can be set more than once. 
       """,
@@ -245,10 +246,13 @@ defmodule Mix.Tasks.Workspace.Run do
 
     {opts, _args, extra} = CliOptions.parse!(args, @options_schema)
 
+    env = Enum.map(opts[:env_vars] || [], &parse_environment_variable/1)
+
     opts =
-      Keyword.update(opts, :allow_failure, [], fn projects ->
-        Enum.map(projects, &String.to_atom/1)
-      end)
+      opts
+      |> Keyword.put(:env, env)
+      |> Keyword.put(:argv, extra)
+      |> Keyword.put_new(:allow_failure, [])
 
     opts
     |> Mix.WorkspaceUtils.load_and_filter_workspace()
@@ -256,18 +260,37 @@ defmodule Mix.Tasks.Workspace.Run do
     |> filter_by_partition(opts[:partitions])
     |> Enum.map(fn project ->
       triggered_at = System.os_time(:millisecond)
-      result = run_in_project(project, opts, extra)
+      result = run_task(project, opts)
       completed_at = System.os_time(:millisecond)
 
-      %{
-        project: project,
-        status: execution_status(result, allowed_to_fail?(project.app, opts[:allow_failure])),
-        triggered_at: triggered_at,
-        completed_at: completed_at
-      }
-      |> maybe_early_stop(opts[:early_stop])
+      execution_result =
+        %{
+          project: project,
+          status: execution_status(result, allowed_to_fail?(project.app, opts[:allow_failure])),
+          triggered_at: triggered_at,
+          completed_at: completed_at
+        }
+
+      if opts[:early_stop] do
+        maybe_early_stop(execution_result)
+      end
+
+      execution_result
     end)
     |> raise_if_any_task_failed()
+  end
+
+  defp parse_environment_variable(var) do
+    case String.split(var, "=") do
+      [name, value] when value != "" ->
+        {String.upcase(name) |> String.to_charlist(), String.to_charlist(value)}
+
+      other ->
+        Mix.raise(
+          "invalid environment variable definition, it should be of the form " <>
+            "ENV_VAR_NAME=value, got: #{other}"
+        )
+    end
   end
 
   defp filter_by_partition(projects, partitions) when partitions in [nil, 1], do: projects
@@ -291,13 +314,8 @@ defmodule Mix.Tasks.Workspace.Run do
     end
   end
 
-  defp allowed_to_fail?(project, allowed_to_fail), do: project in allowed_to_fail
-
-  defp execution_status({:error, _reason}, true), do: :warn
-  defp execution_status({:error, _reason}, false), do: :error
-  defp execution_status(_status, _allowed_to_fail), do: :ok
-
-  defp run_in_project(%{skip: true} = project, options, _argv) do
+  # if the project is skipped we only print a message if --verbose is set
+  defp run_task(%{skip: true} = project, options) do
     if options[:verbose] do
       log_with_title(
         project_name(project, show_status: options[:show_status]),
@@ -305,14 +323,14 @@ defmodule Mix.Tasks.Workspace.Run do
         prefix: :header
       )
     end
+
+    :skip
   end
 
-  defp run_in_project(project, options, argv) do
+  defp run_task(project, options) do
     task = options[:task]
 
-    task_args = [task | argv]
-
-    env = parse_environment_variables(options[:env_var] || [])
+    task_args = [task | options[:argv]]
 
     log_with_title(
       project_name(project, show_status: options[:show_status]),
@@ -321,38 +339,21 @@ defmodule Mix.Tasks.Workspace.Run do
     )
 
     if not options[:dry_run] do
-      run_task(project, task, argv, options, env)
+      do_run_task(project, options)
     end
   end
 
-  defp parse_environment_variables(vars) do
-    Enum.map(vars, &parse_environment_variable/1)
-  end
-
-  defp parse_environment_variable(var) do
-    case String.split(var, "=") do
-      [name, value] when value != "" ->
-        {String.upcase(name) |> String.to_charlist(), String.to_charlist(value)}
-
-      other ->
-        Mix.raise(
-          "invalid environment variable definition, it should be of the form " <>
-            "ENV_VAR_NAME=value, got: #{other}"
-        )
-    end
-  end
-
-  defp run_task(project, task, argv, options, env) do
+  defp do_run_task(project, options) do
     case options[:execution_mode] do
       "process" ->
-        cmd(task, argv, project, env)
+        cmd(options[:task], options[:argv], project, options[:env])
 
       "in-project" ->
         Mix.Project.in_project(
           project.app,
           project.path,
           fn _mixfile ->
-            Mix.Task.run(task, argv)
+            Mix.Task.run(options[:task], options[:argv])
           end
         )
 
@@ -424,9 +425,13 @@ defmodule Mix.Tasks.Workspace.Run do
     end
   end
 
-  defp maybe_early_stop(result, false), do: result
+  defp allowed_to_fail?(project, allowed_to_fail), do: project in allowed_to_fail
 
-  defp maybe_early_stop(result, true) do
+  defp execution_status({:error, _reason}, true), do: :warn
+  defp execution_status({:error, _reason}, false), do: :error
+  defp execution_status(_status, _allowed_to_fail), do: :ok
+
+  defp maybe_early_stop(result) do
     case result[:status] do
       :error ->
         Mix.raise("--early-stop is set - terminating workspace.run")
