@@ -268,7 +268,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
       expected_message = """
       mix workspace.run failed - errors detected in 2 executions
-      failed projects - [:package_default_b, :package_default_a]
+      failed projects - [:package_default_a, :package_default_b]
       """
 
       captured =
@@ -391,7 +391,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "** (exit) 1",
           ":package_default_b mix cmd exit 1 failed with 1",
           "WARNING task failed in 2 projects but the --alow-failure flag is set",
-          "failed projects - [:package_default_b, :package_default_a]"
+          "failed projects - [:package_default_a, :package_default_b]"
         ],
         partial: true
       )

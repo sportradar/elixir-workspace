@@ -240,44 +240,48 @@ defmodule Mix.Tasks.Workspace.Run do
       |> Keyword.put(:argv, extra)
       |> Keyword.put_new(:allow_failure, [])
 
-    opts
-    |> Mix.WorkspaceUtils.load_and_filter_workspace()
-    |> Workspace.projects()
-    |> filter_by_partition(opts[:partitions])
-    |> Enum.map(fn project ->
-      triggered_at = System.os_time(:millisecond)
-      result = run_task(project, opts)
-      completed_at = System.os_time(:millisecond)
+    result =
+      opts
+      |> Mix.WorkspaceUtils.load_and_filter_workspace()
+      |> Workspace.projects()
+      |> filter_by_partition(opts[:partitions])
+      |> Enum.map(fn project ->
+        triggered_at = System.os_time(:millisecond)
+        result = run_task(project, opts)
+        completed_at = System.os_time(:millisecond)
 
-      case result do
-        {:error, status_code} ->
-          log([
-            highlight(inspect(project.app), [:bright, :red]),
-            " ",
-            highlight(mix_task_to_string(opts[:task], opts[:argv]), :bright),
-            " failed with ",
-            highlight("#{status_code}", [:bright, :light_red])
-          ])
+        case result do
+          {:error, status_code} ->
+            log([
+              highlight(inspect(project.app), [:bright, :red]),
+              " ",
+              highlight(mix_task_to_string(opts[:task], opts[:argv]), :bright),
+              " failed with ",
+              highlight("#{status_code}", [:bright, :light_red])
+            ])
 
-        _other ->
-          :ok
-      end
+          _other ->
+            :ok
+        end
 
-      execution_result =
-        %{
-          project: project,
-          status: execution_status(result, allowed_to_fail?(project.app, opts[:allow_failure])),
-          triggered_at: triggered_at,
-          completed_at: completed_at
-        }
+        execution_result =
+          %{
+            project: project,
+            status: execution_status(result, allowed_to_fail?(project.app, opts[:allow_failure])),
+            triggered_at: triggered_at,
+            completed_at: completed_at
+          }
 
-      if opts[:early_stop] do
-        maybe_early_stop(execution_result)
-      end
+        if opts[:early_stop] do
+          maybe_early_stop(execution_result)
+        end
 
-      execution_result
-    end)
-    |> raise_if_any_task_failed()
+        execution_result
+      end)
+      |> Enum.group_by(fn result -> result.status end)
+
+    maybe_log_warnings(result[:warn] || [])
+    raise_if_errors(result[:error] || [])
   end
 
   defp parse_environment_variable(var) do
@@ -382,30 +386,16 @@ defmodule Mix.Tasks.Workspace.Run do
         IO.write(data)
         stream_output(port)
 
-      # {^port, {:exit_status, 0}} ->
-      #   0
-      #
       {^port, {:exit_status, status}} ->
-        # task = Keyword.get(meta, :task)
-        # project = Keyword.get(meta, :project)
-        #
-        # log([
-        #   highlight(inspect(project.app), [:bright, :red]),
-        #   " ",
-        #   highlight(task, :bright),
-        #   " failed with ",
-        #   highlight("#{status}", [:bright, :light_red])
-        # ])
-
         status
     end
   end
 
   defp allowed_to_fail?(project, allowed_to_fail), do: project in allowed_to_fail
 
-  defp execution_status({:error, _reason}, true), do: :warn
-  defp execution_status({:error, _reason}, false), do: :error
-  defp execution_status(_status, _allowed_to_fail), do: :ok
+  defp execution_status({:error, _status}, true), do: :warn
+  defp execution_status({:error, _status}, false), do: :error
+  defp execution_status(status, _allowed_to_fail), do: status
 
   defp maybe_early_stop(result) do
     case result[:status] do
@@ -417,46 +407,32 @@ defmodule Mix.Tasks.Workspace.Run do
     end
   end
 
-  defp raise_if_any_task_failed(task_results) do
-    {_successful, warnings, failures} =
-      Enum.reduce(
-        task_results,
-        {[], [], []},
-        fn project, {successful, warnings, failures} ->
-          case project[:status] do
-            :error ->
-              {successful, warnings, [project | failures]}
+  defp maybe_log_warnings(projects) do
+    if length(projects) > 0 do
+      names = Enum.map(projects, & &1.project.app)
 
-            :warn ->
-              {successful, [project | warnings], failures}
-
-            :ok ->
-              {[project | successful], warnings, failures}
-          end
-        end
-      )
-
-    names = fn projects -> Enum.map(projects, & &1.project.app) end
-
-    if length(warnings) > 0 do
       Workspace.Cli.log([
         :yellow,
         "WARNING ",
         :reset,
-        "task failed in #{length(warnings)} projects but the ",
+        "task failed in #{length(projects)} projects but the ",
         :light_cyan,
         "--alow-failure",
         :reset,
         " flag is set"
       ])
 
-      Workspace.Cli.log(["  failed projects - ", :yellow, inspect(names.(warnings))])
+      Workspace.Cli.log(["  failed projects - ", :yellow, inspect(names)])
     end
+  end
 
-    if length(failures) > 0 do
+  defp raise_if_errors(projects) do
+    names = Enum.map(projects, & &1.project.app)
+
+    if length(projects) > 0 do
       Mix.raise("""
-      mix workspace.run failed - errors detected in #{length(failures)} executions
-      failed projects - #{inspect(names.(failures))}
+      mix workspace.run failed - errors detected in #{length(names)} executions
+      failed projects - #{inspect(names)}
       """)
     end
   end
