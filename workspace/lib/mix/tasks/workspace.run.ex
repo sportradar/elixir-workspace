@@ -249,6 +249,20 @@ defmodule Mix.Tasks.Workspace.Run do
       result = run_task(project, opts)
       completed_at = System.os_time(:millisecond)
 
+      case result do
+        {:error, status_code} ->
+          log([
+            highlight(inspect(project.app), [:bright, :red]),
+            " ",
+            highlight(mix_task_to_string(opts[:task], opts[:argv]), :bright),
+            " failed with ",
+            highlight("#{status_code}", [:bright, :light_red])
+          ])
+
+        _other ->
+          :ok
+      end
+
       execution_result =
         %{
           project: project,
@@ -314,28 +328,26 @@ defmodule Mix.Tasks.Workspace.Run do
   end
 
   defp run_task(project, options) do
-    task = options[:task]
-
-    task_args = [task | options[:argv]]
-
     log_with_title(
       project_name(project, show_status: options[:show_status]),
-      highlight("mix #{Enum.join(task_args, " ")}", :bright),
+      highlight(mix_task_to_string(options[:task], options[:argv]), :bright),
       prefix: :header
     )
 
-    if not options[:dry_run] do
-      cmd(options[:task], options[:argv], project, options[:env])
+    case options[:dry_run] do
+      true -> :skip
+      false -> cmd(options[:task], options[:argv], project, options[:env])
     end
   end
 
+  defp mix_task_to_string(task, argv), do: ~s'mix #{Enum.join([task | argv], " ")}'
+
   defp cmd(task, argv, project, env) do
-    full_task = ~s'mix #{Enum.join([task | argv], " ")}'
     [command | args] = enable_ansi(["mix", task | argv])
 
     command = System.find_executable(command)
 
-    port =
+    status_code =
       Port.open({:spawn_executable, command}, [
         :stream,
         :hide,
@@ -347,12 +359,11 @@ defmodule Mix.Tasks.Workspace.Run do
         cd: project.path,
         env: env
       ])
-
-    status_code = stream_output([args: args, project: project, task: full_task], port)
+      |> stream_output()
 
     case status_code do
       0 -> :ok
-      _other -> {:error, "#{full_task} failed in #{project.app}"}
+      status_code -> {:error, status_code}
     end
   end
 
@@ -365,26 +376,26 @@ defmodule Mix.Tasks.Workspace.Run do
     ["elixir", "--erl-config", erl_config, "-S", "mix" | args]
   end
 
-  defp stream_output(meta, port) do
+  defp stream_output(port) do
     receive do
       {^port, {:data, data}} ->
         IO.write(data)
-        stream_output(meta, port)
+        stream_output(port)
 
-      {^port, {:exit_status, 0}} ->
-        0
-
+      # {^port, {:exit_status, 0}} ->
+      #   0
+      #
       {^port, {:exit_status, status}} ->
-        task = Keyword.get(meta, :task)
-        project = Keyword.get(meta, :project)
-
-        log([
-          highlight(inspect(project.app), [:bright, :red]),
-          " ",
-          highlight(task, :bright),
-          " failed with ",
-          highlight("#{status}", [:bright, :light_red])
-        ])
+        # task = Keyword.get(meta, :task)
+        # project = Keyword.get(meta, :project)
+        #
+        # log([
+        #   highlight(inspect(project.app), [:bright, :red]),
+        #   " ",
+        #   highlight(task, :bright),
+        #   " failed with ",
+        #   highlight("#{status}", [:bright, :light_red])
+        # ])
 
         status
     end
