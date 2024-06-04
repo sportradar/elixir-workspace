@@ -250,27 +250,18 @@ defmodule Mix.Tasks.Workspace.Run do
         result = run_task(project, opts)
         completed_at = System.os_time(:millisecond)
 
-        case result do
-          {:error, status_code} ->
-            log([
-              highlight(inspect(project.app), [:bright, :red]),
-              " ",
-              highlight(mix_task_to_string(opts[:task], opts[:argv]), :bright),
-              " failed with ",
-              highlight("#{status_code}", [:bright, :light_red])
-            ])
-
-          _other ->
-            :ok
-        end
-
         execution_result =
           %{
             project: project,
+            task: opts[:task],
+            argv: opts[:argv],
             status: execution_status(result, allowed_to_fail?(project.app, opts[:allow_failure])),
+            status_code: status_code(result),
             triggered_at: triggered_at,
             completed_at: completed_at
           }
+
+        log_task_execution_result(execution_result)
 
         if opts[:early_stop] do
           maybe_early_stop(execution_result)
@@ -397,6 +388,10 @@ defmodule Mix.Tasks.Workspace.Run do
   defp execution_status({:error, _status}, false), do: :error
   defp execution_status(status, _allowed_to_fail), do: status
 
+  defp status_code({:error, status}), do: status
+  defp status_code(:skip), do: nil
+  defp status_code(:ok), do: 0
+
   defp maybe_early_stop(result) do
     case result[:status] do
       :error ->
@@ -406,6 +401,18 @@ defmodule Mix.Tasks.Workspace.Run do
         result
     end
   end
+
+  defp log_task_execution_result(%{status: status} = result) when status in [:error, :warn] do
+    log([
+      highlight(inspect(result.project.app), [:bright, :red]),
+      " ",
+      highlight(mix_task_to_string(result.task, result.argv), :bright),
+      " failed with ",
+      highlight("#{result.status_code}", [:bright, :light_red])
+    ])
+  end
+
+  defp log_task_execution_result(_result), do: :ok
 
   defp maybe_log_warnings(projects) do
     if length(projects) > 0 do
