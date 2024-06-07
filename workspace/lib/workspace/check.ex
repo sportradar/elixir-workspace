@@ -259,7 +259,7 @@ defmodule Workspace.Check do
   end
 
   defp validate_check_module(module) do
-    behaviours = module.module_info[:attributes][:behaviour] || []
+    behaviours = module.module_info()[:attributes][:behaviour] || []
 
     case Workspace.Check in behaviours do
       true -> {:ok, module}
