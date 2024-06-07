@@ -294,7 +294,7 @@ defmodule Mix.Tasks.Workspace.Run do
     partition = System.get_env("WORKSPACE_RUN_PARTITION")
 
     case partition && Integer.parse(partition) do
-      {partition, ""} when partition in 1..partitions ->
+      {partition, ""} when partition in 1..partitions//1 ->
         partition = partition - 1
 
         for {project, index} <- Enum.with_index(Enum.sort_by(projects, & &1.app)),
