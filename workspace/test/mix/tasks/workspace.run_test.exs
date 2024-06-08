@@ -96,19 +96,22 @@ defmodule Mix.Tasks.Workspace.RunTest do
           RunTask.run(args)
         end)
 
-      assert_cli_output_match(captured, [
-        "==> :package_default_a - mix format --check-formatted mix.exs",
-        "==> :package_default_b - skipped",
-        "==> :package_default_c - skipped",
-        "==> :package_default_d - skipped",
-        "==> :package_default_e - skipped",
-        "==> :package_default_f - skipped",
-        "==> :package_default_g - skipped",
-        "==> :package_default_h - skipped",
-        "==> :package_default_i - skipped",
-        "==> :package_default_j - skipped",
-        "==> :package_default_k - skipped"
-      ])
+      assert_cli_output_match(
+        captured,
+        [
+          "==> :package_default_a - mix format --check-formatted mix.exs",
+          "==> :package_default_b - skipped",
+          "==> :package_default_c - skipped",
+          "==> :package_default_d - skipped",
+          "==> :package_default_e - skipped",
+          "==> :package_default_f - skipped",
+          "==> :package_default_g - skipped",
+          "==> :package_default_h - skipped",
+          "==> :package_default_i - skipped",
+          "==> :package_default_j - skipped",
+          "==> :package_default_k - skipped"
+        ]
+      )
     end
   end
 
@@ -122,13 +125,19 @@ defmodule Mix.Tasks.Workspace.RunTest do
       # runs only on affected projects
       captured = capture_io(fn -> RunTask.run(["--affected" | @changed_run_task]) end)
 
-      assert_cli_output_match(captured, [
-        "==> :package_changed_a - mix format --check-formatted mix.exs",
-        "==> :package_changed_c - mix format --check-formatted mix.exs",
-        "==> :package_changed_d - mix format --check-formatted mix.exs",
-        "==> :package_changed_e - mix format --check-formatted mix.exs",
-        "==> :package_changed_h - mix format --check-formatted mix.exs"
-      ])
+      assert_cli_output_match(
+        captured,
+        [
+          "==> :package_changed_a - mix format --check-formatted mix.exs",
+          ":package_changed_a mix format --check-formatted mix.exs succeeded [",
+          "==> :package_changed_c - mix format --check-formatted mix.exs",
+          ":package_changed_c mix format --check-formatted mix.exs succeeded [",
+          "==> :package_changed_d - mix format --check-formatted mix.exs",
+          "==> :package_changed_e - mix format --check-formatted mix.exs",
+          "==> :package_changed_h - mix format --check-formatted mix.exs"
+        ],
+        partial: true
+      )
     end
 
     test "with modified flag only modified flags are executed" do
@@ -142,7 +151,9 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
       assert_cli_output_match(captured, [
         "==> :package_changed_d - mix format --check-formatted mix.exs",
-        "==> :package_changed_e - mix format --check-formatted mix.exs"
+        ":package_changed_d mix format --check-formatted mix.exs succeeded [",
+        "==> :package_changed_e - mix format --check-formatted mix.exs",
+        ":package_changed_e mix format --check-formatted mix.exs succeeded ["
       ])
     end
 
@@ -152,9 +163,13 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
       assert_cli_output_match(captured, [
         "==> :package_changed_a - mix format --check-formatted mix.exs",
+        ":package_changed_a mix format --check-formatted mix.exs succeeded [",
         "==> :package_changed_h - mix format --check-formatted mix.exs",
+        ":package_changed_h mix format --check-formatted mix.exs succeeded [",
         "==> :package_changed_i - mix format --check-formatted mix.exs",
-        "==> :package_changed_k - mix format --check-formatted mix.exs"
+        ":package_changed_i mix format --check-formatted mix.exs succeeded [",
+        "==> :package_changed_k - mix format --check-formatted mix.exs",
+        ":package_changed_k mix format --check-formatted mix.exs succeeded ["
       ])
     end
 
@@ -165,26 +180,33 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
       assert_cli_output_match(captured, [
         "==> :package_changed_a - mix format --check-formatted mix.exs",
-        "==> :package_changed_h - mix format --check-formatted mix.exs"
+        ":package_changed_a mix format --check-formatted mix.exs succeeded [",
+        "==> :package_changed_h - mix format --check-formatted mix.exs",
+        ":package_changed_h mix format --check-formatted mix.exs succeeded ["
       ])
     end
 
     test "with show-status displays the status of each project" do
       captured = capture_io(fn -> RunTask.run(["--show-status" | @changed_run_task]) end)
 
-      assert_cli_output_match(captured, [
-        "==> :package_changed_a ● - mix format --check-formatted mix.exs",
-        "==> :package_changed_b ✔ - mix format --check-formatted mix.exs",
-        "==> :package_changed_c ● - mix format --check-formatted mix.exs",
-        "==> :package_changed_d ✚ - mix format --check-formatted mix.exs",
-        "==> :package_changed_e ✚ - mix format --check-formatted mix.exs",
-        "==> :package_changed_f ✔ - mix format --check-formatted mix.exs",
-        "==> :package_changed_g ✔ - mix format --check-formatted mix.exs",
-        "==> :package_changed_h ● - mix format --check-formatted mix.exs",
-        "==> :package_changed_i ✔ - mix format --check-formatted mix.exs",
-        "==> :package_changed_j ✔ - mix format --check-formatted mix.exs",
-        "==> :package_changed_k ✔ - mix format --check-formatted mix.exs"
-      ])
+      assert_cli_output_match(
+        captured,
+        [
+          "==> :package_changed_a ● - mix format --check-formatted mix.exs",
+          ":package_changed_a mix format --check-formatted mix.exs succeeded [",
+          "==> :package_changed_b ✔ - mix format --check-formatted mix.exs",
+          "==> :package_changed_c ● - mix format --check-formatted mix.exs",
+          "==> :package_changed_d ✚ - mix format --check-formatted mix.exs",
+          "==> :package_changed_e ✚ - mix format --check-formatted mix.exs",
+          "==> :package_changed_f ✔ - mix format --check-formatted mix.exs",
+          "==> :package_changed_g ✔ - mix format --check-formatted mix.exs",
+          "==> :package_changed_h ● - mix format --check-formatted mix.exs",
+          "==> :package_changed_i ✔ - mix format --check-formatted mix.exs",
+          "==> :package_changed_j ✔ - mix format --check-formatted mix.exs",
+          "==> :package_changed_k ✔ - mix format --check-formatted mix.exs"
+        ],
+        partial: true
+      )
     end
 
     test "on a repo with no working tree changes nothing is executed with the affected flag" do
@@ -201,7 +223,9 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
       assert_cli_output_match(captured, [
         "==> :package_committed_a - mix format --check-formatted mix.exs",
-        "==> :package_committed_c - mix format --check-formatted mix.exs"
+        ":package_committed_a mix format --check-formatted mix.exs succeeded [",
+        "==> :package_committed_c - mix format --check-formatted mix.exs",
+        ":package_committed_c mix format --check-formatted mix.exs succeeded ["
       ])
     end
   end
@@ -243,7 +267,8 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
       assert_cli_output_match(captured, [
         "==> :package_default_a - mix cmd echo $FOO",
-        "bar"
+        "bar",
+        ":package_default_a mix cmd echo $FOO succeeded ["
       ])
 
       assert System.get_env("FOO") == nil

@@ -402,13 +402,21 @@ defmodule Mix.Tasks.Workspace.Run do
     end
   end
 
-  defp log_task_execution_result(%{status: status} = result) when status in [:error, :warn] do
+  defp log_task_execution_result(%{status: status} = result) when status not in [:skip] do
+    result_message =
+      case status do
+        :ok -> " succeeded"
+        _other -> [" failed with ", highlight("#{result.status_code}", [:bright, :light_red])]
+      end
+
+    duration = Workspace.Utils.format_duration(result.completed_at - result.triggered_at)
+
     log([
-      highlight(inspect(result.project.app), [:bright, :red]),
+      highlight(inspect(result.project.app), [:bright, status_color(status)]),
       " ",
       highlight(mix_task_to_string(result.task, result.argv), :bright),
-      " failed with ",
-      highlight("#{result.status_code}", [:bright, :light_red])
+      result_message,
+      " [#{duration}]"
     ])
   end
 
