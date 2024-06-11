@@ -26,6 +26,20 @@ defmodule Workspace.Export do
     |> Jason.encode!(pretty: true)
   end
 
+  @doc """
+  Returns a `json` representation of the given run results.
+  """
+  @spec run_results_to_json(results :: [map()]) :: String.t()
+  def run_results_to_json(results) do
+    assert_jason!("run_results_to_json/1")
+
+    results
+    |> Enum.map(fn result ->
+      Map.put(result, :project, Workspace.Project.to_map(result.project))
+    end)
+    |> Jason.encode!(pretty: true)
+  end
+
   @doc false
   @spec assert_jason!(fn_name :: String.t()) :: :ok
   def assert_jason!(fn_name) do

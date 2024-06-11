@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+* `workspace.run`: add `--export` option for exporting execution results as a `json`
+file
+
 ### Removed
 
 * `workspace.run`: remove `--execution-mode` flag

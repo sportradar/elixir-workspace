@@ -48,6 +48,15 @@ defmodule Mix.Tasks.Workspace.Run do
       the partition to use in the current execution. See the "Run partitioning"
       section for more details
       """
+    ],
+    export: [
+      type: :string,
+      doc: """
+      A `json` path to export the run results. If set a `json` file will be
+      generated with the run results for each project. This may be useful for
+      your CI/CD automation pipelines, in case you want to post-process the
+      run results.
+      """
     ]
   ]
 
@@ -218,6 +227,16 @@ defmodule Mix.Tasks.Workspace.Run do
 
   You can set the `--dry-run` option in order to dry run the task, e.g. to check the
   sequence of mix tasks that will be invoked.
+
+  ## Exporting run results
+
+  You can set the `--export` option in order to save the run results per workspace
+  project in a `json` file. This may be useful in case you want to post-process run
+  results in your CI pipelines, for example you could use it to generate a summary
+  of the execution and post it as a comment to the corresponding PR/MR.
+
+      # Exporting execution results to test.json
+      $ mix workspace.run -t test --export test.json
   """
 
   use Mix.Task
@@ -240,7 +259,7 @@ defmodule Mix.Tasks.Workspace.Run do
       |> Keyword.put(:argv, extra)
       |> Keyword.put_new(:allow_failure, [])
 
-    result =
+    results =
       opts
       |> Mix.WorkspaceUtils.load_and_filter_workspace()
       |> Workspace.projects()
@@ -269,10 +288,13 @@ defmodule Mix.Tasks.Workspace.Run do
 
         execution_result
       end)
-      |> Enum.group_by(fn result -> result.status end)
 
-    maybe_log_warnings(result[:warn] || [])
-    raise_if_errors(result[:error] || [])
+    if opts[:export], do: export_execution_results(results, opts[:export])
+
+    grouped_results = Enum.group_by(results, fn result -> result.status end)
+
+    maybe_log_warnings(grouped_results[:warn] || [])
+    raise_if_errors(grouped_results[:error] || [])
   end
 
   defp parse_environment_variable(var) do
@@ -450,5 +472,16 @@ defmodule Mix.Tasks.Workspace.Run do
       failed projects - #{inspect(names)}
       """)
     end
+  end
+
+  defp export_execution_results(results, output_path) do
+    json_data = Workspace.Export.run_results_to_json(results)
+
+    File.write!(output_path, json_data)
+
+    Workspace.Cli.log(
+      [:green, "exported ", :reset, "execution results to ", :yellow, output_path, :reset],
+      prefix: "* "
+    )
   end
 end

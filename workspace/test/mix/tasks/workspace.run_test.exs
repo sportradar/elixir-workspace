@@ -12,11 +12,13 @@ defmodule Mix.Tasks.Workspace.RunTest do
     Application.put_env(:elixir, :ansi_enabled, false)
   end
 
+  @default_fixture_path Path.join(tmp_path(), "sample_workspace_default")
+
   @default_run_task [
     "-t",
     "format",
     "--workspace-path",
-    Path.join(tmp_path(), "sample_workspace_default"),
+    @default_fixture_path,
     "--",
     "--check-formatted",
     "mix.exs"
@@ -529,5 +531,32 @@ defmodule Mix.Tasks.Workspace.RunTest do
     after
       System.delete_env("WORKSPACE_RUN_PARTITION")
     end
+  end
+
+  test "with --export option set" do
+    output = Path.join(@default_fixture_path, "run.json")
+
+    expected = """
+    * exported execution results to #{output}
+    """
+
+    assert capture_io(fn ->
+             RunTask.run([
+               "--workspace-path",
+               @default_fixture_path,
+               "--task",
+               "cmd",
+               "--export",
+               output,
+               "--",
+               "exit 0"
+             ])
+           end) =~ expected
+
+    runs = File.read!(output) |> Jason.decode!()
+
+    assert length(runs) == 11
+  after
+    File.rm!(Path.join(@default_fixture_path, "run.json"))
   end
 end
