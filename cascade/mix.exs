@@ -46,8 +46,8 @@ defmodule Cascade.MixProject do
     [
       {:cli_options, path: "../cli_options/"},
       # {:cli_options, "~> 0.1.0"},
-      {:ex_doc, "== 0.33.0", only: :dev, runtime: false},
-      {:credo, "== 1.7.6", only: [:dev, :test], runtime: false},
+      {:ex_doc, "== 0.34.0", only: :dev, runtime: false},
+      {:credo, "== 1.7.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "== 1.4.3", only: [:dev], runtime: false},
       {:doctor, "== 0.21.0", only: :dev, runtime: false}
     ]
