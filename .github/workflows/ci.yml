@@ -11,6 +11,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - elixir: "1.17.0"
+            otp: "27.0"
+            lint: true
           - elixir: "1.16.2"
             otp: "26.1"
             lint: true
@@ -78,7 +81,6 @@ jobs:
           shopt -s expand_aliases
           alias mix='elixir --erl "-elixir ansi_enabled true" -S mix'
           mix workspace.run -t compile ${{env.AFFECTED_ARGS}} -- --force --warnings-as-errors
-        if: ${{ matrix.lint }}
 
       - name: Check code formatted
         run: |
