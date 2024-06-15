@@ -259,11 +259,28 @@ defmodule Mix.Tasks.Workspace.Run do
       |> Keyword.put(:argv, extra)
       |> Keyword.put_new(:allow_failure, [])
 
-    results =
+    filtered_projects =
       opts
       |> Mix.WorkspaceUtils.load_and_filter_workspace()
       |> Workspace.projects()
       |> filter_by_partition(opts[:partitions])
+
+    case Enum.count(filtered_projects, &(not &1.skip)) do
+      0 ->
+        log([:bright, :yellow, "No matching projects for the given options", :reset])
+
+      valid ->
+        log([
+          "Running task in ",
+          :bright,
+          :blue,
+          "#{valid} workspace projects",
+          :reset
+        ])
+    end
+
+    results =
+      filtered_projects
       |> Enum.map(fn project ->
         triggered_at = System.os_time(:millisecond)
         result = run_task(project, opts)

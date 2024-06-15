@@ -60,6 +60,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         end)
 
       assert_cli_output_match(captured, [
+        "Running task in 2 workspace projects",
         "==> :package_default_a - mix format --check-formatted mix.exs",
         "==> :package_default_b - mix format --check-formatted mix.exs"
       ])
@@ -78,6 +79,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         end)
 
       assert_cli_output_match(captured, [
+        "Running task in 9 workspace projects",
         "==> :package_default_c - mix format --check-formatted mix.exs",
         "==> :package_default_d - mix format --check-formatted mix.exs",
         "==> :package_default_e - mix format --check-formatted mix.exs",
@@ -101,6 +103,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
       assert_cli_output_match(
         captured,
         [
+          "Running task in 1 workspace projects",
           "==> :package_default_a - mix format --check-formatted mix.exs",
           "==> :package_default_b - skipped",
           "==> :package_default_c - skipped",
@@ -122,7 +125,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
       # in a codebase with no changes
       captured = capture_io(fn -> RunTask.run(["--affected" | @default_run_task]) end)
 
-      assert_cli_output_match(captured, [])
+      assert_cli_output_match(captured, ["No matching projects for the given options"])
 
       # runs only on affected projects
       captured = capture_io(fn -> RunTask.run(["--affected" | @changed_run_task]) end)
@@ -130,6 +133,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
       assert_cli_output_match(
         captured,
         [
+          "Running task in 5 workspace projects",
           "==> :package_changed_a - mix format --check-formatted mix.exs",
           ":package_changed_a mix format --check-formatted mix.exs succeeded [",
           "==> :package_changed_c - mix format --check-formatted mix.exs",
@@ -146,12 +150,13 @@ defmodule Mix.Tasks.Workspace.RunTest do
       # in a codebase with no changes
       captured = capture_io(fn -> RunTask.run(["--modified" | @default_run_task]) end)
 
-      assert_cli_output_match(captured, [])
+      assert_cli_output_match(captured, ["No matching projects for the given options"])
 
       # runs only on affected projects
       captured = capture_io(fn -> RunTask.run(["--modified" | @changed_run_task]) end)
 
       assert_cli_output_match(captured, [
+        "Running task in 2 workspace projects",
         "==> :package_changed_d - mix format --check-formatted mix.exs",
         ":package_changed_d mix format --check-formatted mix.exs succeeded [",
         "==> :package_changed_e - mix format --check-formatted mix.exs",
@@ -164,6 +169,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
       captured = capture_io(fn -> RunTask.run(["--only-roots" | @changed_run_task]) end)
 
       assert_cli_output_match(captured, [
+        "Running task in 4 workspace projects",
         "==> :package_changed_a - mix format --check-formatted mix.exs",
         ":package_changed_a mix format --check-formatted mix.exs succeeded [",
         "==> :package_changed_h - mix format --check-formatted mix.exs",
@@ -181,6 +187,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         capture_io(fn -> RunTask.run(["--affected", "--only-roots" | @changed_run_task]) end)
 
       assert_cli_output_match(captured, [
+        "Running task in 2 workspace projects",
         "==> :package_changed_a - mix format --check-formatted mix.exs",
         ":package_changed_a mix format --check-formatted mix.exs succeeded [",
         "==> :package_changed_h - mix format --check-formatted mix.exs",
@@ -194,6 +201,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
       assert_cli_output_match(
         captured,
         [
+          "Running task in 11 workspace projects",
           "==> :package_changed_a ● - mix format --check-formatted mix.exs",
           ":package_changed_a mix format --check-formatted mix.exs succeeded [",
           "==> :package_changed_b ✔ - mix format --check-formatted mix.exs",
@@ -214,7 +222,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
     test "on a repo with no working tree changes nothing is executed with the affected flag" do
       captured = capture_io(fn -> RunTask.run(["--affected" | @committed_run_task]) end)
 
-      assert_cli_output_match(captured, [])
+      assert_cli_output_match(captured, ["No matching projects for the given options"])
     end
 
     test "on a repo with base and head set" do
@@ -224,6 +232,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         end)
 
       assert_cli_output_match(captured, [
+        "Running task in 2 workspace projects",
         "==> :package_committed_a - mix format --check-formatted mix.exs",
         ":package_committed_a mix format --check-formatted mix.exs succeeded [",
         "==> :package_committed_c - mix format --check-formatted mix.exs",
@@ -268,6 +277,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         end)
 
       assert_cli_output_match(captured, [
+        "Running task in 1 workspace projects",
         "==> :package_default_a - mix cmd echo $FOO",
         "bar",
         ":package_default_a mix cmd echo $FOO succeeded ["
@@ -439,6 +449,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         end)
 
       assert_cli_output_match(captured, [
+        "Running task in 11 workspace projects",
         "==> :package_default_a - mix format --check-formatted mix.exs",
         "==> :package_default_b - mix format --check-formatted mix.exs",
         "==> :package_default_c - mix format --check-formatted mix.exs",
@@ -483,6 +494,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         end)
 
       assert_cli_output_match(captured, [
+        "Running task in 3 workspace projects",
         "==> :package_default_a - mix format --check-formatted mix.exs",
         "==> :package_default_e - mix format --check-formatted mix.exs",
         "==> :package_default_i - mix format --check-formatted mix.exs"
@@ -497,6 +509,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         end)
 
       assert_cli_output_match(captured, [
+        "Running task in 3 workspace projects",
         "==> :package_default_b - mix format --check-formatted mix.exs",
         "==> :package_default_f - mix format --check-formatted mix.exs",
         "==> :package_default_j - mix format --check-formatted mix.exs"
@@ -511,6 +524,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         end)
 
       assert_cli_output_match(captured, [
+        "Running task in 3 workspace projects",
         "==> :package_default_c - mix format --check-formatted mix.exs",
         "==> :package_default_g - mix format --check-formatted mix.exs",
         "==> :package_default_k - mix format --check-formatted mix.exs"
@@ -525,6 +539,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         end)
 
       assert_cli_output_match(captured, [
+        "Running task in 2 workspace projects",
         "==> :package_default_d - mix format --check-formatted mix.exs",
         "==> :package_default_h - mix format --check-formatted mix.exs"
       ])
