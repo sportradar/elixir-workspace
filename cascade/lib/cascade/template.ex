@@ -113,6 +113,17 @@ defmodule Cascade.Template do
             ) ::
               String.t()
 
+  @doc """
+  Optional callback to be invoked after the template generation has finished.
+
+  You can use it to perform post-generation clean up, log a message to the user
+  or perform any custom logic after the template generation completion (e.g. format
+  the generated code).
+  """
+  @callback post_generate(opts :: keyword()) :: :ok
+
+  @optional_callbacks [post_generate: 1]
+
   defmacro __using__(_opts) do
     quote do
       Module.register_attribute(__MODULE__, :shortdoc, persist: true)
@@ -155,7 +166,7 @@ defmodule Cascade.Template do
       Mix.Generator.create_file(destination_path, body, force: true)
     end
 
-    :ok
+    post_generate(template, opts)
   end
 
   defp template_assets(template) do
@@ -206,6 +217,13 @@ defmodule Cascade.Template do
     case List.keyfind(module.__info__(:attributes), :shortdoc, 0) do
       {:shortdoc, [shortdoc]} -> shortdoc
       _ -> nil
+    end
+  end
+
+  defp post_generate(module, opts) do
+    case function_exported?(module, :post_generate, 1) do
+      true -> module.post_generate(opts)
+      false -> :ok
     end
   end
 end
