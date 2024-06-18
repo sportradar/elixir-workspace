@@ -20,7 +20,7 @@ defmodule Cascade.Utils do
   @spec implements_behaviour?(module :: module(), behaviour :: module()) :: boolean()
   def implements_behaviour?(module, behaviour) do
     Code.ensure_loaded!(module)
-    behaviours = module.module_info[:attributes][:behaviour]
+    behaviours = module.module_info()[:attributes][:behaviour]
 
     case behaviours do
       nil -> false
