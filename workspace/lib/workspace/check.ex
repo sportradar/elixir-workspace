@@ -225,8 +225,6 @@ defmodule Workspace.Check do
 
   @optional_callbacks [schema: 0]
 
-  # TODO: add a __USING__ macro
-
   @doc """
   Validates that the given `config` is a valid `Check` config.
   """
