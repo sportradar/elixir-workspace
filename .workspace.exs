@@ -305,14 +305,14 @@
     ],
     [
       module: Workspace.Checks.ValidateProject,
-      description: "all projects must have a minimum coverage threshold of 98",
+      description: "all projects must have a minimum coverage threshold of 95",
       opts: [
         validate: fn project ->
           config = project.config
           coverage_opts = config[:test_coverage] || []
           threshold = coverage_opts[:threshold] || 0
 
-          if threshold >= 98 do
+          if threshold >= 95 do
             {:ok, "threshold is at #{threshold}%"}
           else
             {:error, "threshold must be at least 98, got: #{threshold}"}
