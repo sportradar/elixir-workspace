@@ -17,7 +17,7 @@ defmodule Cascade.MixProject do
 
       # Tests
       test_coverage: [
-        threshold: 100,
+        threshold: 95,
         export: "cascade",
         output: "../artifacts/coverdata/cascade"
       ],

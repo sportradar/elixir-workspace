@@ -13,6 +13,8 @@ defmodule Mix.Tasks.Cascade.Help do
 
   @impl Mix.Task
   def run([]) do
+    loadpaths!()
+
     Mix.shell().info("The following templates are available:")
     Mix.shell().info("")
     list_templates()
@@ -42,6 +44,8 @@ defmodule Mix.Tasks.Cascade.Help do
   end
 
   def run([template]) do
+    loadpaths!()
+
     templates = Cascade.templates()
 
     case templates[String.to_atom(template)] do
@@ -63,6 +67,14 @@ defmodule Mix.Tasks.Cascade.Help do
     Mix.raise(
       ~s'Unexpected arguments, expected "mix cascade.help" or "mix cascade.help TEMPLATE"'
     )
+  end
+
+  # Loadpaths without checks because templates may be defined in deps.
+  defp loadpaths! do
+    args = ["--no-elixir-version-check", "--no-deps-check", "--no-archives-check"]
+    Mix.Task.run("loadpaths", args)
+    Mix.Task.reenable("loadpaths")
+    Mix.Task.reenable("deps.loadpaths")
   end
 
   defp list_templates do
