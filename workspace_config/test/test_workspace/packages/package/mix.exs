@@ -1,6 +1,7 @@
 defmodule Package.MixProject do
   use Mix.Project
 
+  # The next two lines required only for the tests
   Code.put_compiler_option(:ignore_module_conflict, true)
   Code.require_file("../../../../lib/workspace_config.ex", __DIR__)
 

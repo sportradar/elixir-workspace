@@ -33,17 +33,27 @@ sub-projects` `mix.exs` files to get access to the common workspace configuratio
 defmodule WorkspaceSubproject.MixProject do
   use Mix.Project
 
+  @app :package
+  @version "0.2.0"
+
+  @config_path WorkspaceConfig.config_path()
+  @deps_path WorkspaceConfig.deps_path()
+  @build_path WorkspaceConfig.build_path()
+  @lockfile WorkspaceConfig.lockfile()
+  @my_weird_artifacts WorkspaceConfig.append_to_artifacts_path("child_directory")
+
   def project do
     [
-      app: :workspace_subproject,
-      version: "0.1.0",
+      app: @app,
+      version: @version,
       elixir: "~> 1.15",
-      start_permanent: Mix.env() == :prod,
       deps: deps(),
-      config_path: WorkspaceConfig.config_path(),
-      deps_path: WorkspaceConfig.deps_path(),
-      build_path: WorkspaceConfig.build_path(),
-      lockfile: WorkspaceConfig.lockfile(),
+      config_path: @config_path,
+      deps_path: @deps_path,
+      build_path: @build_path,
+      lockfile: @lockfile,
+      my_weird_artifacts: @my_weird_artifacts,
+      aliases: aliases(),
       workspace: [
         tags: [{:scope, :app}]
       ]
