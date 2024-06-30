@@ -97,6 +97,6 @@ defmodule Package.MixProject do
     |> :erlang.term_to_binary()
     |> Base.encode64(padding: false)
     # |> inspect()
-    |> Mix.Shell.IO.info()
+    |> Mix.shell().info()
   end
 end
