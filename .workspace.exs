@@ -1,5 +1,5 @@
 [
-  ignore_paths: [".elixir-tools", "artifacts", "cover"],
+  ignore_paths: [".elixir-tools", "artifacts", "cover", "test_workspace"],
   checks: [
     # General package validations
     [
