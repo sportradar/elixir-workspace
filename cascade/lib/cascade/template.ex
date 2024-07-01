@@ -111,7 +111,14 @@ defmodule Cascade.Template do
               output_path :: String.t(),
               opts :: keyword()
             ) ::
-              String.t()
+              Path.t()
+
+  @doc """
+  Optional callback to be invoked before the template generation.
+
+  You can use it to perform setup before the actual template invocation.
+  """
+  @callback pre_generate(output_path :: Path.t(), opts :: keyword()) :: :ok
 
   @doc """
   Optional callback to be invoked after the template generation has finished.
@@ -122,7 +129,7 @@ defmodule Cascade.Template do
   """
   @callback post_generate(opts :: keyword()) :: :ok
 
-  @optional_callbacks [post_generate: 1]
+  @optional_callbacks [pre_generate: 2, post_generate: 1]
 
   defmacro __using__(_opts) do
     quote do
@@ -150,8 +157,10 @@ defmodule Cascade.Template do
   @doc """
   Generates a template
   """
-  @spec generate(template :: module(), output_path :: String.t(), opts :: keyword()) :: :ok
+  @spec generate(template :: module(), output_path :: Path.t(), opts :: keyword()) :: :ok
   def generate(template, output_path, opts) do
+    pre_generate(template, output_path, opts)
+
     output_path = Path.expand(output_path)
 
     for asset <- template_assets(template), not File.dir?(asset) do
@@ -217,6 +226,13 @@ defmodule Cascade.Template do
     case List.keyfind(module.__info__(:attributes), :shortdoc, 0) do
       {:shortdoc, [shortdoc]} -> shortdoc
       _ -> nil
+    end
+  end
+
+  defp pre_generate(module, output_path, opts) do
+    case function_exported?(module, :pre_generate, 2) do
+      true -> module.pre_generate(output_path, opts)
+      false -> :ok
     end
   end
 

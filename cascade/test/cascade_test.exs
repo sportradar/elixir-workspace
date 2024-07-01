@@ -18,17 +18,22 @@ defmodule CascadeTest do
 
   @assets_path_tests Path.expand("tmp", __DIR__)
 
-  defmodule TemplatePostGenerate do
+  defmodule TemplateCustomCallbacks do
     use Cascade.Template
 
     @impl true
-    def name, do: :post_generate
+    def name, do: :custom_callbacks
 
     @impl true
-    def assets_path, do: Path.expand("tmp/post_generate", __DIR__)
+    def assets_path, do: Path.expand("tmp/custom_callbacks", __DIR__)
 
     @impl true
     def args_schema, do: [name: [type: :string]]
+
+    @impl true
+    def pre_generate(_output_path, _opts) do
+      send(self(), :pre_generate)
+    end
 
     @impl true
     def post_generate(_opts) do
@@ -50,17 +55,18 @@ defmodule CascadeTest do
     end
 
     @tag :tmp_dir
-    test "post_generate is called if implemented", %{tmp_dir: tmp_dir} do
-      create_asset(Path.join(@assets_path_tests, "post_generate/hello.md"))
+    test "custom callbacks are called if implemented", %{tmp_dir: tmp_dir} do
+      create_asset(Path.join(@assets_path_tests, "custom_callbacks/hello.md"))
 
-      capture_io(fn -> Cascade.generate(:post_generate, tmp_dir, name: "Elixir") end)
+      capture_io(fn -> Cascade.generate(:custom_callbacks, tmp_dir, name: "Elixir") end)
 
       expected_file = Path.join(tmp_dir, "hello.md")
 
       assert File.exists?(expected_file)
       assert File.read!(expected_file) == "Hello Elixir\n"
 
-      assert_receive :post_generate
+      assert_received :pre_generate
+      assert_received :post_generate
     end
   end
 
