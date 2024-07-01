@@ -36,7 +36,7 @@ defmodule CascadeTest do
     end
 
     @impl true
-    def post_generate(_opts) do
+    def post_generate(_output_path, _opts) do
       send(self(), :post_generate)
     end
   end

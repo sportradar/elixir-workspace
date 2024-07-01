@@ -127,9 +127,9 @@ defmodule Cascade.Template do
   or perform any custom logic after the template generation completion (e.g. format
   the generated code).
   """
-  @callback post_generate(opts :: keyword()) :: :ok
+  @callback post_generate(output_path :: Path.t(), opts :: keyword()) :: :ok
 
-  @optional_callbacks [pre_generate: 2, post_generate: 1]
+  @optional_callbacks [pre_generate: 2, post_generate: 2]
 
   defmacro __using__(_opts) do
     quote do
@@ -175,7 +175,7 @@ defmodule Cascade.Template do
       Mix.Generator.create_file(destination_path, body, force: true)
     end
 
-    post_generate(template, opts)
+    post_generate(template, output_path, opts)
   end
 
   defp template_assets(template) do
@@ -236,9 +236,9 @@ defmodule Cascade.Template do
     end
   end
 
-  defp post_generate(module, opts) do
-    case function_exported?(module, :post_generate, 1) do
-      true -> module.post_generate(opts)
+  defp post_generate(module, output_path, opts) do
+    case function_exported?(module, :post_generate, 2) do
+      true -> module.post_generate(output_path, opts)
       false -> :ok
     end
   end
