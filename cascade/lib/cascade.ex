@@ -18,15 +18,21 @@ defmodule Cascade do
   @doc """
   Generate the code associated to the given template `name`.
 
-  `root_path` is expected to be the root directory under which the template
-  will be generated. `opts` can be an arbitrary keyword list corresponding
-  to the command line options passed to the `mix cascade` task.
+  * `root_path` is expected to be the root directory under which the template
+  will be generated.
+  * `args_or_opts` can be an arbitrary keyword list with the template options or
+  a list of command line arguments passed to the `mix cascade` task. In the latter
+  case the arguments will be validated using the template's `c:Cascade.Template.args_schema/0`.
   """
-  @spec generate(name :: atom(), root_path :: String.t(), opts :: keyword()) ::
+  @spec generate(
+          name :: atom(),
+          root_path :: String.t(),
+          args_or_opts :: keyword() | [String.t()]
+        ) ::
           {:error, String.t()} | :ok
-  def generate(name, root_path, opts \\ []) do
+  def generate(name, root_path, args_or_opts \\ []) do
     with {:ok, template} <- template_from_name(name),
-         {:ok, opts} <- validate_template_cli_opts(template, opts) do
+         {:ok, opts} <- validate_template_opts(template, args_or_opts) do
       Cascade.Template.generate(template, root_path, opts)
     end
   end
@@ -40,11 +46,15 @@ defmodule Cascade do
     end
   end
 
-  defp validate_template_cli_opts(template, args) do
-    args_schema = template.args_schema()
+  defp validate_template_opts(template, args_or_opts) do
+    if Keyword.keyword?(args_or_opts) do
+      template.validate_cli_opts(args_or_opts)
+    else
+      args_schema = template.args_schema()
 
-    with {:ok, {opts, _args, _extra}} <- CliOptions.parse(args, args_schema) do
-      template.validate_cli_opts(opts)
+      with {:ok, {opts, _args, _extra}} <- CliOptions.parse(args_or_opts, args_schema) do
+        template.validate_cli_opts(opts)
+      end
     end
   end
 end
