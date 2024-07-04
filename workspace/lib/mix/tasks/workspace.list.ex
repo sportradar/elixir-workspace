@@ -108,7 +108,7 @@ defmodule Mix.Tasks.Workspace.List do
   defp description(doc) when is_binary(doc), do: [" - ", doc]
 
   defp write_json(workspace, output_path) do
-    json_data = Workspace.Export.to_json(workspace)
+    json_data = Workspace.Export.to_json(workspace, sort: true)
 
     File.write!(output_path, json_data)
 
