@@ -16,6 +16,14 @@ defmodule Mix.Tasks.Workspace.List do
       doc: """
       The output file. Applicable only if `--json` is set.
       """
+    ],
+    relative_paths: [
+      type: :boolean,
+      default: false,
+      doc: """
+      If set the paths in the exported json file will be relative with respect to the
+      workspace path. Applicable only if `--json` is set.
+      """
     ]
   ]
 
@@ -64,7 +72,7 @@ defmodule Mix.Tasks.Workspace.List do
   defp list_or_save_workspace_projects(workspace, opts) do
     case opts[:json] do
       false -> list_workspace_projects(workspace, opts[:show_status])
-      true -> write_json(workspace, opts[:output])
+      true -> write_json(workspace, opts)
     end
   end
 
@@ -107,12 +115,12 @@ defmodule Mix.Tasks.Workspace.List do
   defp description(nil), do: ""
   defp description(doc) when is_binary(doc), do: [" - ", doc]
 
-  defp write_json(workspace, output_path) do
-    json_data = Workspace.Export.to_json(workspace, sort: true)
+  defp write_json(workspace, opts) do
+    json_data = Workspace.Export.to_json(workspace, sort: true, relative: opts[:relative_paths])
 
-    File.write!(output_path, json_data)
+    File.write!(opts[:output], json_data)
 
-    Workspace.Cli.log([:green, "generated ", :reset, output_path], prefix: :header)
+    Workspace.Cli.log([:green, "generated ", :reset, opts[:output]], prefix: :header)
   end
 
   defp tags([]), do: []

@@ -110,9 +110,48 @@ defmodule Mix.Tasks.Workspace.ListTest do
              ])
            end) == expected
 
-    assert %{"projects" => projects} = File.read!(output) |> Jason.decode!()
+    data = File.read!(output) |> Jason.decode!()
 
-    assert length(projects) == 11
+    assert length(data["projects"]) == 11
+    assert Path.type(data["workspace_path"]) == :absolute
+
+    for project <- data["projects"] do
+      assert Path.type(project["workspace_path"]) == :absolute
+      assert Path.type(project["mix_path"]) == :absolute
+      assert Path.type(project["path"]) == :absolute
+    end
+  after
+    File.rm!(Path.join(@sample_workspace_changed_path, "workspace.json"))
+  end
+
+  test "with --json and --relative-paths" do
+    output = Path.join(@sample_workspace_changed_path, "workspace.json")
+
+    expected = """
+    ==> generated #{output}
+    """
+
+    assert capture_io(fn ->
+             ListTask.run([
+               "--workspace-path",
+               @sample_workspace_changed_path,
+               "--json",
+               "--output",
+               output,
+               "--relative-paths"
+             ])
+           end) == expected
+
+    data = File.read!(output) |> Jason.decode!()
+
+    assert data["workspace_path"] == "."
+    assert length(data["projects"]) == 11
+
+    for project <- data["projects"] do
+      assert project["workspace_path"] == "."
+      assert Path.type(project["mix_path"]) == :relative
+      assert Path.type(project["path"]) == :relative
+    end
   after
     File.rm!(Path.join(@sample_workspace_changed_path, "workspace.json"))
   end
