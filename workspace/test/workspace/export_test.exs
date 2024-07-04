@@ -25,6 +25,14 @@ defmodule Workspace.ExportTest do
         assert project["changes"] == []
         assert project["status"] == "undefined"
       end
+
+      # with sort set to true
+      sorted_json = Workspace.Export.to_json(workspace, sort: true) |> Jason.decode!()
+
+      assert length(sorted_json["projects"]) == 11
+
+      [project | _rest] = sorted_json["projects"]
+      assert project["app"] == "package_changed_a"
     end
 
     test "with changes updated" do
