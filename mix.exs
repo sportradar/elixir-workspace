@@ -11,6 +11,7 @@ defmodule Workspace.MixWorkspace do
       deps: deps(),
       deps_path: "artifacts/deps",
       build_path: "artifacts/build",
+      lockfile: "workspace.lock",
       aliases: aliases(),
       workspace: [
         type: :workspace
@@ -33,6 +34,7 @@ defmodule Workspace.MixWorkspace do
     [
       {:jason, "~> 1.4"},
       {:cascade, path: "cascade"},
+      {:cli_options, path: "cli_options", override: true},
       {:workspace, path: "workspace"}
     ]
   end
