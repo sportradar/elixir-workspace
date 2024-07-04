@@ -35,6 +35,32 @@ defmodule Workspace.ExportTest do
       assert project["app"] == "package_changed_a"
     end
 
+    test "relative vs absolute paths" do
+      # by default we have absolute paths
+      {:ok, workspace} = Workspace.new(@sample_workspace_changed_path)
+
+      json_data = Workspace.Export.to_json(workspace) |> Jason.decode!()
+
+      assert Path.type(json_data["workspace_path"]) == :absolute
+
+      for project <- json_data["projects"] do
+        assert Path.type(project["workspace_path"]) == :absolute
+        assert Path.type(project["mix_path"]) == :absolute
+        assert Path.type(project["path"]) == :absolute
+      end
+
+      # with relative flag set
+      json_data = Workspace.Export.to_json(workspace, relative: true) |> Jason.decode!()
+
+      assert json_data["workspace_path"] == "."
+
+      for project <- json_data["projects"] do
+        assert project["workspace_path"] == "."
+        assert Path.type(project["mix_path"]) == :relative
+        assert Path.type(project["path"]) == :relative
+      end
+    end
+
     test "with changes updated" do
       workspace =
         Workspace.new!(@sample_workspace_changed_path)

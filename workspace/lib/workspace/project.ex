@@ -166,23 +166,42 @@ defmodule Workspace.Project do
 
   Only `:app`, `:module`, `:mix_path`, `:path`, `:workspace_path`, `:status`,
   `:root` and `:changes` are included.
+
+  ## Options
+
+  * `:relative` - If set to `true` the paths will be relative with respect to
+  the workspace path. Notice that the `workspace_path` attribute will be set to
+  `"."` if `relative` is set.
   """
   @spec to_map(project :: t()) :: map()
-  def to_map(project) do
+  def to_map(project, opts \\ []) do
+    opts = Keyword.validate!(opts, relative: false)
+
     changes = Enum.map(project.changes || [], fn {file, _type} -> file end)
+
+    workspace_path =
+      case opts[:relative] do
+        true -> "."
+        false -> project.workspace_path
+      end
 
     %{
       app: Atom.to_string(project.app),
       module: inspect(project.module),
-      mix_path: project.mix_path,
-      path: project.path,
-      workspace_path: project.workspace_path,
+      mix_path: maybe_relative(project.mix_path, project.workspace_path, opts[:relative]),
+      path: maybe_relative(project.path, project.workspace_path, opts[:relative]),
+      workspace_path: workspace_path,
       status: Atom.to_string(project.status),
       root: project.root?,
       changes: changes,
       tags: Enum.map(project.tags, &format_tag/1)
     }
   end
+
+  defp maybe_relative(path, _workspace_path, false), do: path
+
+  defp maybe_relative(path, workspace_path, true),
+    do: Workspace.Utils.Path.relative_to(path, workspace_path)
 
   @valid_statuses [:undefined, :modified, :affected, :unaffected]
 

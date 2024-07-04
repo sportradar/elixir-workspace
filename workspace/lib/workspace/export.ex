@@ -12,7 +12,10 @@ defmodule Workspace.Export do
 
   ## Options
 
-  * `:sort` - if set to `true` projects will be sorted alphabetically
+  * `:sort` - if set to `true` projects will be sorted alphabetically. Defaults to
+  `false`.
+  * `:relative` - if paths will be relative or absolute. If set to `true` then
+  `workspace_path` will be set to `"."`. Defaults to `false`.
 
   Notice that skipped projects are not included.
   """
@@ -20,12 +23,22 @@ defmodule Workspace.Export do
   def to_json(workspace, opts \\ []) do
     assert_jason!("to_json/1")
 
+    opts = Keyword.validate!(opts, sort: false, relative: false)
+
+    workspace_path =
+      case opts[:relative] do
+        true -> "."
+        false -> workspace.workspace_path
+      end
+
     %{
-      workspace_path: workspace.workspace_path,
+      workspace_path: workspace_path,
       projects:
         workspace.projects
         |> Enum.reject(fn {_name, project} -> project.skip end)
-        |> Enum.map(fn {_name, project} -> Workspace.Project.to_map(project) end)
+        |> Enum.map(fn {_name, project} ->
+          Workspace.Project.to_map(project, relative: opts[:relative])
+        end)
         |> maybe_sort(opts[:sort])
     }
     |> Jason.encode!(pretty: true)
