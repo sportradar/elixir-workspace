@@ -78,6 +78,22 @@ defmodule Mix.Tasks.Workspace.List do
 
   defp list_workspace_projects(workspace, show_status) do
     projects = Workspace.projects(workspace)
+
+    case Enum.count(projects, &(not &1.skip)) do
+      0 ->
+        Cli.log([:bright, :yellow, "No matching projects for the given options", :reset])
+
+      valid ->
+        Cli.log([
+          "Found ",
+          :bright,
+          :blue,
+          "#{valid} workspace projects",
+          :reset,
+          " matching the given options."
+        ])
+    end
+
     max_project_length = max_project_length(projects)
 
     projects

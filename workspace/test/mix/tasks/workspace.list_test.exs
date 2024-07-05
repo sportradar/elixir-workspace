@@ -18,6 +18,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
 
   test "prints the tree of the workspace" do
     expected = """
+    Found 11 workspace projects matching the given options.
       * :package_default_a package_default_a/mix.exs :shared, area:core
       * :package_default_b package_default_b/mix.exs - a dummy project
       * :package_default_c package_default_c/mix.exs
@@ -38,6 +39,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
 
   test "with --show-status flag" do
     expected = """
+    Found 11 workspace projects matching the given options.
       * :package_changed_a ● package_changed_a/mix.exs :shared, area:core
       * :package_changed_b ✔ package_changed_b/mix.exs - a dummy project
       * :package_changed_c ● package_changed_c/mix.exs
@@ -58,6 +60,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
 
   test "with --project option set" do
     expected = """
+    Found 2 workspace projects matching the given options.
       * :package_default_a package_default_a/mix.exs :shared, area:core
       * :package_default_b package_default_b/mix.exs - a dummy project
     """
@@ -72,10 +75,20 @@ defmodule Mix.Tasks.Workspace.ListTest do
                "package_default_b"
              ])
            end) == expected
+
+    assert capture_io(fn ->
+             ListTask.run([
+               "--workspace-path",
+               @sample_workspace_default_path,
+               "-p",
+               "invalid"
+             ])
+           end) =~ "No matching projects for the given options"
   end
 
   test "with --exclude option set" do
     expected = """
+    Found 1 workspace projects matching the given options.
       * :package_default_b package_default_b/mix.exs - a dummy project
     """
 
