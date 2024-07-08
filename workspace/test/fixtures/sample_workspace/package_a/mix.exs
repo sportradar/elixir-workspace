@@ -10,6 +10,9 @@ defmodule PackageA.MixProject do
       deps: deps(),
       workspace: [
         tags: [:shared, {:area, :core}]
+      ],
+      package: [
+        maintainers: ["Jack Sparrow"]
       ]
     ]
   end

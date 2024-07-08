@@ -24,6 +24,13 @@ defmodule Mix.Tasks.Workspace.List do
       If set the paths in the exported json file will be relative with respect to the
       workspace path. Applicable only if `--json` is set.
       """
+    ],
+    maintainer: [
+      type: :string,
+      doc: """
+      Search for projects with the given maintainer. A partial case insensitive string search
+      is performed so you can provide only part of the maintainer's name.
+      """
     ]
   ]
 
@@ -52,10 +59,43 @@ defmodule Mix.Tasks.Workspace.List do
   - the project app name
   - the project path with respect to workspace path
   - the description if set
+  - the project tags
 
   ## Command line options
 
   #{CliOptions.docs(@options_schema, sort: true)}
+
+  ## Filtering projects
+
+  Several command line options can limit the returned projects and filter the
+  workspace.
+
+  You can list only projects with a specific tag:
+
+      $ mix workspace.list --tag core
+
+  Or exclude projects with a specific tag:
+
+      $ mix workspace.list --exclude-tag deprecated
+
+  You can also filter by the project's maintainer. The search is case insensitive. The
+  maintainers are expected to be defined under `package`:
+
+      def project do
+        [
+          package: [
+            maintainers: ["Jack Sparrow"]
+          ],
+          # rest project options
+        ]
+
+  In order to get all projects associated with a specific maintainer:
+
+      $ mix workspace.list --maintainer "Jack Sparrow"
+      
+      # notice that the search is case insensitive, this works as well
+      $ mix workspace.list --maintainer sparrow
+
   """
   use Mix.Task
   alias Workspace.Cli
@@ -66,7 +106,33 @@ defmodule Mix.Tasks.Workspace.List do
 
     opts
     |> Mix.WorkspaceUtils.load_and_filter_workspace()
+    |> maybe_search_projects(opts)
     |> list_or_save_workspace_projects(opts)
+  end
+
+  defp maybe_search_projects(workspace, opts) do
+    search_by_maintainer(workspace, opts[:maintainer])
+  end
+
+  defp search_by_maintainer(workspace, nil), do: workspace
+
+  defp search_by_maintainer(workspace, maintainer) do
+    projects =
+      Enum.map(workspace.projects, fn {_name, project} ->
+        case matches_maintainer?(project, maintainer) do
+          true -> project
+          false -> Map.put(project, :skip, true)
+        end
+      end)
+
+    Workspace.State.set_projects(workspace, projects)
+  end
+
+  defp matches_maintainer?(project, maintainer) do
+    maintainers = get_in(project.config, [:package, :maintainers]) || []
+    maintainers = maintainers |> Enum.join(" ") |> String.downcase()
+
+    String.contains?(maintainers, String.downcase(maintainer))
   end
 
   defp list_or_save_workspace_projects(workspace, opts) do
