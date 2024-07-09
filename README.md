@@ -6,7 +6,7 @@ A `workspace` holding the `workspace`.
 Using path dependencies between the projects and the provided tools you can
 effectively work on massive codebases properly split into reusable packages.
 
-![Demo](https://github.com/sportradar/elixir-workspace/blob/assets/demo.gif)
+![Demo](https://github.com/sportradar/elixir-workspace/raw/assets/demo.gif)
 
 ## Folder Structure
 
