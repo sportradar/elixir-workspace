@@ -120,6 +120,8 @@ $ mix workspace.graph --show-status
 > This way you can limit the execution of a task to the relevant projects.
 >
 > See also `mix workspace.status`.
+>
+> ![workspace.status example](https://github.com/sportradar/elixir-workspace/blob/assets/status.gif)
 
 You can also output the graph as a `mermaid` chart:
 
@@ -156,6 +158,8 @@ flowchart TD
 
 Monorepos can have hundreds of projects, so being able to run actions against
 all (or some) of them is a key feature of `Workspace`.
+
+![workspace.run example](https://github.com/sportradar/elixir-workspace/blob/assets/run.gif)
 
 `mix workspace.run` allows you to:
 
