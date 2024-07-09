@@ -64,6 +64,10 @@ coverage: ## Generates coverage report
 
 ##@ Documentation
 
+.PHONY: gifs
+gifs: ## Capture gifs for READMEs
+	./assets/generate-captures.sh
+
 .PHONY: docs
 docs: ## Generates docs for the complete workspace
 	mix workspace.run -t docs
