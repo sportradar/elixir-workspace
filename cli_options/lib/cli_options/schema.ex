@@ -116,6 +116,14 @@ defmodule CliOptions.Schema do
       then the option will not be included in the generated docs.
       """
     ],
+    doc_section: [
+      type: :atom,
+      doc: """
+      The section in the documentation this option will be put under. If not set the
+      option is added to the default unnamed section. If set you must also provide the
+      `:sections` option in the `CliOptions.docs/2` call.
+      """
+    ],
     required: [
       type: :boolean,
       doc: """

@@ -430,6 +430,29 @@ defmodule CliOptions do
   ## Options
 
     * `:sort` - if set to `true` the options will be sorted alphabetically.
+    * `:sections` - a keyword list with options sections. If set the options docs
+      will be added under the defined section, or at the root section if no
+      `:section` is defined in your schema.
+
+      Notice that if `:sort` is set the options
+      will be sorted within the sections. The sections order is not sorted and it
+      follows the provided order.
+
+      An entry for each section is expected in the `:sections` option with the
+      following format:
+
+          [
+            section_name: [
+              header: "Section Header",
+              doc: "Optional extra docs for this docs section"
+            ]
+          ]
+
+      where:
+
+      * `:header` - The header that will be used for the section. Required.
+      * `:doc` - Optional detailed section docs to be added before the actual
+      options docs.
   """
   @spec docs(schema :: keyword() | CliOptions.Schema.t(), opts :: keyword()) :: String.t()
   def docs(schema, opts \\ [])

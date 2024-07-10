@@ -3,42 +3,119 @@ defmodule CliOptions.Docs do
 
   @doc false
   @spec generate(schema :: CliOptions.Schema.t(), opts :: keyword()) :: String.t()
-  def generate(%CliOptions.Schema{} = schema, opts) do
-    schema.schema
+  def generate(%CliOptions.Schema{schema: schema}, opts) do
+    validate_sections!(schema, opts[:sections])
+    sections = opts[:sections] || []
+
+    schema
     |> remove_hidden_options()
+    |> group_by_section([nil] ++ Keyword.keys(sections))
     |> maybe_sort(Keyword.get(opts, :sort, false))
-    |> Enum.reduce([], &maybe_option_doc/2)
-    |> Enum.reverse()
-    |> Enum.join("\n")
+    |> Enum.map(fn {section, options} -> docs_by_section(section, options, sections) end)
+    |> Enum.join("\n\n")
+  end
+
+  @sections_schema NimbleOptions.new!(
+                     *: [
+                       type: :keyword_list,
+                       keys: [
+                         header: [
+                           type: :string,
+                           required: true
+                         ],
+                         doc: [type: :string]
+                       ]
+                     ]
+                   )
+
+  defp validate_sections!(_schema, nil), do: :ok
+
+  defp validate_sections!(schema, sections) do
+    sections = NimbleOptions.validate!(sections, @sections_schema)
+
+    configured_sections =
+      schema
+      |> Enum.map(fn {_key, opts} -> opts[:doc_section] end)
+      |> Enum.reject(&is_nil/1)
+
+    for section <- configured_sections do
+      if is_nil(sections[section]) do
+        raise ArgumentError, """
+        You must include #{inspect(section)} in the :sections option
+        of CliOptions.docs/2, as following:
+
+            sections: [
+              #{section}: [
+                header: "The section header",
+                doc: "Optional extended doc for the section"
+              ]
+            ]
+        """
+      end
+    end
   end
 
   defp remove_hidden_options(schema),
     do: Enum.reject(schema, fn {_key, opts} -> opts[:doc] == false end)
 
-  defp maybe_sort(schema, true), do: Enum.sort_by(schema, fn {key, _value} -> key end, :asc)
-  defp maybe_sort(schema, _other), do: schema
+  defp group_by_section(schema, [nil]), do: [nil: schema]
 
-  defp maybe_option_doc({key, schema}, acc) do
-    option_doc({key, schema}, acc)
+  defp group_by_section(schema, sections) do
+    sections
+    |> Enum.reduce([], fn section, acc ->
+      options = Enum.filter(schema, fn {_key, opts} -> opts[:doc_section] == section end)
+
+      case options do
+        [] -> acc
+        options -> [{section, options} | acc]
+      end
+    end)
+    |> Enum.reverse()
   end
 
-  defp option_doc({_key, schema}, acc) do
-    doc =
-      [
-        "*",
-        "`#{option_name_doc(schema)}`",
-        "(`#{schema[:type]}`)",
-        "-",
-        maybe_deprecated(schema),
-        maybe_required(schema),
-        option_body_doc(schema)
-      ]
-      |> Enum.filter(&is_binary/1)
-      |> Enum.map(&String.trim_trailing/1)
-      |> Enum.join(" ")
-      |> String.trim_trailing()
+  defp maybe_sort(sections, true) do
+    Enum.map(sections, fn {section, options} ->
+      sorted = Enum.sort_by(options, fn {key, _value} -> key end, :asc)
+      {section, sorted}
+    end)
+  end
 
-    [doc | acc]
+  defp maybe_sort(sections, _other), do: sections
+
+  defp docs_by_section(nil, options, _sections), do: options_docs(options)
+
+  defp docs_by_section(section, options, sections) do
+    section_opts = Keyword.fetch!(sections, section)
+
+    [
+      "### " <> Keyword.fetch!(section_opts, :header),
+      section_opts[:doc],
+      options_docs(options)
+    ]
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join("\n\n")
+  end
+
+  defp options_docs(options) do
+    options
+    |> Enum.map(fn {_key, schema} -> option_doc(schema) end)
+    |> Enum.join("\n")
+  end
+
+  defp option_doc(schema) do
+    [
+      "*",
+      "`#{option_name_doc(schema)}`",
+      "(`#{schema[:type]}`)",
+      "-",
+      maybe_deprecated(schema),
+      maybe_required(schema),
+      option_body_doc(schema)
+    ]
+    |> Enum.filter(&is_binary/1)
+    |> Enum.map(&String.trim_trailing/1)
+    |> Enum.join(" ")
+    |> String.trim_trailing()
   end
 
   defp option_name_doc(schema) do

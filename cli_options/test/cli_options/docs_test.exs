@@ -15,11 +15,13 @@ defmodule CliOptions.DocsTest do
     mode: [
       type: :string,
       default: "parallel",
-      allowed: ["parallel", "serial"]
+      allowed: ["parallel", "serial"],
+      doc_section: :test
     ],
     with_dash: [
       type: :boolean,
-      doc: "a key with a dash"
+      doc: "a key with a dash",
+      doc_section: :test
     ],
     hidden_option: [
       type: :boolean,
@@ -39,6 +41,75 @@ defmodule CliOptions.DocsTest do
         |> String.trim()
 
       assert CliOptions.docs(@test_schema) == expected
+    end
+
+    test "with sections configured" do
+      expected =
+        """
+        * `--verbose` (`boolean`) - [default: `false`]
+        * `-p, --project...` (`string`) - Required. The project to use
+
+        ### Test related options
+
+        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `parallel`]
+        * `--with-dash` (`boolean`) - a key with a dash [default: `false`]
+        """
+        |> String.trim()
+
+      assert CliOptions.docs(@test_schema, sections: [test: [header: "Test related options"]]) ==
+               expected
+
+      # extra sections are ignored if no option set
+
+      assert CliOptions.docs(@test_schema,
+               sections: [test: [header: "Test related options"], other: [header: "Foo"]]
+             ) == expected
+    end
+
+    test "raises with invalid section settings" do
+      message =
+        "unknown options [:heder], valid options are: [:header, :doc] (in options [:test])"
+
+      assert_raise NimbleOptions.ValidationError, message, fn ->
+        CliOptions.docs(@test_schema, sections: [test: [heder: "Test related options"]])
+      end
+    end
+
+    test "raises if no section info is provided for an option" do
+      message = """
+      You must include :foo in the :sections option
+      of CliOptions.docs/2, as following:
+
+          sections: [
+            foo: [
+              header: "The section header",
+              doc: "Optional extended doc for the section"
+            ]
+          ]
+      """
+
+      schema = [var: [doc: "a var", long: "variable", doc_section: :foo]]
+
+      assert_raise ArgumentError, message, fn -> CliOptions.docs(schema, sections: []) end
+    end
+
+    test "with sections configured and sorting" do
+      expected =
+        """
+        * `-p, --project...` (`string`) - Required. The project to use
+        * `--verbose` (`boolean`) - [default: `false`]
+
+        ### Test related options
+
+        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `parallel`]
+        * `--with-dash` (`boolean`) - a key with a dash [default: `false`]
+        """
+        |> String.trim()
+
+      assert CliOptions.docs(@test_schema,
+               sort: true,
+               sections: [test: [header: "Test related options"]]
+             ) == expected
     end
 
     test "with sorting enabled" do

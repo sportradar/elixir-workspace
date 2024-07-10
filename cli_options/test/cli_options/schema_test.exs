@@ -16,7 +16,7 @@ defmodule CliOptions.SchemaTest do
 
       message =
         "invalid schema for :foo, unknown options [:missing, :other], valid options are: " <>
-          "[:type, :default, :long, :short, :aliases, :short_aliases, :doc, :required, :multiple, " <>
+          "[:type, :default, :long, :short, :aliases, :short_aliases, :doc, :doc_section, :required, :multiple, " <>
           ":allowed, :deprecated]"
 
       assert_raise ArgumentError, message, fn ->
