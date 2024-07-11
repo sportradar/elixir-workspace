@@ -5,7 +5,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
       doc: """
       If set to true only the package coverage is reported and not the individual modules
       coverages. This has higher priority than the `:verbose` option.
-      """
+      """,
+      doc_section: :display
     ]
   ]
 
@@ -200,7 +201,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
   ## Command line options
 
-  #{CliOptions.docs(@options_schema, sort: true)}
+  #{CliOptions.docs(@options_schema, sort: true, sections: Workspace.CliOptions.doc_sections())}
   """
   use Mix.Task
 

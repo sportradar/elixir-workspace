@@ -8,7 +8,8 @@ defmodule Mix.Tasks.Workspace.Run do
     ],
     only_roots: [
       type: :boolean,
-      doc: "If set, the task will be executed only on graph's root nodes."
+      doc: "If set, the task will be executed only on graph's root nodes.",
+      doc_section: :status
     ],
     dry_run: [
       type: :boolean,
@@ -56,7 +57,8 @@ defmodule Mix.Tasks.Workspace.Run do
       generated with the run results for each project. This may be useful for
       your CI/CD automation pipelines, in case you want to post-process the
       run results.
-      """
+      """,
+      doc_section: :export
     ]
   ]
 
@@ -104,7 +106,7 @@ defmodule Mix.Tasks.Workspace.Run do
       
   ## Command-line Options
 
-  #{CliOptions.docs(@options_schema, sort: true)}
+  #{CliOptions.docs(@options_schema, sort: true, sections: Workspace.CliOptions.doc_sections())}
 
   ## Filtering runs
 

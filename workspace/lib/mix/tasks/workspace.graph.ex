@@ -26,7 +26,8 @@ defmodule Mix.Tasks.Workspace.Graph do
       doc: """
       If set the project's tags are also included in the generated graph. Currently
       applicable only for `:pretty` and `:plain` formatters.
-      """
+      """,
+      doc_section: :display
     ],
     focus: [
       type: :string,
@@ -154,7 +155,7 @@ defmodule Mix.Tasks.Workspace.Graph do
 
   ## Command Line Options
 
-  #{CliOptions.docs(@options_schema, sort: true)}
+  #{CliOptions.docs(@options_schema, sort: true, sections: Workspace.CliOptions.doc_sections())}
   """
   use Mix.Task
   alias Workspace.Graph.Formatter

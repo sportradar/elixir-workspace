@@ -8,14 +8,16 @@ defmodule Mix.Tasks.Workspace.List do
       associated metadata. By default it will be saved in `workspace.json` in the
       current directory. You can override the output path by setting the `--output`
       option.
-      """
+      """,
+      doc_section: :export
     ],
     output: [
       type: :string,
       default: "workspace.json",
       doc: """
       The output file. Applicable only if `--json` is set.
-      """
+      """,
+      doc_section: :export
     ],
     relative_paths: [
       type: :boolean,
@@ -23,14 +25,16 @@ defmodule Mix.Tasks.Workspace.List do
       doc: """
       If set the paths in the exported json file will be relative with respect to the
       workspace path. Applicable only if `--json` is set.
-      """
+      """,
+      doc_section: :export
     ],
     maintainer: [
       type: :string,
       doc: """
       Search for projects with the given maintainer. A partial case insensitive string search
       is performed so you can provide only part of the maintainer's name.
-      """
+      """,
+      doc_section: :filtering
     ]
   ]
 
@@ -63,7 +67,7 @@ defmodule Mix.Tasks.Workspace.List do
 
   ## Command line options
 
-  #{CliOptions.docs(@options_schema, sort: true)}
+  #{CliOptions.docs(@options_schema, sort: true, sections: Workspace.CliOptions.doc_sections())}
 
   ## Filtering projects
 

@@ -16,7 +16,7 @@ defmodule Mix.Tasks.Workspace.Check do
 
   ## Command Line Options
 
-  #{CliOptions.docs(@options_schema, sort: true)}
+  #{CliOptions.docs(@options_schema, sort: true, sections: Workspace.CliOptions.doc_sections())}
   """
 
   use Mix.Task
