@@ -359,6 +359,61 @@ defmodule CliOptions do
   CliOptions.parse(["--file", "foo.ex", "--file", "xyz.ex"], [file: [type: :string]])
   ```
 
+  ## Environment variable aliases
+
+  You can optionally define an environment variable alias for an option through the
+  `:env` schema option. If set the environment variable will be used **only if** the
+  argument is not present in the `args`.
+
+  ```cli
+  schema = [
+    mode: [
+      type: :string,
+      env: "CLI_OPTIONS_MODE"
+    ]
+  ]
+
+  # assume the environment variable is set
+  System.put_env("CLI_OPTIONS_MODE", "parallel")
+
+  # if the argument is provided by the user the environment variable is ignored
+  CliOptions.parse(["--mode", "sequential"], schema)
+  >>>
+
+  # the environment variable will be used if not set
+  CliOptions.parse([], schema)
+  >>>
+
+  System.delete_env("CLI_OPTIONS_MODE")
+  ```
+
+  > #### Boolean flags and environment variables {: .warning}
+  >
+  > Notice that if the option is `:boolean` and an `:env` alias is set, then the
+  > environment variable will be used only if it has a _truthy_ value. A value is
+  > considered truthy if it is one of `1`, `true` (the match is case insensitive).
+  > In any other case the environment variable is ignored.
+  >
+  > ```cli
+  > schema = [
+  >   enable: [type: :boolean, env: "CLI_OPTIONS_ENABLE"]
+  > ]
+  >
+  > System.put_env("CLI_OPTIONS_ENABLE", "1")
+  > CliOptions.parse([], schema)
+  > >>>
+  >
+  > System.put_env("CLI_OPTIONS_ENABLE", "TrUE")
+  > CliOptions.parse([], schema)
+  > >>>
+  >
+  > System.put_env("CLI_OPTIONS_ENABLE", "other")
+  > CliOptions.parse([], schema)
+  > >>>
+  >
+  > System.delete_env("CLI_OPTIONS_ENABLE")
+  > ```
+
   ## Return separator
 
   The separator `--` implies options should no longer be processed. Every argument

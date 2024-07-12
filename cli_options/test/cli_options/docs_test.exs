@@ -166,5 +166,21 @@ defmodule CliOptions.DocsTest do
 
       assert CliOptions.docs(schema) == expected
     end
+
+    test "with env set" do
+      schema = [
+        var: [doc: "a var", aliases: ["var1", "var2"], short: "v", default: "foo", env: "my_env"],
+        another: [doc: "another var", type: :integer, env: "ANOTHER_ENV"]
+      ]
+
+      expected =
+        """
+        * `-v, --var` (`string`) - a var [env: MY_ENV=] [default: `foo`] [aliases: `--var1`, `--var2`]
+        * `--another` (`integer`) - another var [env: ANOTHER_ENV=]
+        """
+        |> String.trim()
+
+      assert CliOptions.docs(schema) == expected
+    end
   end
 end

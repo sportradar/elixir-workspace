@@ -341,4 +341,73 @@ defmodule CliOptionsTest do
              end) == ""
     end
   end
+
+  describe ":env set" do
+    @env_schema [
+      name: [type: :string, env: "TEST_NAME", required: true],
+      age: [type: :integer, env: "TEST_AGE"],
+      enable: [type: :boolean, env: "TEST_ENABLE"]
+    ]
+
+    setup do
+      on_exit(fn ->
+        System.delete_env("TEST_NAME")
+        System.delete_env("TEST_AGE")
+        System.delete_env("TEST_ENABLE")
+      end)
+    end
+
+    test "env vars are ignored if user provides the cli args" do
+      System.put_env("TEST_NAME", "foo")
+      System.put_env("TEST_AGE", "13")
+
+      assert {opts, [], []} = CliOptions.parse!(["--name", "bar", "--age", "20"], @env_schema)
+      assert opts == [name: "bar", age: 20, enable: false]
+    end
+
+    test "env vars are used if not set in options" do
+      System.put_env("TEST_NAME", "foo")
+      System.put_env("TEST_AGE", "13")
+
+      assert {opts, [], []} = CliOptions.parse!(["--enable"], @env_schema)
+      assert opts == [name: "foo", age: 13, enable: true]
+    end
+
+    test "env vars types are validated" do
+      System.put_env("TEST_NAME", "foo")
+      System.put_env("TEST_AGE", "invalid")
+
+      assert CliOptions.parse(["--enable"], @env_schema) ==
+               {:error, ":age expected an integer argument, got: invalid"}
+    end
+
+    test "env vars truthy values" do
+      for value <- ["1", "true", "TRUE", "tRuE"] do
+        System.put_env("TEST_ENABLE", value)
+
+        assert {opts, [], []} = CliOptions.parse!(["--name", "foo"], @env_schema)
+        assert opts[:enable]
+      end
+
+      for value <- ["0", "false", "other"] do
+        System.put_env("TEST_ENABLE", value)
+
+        assert {opts, [], []} = CliOptions.parse!(["--name", "foo"], @env_schema)
+        refute opts[:enable]
+      end
+    end
+
+    test "env vars casing definition does not matter" do
+      System.put_env("TEST_NAME", "foo")
+
+      assert CliOptions.parse!([], name: [type: :string, env: "TEST_NAME"]) ==
+               {[name: "foo"], [], []}
+
+      assert CliOptions.parse!([], name: [type: :string, env: "test_name"]) ==
+               {[name: "foo"], [], []}
+
+      assert CliOptions.parse!([], name: [type: :string, env: "Test_NAMe"]) ==
+               {[name: "foo"], [], []}
+    end
+  end
 end

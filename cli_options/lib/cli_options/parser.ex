@@ -12,6 +12,7 @@ defmodule CliOptions.Parser do
     {remaining_argv, extra} = split_extra(argv)
 
     with {:ok, opts, args} <- parse(remaining_argv, schema, [], []),
+         {:ok, opts} <- maybe_append_env_values(opts, schema),
          {:ok, opts} <- CliOptions.Schema.validate(opts, schema) do
       {:ok, {opts, args, extra}}
     end
@@ -167,4 +168,37 @@ defmodule CliOptions.Parser do
         {:error, "an option alias must be one character long, got: #{inspect(option_alias)}"}
     end
   end
+
+  defp maybe_append_env_values(opts, schema) do
+    args_from_env =
+      schema.schema
+      |> Enum.reject(fn {_key, opts} -> is_nil(opts[:env]) end)
+      |> Enum.reject(fn {key, _opts} -> Keyword.has_key?(opts, key) end)
+      |> Enum.map(fn {_key, opts} -> maybe_read_env(opts) end)
+      |> List.flatten()
+
+    with {:ok, env_opts, []} <- parse(args_from_env, schema, [], []) do
+      {:ok, Keyword.merge(opts, env_opts)}
+    end
+  end
+
+  defp maybe_read_env(opts) do
+    env = System.get_env(String.upcase(opts[:env]))
+
+    cond do
+      is_nil(env) ->
+        []
+
+      opts[:type] == :boolean and truthy?(env) ->
+        ["--" <> opts[:long]]
+
+      opts[:type] == :boolean ->
+        []
+
+      true ->
+        ["--" <> opts[:long], env]
+    end
+  end
+
+  defp truthy?(value), do: String.downcase(value) in ["1", "true"]
 end

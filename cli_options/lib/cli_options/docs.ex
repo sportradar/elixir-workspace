@@ -163,6 +163,7 @@ defmodule CliOptions.Docs do
     [
       schema[:doc],
       maybe_allowed(schema),
+      maybe_env(schema),
       maybe_default(schema),
       maybe_aliases(schema)
     ]
@@ -174,6 +175,17 @@ defmodule CliOptions.Docs do
     case schema[:allowed] do
       nil -> ""
       allowed -> "Allowed values: `#{inspect(allowed)}`."
+    end
+  end
+
+  defp maybe_env(schema) do
+    case schema[:env] do
+      nil ->
+        nil
+
+      env ->
+        env = String.upcase(env)
+        "[env: #{env}=]"
     end
   end
 

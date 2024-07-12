@@ -158,6 +158,17 @@ defmodule CliOptions.Schema do
       Defines a message to indicate that the option is deprecated. The message will
       be displayed as a warning when passing the item.
       """
+    ],
+    env: [
+      type: :string,
+      doc: """
+      An environment variable to get this option from, if it is missing from the command
+      line arguments. If the option is provided by the user the environment variable
+      is ignored.
+
+      For boolean options, the flag is considered set if the environment variable has
+      a truthy value (`1`, `true`) and ignored in any other case.
+      """
     ]
   ]
 
