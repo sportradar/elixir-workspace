@@ -2,6 +2,7 @@
 
 [![Hex.pm](https://img.shields.io/hexpm/v/cli_options.svg)](https://hex.pm/packages/cli_options)
 [![hex.pm](https://img.shields.io/hexpm/l/cli_options.svg)](https://hex.pm/packages/cli_options)
+[![hex.pm](https://img.shields.io/hexpm/dt/cli_options.svg)](https://hex.pm/packages/cli_options)
 [![Documentation](https://img.shields.io/badge/-Documentation-blueviolet)](https://hexdocs.pm/cli_options/index.html)
 
 An opinionated command line arguments parser.
