@@ -9,7 +9,7 @@ defmodule Mix.Tasks.Workspace.Check do
                     :excluded_tags
                   ])
 
-  @shortdoc "Runs configured checkers on the current workspace"
+  @shortdoc "Runs configured checks on the current workspace"
 
   @moduledoc """
   Check the workspace using the configured checks.

@@ -35,14 +35,17 @@ defmodule Workspace.Checks.ValidateConfigPath do
 
   ## Example
 
-  In order to configure this checker add the following, under `checkers`,
-  in your `workspace.exs`:
+  In order to configure this check add the following, under `checks`,
+  in your `.workspace.exs`:
 
   ```elixir
   [
-    checker: Workspace.Checkers.ConfigPath,
-    config_attribute: :deps_path,
-    expected_path: "artifacts/deps"
+    module: Workspace.Checks.ValidateConfigPath,
+    description: "all projects must have a common dependencies path",
+    opts: [
+      config_attribute: :deps_path,
+      expected_path: "artifacts/deps"
+    ]
   ]
   ```
   """

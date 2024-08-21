@@ -37,8 +37,8 @@ defmodule Workspace.Checks.ValidateProject do
 
   ## Example
 
-  In order to configure this checker add the following, under `checks`,
-  in your `workspace.exs`:
+  In order to configure this check add the following, under `checks`,
+  in your `.workspace.exs`:
 
   ```elixir
   [

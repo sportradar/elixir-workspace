@@ -33,7 +33,7 @@ defmodule Workspace.Check.Result do
             check: nil,
             project: nil,
             status: nil,
-            # should be set by checkers
+            # should be set by checks
             meta: []
 
   @doc """

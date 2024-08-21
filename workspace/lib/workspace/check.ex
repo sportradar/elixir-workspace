@@ -37,7 +37,7 @@ defmodule Workspace.Check do
                 )
 
   @moduledoc """
-  A behaviour for implementing workspace checker.
+  A behaviour for implementing workspace check.
 
   ## Introduction
 
