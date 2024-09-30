@@ -47,6 +47,7 @@ defmodule Mix.Tasks.Workspace.List do
                       :tags,
                       :excluded_tags,
                       :dependency,
+                      :dependent,
                       :show_status
                     ],
                     opts
@@ -87,6 +88,11 @@ defmodule Mix.Tasks.Workspace.List do
   can achieve this through the `--dependency` option: 
 
       $ mix workspace.list --dependency foo
+
+  Additionally you can specify the `--dependent` flag to consider only dependencies of a
+  given project:
+
+      $ mix workspace.list --dependent foo
 
   You can also filter by the project's maintainer. The search is case insensitive. The
   maintainers are expected to be defined under `package`:

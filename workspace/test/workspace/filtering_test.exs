@@ -131,5 +131,19 @@ defmodule Workspace.FilteringTest do
       assert Workspace.project!(workspace, :baz).skip
       refute Workspace.project!(workspace, :foo).skip
     end
+
+    test "with dependent set", %{workspace: workspace} do
+      workspace = Workspace.Filtering.run(workspace, dependent: :bar)
+
+      assert Workspace.project!(workspace, :bar).skip
+      assert Workspace.project!(workspace, :baz).skip
+      assert Workspace.project!(workspace, :foo).skip
+
+      workspace = Workspace.Filtering.run(workspace, dependent: :foo)
+
+      refute Workspace.project!(workspace, :bar).skip
+      assert Workspace.project!(workspace, :baz).skip
+      assert Workspace.project!(workspace, :foo).skip
+    end
   end
 end

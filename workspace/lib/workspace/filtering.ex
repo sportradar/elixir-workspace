@@ -31,6 +31,7 @@ defmodule Workspace.Filtering do
     considered. All projects that do not have at least one the specified tags will
     be skipped.
     * `:dependency` (`t:atom/0`) - keeps only projects that have the given dependency.
+    * `:dependent` (`t:atom/0`) - keeps only dependencies of the given project.
     * `:affected` (`t:boolean/0`) - if set only the affected projects will be
     included and everything else will be skipped. Defaults to `false`.
     * `:modified` (`t:boolean/0`) - if set only the modified projects will be
@@ -77,7 +78,8 @@ defmodule Workspace.Filtering do
       only_roots: opts[:only_roots] || false,
       excluded_tags: opts[:excluded_tags] || [],
       tags: Enum.map(opts[:tags] || [], &maybe_to_tag/1),
-      dependency: maybe_to_atom(opts[:dependency])
+      dependency: maybe_to_atom(opts[:dependency]),
+      dependent: maybe_to_atom(opts[:dependent])
     ]
 
     Enum.map(workspace.projects, fn {_name, project} ->
@@ -118,7 +120,8 @@ defmodule Workspace.Filtering do
       not_root?(project, opts[:only_roots]) or
       not_affected?(project, opts[:affected]) or
       not_modified?(project, opts[:modified]) or
-      not_dependency?(workspace, project, opts[:dependency])
+      not_dependency?(workspace, project, opts[:dependency]) or
+      not_dependent?(workspace, project, opts[:dependent])
   end
 
   defp excluded_project?(project, excluded), do: project.app in excluded
@@ -147,4 +150,9 @@ defmodule Workspace.Filtering do
 
   defp not_dependency?(workspace, project, dependency),
     do: dependency not in Workspace.Graph.dependencies(workspace, project.app)
+
+  defp not_dependent?(_workspace, _project, nil), do: false
+
+  defp not_dependent?(workspace, project, dependent),
+    do: project.app not in Workspace.Graph.dependencies(workspace, dependent)
 end

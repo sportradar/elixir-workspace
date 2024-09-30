@@ -6,7 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-* `workspace.list`: support filtering by dependency
+* `workspace.list`: support filtering by dependents through the `--dependent` flag. You
+can now list all projects that are direct dependencies of a given project:
+
+```bash
+mix workspace.list --dependent my_project
+```
+
+* `workspace.list`: support filtering by dependencies through the `--dependency`. Using this
+flag you can list only those projects that have the given direct dependency:
+
+```bash
+mix workspace.list --dependency a_project
+```
+
 * `workspace.list`: add `--maintainer` for filtering projects with the given maintainer
 
 ## [v0.1.1](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.1.1) (2024-07-04)
