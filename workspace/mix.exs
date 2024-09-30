@@ -2,7 +2,7 @@ defmodule Workspace.MixProject do
   use Mix.Project
 
   @app :workspace
-  @version "0.1.1"
+  @version "0.1.2"
   @repo_url "https://github.com/sportradar/elixir-workspace"
 
   def project do
@@ -54,8 +54,8 @@ defmodule Workspace.MixProject do
 
   defp deps do
     [
-      {:cli_options, path: "../cli_options/"},
-      # {:cli_options, "~> 0.1.0"},
+      # {:cli_options, path: "../cli_options/"},
+      {:cli_options, "~> 0.1.2"},
       {:nimble_options, "~> 1.1.1"},
       {:jason, "~> 1.4.1", optional: true},
       {:ex_doc, "== 0.34.1", only: :dev, runtime: false},
