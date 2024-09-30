@@ -3,7 +3,9 @@ defmodule Workspace.FilteringTest do
   import Workspace.TestUtils
 
   setup do
-    project_a = project_fixture(app: :foo, workspace: [tags: [:foo, {:scope, :ui}]])
+    project_a =
+      project_fixture(app: :foo, workspace: [tags: [:foo, {:scope, :ui}]], deps: [{:bar}])
+
     project_b = project_fixture(app: :bar, workspace: [tags: [:bar]])
     project_c = project_fixture(app: :baz, workspace: [tags: [:foo, :bar]])
 
@@ -114,6 +116,20 @@ defmodule Workspace.FilteringTest do
       assert_raise ArgumentError, fn ->
         Workspace.Filtering.run(workspace, tags: [1])
       end
+    end
+
+    test "with dependency set", %{workspace: workspace} do
+      workspace = Workspace.Filtering.run(workspace, dependency: :invalid)
+
+      assert Workspace.project!(workspace, :bar).skip
+      assert Workspace.project!(workspace, :baz).skip
+      assert Workspace.project!(workspace, :foo).skip
+
+      workspace = Workspace.Filtering.run(workspace, dependency: :bar)
+
+      assert Workspace.project!(workspace, :bar).skip
+      assert Workspace.project!(workspace, :baz).skip
+      refute Workspace.project!(workspace, :foo).skip
     end
   end
 end

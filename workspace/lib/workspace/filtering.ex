@@ -30,6 +30,7 @@ defmodule Workspace.Filtering do
     * `:tags` (list of `t:Workspace.Project.tag()`) - a list of tags to be
     considered. All projects that do not have at least one the specified tags will
     be skipped.
+    * `:dependency` (`t:atom/0`) - keeps only projects that have the given dependency.
     * `:affected` (`t:boolean/0`) - if set only the affected projects will be
     included and everything else will be skipped. Defaults to `false`.
     * `:modified` (`t:boolean/0`) - if set only the modified projects will be
@@ -75,14 +76,16 @@ defmodule Workspace.Filtering do
       modified: opts[:modified] || false,
       only_roots: opts[:only_roots] || false,
       excluded_tags: opts[:excluded_tags] || [],
-      tags: Enum.map(opts[:tags] || [], &maybe_to_tag/1)
+      tags: Enum.map(opts[:tags] || [], &maybe_to_tag/1),
+      dependency: maybe_to_atom(opts[:dependency])
     ]
 
     Enum.map(workspace.projects, fn {_name, project} ->
-      Map.put(project, :skip, skippable?(project, opts))
+      Map.put(project, :skip, skippable?(workspace, project, opts))
     end)
   end
 
+  defp maybe_to_atom(nil), do: nil
   defp maybe_to_atom(value) when is_atom(value), do: value
   defp maybe_to_atom(value) when is_binary(value), do: String.to_atom(value)
 
@@ -107,14 +110,15 @@ defmodule Workspace.Filtering do
     do:
       raise(ArgumentError, "invalid tag, it should be a string of the form `tag` or `scope:tag`")
 
-  defp skippable?(project, opts) do
+  defp skippable?(workspace, project, opts) do
     excluded_project?(project, opts[:excluded]) or
       excluded_tag?(project, opts[:excluded_tags]) or
       not_selected_project?(project, opts[:selected]) or
       not_selected_tag?(project, opts[:tags]) or
       not_root?(project, opts[:only_roots]) or
       not_affected?(project, opts[:affected]) or
-      not_modified?(project, opts[:modified])
+      not_modified?(project, opts[:modified]) or
+      not_dependency?(workspace, project, opts[:dependency])
   end
 
   defp excluded_project?(project, excluded), do: project.app in excluded
@@ -138,4 +142,9 @@ defmodule Workspace.Filtering do
 
   defp not_modified?(_project, false), do: false
   defp not_modified?(project, true), do: not Workspace.Project.modified?(project)
+
+  defp not_dependency?(_workspace, _project, nil), do: false
+
+  defp not_dependency?(workspace, project, dependency),
+    do: dependency not in Workspace.Graph.dependencies(workspace, project.app)
 end

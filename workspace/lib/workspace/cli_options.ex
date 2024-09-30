@@ -29,6 +29,14 @@ defmodule Workspace.CliOptions do
       """,
       doc_section: :filtering
     ],
+    dependency: [
+      type: :string,
+      multiple: false,
+      doc: """
+      If set, only projects that have the given dependency will be considered.
+      """,
+      doc_section: :filtering
+    ],
     excluded_tags: [
       type: :string,
       multiple: true,

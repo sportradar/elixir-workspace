@@ -122,6 +122,23 @@ defmodule Mix.Tasks.Workspace.ListTest do
            end) == expected
   end
 
+  test "filtering by --dependency" do
+    expected = """
+    Found 2 workspace projects matching the given options.
+      * :package_default_a package_default_a/mix.exs :shared, area:core
+      * :package_default_h package_default_h/mix.exs
+    """
+
+    assert capture_io(fn ->
+             ListTask.run([
+               "--workspace-path",
+               @sample_workspace_default_path,
+               "--dependency",
+               "package_default_d"
+             ])
+           end) == expected
+  end
+
   test "with --json option set" do
     output = Path.join(@sample_workspace_changed_path, "workspace.json")
 

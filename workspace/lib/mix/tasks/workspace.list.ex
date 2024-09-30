@@ -46,6 +46,7 @@ defmodule Mix.Tasks.Workspace.List do
                       :exclude,
                       :tags,
                       :excluded_tags,
+                      :dependency,
                       :show_status
                     ],
                     opts
@@ -81,6 +82,11 @@ defmodule Mix.Tasks.Workspace.List do
   Or exclude projects with a specific tag:
 
       $ mix workspace.list --exclude-tag deprecated
+
+  In large monorepos you may want to get all projects depending on a specific package. You
+  can achieve this through the `--dependency` option: 
+
+      $ mix workspace.list --dependency foo
 
   You can also filter by the project's maintainer. The search is case insensitive. The
   maintainers are expected to be defined under `package`:
