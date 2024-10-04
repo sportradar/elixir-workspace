@@ -155,11 +155,7 @@ defmodule Workspace.Project do
   that the project is a root workspace project.
   """
   @spec project_type(config :: keyword()) :: nil | atom()
-  def project_type(config) do
-    config
-    |> Keyword.get(:workspace, [])
-    |> Keyword.get(:type)
-  end
+  def project_type(config), do: get_in(config, [:workspace, :type])
 
   @doc """
   Returns a map including the key properties of the given project.
