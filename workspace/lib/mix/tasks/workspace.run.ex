@@ -69,6 +69,7 @@ defmodule Mix.Tasks.Workspace.Run do
                       :project,
                       :exclude,
                       :tags,
+                      :paths,
                       :excluded_tags,
                       :affected,
                       :modified,

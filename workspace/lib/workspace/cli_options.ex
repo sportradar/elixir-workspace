@@ -18,6 +18,16 @@ defmodule Workspace.CliOptions do
       doc: "Ignore the given projects",
       doc_section: :filtering
     ],
+    paths: [
+      type: :string,
+      multiple: true,
+      long: "path",
+      doc: """
+      A path under which projects will be considered. Paths should be relative with respect to
+      the workspace root. All other projects can be ignored. Can be set multiple times.
+      """,
+      doc_section: :filtering
+    ],
     tags: [
       type: :string,
       multiple: true,

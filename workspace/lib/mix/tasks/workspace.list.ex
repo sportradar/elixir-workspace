@@ -44,6 +44,7 @@ defmodule Mix.Tasks.Workspace.List do
                       :config_path,
                       :project,
                       :exclude,
+                      :paths,
                       :tags,
                       :excluded_tags,
                       :dependency,
@@ -84,6 +85,11 @@ defmodule Mix.Tasks.Workspace.List do
 
       $ mix workspace.list --exclude-tag deprecated
 
+  If your monorepo has a nested structure you can list projects only under one or more
+  specific paths.
+
+      $ mix workspace.list --path packages/shared --path packages/infra
+
   In large monorepos you may want to get all projects depending on a specific package. You
   can achieve this through the `--dependency` option: 
 
@@ -108,7 +114,7 @@ defmodule Mix.Tasks.Workspace.List do
   In order to get all projects associated with a specific maintainer:
 
       $ mix workspace.list --maintainer "Jack Sparrow"
-      
+
       # notice that the search is case insensitive, this works as well
       $ mix workspace.list --maintainer sparrow
 

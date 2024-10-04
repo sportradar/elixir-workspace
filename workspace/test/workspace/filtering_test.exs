@@ -118,6 +118,26 @@ defmodule Workspace.FilteringTest do
       end
     end
 
+    test "with paths set", %{workspace: workspace} do
+      workspace = Workspace.Filtering.run(workspace, paths: ["packages"])
+
+      refute Workspace.project!(workspace, :bar).skip
+      refute Workspace.project!(workspace, :baz).skip
+      refute Workspace.project!(workspace, :foo).skip
+
+      workspace = Workspace.Filtering.run(workspace, paths: ["packages/foo", "packages/baz"])
+
+      assert Workspace.project!(workspace, :bar).skip
+      refute Workspace.project!(workspace, :baz).skip
+      refute Workspace.project!(workspace, :foo).skip
+
+      workspace = Workspace.Filtering.run(workspace, paths: ["packages/food", "packages/baze"])
+
+      assert Workspace.project!(workspace, :bar).skip
+      assert Workspace.project!(workspace, :baz).skip
+      assert Workspace.project!(workspace, :foo).skip
+    end
+
     test "with dependency set", %{workspace: workspace} do
       workspace = Workspace.Filtering.run(workspace, dependency: :invalid)
 

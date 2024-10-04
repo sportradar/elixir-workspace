@@ -28,7 +28,8 @@ defmodule Workspace.CliTest do
     :tags,
     :excluded_tags,
     :dependency,
-    :dependent
+    :dependent,
+    :paths
   ]
 
   test "valid options sanity check" do

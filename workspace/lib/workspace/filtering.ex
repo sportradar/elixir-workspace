@@ -30,6 +30,8 @@ defmodule Workspace.Filtering do
     * `:tags` (list of `t:Workspace.Project.tag()`) - a list of tags to be
     considered. All projects that do not have at least one the specified tags will
     be skipped.
+    * `:paths` (list of `t:String.t()`) - a list of project paths to be considered.
+    Only projects located under any of the provided path will be considered.
     * `:dependency` (`t:atom/0`) - keeps only projects that have the given dependency.
     * `:dependent` (`t:atom/0`) - keeps only dependencies of the given project.
     * `:affected` (`t:boolean/0`) - if set only the affected projects will be
@@ -79,7 +81,8 @@ defmodule Workspace.Filtering do
       excluded_tags: opts[:excluded_tags] || [],
       tags: Enum.map(opts[:tags] || [], &maybe_to_tag/1),
       dependency: maybe_to_atom(opts[:dependency]),
-      dependent: maybe_to_atom(opts[:dependent])
+      dependent: maybe_to_atom(opts[:dependent]),
+      paths: opts[:paths]
     ]
 
     Enum.map(workspace.projects, fn {_name, project} ->
@@ -117,6 +120,7 @@ defmodule Workspace.Filtering do
       excluded_tag?(project, opts[:excluded_tags]) or
       not_selected_project?(project, opts[:selected]) or
       not_selected_tag?(project, opts[:tags]) or
+      not_in_paths?(project, opts[:paths]) or
       not_root?(project, opts[:only_roots]) or
       not_affected?(project, opts[:affected]) or
       not_modified?(project, opts[:modified]) or
@@ -136,6 +140,16 @@ defmodule Workspace.Filtering do
 
   defp not_selected_tag?(project, tags),
     do: Enum.all?(project.tags, fn tag -> tag not in tags end)
+
+  defp not_in_paths?(_project, nil), do: false
+
+  defp not_in_paths?(project, paths) do
+    Enum.all?(paths, fn path ->
+      path = Path.join(project.workspace_path, path) |> Path.expand()
+
+      not String.starts_with?(project.mix_path, path <> "/")
+    end)
+  end
 
   defp not_root?(_project, false), do: false
   defp not_root?(project, true), do: not project.root?

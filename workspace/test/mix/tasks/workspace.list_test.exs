@@ -175,6 +175,25 @@ defmodule Mix.Tasks.Workspace.ListTest do
            end) == expected
   end
 
+  test "filtering by --path" do
+    expected = """
+    Found 2 workspace projects matching the given options.
+      * :package_default_c package_default_c/mix.exs
+      * :package_default_d package_default_d/mix.exs
+    """
+
+    assert capture_io(fn ->
+             ListTask.run([
+               "--workspace-path",
+               @sample_workspace_default_path,
+               "--path",
+               "package_default_c",
+               "--path",
+               "package_default_d"
+             ])
+           end) == expected
+  end
+
   test "with --json option set" do
     output = Path.join(@sample_workspace_changed_path, "workspace.json")
 
