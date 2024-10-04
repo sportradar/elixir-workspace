@@ -4,7 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Added
+
+* `workspace.list`: support filtering by root paths through the `--path` flag.
+* `workspace.run`: support filtering by root paths through the `--path` flag.
+
+### Fixed
+
+* Escape base and head references in git commands.
+
 ## [v0.1.2](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.1.2) (2024-09-30)
+
+### Added
 
 * `workspace.list`: support filtering by dependents through the `--dependent` flag. You
 can now list all projects that are direct dependencies of a given project:
