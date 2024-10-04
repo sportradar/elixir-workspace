@@ -86,7 +86,7 @@ defmodule Workspace.Git do
   def uncommitted_files(opts \\ []) do
     cd = opts[:cd] || File.cwd!()
 
-    with {:ok, output} <- git_in_path(cd, ~w[diff --name-only --no-renames HEAD .]) do
+    with {:ok, output} <- git_in_path(cd, ~w[diff --name-only --no-renames HEAD]) do
       {:ok, parse_git_output(output)}
     end
   end
@@ -120,7 +120,14 @@ defmodule Workspace.Git do
     cd = opts[:cd] || File.cwd!()
 
     with {:ok, output} <-
-           git_in_path(cd, ["diff", "--name-only", "--no-renames", "--relative", base, head]) do
+           git_in_path(cd, [
+             "diff",
+             "--name-only",
+             "--no-renames",
+             "--relative",
+             "#{base}",
+             "#{head}"
+           ]) do
       {:ok, parse_git_output(output)}
     end
   end
