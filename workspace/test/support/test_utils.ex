@@ -188,9 +188,9 @@ defmodule Workspace.TestUtils do
   def init_git_project(path) do
     File.cd!(path, fn ->
       System.cmd("git", ~w[init])
+      System.cmd("git", ~w[symbolic-ref HEAD refs/heads/main])
       System.cmd("git", ~w[add .])
       System.cmd("git", ~w[commit -m "commit"])
-      System.cmd("git", ~w[symbolic-ref HEAD refs/heads/main])
     end)
   end
 
