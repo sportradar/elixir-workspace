@@ -270,9 +270,42 @@ defmodule CliOptionsTest do
                CliOptions.parse(["--number", "3", "-n", "2a", "-n", "1"], schema)
 
       assert message == ":number expected an integer argument, got: 2a"
+    end
 
-      # with num_args set
-      assert {}
+    test "multiple with separator set" do
+      # without separator used
+      schema = [project: [type: :string, short: "p", multiple: true, separator: ","]]
+
+      assert {:ok, {opts, [], []}} =
+               CliOptions.parse(["-p", "foo", "-p", "bar"], schema)
+
+      assert opts == [project: ["foo", "bar"]]
+
+      # passed with a separator once
+      assert {:ok, {opts, [], []}} =
+               CliOptions.parse(["-p", "foo,bar"], schema)
+
+      assert opts == [project: ["foo", "bar"]]
+
+      # passed multiple times with separators
+      assert {:ok, {opts, [], []}} =
+               CliOptions.parse(["-p", "foo,bar", "-p", "baz", "-p", "ban,buzz"], schema)
+
+      assert opts == [project: ["foo", "bar", "baz", "ban", "buzz"]]
+
+      # all passed options are casted if needed
+      schema = [number: [type: :integer, multiple: true, short: "n", separator: ","]]
+
+      assert {:ok, {opts, [], []}} =
+               CliOptions.parse(["--number", "3", "-n", "2,1"], schema)
+
+      assert opts == [number: [3, 2, 1]]
+
+      # error if any option is not the proper type
+      assert {:error, message} =
+               CliOptions.parse(["--number", "3", "-n", "2,1a"], schema)
+
+      assert message == ":number expected an integer argument, got: 1a"
     end
 
     test "counters" do

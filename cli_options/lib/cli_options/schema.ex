@@ -145,6 +145,28 @@ defmodule CliOptions.Schema do
       """,
       default: false
     ],
+    separator: [
+      type: :string,
+      doc: """
+      An optional separator for passing multiple values with the same cli
+      argument. Applicable only if `multiple` is set to `true`.
+
+      ```cli
+      schema = [project: [multiple: true, separator: ";"]]
+
+      # passing the projects multiple times
+      CliOptions.parse!(["--project", "foo", "--project", "bar"], schema)
+      >>>
+
+      # using a separator
+      CliOptions.parse!(["--project", "foo;bar"], schema)
+      >>>
+
+      # using a separator and passing the argument multiple times
+      CliOptions.parse!(["--project", "foo;bar", "--project", "baz;fan"], schema)
+      ```
+      """
+    ],
     allowed: [
       type: {:list, :string},
       doc: """
@@ -241,7 +263,8 @@ defmodule CliOptions.Schema do
 
   defp validate_option_schema!(option, opts) do
     with {:ok, opts} <- validate_nimble_schema(opts),
-         {:ok, opts} <- validate_default_value(opts) do
+         {:ok, opts} <- validate_default_value(opts),
+         {:ok, opts} <- validate_conflicting_options(opts) do
       opts = Keyword.put_new(opts, :long, default_long_name(option))
       {option, opts}
     else
@@ -282,6 +305,18 @@ defmodule CliOptions.Schema do
   defp validate_type_match(:float, value), do: is_float(value)
   defp validate_type_match(:atom, value), do: is_atom(value)
   defp validate_type_match(:boolean, value), do: is_boolean(value)
+
+  defp validate_conflicting_options(opts) do
+    validate_separator(opts)
+  end
+
+  defp validate_separator(opts) do
+    if opts[:separator] && !opts[:multiple] do
+      {:error, "you are not allowed to set separator if multiple is set to false"}
+    else
+      {:ok, opts}
+    end
+  end
 
   defp build_mappings(schema, mappings_function) do
     mappings = %{}
@@ -334,7 +369,10 @@ defmodule CliOptions.Schema do
   end
 
   defp validate_option(option, value, schema) do
-    value = value_or_default(value, schema)
+    value =
+      value
+      |> maybe_split_by_separator(schema[:separator])
+      |> value_or_default(schema)
 
     with {:ok, value} <- validate_value(option, value, schema),
          :ok <- maybe_validate_allowed_value(option, value, schema[:allowed]) do
@@ -344,6 +382,18 @@ defmodule CliOptions.Schema do
 
   defp value_or_default(value, _schema) when not is_nil(value), do: value
   defp value_or_default(nil, schema), do: schema[:default]
+
+  defp maybe_split_by_separator(nil, _separator), do: nil
+  defp maybe_split_by_separator(value, nil), do: value
+
+  # if separator is set then we split by the separator the values
+  # we expect the value to be a list since it can be combined only
+  # with multiple=true
+  # since the arg can be provided multiple times we iterate over
+  # the list, split and flatten
+  defp maybe_split_by_separator(value, separator) when is_list(value) do
+    Enum.map(value, &String.split(&1, separator)) |> List.flatten()
+  end
 
   defp validate_value(option, value, schema) do
     cond do

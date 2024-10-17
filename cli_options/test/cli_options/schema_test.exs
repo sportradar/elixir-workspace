@@ -17,7 +17,7 @@ defmodule CliOptions.SchemaTest do
       message =
         "invalid schema for :foo, unknown options [:missing, :other], valid options are: " <>
           "[:type, :default, :long, :short, :aliases, :short_aliases, :doc, :doc_section, :required, :multiple, " <>
-          ":allowed, :deprecated, :env]"
+          ":separator, :allowed, :deprecated, :env]"
 
       assert_raise ArgumentError, message, fn ->
         CliOptions.Schema.new!(schema)
@@ -188,6 +188,17 @@ defmodule CliOptions.SchemaTest do
       schema = [foo: [type: :string, short: "s"], bar: [type: :string, short_aliases: ["s"]]]
 
       assert_raise ArgumentError, "mapping s for option :bar is already defined for :foo", fn ->
+        CliOptions.Schema.new!(schema)
+      end
+    end
+
+    test "with separator set but multiple false" do
+      schema = [foo: [type: :string, separator: ","]]
+
+      message =
+        "invalid schema for :foo, you are not allowed to set separator if multiple is set to false"
+
+      assert_raise ArgumentError, message, fn ->
         CliOptions.Schema.new!(schema)
       end
     end
