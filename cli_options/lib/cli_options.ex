@@ -50,6 +50,8 @@ defmodule CliOptions do
   CliOptions.parse(["--user-name", "foo"], schema)
   ```
 
+  Check the `parse/2` documentation for more details.
+
   > #### Strict validation {: .warning}
   >
   > Notice that `CliOptions` adheres to a strict options validation approach. This
@@ -357,6 +359,29 @@ defmodule CliOptions do
 
   # if multiple is not set then an error is returned if an option is passed twice
   CliOptions.parse(["--file", "foo.ex", "--file", "xyz.ex"], [file: [type: :string]])
+  ```
+
+  Additionally you can specify the `:separator` option which allows you to pass
+  multiple values grouped together instead of providing the same option multiple
+  times. **Notice that this is applicable only if `:multiple` is set to `true`.**
+
+  ```cli
+  schema = [
+    project: [
+      type: :string,
+      multiple: true,
+      separator: ",",
+      short: "p"
+    ]
+  ]
+
+  # pass all values grouped with the separator
+  CliOptions.parse(["-p", "foo,bar,baz"], schema)
+  >>>
+
+  # you are still free to pass the `-p` flag multiple times
+  CliOptions.parse(["-p", "foo,bar", "-p", "baz"], schema)
+  >>>
   ```
 
   ## Environment variable aliases
