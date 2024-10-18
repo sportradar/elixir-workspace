@@ -2,7 +2,7 @@ defmodule CliOptions.MixProject do
   use Mix.Project
 
   @app :cli_options
-  @version "0.1.2"
+  @version "0.1.3"
   @description "An opinionated cli options parser"
   @repo_url "https://github.com/sportradar/elixir-workspace"
 
@@ -59,7 +59,10 @@ defmodule CliOptions.MixProject do
     [
       maintainers: ["Panagiotis Nezis"],
       licenses: ["MIT"],
-      links: %{"GitHub" => @repo_url}
+      links: %{
+        "Changelog" => "https://hexdocs.pm/cli_options/changelog.html",
+        "GitHub" => @repo_url
+      }
     ]
   end
 
