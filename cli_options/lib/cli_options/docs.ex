@@ -165,7 +165,8 @@ defmodule CliOptions.Docs do
       maybe_allowed(schema),
       maybe_env(schema),
       maybe_default(schema),
-      maybe_aliases(schema)
+      maybe_aliases(schema),
+      maybe_separator(schema)
     ]
     |> Enum.reject(fn part -> is_nil(part) or part == "" end)
     |> Enum.join(" ")
@@ -208,6 +209,16 @@ defmodule CliOptions.Docs do
         aliases_string = Enum.join(aliases, ", ")
 
         "[aliases: #{aliases_string}]"
+    end
+  end
+
+  defp maybe_separator(schema) do
+    case schema[:separator] do
+      nil ->
+        nil
+
+      separator ->
+        "[values can be grouped with the `#{separator}` separator]"
     end
   end
 end

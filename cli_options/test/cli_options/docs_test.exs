@@ -182,5 +182,19 @@ defmodule CliOptions.DocsTest do
 
       assert CliOptions.docs(schema) == expected
     end
+
+    test "with separator set" do
+      schema = [
+        var: [doc: "a var", short: "v", multiple: true, separator: ";;"]
+      ]
+
+      expected =
+        """
+        * `-v, --var...` (`string`) - a var [values can be grouped with the `;;` separator]
+        """
+        |> String.trim()
+
+      assert CliOptions.docs(schema) == expected
+    end
   end
 end
