@@ -103,9 +103,12 @@ defmodule CliOptions.Parser do
         )
       end
 
-      {:option, option, args, rest}
+      {:option, option, maybe_split(args, opts[:separator]), rest}
     end
   end
+
+  defp maybe_split(value, nil), do: value
+  defp maybe_split([value], separator), do: String.split(value, separator)
 
   defp render_option(option, :short), do: "-" <> option
   defp render_option(option, :long), do: "--" <> option

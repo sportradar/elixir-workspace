@@ -369,10 +369,7 @@ defmodule CliOptions.Schema do
   end
 
   defp validate_option(option, value, schema) do
-    value =
-      value
-      |> maybe_split_by_separator(schema[:separator])
-      |> value_or_default(schema)
+    value = value_or_default(value, schema)
 
     with {:ok, value} <- validate_value(option, value, schema),
          :ok <- maybe_validate_allowed_value(option, value, schema[:allowed]) do
@@ -382,18 +379,6 @@ defmodule CliOptions.Schema do
 
   defp value_or_default(value, _schema) when not is_nil(value), do: value
   defp value_or_default(nil, schema), do: schema[:default]
-
-  defp maybe_split_by_separator(nil, _separator), do: nil
-  defp maybe_split_by_separator(value, nil), do: value
-
-  # if separator is set then we split by the separator the values
-  # we expect the value to be a list since it can be combined only
-  # with multiple=true
-  # since the arg can be provided multiple times we iterate over
-  # the list, split and flatten
-  defp maybe_split_by_separator(value, separator) when is_list(value) do
-    Enum.map(value, &String.split(&1, separator)) |> List.flatten()
-  end
 
   defp validate_value(option, value, schema) do
     cond do
