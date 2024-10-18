@@ -291,9 +291,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
     test "if execution on a project fails the command raises" do
       args = [
         "-p",
-        "package_default_a",
-        "-p",
-        "package_default_b",
+        "package_default_a,package_default_b",
         "-t",
         "cmd",
         "--workspace-path",

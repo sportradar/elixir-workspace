@@ -10,6 +10,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * `workspace.list`: support filtering by root paths through the `--path` flag.
 * `workspace.run`: support filtering by root paths through the `--path` flag.
+* Support passing most repeated CLI arguments as a comma separated list, for
+  example you can now do:
+
+  ```bash
+  $ mix workspace.run -t format -p p1,p2,p3
+  ```
 
 ### Fixed
 

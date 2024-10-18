@@ -6,6 +6,7 @@ defmodule Workspace.CliOptions do
     project: [
       type: :string,
       multiple: true,
+      separator: ",",
       short: "p",
       doc:
         "The project name, can be defined multiple times. If not set all projects are considered",
@@ -15,6 +16,7 @@ defmodule Workspace.CliOptions do
       type: :string,
       short: "e",
       multiple: true,
+      separator: ",",
       doc: "Ignore the given projects",
       doc_section: :filtering
     ],
@@ -32,6 +34,7 @@ defmodule Workspace.CliOptions do
       type: :string,
       multiple: true,
       long: "tag",
+      separator: ",",
       doc: """
       If set, only projects with the given tag(s) will be considered. For scoped tags you should
       provide a colon separated string (examples: `shared`, `scope:api`, `type:utils`). For
@@ -58,6 +61,7 @@ defmodule Workspace.CliOptions do
     excluded_tags: [
       type: :string,
       multiple: true,
+      separator: ",",
       long: "exclude-tag",
       doc: """
       If set, any projects with any of the given tag(s) will be excluded. For scoped tags you should

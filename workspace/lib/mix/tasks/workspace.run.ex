@@ -31,7 +31,8 @@ defmodule Mix.Tasks.Workspace.Run do
       doc: """
       Allow the task for this specific project to fail. Can be set more than once. 
       """,
-      multiple: true
+      multiple: true,
+      separator: ","
     ],
     early_stop: [
       type: :boolean,
