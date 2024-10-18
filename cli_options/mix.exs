@@ -60,7 +60,7 @@ defmodule CliOptions.MixProject do
       maintainers: ["Panagiotis Nezis"],
       licenses: ["MIT"],
       links: %{
-        "Changelog" => "https://hexdocs.pm/cli_options/changelog.html",
+        "Changelog" => "#{@repo_url}/blob/main/cli_options/CHANGELOG.md",
         "GitHub" => @repo_url
       }
     ]
