@@ -61,7 +61,11 @@ defmodule WorkspaceNew.MixProject do
     [
       maintainers: ["Panagiotis Nezis"],
       licenses: ["MIT"],
-      links: %{"GitHub" => @repo_url},
+      links: %{
+        "GitHub" => @repo_url,
+        "Changelog" =>
+          "https://github.com/sportradar/elixir-workspace/blob/main/workspace_new/CHANGELOG.md"
+      },
       files: ~w(lib template mix.exs README.md)
     ]
   end

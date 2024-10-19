@@ -57,7 +57,11 @@ defmodule Cascade.MixProject do
     [
       maintainers: ["Panagiotis Nezis"],
       licenses: ["MIT"],
-      links: %{"GitHub" => @repo_url}
+      links: %{
+        "GitHub" => @repo_url,
+        "Changelog" =>
+          "https://github.com/sportradar/elixir-workspace/blob/main/cascade/CHANGELOG.md"
+      }
     ]
   end
 

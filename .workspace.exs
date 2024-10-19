@@ -66,6 +66,29 @@
     ],
     [
       module: Workspace.Checks.ValidateProject,
+      description: "all packages must have the correct Changelog link",
+      opts: [
+        validate: fn project ->
+          config = project.config
+          package = config[:package] || []
+          links = package[:links] || %{}
+          path = Path.relative_to(project.path, project.workspace_path)
+
+          expected_url =
+            "https://github.com/sportradar/elixir-workspace/blob/main/#{path}/CHANGELOG.md"
+
+          case links["Changelog"] do
+            ^expected_url ->
+              {:ok, "Changelog link properly set"}
+
+            other ->
+              {:error, "invalid Changelog link: #{inspect(other)}, expected: #{expected_url}"}
+          end
+        end
+      ]
+    ],
+    [
+      module: Workspace.Checks.ValidateProject,
       description: "minimum elixir version",
       opts: [
         validate: fn project ->

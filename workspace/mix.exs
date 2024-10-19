@@ -48,7 +48,11 @@ defmodule Workspace.MixProject do
     [
       maintainers: ["Panagiotis Nezis"],
       licenses: ["MIT"],
-      links: %{"GitHub" => @repo_url}
+      links: %{
+        "GitHub" => @repo_url,
+        "Changelog" =>
+          "https://github.com/sportradar/elixir-workspace/blob/main/workspace/CHANGELOG.md"
+      }
     ]
   end
 
