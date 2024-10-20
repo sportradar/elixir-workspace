@@ -54,9 +54,10 @@ defmodule Cascade.Templates.Template do
     module = Path.join(templates_path, opts[:name]) |> Macro.camelize()
 
     relative_assets_to_templates_path =
-      Cascade.Utils.relative_to(
+      Path.relative_to(
         Path.expand(opts[:assets_path]),
-        Path.expand(Path.join("lib", templates_path))
+        Path.expand(Path.join("lib", templates_path)),
+        force: true
       )
 
     opts =
