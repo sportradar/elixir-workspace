@@ -33,13 +33,13 @@ defmodule Cascade.Utils do
 
   ## Examples
 
-      iex> Workspace.Utils.Path.relative?("../local")
+      iex> Cascade.Utils.relative?("../local")
       true
 
-      iex> Workspace.Utils.Path.relative?("./path/to/cli.ex")
+      iex> Cascade.Utils.relative?("./path/to/cli.ex")
       true
 
-      iex> Workspace.Utils.Path.relative?("/usr/local/cli.ex")
+      iex> Cascade.Utils.relative?("/usr/local/cli.ex")
       false
   """
   @spec relative?(path :: Path.t()) :: boolean()

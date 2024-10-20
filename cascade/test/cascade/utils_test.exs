@@ -1,5 +1,6 @@
 defmodule Cascade.UtilsTest do
   use ExUnit.Case
+  doctest Cascade.Utils
 
   test "implements_behaviour?/2" do
     assert Cascade.Utils.implements_behaviour?(Cascade.Templates.Template, Cascade.Template)
