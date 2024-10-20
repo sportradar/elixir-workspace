@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+* Require at least elixir 1.16
+
 ## [v0.1.1](https://github.com/sportradar/elixir-workspace/tree/cascade/v0.1.1) (2024-07-04)
 
 ### Added
