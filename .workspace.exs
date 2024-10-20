@@ -87,18 +87,6 @@
         end
       ]
     ],
-    [
-      module: Workspace.Checks.ValidateProject,
-      description: "minimum elixir version",
-      opts: [
-        validate: fn project ->
-          case project.config[:elixir] do
-            "~> 1.15" -> {:ok, "minimum elixir version set"}
-            other -> {:error, "expected :elixir to be ~> 1.15, got #{other}"}
-          end
-        end
-      ]
-    ],
     # Build paths checks
     [
       module: Workspace.Checks.ValidateConfigPath,
