@@ -110,12 +110,12 @@ defmodule Workspace.Checks.ValidateConfigPath do
       }) do
     attribute = check[:opts][:config_attribute]
 
-    expected = Workspace.Utils.Path.relative_to(meta[:expected], project.path)
+    expected = Path.relative_to(meta[:expected], project.path, force: true)
 
     configured =
       case meta[:configured] do
         nil -> "nil"
-        configured -> Workspace.Utils.Path.relative_to(configured, project.path)
+        configured -> Path.relative_to(configured, project.path, force: true)
       end
 
     [
@@ -140,7 +140,7 @@ defmodule Workspace.Checks.ValidateConfigPath do
         status: :ok
       }) do
     attribute = check[:opts][:config_attribute]
-    expected = Workspace.Utils.Path.relative_to(meta[:expected], project.path)
+    expected = Path.relative_to(meta[:expected], project.path, force: true)
 
     [
       :light_cyan,

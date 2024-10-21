@@ -105,7 +105,7 @@ defmodule Mix.Tasks.Workspace.Check do
   end
 
   defp print_result(result) do
-    path = Workspace.Utils.Path.relative_to(result.project.path, File.cwd!())
+    path = Path.relative_to(result.project.path, File.cwd!(), force: true)
 
     log([
       highlight(status_text(result.status), status_color(result.status)),

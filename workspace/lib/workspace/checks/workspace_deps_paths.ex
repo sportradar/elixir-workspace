@@ -53,7 +53,7 @@ defmodule Workspace.Checks.WorkspaceDepsPaths do
     project_path = project.path
     dependency_path = Workspace.project!(workspace, app).path
 
-    Workspace.Utils.Path.relative_to(dependency_path, project_path)
+    Path.relative_to(dependency_path, project_path, force: true)
   end
 
   defp sanitize(path) do

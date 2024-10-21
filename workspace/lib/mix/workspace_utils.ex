@@ -32,7 +32,7 @@ defmodule Mix.WorkspaceUtils do
         :ok
 
       {:error, _reason} ->
-        path = Workspace.Utils.Path.relative_to(workspace.workspace_path, File.cwd!())
+        path = Path.relative_to(workspace.workspace_path, File.cwd!(), force: true)
 
         Mix.raise("status related operations require a git repo, #{path} is not a valid git repo")
     end

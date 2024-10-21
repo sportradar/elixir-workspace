@@ -318,7 +318,7 @@ defmodule Workspace do
   def new(path, config_or_path \\ [])
 
   def new(path, config_or_path) when is_binary(config_or_path) do
-    config_path = Workspace.Utils.Path.relative_to(config_or_path, Path.expand(path))
+    config_path = Path.relative_to(config_or_path, Path.expand(path), force: true)
     config_path = Path.join(path, config_path)
 
     with {:ok, config} <- Workspace.Config.load(config_path) do
@@ -408,7 +408,7 @@ defmodule Workspace do
               Enum.map_join(
                 projects,
                 ", ",
-                &Workspace.Utils.Path.relative_to(&1.mix_path, &1.workspace_path)
+                &Path.relative_to(&1.mix_path, &1.workspace_path, force: true)
               )
 
             "* #{inspect(app)} is defined under: #{paths}"

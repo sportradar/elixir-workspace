@@ -480,7 +480,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   end
 
   defp import_cover_result(workspace_path, cover_path, app) do
-    path = Workspace.Utils.Path.relative_to(cover_path, workspace_path)
+    path = Path.relative_to(cover_path, workspace_path, force: true)
 
     log([
       "    ",
