@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+Require elixir v1.16
+
 ### Added
 
 * `workspace.list`: support filtering by root paths through the `--path` flag.
@@ -16,6 +18,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   ```bash
   $ mix workspace.run -t format -p p1,p2,p3
   ```
+
+### Removed
+
+* `Workspace.Utils.Path.relative_to/2` has been removed. After requiring at least
+elixir 1.16 you can now use `Path.relative_to/3` instead with the `force: true`
+option.
 
 ### Fixed
 
