@@ -86,7 +86,7 @@ in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:cascade, "~> 0.1.0"}
+    {:cascade, "~> 0.2.0"}
   ]
 end
 ```

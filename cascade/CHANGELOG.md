@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [v0.2.0](https://github.com/sportradar/elixir-workspace/tree/cascade/v0.2.0) (2024-10-21)
 
-* Require at least elixir 1.16
+Require elixir v1.16
 
 ## [v0.1.1](https://github.com/sportradar/elixir-workspace/tree/cascade/v0.1.1) (2024-07-04)
 
