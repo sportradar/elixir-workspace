@@ -85,9 +85,7 @@ defmodule Workspace.Filtering do
       paths: opts[:paths]
     ]
 
-    Enum.map(workspace.projects, fn {_name, project} ->
-      Map.put(project, :skip, skippable?(workspace, project, opts))
-    end)
+    Enum.map(workspace.projects, fn {_name, project} -> maybe_skip(workspace, project, opts) end)
   end
 
   defp maybe_to_atom(nil), do: nil
@@ -115,17 +113,40 @@ defmodule Workspace.Filtering do
     do:
       raise(ArgumentError, "invalid tag, it should be a string of the form `tag` or `scope:tag`")
 
-  defp skippable?(workspace, project, opts) do
-    excluded_project?(project, opts[:excluded]) or
-      excluded_tag?(project, opts[:excluded_tags]) or
-      not_selected_project?(project, opts[:selected]) or
-      not_selected_tag?(project, opts[:tags]) or
-      not_in_paths?(project, opts[:paths]) or
-      not_root?(project, opts[:only_roots]) or
-      not_affected?(project, opts[:affected]) or
-      not_modified?(project, opts[:modified]) or
-      not_dependency?(workspace, project, opts[:dependency]) or
+  defp maybe_skip(workspace, project, opts) do
+    project
+    |> skip_if(workspace, fn project, _workspace ->
+      excluded_project?(project, opts[:excluded])
+    end)
+    |> skip_if(workspace, fn project, _workspace ->
+      excluded_tag?(project, opts[:excluded_tags])
+    end)
+    |> skip_if(workspace, fn project, _workspace ->
+      not_selected_project?(project, opts[:selected])
+    end)
+    |> skip_if(workspace, fn project, _workspace -> not_selected_tag?(project, opts[:tags]) end)
+    |> skip_if(workspace, fn project, _workspace -> not_in_paths?(project, opts[:paths]) end)
+    |> skip_if(workspace, fn project, _workspace -> not_root?(project, opts[:only_roots]) end)
+    |> skip_if(workspace, fn project, _workspace -> not_affected?(project, opts[:affected]) end)
+    |> skip_if(workspace, fn project, _workspace -> not_modified?(project, opts[:modified]) end)
+    |> skip_if(workspace, fn project, workspace ->
+      not_dependency?(workspace, project, opts[:dependency])
+    end)
+    |> skip_if(workspace, fn project, workspace ->
       not_dependent?(workspace, project, opts[:dependent])
+    end)
+  end
+
+  # if the project is already skipped there is no reason to check again
+  # otherwise we evaluate the condition and skip accordingly
+  defp skip_if(%Workspace.Project{skip: true} = project, _workspace, _skip_condition), do: project
+
+  defp skip_if(project, workspace, skip_condition) do
+    if skip_condition.(project, workspace) do
+      Workspace.Project.skip(project)
+    else
+      project
+    end
   end
 
   defp excluded_project?(project, excluded), do: project.app in excluded

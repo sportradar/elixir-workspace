@@ -16,94 +16,94 @@ defmodule Workspace.FilteringTest do
 
   describe "run/2" do
     test "filters and updates the given workspace", %{workspace: workspace} do
-      workspace = Workspace.Filtering.run(workspace, exclude: [:bar])
+      filtered = Workspace.Filtering.run(workspace, exclude: [:bar])
 
-      assert workspace.projects[:bar].skip
-      refute workspace.projects[:foo].skip
-      refute workspace.projects[:baz].skip
+      assert filtered.projects[:bar].skip
+      refute filtered.projects[:foo].skip
+      refute filtered.projects[:baz].skip
     end
 
     test "if app is excluded skips the project", %{workspace: workspace} do
-      workspace = Workspace.Filtering.run(workspace, exclude: ["bar"])
+      filtered = Workspace.Filtering.run(workspace, exclude: ["bar"])
 
-      assert Workspace.project!(workspace, :bar).skip
-      refute Workspace.project!(workspace, :foo).skip
-      refute Workspace.project!(workspace, :baz).skip
+      assert Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :baz).skip
     end
 
     test "if app in selected it is not skipped - everything else is skipped", %{
       workspace: workspace
     } do
-      workspace = Workspace.Filtering.run(workspace, project: ["bar"])
+      filtered = Workspace.Filtering.run(workspace, project: ["bar"])
 
-      refute Workspace.project!(workspace, :bar).skip
-      assert Workspace.project!(workspace, :foo).skip
-      assert Workspace.project!(workspace, :baz).skip
+      refute Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :foo).skip
+      assert Workspace.project!(filtered, :baz).skip
     end
 
     test "ignore has priority over project", %{
       workspace: workspace
     } do
-      workspace = Workspace.Filtering.run(workspace, exclude: [:bar], project: [:bar])
+      filtered = Workspace.Filtering.run(workspace, exclude: [:bar], project: [:bar])
 
-      assert Workspace.project!(workspace, :bar).skip
-      assert Workspace.project!(workspace, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :foo).skip
     end
 
     test "with a single excluded tag", %{
       workspace: workspace
     } do
-      workspace = Workspace.Filtering.run(workspace, excluded_tags: [:bar])
+      filtered = Workspace.Filtering.run(workspace, excluded_tags: [:bar])
 
-      assert Workspace.project!(workspace, :bar).skip
-      assert Workspace.project!(workspace, :baz).skip
-      refute Workspace.project!(workspace, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+      refute Workspace.project!(filtered, :foo).skip
     end
 
     test "with multiple excluded tags", %{
       workspace: workspace
     } do
-      workspace = Workspace.Filtering.run(workspace, excluded_tags: [:bar, :foo])
+      filtered = Workspace.Filtering.run(workspace, excluded_tags: [:bar, :foo])
 
-      assert Workspace.project!(workspace, :bar).skip
-      assert Workspace.project!(workspace, :baz).skip
-      assert Workspace.project!(workspace, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+      assert Workspace.project!(filtered, :foo).skip
     end
 
     test "with a single selected tag", %{
       workspace: workspace
     } do
-      workspace = Workspace.Filtering.run(workspace, tags: [:bar])
+      filtered = Workspace.Filtering.run(workspace, tags: [:bar])
 
-      refute Workspace.project!(workspace, :bar).skip
-      refute Workspace.project!(workspace, :baz).skip
-      assert Workspace.project!(workspace, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+      assert Workspace.project!(filtered, :foo).skip
     end
 
     test "with multiple selected tags", %{
       workspace: workspace
     } do
-      workspace = Workspace.Filtering.run(workspace, tags: [:bar, :foo])
+      filtered = Workspace.Filtering.run(workspace, tags: [:bar, :foo])
 
-      refute Workspace.project!(workspace, :bar).skip
-      refute Workspace.project!(workspace, :baz).skip
-      refute Workspace.project!(workspace, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+      refute Workspace.project!(filtered, :foo).skip
     end
 
     test "with scoped tags", %{workspace: workspace} do
-      workspace = Workspace.Filtering.run(workspace, tags: [{:scope, :ui}])
+      filtered = Workspace.Filtering.run(workspace, tags: [{:scope, :ui}])
 
-      assert Workspace.project!(workspace, :bar).skip
-      assert Workspace.project!(workspace, :baz).skip
-      refute Workspace.project!(workspace, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+      refute Workspace.project!(filtered, :foo).skip
     end
 
     test "with binary tags", %{workspace: workspace} do
-      workspace = Workspace.Filtering.run(workspace, tags: ["scope:ui", "bar"])
+      filtered = Workspace.Filtering.run(workspace, tags: ["scope:ui", "bar"])
 
-      refute Workspace.project!(workspace, :bar).skip
-      refute Workspace.project!(workspace, :baz).skip
-      refute Workspace.project!(workspace, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+      refute Workspace.project!(filtered, :foo).skip
     end
 
     test "with invalid tags", %{workspace: workspace} do
@@ -119,51 +119,51 @@ defmodule Workspace.FilteringTest do
     end
 
     test "with paths set", %{workspace: workspace} do
-      workspace = Workspace.Filtering.run(workspace, paths: ["packages"])
+      filtered = Workspace.Filtering.run(workspace, paths: ["packages"])
 
-      refute Workspace.project!(workspace, :bar).skip
-      refute Workspace.project!(workspace, :baz).skip
-      refute Workspace.project!(workspace, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+      refute Workspace.project!(filtered, :foo).skip
 
-      workspace = Workspace.Filtering.run(workspace, paths: ["packages/foo", "packages/baz"])
+      filtered = Workspace.Filtering.run(workspace, paths: ["packages/foo", "packages/baz"])
 
-      assert Workspace.project!(workspace, :bar).skip
-      refute Workspace.project!(workspace, :baz).skip
-      refute Workspace.project!(workspace, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+      refute Workspace.project!(filtered, :foo).skip
 
-      workspace = Workspace.Filtering.run(workspace, paths: ["packages/food", "packages/baze"])
+      filtered = Workspace.Filtering.run(workspace, paths: ["packages/food", "packages/baze"])
 
-      assert Workspace.project!(workspace, :bar).skip
-      assert Workspace.project!(workspace, :baz).skip
-      assert Workspace.project!(workspace, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+      assert Workspace.project!(filtered, :foo).skip
     end
 
     test "with dependency set", %{workspace: workspace} do
-      workspace = Workspace.Filtering.run(workspace, dependency: :invalid)
+      filtered = Workspace.Filtering.run(workspace, dependency: :invalid)
 
-      assert Workspace.project!(workspace, :bar).skip
-      assert Workspace.project!(workspace, :baz).skip
-      assert Workspace.project!(workspace, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+      assert Workspace.project!(filtered, :foo).skip
 
-      workspace = Workspace.Filtering.run(workspace, dependency: :bar)
+      filtered = Workspace.Filtering.run(workspace, dependency: :bar)
 
-      assert Workspace.project!(workspace, :bar).skip
-      assert Workspace.project!(workspace, :baz).skip
-      refute Workspace.project!(workspace, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+      refute Workspace.project!(filtered, :foo).skip
     end
 
     test "with dependent set", %{workspace: workspace} do
-      workspace = Workspace.Filtering.run(workspace, dependent: :bar)
+      filtered = Workspace.Filtering.run(workspace, dependent: :bar)
 
-      assert Workspace.project!(workspace, :bar).skip
-      assert Workspace.project!(workspace, :baz).skip
-      assert Workspace.project!(workspace, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+      assert Workspace.project!(filtered, :foo).skip
 
-      workspace = Workspace.Filtering.run(workspace, dependent: :foo)
+      filtered = Workspace.Filtering.run(workspace, dependent: :foo)
 
-      refute Workspace.project!(workspace, :bar).skip
-      assert Workspace.project!(workspace, :baz).skip
-      assert Workspace.project!(workspace, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+      assert Workspace.project!(filtered, :foo).skip
     end
   end
 end

@@ -216,6 +216,12 @@ defmodule Workspace.Project do
     do: %Workspace.Project{project | root?: root?}
 
   @doc """
+  Marks the given project as skippable.
+  """
+  @spec skip(project :: t()) :: t()
+  def skip(project), do: %Workspace.Project{project | skip: true}
+
+  @doc """
   Marks the given project as `:modified`.
 
   The `changes` is the list of changed files belonging to the current
