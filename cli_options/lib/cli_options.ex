@@ -490,7 +490,7 @@ defmodule CliOptions do
   CliOptions.parse(["--verbose", "--silent"], schema, post_validate: post_validate)
   >>>
 
-  # if only one of the two is passed the validation returns :ok
+  # if only one of the two is passed the validation succeeds
   CliOptions.parse(["--verbose"], schema, post_validate: post_validate)
   >>>
   ```

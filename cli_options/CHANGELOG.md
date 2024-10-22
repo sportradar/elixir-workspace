@@ -35,7 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   CliOptions.parse(["--verbose", "--silent"], schema, post_validate: post_validate)
   >>>
 
-  # if only one of the two is passed the validation returns :ok
+  # if only one of the two is passed the validation succeeds
   CliOptions.parse(["--verbose"], schema, post_validate: post_validate)
   >>>
   ```
