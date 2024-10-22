@@ -454,19 +454,74 @@ defmodule CliOptions do
   ```cli
   CliOptions.parse!(["--", "lib", "-n", "--", "bar"], [])
   ```
+
+  ## Post validation
+
+  In some cases you may need to perform more complex validation on the provided
+  CLI arguments that cannot be performed by the parser itself. You could do it
+  directly in your codebase but for your convenience `CliOptions.parse/2` allows
+  you to pass an optional `:post_validate` argument. This is expected to be a
+  function having as input the parsed options and expected to return an
+  `{:ok, parsed_options()}` or an `{:error, String.t()}` tuple.
+
+  Let's see an example:
+
+  ```cli
+  schema = [
+    silent: [type: :boolean],
+    verbose: [type: :boolean]
+  ]
+
+  # the flags --verbose and --silent should not be set together
+  post_validate =
+    fn {opts, args, extra} ->
+      if opts[:verbose] and opts[:silent] do
+        {:error, "flags --verbose and --silent cannot be set together"}
+      else
+        {:ok, {opts, args, extra}}
+      end
+    end
+
+  # without post_validate
+  CliOptions.parse(["--verbose", "--silent"], schema)
+  >>>
+
+  # with post_validate
+  CliOptions.parse(["--verbose", "--silent"], schema, post_validate: post_validate)
+  >>>
+
+  # if only one of the two is passed the validation returns :ok
+  CliOptions.parse(["--verbose"], schema, post_validate: post_validate)
+  >>>
+  ```
   """
   @spec parse(argv :: argv(), schema :: keyword() | CliOptions.Schema.t()) ::
           {:ok, parsed_options()} | {:error, String.t()}
-  def parse(argv, %CliOptions.Schema{} = schema) do
-    case CliOptions.Parser.parse(argv, schema) do
-      {:ok, options} -> {:ok, options}
-      {:error, reason} -> {:error, reason}
+  def parse(argv, schema, opts \\ [])
+
+  def parse(argv, %CliOptions.Schema{} = schema, opts) do
+    with {:ok, options} <- CliOptions.Parser.parse(argv, schema) do
+      post_validate(options, opts)
     end
   end
 
-  def parse(argv, schema) do
+  def parse(argv, schema, opts) do
     schema = CliOptions.Schema.new!(schema)
-    parse(argv, schema)
+    parse(argv, schema, opts)
+  end
+
+  defp post_validate(options, opts) do
+    cond do
+      opts[:post_validate] && is_function(opts[:post_validate], 1) ->
+        opts[:post_validate].(options)
+
+      opts[:post_validate] ->
+        {:error,
+         "expected :post_validate to be a function of arity 1, got: #{inspect(opts[:post_validate])}"}
+
+      true ->
+        {:ok, options}
+    end
   end
 
   @doc """
@@ -483,9 +538,10 @@ defmodule CliOptions do
       iex> CliOptions.parse!([], [file: [type: :string, required: true]])
       ** (CliOptions.ParseError) option :file is required
   """
-  @spec parse!(argv :: argv(), schema :: keyword() | CliOptions.Schema.t()) :: parsed_options()
-  def parse!(argv, schema) do
-    case parse(argv, schema) do
+  @spec parse!(argv :: argv(), schema :: keyword() | CliOptions.Schema.t(), opts :: Keyword.t()) ::
+          parsed_options()
+  def parse!(argv, schema, opts \\ []) do
+    case parse(argv, schema, opts) do
       {:ok, options} -> options
       {:error, reason} -> raise CliOptions.ParseError, reason
     end

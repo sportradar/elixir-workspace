@@ -4,7 +4,45 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Added
+
+* Support post validation of the parsed options in `CliOptions.parse/3`  through an
+  optional `:post_validate` option.
+
+  ```cli
+  schema = [
+    silent: [type: :boolean],
+    verbose: [type: :boolean]
+  ]
+
+  # the flags --verbose and --silent should not be set together
+  post_validate =
+    fn {opts, args, extra} ->
+      if opts[:verbose] and opts[:silent] do
+        {:error, "flags --verbose and --silent cannot be set together"}
+      else
+        {:ok, {opts, args, extra}}
+      end
+    end
+
+  # without post_validate
+  CliOptions.parse(["--verbose", "--silent"], schema)
+  >>>
+
+  # with post_validate
+  CliOptions.parse(["--verbose", "--silent"], schema, post_validate: post_validate)
+  >>>
+
+  # if only one of the two is passed the validation returns :ok
+  CliOptions.parse(["--verbose"], schema, post_validate: post_validate)
+  >>>
+  ```
+
 ## [v0.1.3](https://github.com/sportradar/elixir-workspace/tree/cli_options/v0.1.3) (2024-10-18)
+
+### Added
 
 * Support providing repeating arguments with a separator. If you set the `separator`
   option for an argument's schema you can pass the values in the format `--arg value1<sep>value2`.

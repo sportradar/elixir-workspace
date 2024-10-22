@@ -322,6 +322,41 @@ defmodule CliOptionsTest do
       assert {:ok, {opts, [], []}} = CliOptions.parse(["-v", "-v", "--verbosity"], schema)
       assert opts == [verbosity: 3]
     end
+
+    test "with post_validate set" do
+      schema = [project: [type: :string, multiple: true], name: [type: :string]]
+
+      post_validate = fn {opts, args, extra} ->
+        cond do
+          opts[:project] != [] and is_nil(opts[:name]) ->
+            {:error, "name must be set if project set"}
+
+          true ->
+            {:ok, {Keyword.put(opts, :foo, 1), args, extra}}
+        end
+      end
+
+      assert {:error, message} =
+               CliOptions.parse(["--project", "foo"], schema, post_validate: post_validate)
+
+      assert message == "name must be set if project set"
+
+      assert {:ok, {opts, [], []}} =
+               CliOptions.parse(["--project", "foo", "--name", "name"], schema,
+                 post_validate: post_validate
+               )
+
+      assert opts == [foo: 1, project: ["foo"], name: "name"]
+    end
+
+    test "error if post_validate is not a function" do
+      schema = [project: [type: :string]]
+
+      assert {:error, message} =
+               CliOptions.parse(["--project", "foo"], schema, post_validate: :invalid)
+
+      assert message == "expected :post_validate to be a function of arity 1, got: :invalid"
+    end
   end
 
   describe "parse!/2" do
