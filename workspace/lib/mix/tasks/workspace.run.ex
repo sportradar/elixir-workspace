@@ -70,14 +70,16 @@ defmodule Mix.Tasks.Workspace.Run do
                       :project,
                       :exclude,
                       :tags,
-                      :paths,
                       :excluded_tags,
                       :affected,
                       :modified,
                       :base,
                       :head,
                       :verbose,
-                      :show_status
+                      :show_status,
+                      :paths,
+                      :dependency,
+                      :dependent
                     ],
                     opts
                   )

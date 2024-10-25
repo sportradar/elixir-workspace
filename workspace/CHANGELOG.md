@@ -12,6 +12,8 @@ Require elixir v1.16
 
 * `workspace.list`: support filtering by root paths through the `--path` flag.
 * `workspace.run`: support filtering by root paths through the `--path` flag.
+* `workspace.run`: support filtering by `--dependency` and `--dependent` similarly
+to `workspace.list`.
 * Support passing most repeated CLI arguments as a comma separated list, for
   example you can now do:
 
