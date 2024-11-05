@@ -1,5 +1,6 @@
 defmodule Workspace.CheckTest do
   use Workspace.CheckCase
+  import ExUnit.CaptureIO
 
   setup do
     project_a = project_fixture(app: :foo)
@@ -48,6 +49,13 @@ defmodule Workspace.CheckTest do
 
       assert message =~
                "invalid check options: required :foo option not found, received options: []"
+    end
+
+    test "warning if no id is defined" do
+      assert capture_io(:stderr, fn ->
+               assert {:ok, _config} =
+                        Workspace.Check.validate(module: CheckModule, opts: [foo: "bar"])
+             end) =~ "Having a check without id is deprecated"
     end
   end
 
