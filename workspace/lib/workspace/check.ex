@@ -1,5 +1,9 @@
 defmodule Workspace.Check do
   @check_schema NimbleOptions.new!(
+                  id: [
+                    type: :atom,
+                    doc: "A unique identifier for the check."
+                  ],
                   module: [
                     type: :atom,
                     required: true,
@@ -235,6 +239,7 @@ defmodule Workspace.Check do
          {:ok, module} <- ensure_loaded_module(config[:module]),
          {:ok, module} <- validate_check_module(module),
          {:ok, opts_config} <- validate_check_options(module, config[:opts]) do
+      warn_if_id_missing(config)
       {:ok, Keyword.put(config, :opts, opts_config)}
     end
   end
@@ -276,6 +281,14 @@ defmodule Workspace.Check do
       end
     else
       {:ok, opts}
+    end
+  end
+
+  defp warn_if_id_missing(config) do
+    if is_nil(config[:id]) do
+      IO.warn(
+        "Having a check without id is deprecated, add an id to #{config[:module]} - #{config[:description]}"
+      )
     end
   end
 
