@@ -5,7 +5,7 @@ defmodule Workspace.Checks.WorkspaceDepsPathsTest do
 
   setup do
     {:ok, check} =
-      Workspace.Check.validate(module: WorkspaceDepsPaths)
+      Workspace.Check.validate(id: :test_check, module: WorkspaceDepsPaths)
 
     %{check: check}
   end

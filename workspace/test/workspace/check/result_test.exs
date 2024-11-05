@@ -19,7 +19,7 @@ defmodule Workspace.Check.ResultTest do
     package_path = Path.join(@sample_workspace_path, "package_a")
     project = Workspace.Project.new(package_path, @sample_workspace_path)
 
-    {:ok, check} = Workspace.Check.validate(module: CheckModule)
+    {:ok, check} = Workspace.Check.validate(id: :test_check, module: CheckModule)
 
     %{
       check: check,

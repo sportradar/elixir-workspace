@@ -40,6 +40,7 @@ defmodule Workspace.ConfigTest do
       config = [
         checks: [
           [
+            id: :test_check,
             module: Workspace.Checks.ValidateProject,
             description: "a dummy test",
             opts: [

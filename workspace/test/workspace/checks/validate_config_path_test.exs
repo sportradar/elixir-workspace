@@ -5,6 +5,7 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
   setup do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: ValidateConfigPath,
         opts: [
           config_attribute: :a_path,
@@ -67,6 +68,7 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
   test "works with nested keys" do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: ValidateConfigPath,
         opts: [
           config_attribute: [:deep, :config, :path],
@@ -86,6 +88,7 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
   test "error if not proper nested config" do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: ValidateConfigPath,
         opts: [
           config_attribute: [:deep, :config, :path],
@@ -110,6 +113,7 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
   test "works with dynamic expected paths" do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: ValidateConfigPath,
         opts: [
           config_attribute: [:a_path],

@@ -5,6 +5,7 @@ defmodule Workspace.Checks.EnsureDependenciesTest do
   setup do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: EnsureDependencies,
         opts: [
           deps: [:foo, :bar]

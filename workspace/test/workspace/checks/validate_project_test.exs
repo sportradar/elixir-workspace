@@ -9,6 +9,7 @@ defmodule Workspace.Checks.ValidateProjectTest do
 
   test "raises if no validate function is set" do
     check = [
+      id: :test_check,
       module: ValidateProject,
       opts: []
     ]
@@ -34,6 +35,7 @@ defmodule Workspace.Checks.ValidateProjectTest do
   test "runs the given validation function", %{workspace: workspace} do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: ValidateProject,
         opts: [
           validate: fn project -> {:error, "an error detected for #{project.config[:app]}"} end
@@ -57,6 +59,7 @@ defmodule Workspace.Checks.ValidateProjectTest do
   } do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: ValidateProject,
         opts: [
           validate: fn _project -> {:invalid, "invalid"} end
@@ -77,6 +80,7 @@ defmodule Workspace.Checks.ValidateProjectTest do
   } do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: ValidateProject,
         opts: [
           validate: fn _project -> {:error, :error} end
@@ -97,6 +101,7 @@ defmodule Workspace.Checks.ValidateProjectTest do
   } do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: ValidateProject,
         opts: [
           validate: fn _project -> {:error, :error, :error} end

@@ -5,6 +5,7 @@ defmodule Workspace.Checks.RequiredScopeTagTest do
   setup do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: RequiredScopeTag,
         opts: [
           scope: :type
@@ -13,6 +14,7 @@ defmodule Workspace.Checks.RequiredScopeTagTest do
 
     {:ok, check_multiple} =
       Workspace.Check.validate(
+        id: :test_check,
         module: RequiredScopeTag,
         opts: [
           scope: :type,

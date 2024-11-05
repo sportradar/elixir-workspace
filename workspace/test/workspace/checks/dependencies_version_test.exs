@@ -5,6 +5,7 @@ defmodule Workspace.Checks.DependenciesVersionTest do
   setup do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: DependenciesVersion,
         opts: [
           deps: [

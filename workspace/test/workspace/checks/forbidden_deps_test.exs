@@ -5,6 +5,7 @@ defmodule Workspace.Checks.ForbiddenDepsTest do
   setup do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: ForbiddenDeps,
         opts: [
           deps: [:foo, :bar]

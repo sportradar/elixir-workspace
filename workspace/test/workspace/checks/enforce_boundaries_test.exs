@@ -19,6 +19,7 @@ defmodule Workspace.Checks.EnforceBoundariesTest do
   test "no error with default values", %{workspace: workspace} do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: EnforceBoundaries,
         opts: [
           tag: :foo
@@ -37,6 +38,7 @@ defmodule Workspace.Checks.EnforceBoundariesTest do
   test "with allowed tags rule", %{workspace: workspace} do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: EnforceBoundaries,
         opts: [
           tag: :foo,
@@ -59,6 +61,7 @@ defmodule Workspace.Checks.EnforceBoundariesTest do
     # no error if at least one tag is allowed
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: EnforceBoundaries,
         opts: [
           tag: :foo,
@@ -76,6 +79,7 @@ defmodule Workspace.Checks.EnforceBoundariesTest do
   test "with forbidden tags rule", %{workspace: workspace} do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: EnforceBoundaries,
         opts: [
           tag: :foo,
@@ -98,6 +102,7 @@ defmodule Workspace.Checks.EnforceBoundariesTest do
     # no error if at least one tag is allowed
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: EnforceBoundaries,
         opts: [
           tag: :foo,
@@ -115,6 +120,7 @@ defmodule Workspace.Checks.EnforceBoundariesTest do
   test "with all tags selected", %{workspace: workspace} do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: EnforceBoundaries,
         opts: [
           tag: :*,

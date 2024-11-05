@@ -5,6 +5,7 @@ defmodule Workspace.Checks.ValidateTagsTest do
   setup do
     {:ok, check} =
       Workspace.Check.validate(
+        id: :test_check,
         module: ValidateTags,
         opts: [
           allowed: [:foo, {:foo, :bar}]

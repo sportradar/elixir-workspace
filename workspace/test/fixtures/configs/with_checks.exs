@@ -1,6 +1,7 @@
 [
   checks: [
     [
+      id: :deps_path,
       module: Workspace.Checks.ValidateConfigPath,
       description: "check deps_path",
       opts: [
@@ -9,6 +10,7 @@
       ]
     ],
     [
+      id: :fail_b,
       module: Workspace.Checks.ValidateProject,
       description: "fail on package b",
       opts: [
@@ -23,6 +25,7 @@
       allow_failure: [:package_b]
     ],
     [
+      id: :always_fails,
       module: Workspace.Checks.ValidateProject,
       description: "always fails",
       opts: [
@@ -31,6 +34,7 @@
       allow_failure: true
     ],
     [
+      id: :never_fails,
       module: Workspace.Checks.ValidateProject,
       description: "never fails",
       opts: [

@@ -25,7 +25,8 @@ defmodule Workspace.CheckTest do
 
   describe "validate/1" do
     test "with a valid config" do
-      assert {:ok, config} = Workspace.Check.validate(module: CheckModule, opts: [foo: "bar"])
+      assert {:ok, config} =
+               Workspace.Check.validate(id: :test_check, module: CheckModule, opts: [foo: "bar"])
 
       # check that the config is updated
       assert config[:allow_failure] == false
@@ -100,6 +101,7 @@ defmodule Workspace.CheckTest do
     check_config =
       Keyword.merge(
         [
+          id: :test_check,
           module: Workspace.Checks.ValidateProject,
           opts: [
             validate: fn project -> fun.(project) end
