@@ -1,13 +1,30 @@
 defmodule Mix.Tasks.Workspace.Check do
-  @options_schema Workspace.Cli.options([
-                    :workspace_path,
-                    :config_path,
-                    :verbose,
-                    :project,
-                    :exclude,
-                    :tags,
-                    :excluded_tags
-                  ])
+  opts = [
+    checks: [
+      type: :atom,
+      long: "check",
+      short: "c",
+      doc: """
+      Specify a check `id` to be executed. If set only those checks will run.
+      Can be set more than once.
+      """,
+      multiple: true,
+      separator: ","
+    ]
+  ]
+
+  @options_schema Workspace.Cli.options(
+                    [
+                      :workspace_path,
+                      :config_path,
+                      :verbose,
+                      :project,
+                      :exclude,
+                      :tags,
+                      :excluded_tags
+                    ],
+                    opts
+                  )
 
   @shortdoc "Runs configured checks on the current workspace"
 
@@ -31,15 +48,29 @@ defmodule Mix.Tasks.Workspace.Check do
 
     ensure_checks(workspace.config[:checks])
 
-    log("running #{length(workspace.config[:checks])} workspace checks on the workspace")
+    log("running #{checks_count(workspace, opts[:checks])} workspace checks on the workspace")
 
     newline()
 
     workspace.config[:checks]
     |> Enum.with_index(fn check, index -> Keyword.put(check, :index, index) end)
+    |> maybe_filter_checks(opts[:checks])
     |> Enum.map(fn check -> run_check(check, workspace, opts) end)
     |> maybe_set_exit_status()
   end
+
+  defp checks_count(workspace, nil), do: length(workspace.config[:checks])
+
+  defp checks_count(workspace, selected) do
+    valid_ids = Enum.map(workspace.config[:checks], &Keyword.get(&1, :id))
+
+    Enum.filter(selected, fn id -> id in valid_ids end) |> length()
+  end
+
+  defp maybe_filter_checks(checks, nil), do: checks
+
+  defp maybe_filter_checks(checks, selected),
+    do: Enum.filter(checks, fn check -> check[:id] in selected end)
 
   defp run_check(check, workspace, opts) do
     results = check[:module].check(workspace, check)

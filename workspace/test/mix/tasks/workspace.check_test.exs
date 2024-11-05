@@ -64,6 +64,44 @@ defmodule Mix.Tasks.Workspace.CheckTest do
     assert_cli_output_match(captured, expected)
   end
 
+  test "with --check flag runs only selected checks" do
+    expected = [
+      "running 2 workspace checks on the workspace",
+      "==> C000 check deps_path",
+      "ERROR :package_a - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_b - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_c - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_d - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_e - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_f - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_g - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_i - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_j - expected :deps_path to be ../deps, got: deps",
+      "ERROR :package_k - expected :deps_path to be ../../deps, got: deps",
+      "==> C003 never fails"
+    ]
+
+    captured =
+      assert_raise_and_capture_io(
+        Mix.Error,
+        ~r"mix workspace.check failed - errors detected in 1 checks",
+        fn ->
+          CheckTask.run([
+            "--workspace-path",
+            @sample_workspace_path,
+            "--config-path",
+            "../configs/with_checks.exs",
+            "-c",
+            "deps_path",
+            "-c",
+            "never_fails"
+          ])
+        end
+      )
+
+    assert_cli_output_match(captured, expected)
+  end
+
   test "with --verbose flag on" do
     expected = [
       "running 4 workspace checks on the workspace",

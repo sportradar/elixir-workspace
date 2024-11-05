@@ -21,6 +21,13 @@ to `workspace.list`.
   $ mix workspace.run -t format -p p1,p2,p3
   ```
 
+* `workspace.check`: support running specific checks through the `--check` option
+
+### Deprecated
+
+* Check definitions without an `id` is deprecated. ids can be used for filtering
+  the checks that will be executed.
+
 ### Removed
 
 * `Workspace.Utils.Path.relative_to/2` has been removed. After requiring at least
