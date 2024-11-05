@@ -195,9 +195,9 @@ defmodule Workspace.Config do
   defp validate_checks(config) do
     checks = config[:checks]
 
-    case validate_checks(checks, [], []) do
-      {:ok, checks} -> {:ok, Keyword.put(config, :checks, checks)}
-      {:error, message} -> {:error, message}
+    with {:ok, checks} <- validate_checks(checks, [], []),
+         :ok <- ensure_unique_check_ids(checks) do
+      {:ok, Keyword.put(config, :checks, checks)}
     end
   end
 
@@ -215,6 +215,25 @@ defmodule Workspace.Config do
 
       {:error, message} ->
         validate_checks(rest, acc, [message | errors])
+    end
+  end
+
+  defp ensure_unique_check_ids(checks) do
+    # TODO: remove filter once id required
+    duplicates =
+      checks
+      |> Enum.map(fn check -> check[:id] end)
+      |> Enum.reject(&is_nil/1)
+      |> Enum.group_by(& &1)
+      |> Enum.filter(&match?({_id, [_, _ | _]}, &1))
+
+    case duplicates do
+      [] ->
+        :ok
+
+      duplicates ->
+        {:error,
+         "check ids must be unique, the following have duplicates: #{inspect(Keyword.keys(duplicates))}"}
     end
   end
 

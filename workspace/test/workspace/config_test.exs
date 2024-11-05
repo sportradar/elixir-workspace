@@ -54,6 +54,30 @@ defmodule Workspace.ConfigTest do
       assert message =~ "failed to validate checks"
     end
 
+    test "fails if checks have the same id" do
+      config = [
+        checks: [
+          [
+            id: :test_check,
+            module: Workspace.Checks.ValidateProject,
+            opts: [
+              validate: fn _project -> {:ok, ""} end
+            ]
+          ],
+          [
+            id: :test_check,
+            module: Workspace.Checks.ValidateProject,
+            opts: [
+              validate: fn _project -> {:ok, ""} end
+            ]
+          ]
+        ]
+      ]
+
+      assert {:error, message} = Config.validate(config)
+      assert message == "check ids must be unique, the following have duplicates: [:test_check]"
+    end
+
     test "other options are ignored" do
       config = [
         ignore_projects: [:foo],
