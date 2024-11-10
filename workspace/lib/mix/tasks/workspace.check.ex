@@ -55,7 +55,12 @@ defmodule Mix.Tasks.Workspace.Check do
     workspace.config[:checks]
     |> Enum.with_index(fn check, index -> Keyword.put(check, :index, index) end)
     |> maybe_filter_checks(opts[:checks])
-    |> Enum.map(fn check -> run_check(check, workspace, opts) end)
+    |> Enum.group_by(&Keyword.get(&1, :group))
+    |> Enum.map(fn {group, checks} ->
+      heading(group)
+      Enum.map(checks, &run_check(&1, workspace, opts))
+    end)
+    |> List.flatten()
     |> maybe_set_exit_status()
   end
 
@@ -71,6 +76,25 @@ defmodule Mix.Tasks.Workspace.Check do
 
   defp maybe_filter_checks(checks, selected),
     do: Enum.filter(checks, fn check -> check[:id] in selected end)
+
+  defp heading(nil), do: :ok
+
+  defp heading(group) do
+    width = width()
+    padding = div(width + String.length(group), 2)
+    heading = String.pad_leading(group, padding)
+    heading = String.pad_trailing(heading, width)
+
+    heading = ["\n", IO.ANSI.format_fragment([:reverse, :yellow]), heading, IO.ANSI.reset()]
+    log(heading)
+  end
+
+  defp width() do
+    case :io.columns() do
+      {:ok, width} -> min(width, 80)
+      {:error, _} -> 80
+    end
+  end
 
   defp run_check(check, workspace, opts) do
     results = check[:module].check(workspace, check)

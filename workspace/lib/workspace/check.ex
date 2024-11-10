@@ -9,6 +9,16 @@ defmodule Workspace.Check do
                     required: true,
                     doc: "The `Workspace.Check` module to be used."
                   ],
+                  group: [
+                    type: :string,
+                    doc: """
+                    The group of the check. Can be set optionally in order to
+                    group checks together in the output of `workspace.check`.
+                    All checks that don't have a custom group set will be listed
+                    under the default checks group with the order they were
+                    defined in your config.
+                    """
+                  ],
                   opts: [
                     type: :keyword_list,
                     doc: "The check's custom options.",
