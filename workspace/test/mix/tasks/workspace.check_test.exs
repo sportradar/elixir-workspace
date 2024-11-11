@@ -19,7 +19,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
   test "runs all configured checks" do
     expected = [
       "running 4 workspace checks on the workspace",
-      "==> C000 check deps_path",
+      "==> C000 deps_path check deps_path",
       "ERROR :package_a - expected :deps_path to be ../deps, got: deps",
       "ERROR :package_b - expected :deps_path to be ../deps, got: deps",
       "ERROR :package_c - expected :deps_path to be ../deps, got: deps",
@@ -30,9 +30,9 @@ defmodule Mix.Tasks.Workspace.CheckTest do
       "ERROR :package_i - expected :deps_path to be ../deps, got: deps",
       "ERROR :package_j - expected :deps_path to be ../deps, got: deps",
       "ERROR :package_k - expected :deps_path to be ../../deps, got: deps",
-      "==> C001 fail on package b",
+      "==> C001 fail_b fail on package b",
       "WARN  :package_b - invalid package",
-      "==> C002 always fails",
+      "==> C002 always_fails always fails",
       "WARN  :package_a - this always fails",
       "WARN  :package_b - this always fails",
       "WARN  :package_c - this always fails",
@@ -44,7 +44,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
       "WARN  :package_i - this always fails",
       "WARN  :package_j - this always fails",
       "WARN  :package_k - this always fails",
-      "==> C003 never fails"
+      "==> C003 never_fails never fails"
     ]
 
     captured =
@@ -67,7 +67,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
   test "with --check flag runs only selected checks" do
     expected = [
       "running 2 workspace checks on the workspace",
-      "==> C000 check deps_path",
+      "==> C000 deps_path check deps_path",
       "ERROR :package_a - expected :deps_path to be ../deps, got: deps",
       "ERROR :package_b - expected :deps_path to be ../deps, got: deps",
       "ERROR :package_c - expected :deps_path to be ../deps, got: deps",
@@ -78,7 +78,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
       "ERROR :package_i - expected :deps_path to be ../deps, got: deps",
       "ERROR :package_j - expected :deps_path to be ../deps, got: deps",
       "ERROR :package_k - expected :deps_path to be ../../deps, got: deps",
-      "==> C003 never fails"
+      "==> C003 never_fails never fails"
     ]
 
     captured =
@@ -105,7 +105,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
   test "with --verbose flag on" do
     expected = [
       "running 4 workspace checks on the workspace",
-      "==> C000 check deps_path",
+      "==> C000 deps_path check deps_path",
       "ERROR :package_a - expected :deps_path to be ../deps, got: deps test/fixtures/sample_workspace/package_a",
       "ERROR :package_b - expected :deps_path to be ../deps, got: deps",
       "ERROR :package_c - expected :deps_path to be ../deps, got: deps",
@@ -116,8 +116,8 @@ defmodule Mix.Tasks.Workspace.CheckTest do
       "OK    :package_h - :deps_path is set to ../deps",
       "ERROR :package_i - expected :deps_path to be ../deps, got: deps",
       "ERROR :package_j - expected :deps_path to be ../deps, got: deps",
-      "ERROR :package_k - expected :deps_path to be ../../deps, got: deps",
-      "==> C001 fail on package b",
+      "ERROR :package_k - expected :deps_path to be ../../deps, got: deps test/fixtures/sample_workspace/nested/package_k",
+      "==> C001 fail_b fail on package b",
       "OK    :package_a - no error",
       "WARN  :package_b - invalid package",
       "OK    :package_c - no error",
@@ -129,7 +129,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
       "OK    :package_i - no error",
       "OK    :package_j - no error",
       "OK    :package_k - no error",
-      "==> C002 always fails",
+      "==> C002 always_fails always fails",
       "WARN  :package_a - this always fails",
       "WARN  :package_b - this always fails",
       "WARN  :package_c - this always fails",
@@ -141,7 +141,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
       "WARN  :package_i - this always fails",
       "WARN  :package_j - this always fails",
       "WARN  :package_k - this always fails",
-      "==> C003 never fails",
+      "==> C003 never_fails never fails",
       "OK    :package_a - never fails",
       "OK    :package_b - never fails",
       "OK    :package_c - never fails",

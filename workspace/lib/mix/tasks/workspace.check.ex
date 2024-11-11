@@ -129,13 +129,14 @@ defmodule Mix.Tasks.Workspace.Check do
 
   defp print_check_status(check, results, opts) do
     index = check[:index]
+    id = check[:id]
     status = check_status(results)
     results = Enum.sort_by(results, & &1.project.app)
 
     display_index = String.pad_leading("#{index}", 3, "0")
 
     log_with_title(
-      highlight("C#{display_index}", [:bright, status_color(status)]),
+      highlight("C#{display_index}#{maybe_id(id)}", [:bright, status_color(status)]),
       highlight(check[:description], :bright),
       separator: " ",
       prefix: :header
@@ -145,6 +146,9 @@ defmodule Mix.Tasks.Workspace.Check do
       maybe_print_result(result, opts[:verbose])
     end
   end
+
+  defp maybe_id(nil), do: ""
+  defp maybe_id(id), do: " #{id}"
 
   defp maybe_print_result(result, verbose) do
     cond do
