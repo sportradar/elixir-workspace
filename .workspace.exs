@@ -129,12 +129,12 @@
           nimble_options: [version: "~> 1.1.1"],
           # dev dependencies
           dialyxir: [
-            version: "== 1.4.4",
+            version: "== 1.4.5",
             options: [only: [:dev], runtime: false]
           ],
-          ex_doc: [version: "== 0.34.2"],
-          credo: [version: "== 1.7.8"],
-          doctor: [version: "== 0.21.0"]
+          ex_doc: [version: "== 0.35.1"],
+          credo: [version: "== 1.7.10"],
+          doctor: [version: "== 0.22.0"]
         ]
       ]
     ],
