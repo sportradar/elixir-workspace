@@ -191,6 +191,13 @@ defmodule CliOptions.Schema do
       For boolean options, the flag is considered set if the environment variable has
       a truthy value (`1`, `true`) and ignored in any other case.
       """
+    ],
+    conflicts_with: [
+      type: {:list, :atom},
+      doc: """
+      List of conflicting options. If set this argument will be mutually exclusive with
+      any of the specified arguments.
+      """
     ]
   ]
 
@@ -352,7 +359,13 @@ defmodule CliOptions.Schema do
   @doc false
   @spec validate(opts :: keyword(), schema :: t()) :: {:ok, keyword()} | {:error, String.t()}
   def validate(opts, schema) do
-    # TODO: custom validation
+    with {:ok, opts} <- validate_options(opts, schema),
+         :ok <- validate_mutually_exclusive(opts, schema) do
+      {:ok, opts}
+    end
+  end
+
+  defp validate_options(opts, schema) do
     result =
       Enum.reduce_while(schema.schema, [], fn {option, option_schema}, acc ->
         case validate_option(option, opts[option], option_schema) do
@@ -497,4 +510,33 @@ defmodule CliOptions.Schema do
       true -> 1
     end
   end
+
+  defp validate_mutually_exclusive(opts, schema) do
+    Enum.reduce_while(opts, :ok, fn {option, _value}, _acc ->
+      conflicts_with = schema.schema[option][:conflicts_with]
+
+      case conflicts_with do
+        nil ->
+          {:cont, :ok}
+
+        conflicts_with ->
+          conflicts = Enum.filter(conflicts_with, &Keyword.has_key?(opts, &1))
+
+          case conflicts do
+            [] ->
+              {:cont, :ok}
+
+            conflicts ->
+              conflicts =
+                Enum.map_join(conflicts, ", ", fn conflict -> long_name_cli(schema, conflict) end)
+
+              {:halt,
+               {:error,
+                "#{long_name_cli(schema, option)} is mutually exclusive with #{conflicts}"}}
+          end
+      end
+    end)
+  end
+
+  defp long_name_cli(schema, option), do: "--" <> schema.schema[option][:long]
 end
