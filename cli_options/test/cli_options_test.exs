@@ -333,6 +333,12 @@ defmodule CliOptionsTest do
       # with both set
       assert {:error, "--include is mutually exclusive with --exclude"} =
                CliOptions.parse(["--include", "foo", "--exclude", "foo"], schema)
+
+      # the same error is got if the conflict is set to the other option
+      schema = [include: [type: :string], exclude: [type: :string, conflicts_with: [:include]]]
+
+      assert {:error, "--exclude is mutually exclusive with --include"} =
+               CliOptions.parse(["--include", "foo", "--exclude", "foo"], schema)
     end
 
     test "with post_validate set" do

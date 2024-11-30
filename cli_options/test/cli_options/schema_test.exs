@@ -160,6 +160,16 @@ defmodule CliOptions.SchemaTest do
       assert_raise ArgumentError, message, fn ->
         CliOptions.Schema.new!(schema)
       end
+
+      # invalid conflicts_with target
+      schema = [bar: [type: :string], foo: [conflicts_with: [:bar, :baz, :project]]]
+
+      message =
+        ":foo conflicts_with must include only valid arguments, got: [:baz, :project]"
+
+      assert_raise ArgumentError, message, fn ->
+        CliOptions.Schema.new!(schema)
+      end
     end
 
     test "with duplicate aliases" do

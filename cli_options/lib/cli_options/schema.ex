@@ -263,9 +263,13 @@ defmodule CliOptions.Schema do
   end
 
   defp validate_schema!(schema) do
-    for {option, opts} <- schema do
-      validate_option_schema!(option, opts)
-    end
+    schema =
+      for {option, opts} <- schema do
+        validate_option_schema!(option, opts)
+      end
+
+    validate_conflicts_with!(schema)
+    schema
   end
 
   defp validate_option_schema!(option, opts) do
@@ -322,6 +326,17 @@ defmodule CliOptions.Schema do
       {:error, "you are not allowed to set separator if multiple is set to false"}
     else
       {:ok, opts}
+    end
+  end
+
+  defp validate_conflicts_with!(schema) do
+    for {name, opts} <- schema, opts[:conflicts_with] != nil do
+      invalid_options = Enum.reject(opts[:conflicts_with], &Keyword.has_key?(schema, &1))
+
+      if invalid_options != [] do
+        raise ArgumentError,
+              "#{inspect(name)} conflicts_with must include only valid arguments, got: #{inspect(invalid_options)}"
+      end
     end
   end
 
