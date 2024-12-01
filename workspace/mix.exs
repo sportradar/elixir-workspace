@@ -18,6 +18,7 @@ defmodule Workspace.MixProject do
 
       # Tests
       test_coverage: [
+        ignore_modules: [Workspace.TestUtils],
         threshold: 97,
         export: "workspace",
         output: "../artifacts/coverdata/workspace"
