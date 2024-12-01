@@ -8,6 +8,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+* Support defining mutually exclusive arguments through `:conflicts_with` option.
+
+  ```cli
+  schema = [
+    verbose: [type: :boolean, conflicts_with: [:silent]],
+    silent: [type: :boolean]
+  ]
+
+  CliOptions.parse(["--verbose", "--silent"], schema)
+  >>>
+  ```
+
 * Support post validation of the parsed options in `CliOptions.parse/3`  through an
   optional `:post_validate` option.
 

@@ -384,6 +384,52 @@ defmodule CliOptions do
   >>>
   ```
 
+  ## Mutually exclusive options
+
+  If an argument is mutually exclusive with some other argument(s) then you can set
+  it in the `:conflicts_with` option. If two conflicting options are provided together
+  then the argument parsing will fail.
+
+  ```cli
+  schema = [
+    verbose: [type: :boolean, conflicts_with: [:silent]],
+    silent: [type: :boolean]
+  ]
+
+
+  # if only one is passed then the arguements are valid
+  CliOptions.parse(["--verbose"], schema)
+  >>>
+
+  # passing both makes the parser to fail
+  CliOptions.parse(["--verbose", "--silent"], schema)
+  >>>
+  ```
+
+  > #### Defining conflicting arguments {: .info}
+  >
+  > Defining a conflict is two-way, but does not need to be defined for both
+  > arguments. For example if `:foo` is conflicting with `:bar` it is sufficient
+  > to define the conflict in one of the two.
+  >
+  > ```cli
+  > schema = [
+  >   foo: [type: :boolean, conflicts_with: [:bar]],
+  >   bar: [type: :boolean]
+  > ]
+  > 
+  > CliOptions.parse(["--foo", "--bar"], schema)
+  > >>>
+  >
+  > schema = [
+  >   foo: [type: :boolean],
+  >   bar: [type: :boolean, conflicts_with: [:foo]]
+  > ]
+  > 
+  > CliOptions.parse(["--foo", "--bar"], schema)
+  > >>>
+  > ```
+
   ## Environment variable aliases
 
   You can optionally define an environment variable alias for an option through the
