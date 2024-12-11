@@ -8,7 +8,7 @@ defmodule Cascade.Checks do
   """
   @spec check_module_name_validity!(name :: String.t()) :: :ok
   def check_module_name_validity!(name) do
-    unless name =~ ~r/^[A-Z]\w*(\.[A-Z]\w*)*$/ do
+    if !(name =~ ~r/^[A-Z]\w*(\.[A-Z]\w*)*$/) do
       raise ArgumentError,
             "Module name must be a valid Elixir alias (for example: Foo.Bar), got: #{inspect(name)}"
     end

@@ -61,7 +61,7 @@ defmodule Workspace.Export do
   @doc false
   @spec assert_jason!(fn_name :: String.t()) :: :ok
   def assert_jason!(fn_name) do
-    unless Code.ensure_loaded?(Jason) do
+    if !Code.ensure_loaded?(Jason) do
       raise RuntimeError, """
       #{fn_name} depends on the :jason package.
 

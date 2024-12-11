@@ -276,7 +276,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
           prefix: "    "
         )
 
-        unless opts[:silent] do
+        if !opts[:silent] do
           print_module_coverage_info(module_stats, error_threshold, warning_threshold, opts)
         end
 

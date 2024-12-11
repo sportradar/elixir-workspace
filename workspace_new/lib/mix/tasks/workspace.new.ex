@@ -76,7 +76,7 @@ defmodule Mix.Tasks.Workspace.New do
         check_mod_name_validity!(mod)
         check_mod_name_availability!(mod)
 
-        unless path == "." do
+        if path != "." do
           if File.exists?(path) do
             Mix.raise(
               "Directory #{path} already exists, please select another directory for your workspace"
@@ -93,7 +93,7 @@ defmodule Mix.Tasks.Workspace.New do
   end
 
   defp check_application_name!(name, inferred?) do
-    unless name =~ ~r/^[a-z][a-z0-9_]*$/ do
+    if !(name =~ ~r/^[a-z][a-z0-9_]*$/) do
       Mix.raise(
         "Application name must start with a lowercase ASCII letter, followed by " <>
           "lowercase ASCII letters, numbers, or underscores, got: #{inspect(name)}" <>
@@ -108,7 +108,7 @@ defmodule Mix.Tasks.Workspace.New do
   end
 
   defp check_mod_name_validity!(name) do
-    unless name =~ ~r/^[A-Z]\w*(\.[A-Z]\w*)*$/ do
+    if !(name =~ ~r/^[A-Z]\w*(\.[A-Z]\w*)*$/) do
       Mix.raise(
         "Module name must be a valid Elixir alias (for example: Foo.Bar), got: #{inspect(name)}"
       )
