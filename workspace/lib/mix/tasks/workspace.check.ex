@@ -50,12 +50,11 @@ defmodule Mix.Tasks.Workspace.Check do
 
     log("running #{checks_count(workspace, opts[:checks])} workspace checks on the workspace")
 
-    newline()
-
     workspace.config[:checks]
     |> Enum.with_index(fn check, index -> Keyword.put(check, :index, index) end)
     |> maybe_filter_checks(opts[:checks])
     |> Enum.group_by(&Keyword.get(&1, :group))
+    |> Enum.sort_by(fn {_group, checks} -> Enum.min_by(checks, &Keyword.fetch!(&1, :index)) end)
     |> Enum.map(fn {group, checks} ->
       heading(group)
       Enum.map(checks, &run_check(&1, workspace, opts))
