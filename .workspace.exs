@@ -4,7 +4,7 @@
     # General package validations
     [
       id: :description_set,
-      group: "Package checks",
+      group: :package,
       module: Workspace.Checks.ValidateProject,
       description: "all projects must have a description set",
       opts: [
@@ -19,7 +19,7 @@
     ],
     [
       id: :maintainer_set,
-      group: "Package checks",
+      group: :package,
       module: Workspace.Checks.ValidateProject,
       description: "all projects must have a maintainer set",
       opts: [
@@ -36,7 +36,7 @@
     ],
     [
       id: :mit_license,
-      group: "Package checks",
+      group: :package,
       module: Workspace.Checks.ValidateProject,
       description: "all projects must have licenses set to MIT",
       opts: [
@@ -53,7 +53,7 @@
     ],
     [
       id: :github_link,
-      group: "Package checks",
+      group: :package,
       module: Workspace.Checks.ValidateProject,
       description: "all packages must have the correct GitHub link",
       opts: [
@@ -74,7 +74,7 @@
     ],
     [
       id: :changelog_link,
-      group: "Package checks",
+      group: :package,
       module: Workspace.Checks.ValidateProject,
       description: "all packages must have the correct Changelog link",
       opts: [
@@ -100,7 +100,7 @@
     # Build paths checks
     [
       id: :deps_path,
-      group: "Build paths checks",
+      group: :build_paths,
       module: Workspace.Checks.ValidateConfigPath,
       description: "all projects must have a common dependencies path",
       opts: [
@@ -110,7 +110,7 @@
     ],
     [
       id: :build_path,
-      group: "Build paths checks",
+      group: :build_paths,
       module: Workspace.Checks.ValidateConfigPath,
       description: "all projects must have a common build path",
       opts: [
@@ -121,7 +121,7 @@
     # Dependencies checks
     [
       id: :deps_versions,
-      group: "Dependencies checks",
+      group: :dependencies,
       module: Workspace.Checks.DependenciesVersion,
       description: "mono-repo dependencies versions",
       opts: [
@@ -141,7 +141,7 @@
     # Documentation related checks
     [
       id: :docs_output_path,
-      group: "Documentation checks",
+      group: :documentation,
       module: Workspace.Checks.ValidateConfigPath,
       description: "all projects must have a common docs output path",
       opts: [
@@ -151,7 +151,7 @@
     ],
     [
       id: :html_formatter,
-      group: "Documentation checks",
+      group: :documentation,
       module: Workspace.Checks.ValidateProject,
       description: "all projects must have only html docs formatters",
       opts: [
@@ -165,7 +165,7 @@
     ],
     [
       id: :name_set,
-      group: "Documentation checks",
+      group: :documentation,
       module: Workspace.Checks.ValidateProject,
       description: "all projects must have a name set",
       opts: [
@@ -180,7 +180,7 @@
     ],
     [
       id: :source_url_pattern,
-      group: "Documentation checks",
+      group: :documentation,
       module: Workspace.Checks.ValidateProject,
       description: "all projects must have a valid source_url_pattern",
       opts: [
@@ -205,7 +205,7 @@
     ],
     [
       id: :source_url,
-      group: "Documentation checks",
+      group: :documentation,
       module: Workspace.Checks.ValidateProject,
       description: "all projects must have the same source_url set",
       opts: [
@@ -224,7 +224,7 @@
     ],
     [
       id: :canonical_in_docs,
-      group: "Documentation checks",
+      group: :documentation,
       module: Workspace.Checks.ValidateProject,
       description: "all projects must have the :canonical option properly set",
       opts: [
@@ -244,7 +244,7 @@
     ],
     [
       id: :common_docs_in_extras,
-      group: "Documentation checks",
+      group: :documentation,
       module: Workspace.Checks.ValidateProject,
       description: "common files must be in docs extras",
       opts: [
@@ -270,7 +270,7 @@
     ],
     [
       id: :main_docs_entry,
-      group: "Documentation checks",
+      group: :documentation,
       module: Workspace.Checks.ValidateProject,
       description: "readme must be the main entry for all docs",
       opts: [
@@ -284,7 +284,7 @@
     ],
     [
       id: :changelog_skip_undefined,
-      group: "Documentation checks",
+      group: :documentation,
       module: Workspace.Checks.ValidateProject,
       description: "CHANGELOG must be in the skip_undefined_reference_warnings_on list",
       opts: [
@@ -305,7 +305,7 @@
     # Testing related checks
     [
       id: :coverage_output,
-      group: "Testing checks",
+      group: :tests,
       module: Workspace.Checks.ValidateProject,
       description: "all projects must have test_coverage[:output] properly set",
       opts: [
@@ -329,7 +329,7 @@
     ],
     [
       id: :coverage_export,
-      group: "Testing checks",
+      group: :tests,
       module: Workspace.Checks.ValidateProject,
       description: "all projects must have test_coverage[:export] properly set",
       opts: [
@@ -354,7 +354,7 @@
     ],
     [
       id: :minimum_coverage,
-      group: "Testing checks",
+      group: :tests,
       module: Workspace.Checks.ValidateProject,
       description: "all projects must have a minimum coverage threshold of 95",
       opts: [
@@ -370,6 +370,28 @@
           end
         end
       ]
+    ]
+  ],
+  groups_for_checks: [
+    package: [
+      style: [:light_blue_background, :black],
+      title: " 📦 Package checks"
+    ],
+    build_paths: [
+      style: [:cyan_background, :black],
+      title: " 📁 Build paths checks"
+    ],
+    dependencies: [
+      style: [:green_background, :black],
+      title: " 🔗 Dependencies checks"
+    ],
+    documentation: [
+      style: [:yellow_background, :black],
+      title: " 📚 Documentation checks"
+    ],
+    tests: [
+      style: [:red_background, :black],
+      title: " ⚡ Testing checks"
     ]
   ],
   test_coverage: [
