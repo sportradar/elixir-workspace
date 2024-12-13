@@ -70,7 +70,7 @@ defmodule Workspace.Check do
 
   #{NimbleOptions.docs(@check_schema)}
 
-  ## Configuration Examples
+  ### Configuration Examples
 
   ```elixir
   [

@@ -31,9 +31,112 @@ defmodule Mix.Tasks.Workspace.Check do
   @moduledoc """
   Check the workspace using the configured checks.
 
+      $ mix workspace.check
+
   ## Command Line Options
 
   #{CliOptions.docs(@options_schema, sort: true, sections: Workspace.CliOptions.doc_sections())}
+
+  ## What to check
+
+  This depends on your codebase and your conventions. When your mono-repo
+  grows it is becoming more tedious to keep track with all projects and
+  ensure that the same standards apply to all projects.
+
+  For example you may wish to have common dependencies defined across all your
+  projects, or ensure that all packages have a valid maintainer set. Checks
+  should be used for verifying the high level conventions of your project and
+  your business rules.
+
+  `Workspace` comes with some basic checks included that allow you among other to:
+
+  * Ensure that specific dependencies are set through the `Workspace.Checks.EnsureDependencies` check.
+  * Ensure that external dependencies versions match the expected ones through `Workspace.Checks.DependenciesVersion`.
+  * Verify that no forbidden dependencies are defined through `Workspace.Checks.ForbiddenDeps`.
+  * Validate arbitrarily the projects' config objects with `Workspace.Checks.ValidateProject`.
+  * Enforce boundaries between workspace projects through `Workspace.Checks.EnforceBoundaries`.
+
+  Check `Workspace.Check` for more details on checks and a guide on how to implement
+  your custom check.
+
+  ## Checks config
+
+  All checks must be configured under the `:checks` option of your workspace
+  config. You can use any of the officially supported checks or implement your
+  own.
+
+  Here is an example of some checks from the workspace repo:
+
+  ```elixir
+  checks: [
+    [
+      id: :description_set,
+      module: Workspace.Checks.ValidateProject,
+      description: "all projects must have a description set",
+      opts: [
+        validate: fn project ->
+          case project.config[:description] do
+            nil -> {:error, "no :description set"}
+            description when is_binary(description) -> {:ok, "description set to \#{description}"}
+            other -> {:error, "description must be binary, got: \#{inspect(other)}"}
+          end
+        end
+      ]
+    ],
+    [
+      id: :deps_path,
+      module: Workspace.Checks.ValidateConfigPath,
+      description: "all projects must have a common dependencies path",
+      opts: [
+        config_attribute: :deps_path,
+        expected_path: "artifacts/deps"
+      ]
+    ],
+  ]
+  ```
+
+  ## Grouping checks
+
+  Checks can be organized in groups. Groups will be used by the task
+  for pretty printing a header followed by all relevant checks.
+
+  The `:group` can be set in the check definition:
+
+  ```elixir
+  checks: [
+    [
+      id: :description_set,
+      group: :package,
+      ...
+    ],
+    [
+      id: :valid_maintainers,
+      group: :package
+      ...
+    ]
+  ]
+  ```
+
+  ### Groups headers styling
+
+  By default a yellow header will be added for each group with the
+  group name as title. If you wish you can configure the styling and/or
+  the title of each group header through the `:groups_for_checks`
+  configuration:
+
+  ```elixir
+  groups_for_checks: [
+    package: [
+      style: [:red]
+    ],
+    docs: [
+      title: " 📚 Documentation checks",
+      style: [:yellow_background, :white]
+    ]
+  ]
+  ```
+
+  Check `Workspace.Config` for more details.
   """
 
   use Mix.Task
@@ -81,7 +184,9 @@ defmodule Mix.Tasks.Workspace.Check do
   defp heading(group, groups_config) do
     log("")
 
-    title = Keyword.get(groups_config[group], :title, inspect(group)) |> String.pad_trailing(width())
+    title =
+      Keyword.get(groups_config[group], :title, inspect(group)) |> String.pad_trailing(width())
+
     style = Keyword.get(groups_config[group], :style, [:bright, :yellow])
 
     log([style, title, :reset])
