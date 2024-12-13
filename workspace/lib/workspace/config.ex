@@ -60,6 +60,56 @@ defmodule Workspace.Config do
                       """,
                       default: []
                     ],
+                    groups_for_checks: [
+                      type: :non_empty_keyword_list,
+                      doc: """
+                      Allows you to configure the look and feel of the checks group headings.
+                      It expects a keyword list, where the key is the group identifier and the
+                      value is the configuration for this specific group heading, for example:
+
+                      ```elixir
+                      groups_for_checks: [
+                        package: [
+                          title: "-> Package checks",
+                          style: [:red]
+                        ],
+                        docs: [
+                          title: " 📚 Documentation checks",
+                          style: [:yellow_background, :white]
+                        ]
+                      ]
+                      ```
+
+                      Each group style definition is expected to be a keyword list with the
+                      following options:
+                      """,
+                      keys: [
+                        *: [
+                          type: :non_empty_keyword_list,
+                          keys: [
+                            title: [
+                              type: :string,
+                              doc:
+                                "The title of the check group, if not set defaults to the group name"
+                            ],
+                            style: [
+                              type: {:list, :atom},
+                              doc: """
+                              The ANSI style for the group heading. You can use it to modify the look
+                              of this specific header. For example in order to make the background blue
+                              and the text red you can set the style to:
+
+                              ```elixir
+                              style: [:blue_background, :red]
+                              ```
+
+                              For more details check the `IO.ANSI` docs.
+                              """
+                            ]
+                          ]
+                        ]
+                      ]
+                    ],
                     test_coverage: [
                       type: :keyword_list,
                       doc: """

@@ -56,7 +56,7 @@ defmodule Mix.Tasks.Workspace.Check do
     |> Enum.group_by(&Keyword.get(&1, :group))
     |> Enum.sort_by(fn {_group, checks} -> Enum.min_by(checks, &Keyword.fetch!(&1, :index)) end)
     |> Enum.map(fn {group, checks} ->
-      heading(group)
+      heading(group, workspace.config[:groups_for_checks] || [])
       Enum.map(checks, &run_check(&1, workspace, opts))
     end)
     |> List.flatten()
@@ -76,16 +76,15 @@ defmodule Mix.Tasks.Workspace.Check do
   defp maybe_filter_checks(checks, selected),
     do: Enum.filter(checks, fn check -> check[:id] in selected end)
 
-  defp heading(nil), do: :ok
+  defp heading(nil, _groups_config), do: :ok
 
-  defp heading(group) do
-    width = width()
-    padding = div(width + String.length(group), 2)
-    heading = String.pad_leading(group, padding)
-    heading = String.pad_trailing(heading, width)
+  defp heading(group, groups_config) do
+    log("")
 
-    heading = ["\n", IO.ANSI.format_fragment([:reverse, :yellow]), heading, IO.ANSI.reset()]
-    log(heading)
+    title = Keyword.get(groups_config[group], :title, inspect(group)) |> String.pad_trailing(width())
+    style = Keyword.get(groups_config[group], :style, [:bright, :yellow])
+
+    log([style, title, :reset])
   end
 
   defp width() do

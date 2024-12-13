@@ -10,7 +10,7 @@ defmodule Workspace.Check do
                     doc: "The `Workspace.Check` module to be used."
                   ],
                   group: [
-                    type: :string,
+                    type: {:or, [:string, :atom]},
                     doc: """
                     The group of the check. Can be set optionally in order to
                     group checks together in the output of `workspace.check`.
