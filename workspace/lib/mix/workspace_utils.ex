@@ -28,7 +28,16 @@ defmodule Mix.WorkspaceUtils do
 
   defp validate_git_repo!(workspace) do
     case Workspace.Git.root(cd: workspace.workspace_path) do
-      {:ok, _path} ->
+      {:ok, path} ->
+        if path != workspace.workspace_path do
+          Mix.raise("""
+          status related operations require the workspace root folder to be the git root
+
+            workspace: #{workspace.workspace_path}
+            git root: #{path}
+          """)
+        end
+
         :ok
 
       {:error, _reason} ->
