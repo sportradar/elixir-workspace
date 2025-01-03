@@ -1,88 +1,108 @@
 defmodule Mix.Tasks.Workspace.StatusTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
+
   import ExUnit.CaptureIO
+  import Workspace.Test, only: [assert_captured: 3]
+
   alias Mix.Tasks.Workspace.Status, as: StatusTask
-
-  @sample_workspace_default_path Path.join(
-                                   Workspace.TestUtils.tmp_path(),
-                                   "sample_workspace_default"
-                                 )
-  @sample_workspace_changed_path Path.join(
-                                   Workspace.TestUtils.tmp_path(),
-                                   "sample_workspace_changed"
-                                 )
-  @sample_workspace_committed_path Path.join(
-                                     Workspace.TestUtils.tmp_path(),
-                                     "sample_workspace_committed"
-                                   )
-
-  @sample_workspace_no_git_path Path.join(
-                                  Workspace.TestUtils.tmp_path(),
-                                  "sample_workspace_no_git"
-                                )
 
   setup do
     Application.put_env(:elixir, :ansi_enabled, false)
   end
 
-  test "if no git repo" do
-    message =
-      "status related operations require a git repo, " <>
-        "../../workspace_test_fixtures/sample_workspace_no_git is not a valid git repo"
+  @tag :tmp_dir
+  test "raises with no git repo", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [{:foo, "packages/foo", []}],
+      fn ->
+        message =
+          "status related operations require a git repo, " <>
+            "../../workspace_test_fixtures/no-git is not a valid git repo"
 
-    assert_raise Mix.Error, message, fn ->
-      StatusTask.run(["--workspace-path", @sample_workspace_no_git_path])
-    end
+        assert_raise Mix.Error, message, fn ->
+          StatusTask.run(["--workspace-path", tmp_dir])
+        end
+      end
+    )
   end
 
-  test "with no changed files" do
-    expected = ""
+  @tag :tmp_dir
+  test "with a proper git repo", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [{:bar, "packages/bar", []}, {:foo, "packages/foo", [deps: [{:bar, [path: "../bar"]}]]}],
+      fn ->
+        # if no file is changed
+        assert capture_io(fn ->
+                 StatusTask.run(["--workspace-path", tmp_dir])
+               end) == ""
 
-    assert capture_io(fn ->
-             StatusTask.run(["--workspace-path", @sample_workspace_default_path])
-           end) == expected
-  end
+        # with only a modified project - no affected dependency
+        Workspace.Test.modify_project(tmp_dir, "packages/foo")
 
-  test "with affected and modified files" do
-    expected = """
-    Modified projects:
-      :package_changed_d package_changed_d/mix.exs
-        untracked package_changed_d/tmp.exs
-      :package_changed_e package_changed_e/mix.exs
-        untracked package_changed_e/file.ex
+        assert_captured(
+          capture_io(fn ->
+            StatusTask.run(["--workspace-path", tmp_dir])
+          end),
+          """
+          Modified projects:
+            :foo packages/foo/mix.exs
+              untracked packages/foo/lib/file.ex
+          """,
+          trim_trailing_newlines: true
+        )
 
-    Affected projects:
-      :package_changed_a package_changed_a/mix.exs
-      :package_changed_c package_changed_c/mix.exs
-      :package_changed_h package_changed_h/mix.exs
+        # with both modified and changed
+        Workspace.Test.commit_changes(tmp_dir)
+        Workspace.Test.modify_project(tmp_dir, "packages/bar")
 
-    """
+        captured = capture_io(fn -> StatusTask.run(["--workspace-path", tmp_dir]) end)
 
-    assert capture_io(fn ->
-             StatusTask.run(["--workspace-path", @sample_workspace_changed_path])
-           end) == expected
-  end
+        expected =
+          """
+          Modified projects:
+            :bar packages/bar/mix.exs
+              untracked packages/bar/lib/file.ex
 
-  test "with --base and --head set" do
-    expected = """
-    Modified projects:
-      :package_committed_c package_committed_c/mix.exs
-        modified  package_committed_c/file.ex
+          Affected projects:
+            :foo packages/foo/mix.exs
+          """
 
-    Affected projects:
-      :package_committed_a package_committed_a/mix.exs
+        assert_captured(captured, expected, trim_trailing_newlines: true)
 
-    """
+        # if the file is commited no changes are detected
+        Workspace.Test.commit_changes(tmp_dir)
+        assert capture_io(fn ->
+                 StatusTask.run(["--workspace-path", tmp_dir])
+               end) == ""
 
-    assert capture_io(fn ->
-             StatusTask.run([
-               "--workspace-path",
-               @sample_workspace_committed_path,
-               "--base",
-               "HEAD~1",
-               "--head",
-               "HEAD"
-             ])
-           end) == expected
+        # if we specifically set --base and --head we get the changed files
+        captured =
+          capture_io(fn ->
+            StatusTask.run([
+              "--workspace-path",
+              tmp_dir,
+              "--base",
+              "HEAD~1",
+              "--head",
+              "HEAD"
+            ])
+          end)
+
+        assert_captured(captured,
+          """
+          Modified projects:
+            :bar packages/bar/mix.exs
+              modified  packages/bar/lib/file.ex
+
+          Affected projects:
+            :foo packages/foo/mix.exs
+          """, trim_trailing_newlines: true)
+      end,
+      git: true
+    )
   end
 end
