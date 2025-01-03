@@ -75,6 +75,7 @@ defmodule Mix.Tasks.Workspace.StatusTest do
 
         # if the file is commited no changes are detected
         Workspace.Test.commit_changes(tmp_dir)
+
         assert capture_io(fn ->
                  StatusTask.run(["--workspace-path", tmp_dir])
                end) == ""
@@ -92,7 +93,8 @@ defmodule Mix.Tasks.Workspace.StatusTest do
             ])
           end)
 
-        assert_captured(captured,
+        assert_captured(
+          captured,
           """
           Modified projects:
             :bar packages/bar/mix.exs
@@ -100,7 +102,9 @@ defmodule Mix.Tasks.Workspace.StatusTest do
 
           Affected projects:
             :foo packages/foo/mix.exs
-          """, trim_trailing_newlines: true)
+          """,
+          trim_trailing_newlines: true
+        )
       end,
       git: true
     )

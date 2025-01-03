@@ -109,14 +109,14 @@ defmodule Workspace.Test do
       for {mod, file} <- :code.all_loaded() -- previous,
           file == [] or
             (is_list(file) and List.starts_with?(file, String.to_charlist(fixture_path))) do
-        #IO.puts("purging #{mod}")
+        # IO.puts("purging #{mod}")
         :code.purge(mod)
         :code.delete(mod)
         Mix.State.clear_cache()
         # Mix.ProjectStack.clear_stack()
       end
 
-      #IO.puts("deleting fixture path")
+      # IO.puts("deleting fixture path")
       # File.rm_rf!(fixture_path)
     end
   end
