@@ -75,7 +75,9 @@ defmodule Workspace.Test do
   @doc """
   Runs the given `test_fn` in a temporary workspace under the given `path`.
 
-  Projects are expected to be tuples of the form `{name, path, config}`.
+  Projects is expected to be a list of tuples of the form `{name, path, config}`.
+  TODO: document default fixtures
+
   Config is the project config which will be merged with the default:
 
   ```elixir
@@ -87,7 +89,12 @@ defmodule Workspace.Test do
   ]
   ```
   """
-  def with_workspace(path, config, projects, test_fn, opts \\ []) do
+  def with_workspace(path, config, fixture_or_projects, test_fn, opts \\ [])
+
+  def with_workspace(path, config, fixture, test_fn, opts) when is_atom(fixture),
+    do: with_workspace(path, config, fixture(fixture), test_fn, opts)
+
+  def with_workspace(path, config, projects, test_fn, opts) do
     config = Keyword.merge(config, type: :workspace)
 
     fixture_path = Path.expand(path)
@@ -119,6 +126,47 @@ defmodule Workspace.Test do
       # IO.puts("deleting fixture path")
       # File.rm_rf!(fixture_path)
     end
+  end
+
+  defp fixture(:default) do
+    [
+      {:package_a, "package_a",
+       deps: [
+         {:package_b, path: "../package_b"},
+         {:package_c, path: "../package_c"},
+         {:package_d, path: "../package_d"}
+       ],
+       package: [maintainers: ["Jack Sparrow"]],
+       workspace: [tags: [:shared, {:area, :core}]]},
+      {:package_b, "package_b",
+       deps: [
+         {:package_g, path: "../package_g"}
+       ],
+       description: "a dummy project"},
+      {:package_c, "package_c",
+       deps: [
+         {:package_e, path: "../package_e"},
+         {:package_f, path: "../package_f"}
+       ]},
+      {:package_d, "package_d", deps: []},
+      {:package_e, "package_e", deps: []},
+      {:package_f, "package_f",
+       deps: [
+         {:package_g, path: "../package_g"}
+       ]},
+      {:package_g, "package_g", deps: []},
+      {:package_h, "package_h",
+       deps: [
+         {:package_d, path: "../package_d"}
+       ]},
+      {:package_i, "package_i",
+       deps: [
+         {:package_i, path: "../package_i"}
+       ]},
+      {:package_i, "package_i", deps: []},
+      {:package_j, "package_j", deps: []},
+      {:package_k, "nested/package_k", deps: []}
+    ]
   end
 
   defp maybe_cd!(fixture_path, true, test_fn), do: File.cd!(fixture_path, test_fn)
