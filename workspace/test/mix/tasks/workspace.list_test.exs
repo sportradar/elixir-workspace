@@ -3,285 +3,369 @@ defmodule Mix.Tasks.Workspace.ListTest do
   import ExUnit.CaptureIO
   alias Mix.Tasks.Workspace.List, as: ListTask
 
-  @sample_workspace_default_path Path.join(
-                                   Workspace.TestUtils.tmp_path(),
-                                   "sample_workspace_default"
-                                 )
-  @sample_workspace_changed_path Path.join(
-                                   Workspace.TestUtils.tmp_path(),
-                                   "sample_workspace_changed"
-                                 )
-
   setup do
     Application.put_env(:elixir, :ansi_enabled, false)
   end
 
-  test "prints the tree of the workspace" do
-    expected = """
-    Found 11 workspace projects matching the given options.
-      * :package_default_a package_default_a/mix.exs :shared, area:core
-      * :package_default_b package_default_b/mix.exs - a dummy project
-      * :package_default_c package_default_c/mix.exs
-      * :package_default_d package_default_d/mix.exs
-      * :package_default_e package_default_e/mix.exs
-      * :package_default_f package_default_f/mix.exs
-      * :package_default_g package_default_g/mix.exs
-      * :package_default_h package_default_h/mix.exs
-      * :package_default_i package_default_i/mix.exs
-      * :package_default_j package_default_j/mix.exs
-      * :package_default_k nested/package_default_k/mix.exs
-    """
+  @tag :tmp_dir
+  test "prints the tree of the workspace", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+      expected = """
+      Found 11 workspace projects matching the given options.
+        * :package_a package_a/mix.exs :shared, area:core
+        * :package_b package_b/mix.exs - a dummy project
+        * :package_c package_c/mix.exs
+        * :package_d package_d/mix.exs
+        * :package_e package_e/mix.exs
+        * :package_f package_f/mix.exs
+        * :package_g package_g/mix.exs
+        * :package_h package_h/mix.exs
+        * :package_i package_i/mix.exs
+        * :package_j package_j/mix.exs
+        * :package_k nested/package_k/mix.exs
+      """
 
-    assert capture_io(fn ->
-             ListTask.run(["--workspace-path", @sample_workspace_default_path])
-           end) == expected
+      assert capture_io(fn ->
+               ListTask.run(["--workspace-path", tmp_dir])
+             end) == expected
+    end)
   end
 
-  test "with --show-status flag" do
-    expected = """
-    Found 11 workspace projects matching the given options.
-      * :package_changed_a ● package_changed_a/mix.exs :shared, area:core
-      * :package_changed_b ✔ package_changed_b/mix.exs - a dummy project
-      * :package_changed_c ● package_changed_c/mix.exs
-      * :package_changed_d ✚ package_changed_d/mix.exs
-      * :package_changed_e ✚ package_changed_e/mix.exs
-      * :package_changed_f ✔ package_changed_f/mix.exs
-      * :package_changed_g ✔ package_changed_g/mix.exs
-      * :package_changed_h ● package_changed_h/mix.exs
-      * :package_changed_i ✔ package_changed_i/mix.exs
-      * :package_changed_j ✔ package_changed_j/mix.exs
-      * :package_changed_k ✔ nested/package_changed_k/mix.exs
-    """
+  @tag :tmp_dir
+  test "with --show-status flag", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        Workspace.Test.modify_project(tmp_dir, "package_d")
+        Workspace.Test.modify_project(tmp_dir, "package_e")
 
-    assert capture_io(fn ->
-             ListTask.run(["--workspace-path", @sample_workspace_changed_path, "--show-status"])
-           end) == expected
+        expected = """
+        Found 11 workspace projects matching the given options.
+          * :package_a ● package_a/mix.exs :shared, area:core
+          * :package_b ✔ package_b/mix.exs - a dummy project
+          * :package_c ● package_c/mix.exs
+          * :package_d ✚ package_d/mix.exs
+          * :package_e ✚ package_e/mix.exs
+          * :package_f ✔ package_f/mix.exs
+          * :package_g ✔ package_g/mix.exs
+          * :package_h ● package_h/mix.exs
+          * :package_i ✔ package_i/mix.exs
+          * :package_j ✔ package_j/mix.exs
+          * :package_k ✔ nested/package_k/mix.exs
+        """
+
+        assert capture_io(fn ->
+                 ListTask.run(["--workspace-path", tmp_dir, "--show-status"])
+               end) == expected
+      end,
+      git: true
+    )
   end
 
-  test "with --project option set" do
-    expected = """
-    Found 2 workspace projects matching the given options.
-      * :package_default_a package_default_a/mix.exs :shared, area:core
-      * :package_default_b package_default_b/mix.exs - a dummy project
-    """
+  @tag :tmp_dir
+  test "with --project option set", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        expected = """
+        Found 2 workspace projects matching the given options.
+          * :package_a package_a/mix.exs :shared, area:core
+          * :package_b package_b/mix.exs - a dummy project
+        """
 
-    assert capture_io(fn ->
-             ListTask.run([
-               "--workspace-path",
-               @sample_workspace_default_path,
-               "-p",
-               "package_default_a",
-               "-p",
-               "package_default_b"
-             ])
-           end) == expected
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "-p",
+                   "package_a",
+                   "-p",
+                   "package_b"
+                 ])
+               end) == expected
 
-    assert capture_io(fn ->
-             ListTask.run([
-               "--workspace-path",
-               @sample_workspace_default_path,
-               "-p",
-               "invalid"
-             ])
-           end) =~ "No matching projects for the given options"
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "-p",
+                   "invalid"
+                 ])
+               end) =~ "No matching projects for the given options"
+      end
+    )
   end
 
-  test "with --exclude option set" do
-    expected = """
-    Found 1 workspace projects matching the given options.
-      * :package_default_b package_default_b/mix.exs - a dummy project
-    """
+  @tag :tmp_dir
+  test "with --exclude option set", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        expected = """
+        Found 1 workspace projects matching the given options.
+          * :package_b package_b/mix.exs - a dummy project
+        """
 
-    assert capture_io(fn ->
-             ListTask.run([
-               "--workspace-path",
-               @sample_workspace_default_path,
-               "-p",
-               "package_default_a",
-               "-p",
-               "package_default_b",
-               "-e",
-               "package_default_a"
-             ])
-           end) == expected
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "-p",
+                   "package_a",
+                   "-p",
+                   "package_b",
+                   "-e",
+                   "package_a"
+                 ])
+               end) == expected
+      end
+    )
   end
 
-  test "filtering by --maintainer" do
-    expected = """
-    Found 1 workspace projects matching the given options.
-      * :package_default_a package_default_a/mix.exs :shared, area:core
-    """
+  @tag :tmp_dir
+  test "filtering by --maintainer", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        expected = """
+        Found 1 workspace projects matching the given options.
+          * :package_a package_a/mix.exs :shared, area:core
+        """
 
-    assert capture_io(fn ->
-             ListTask.run([
-               "--workspace-path",
-               @sample_workspace_default_path,
-               "--maintainer",
-               "jack"
-             ])
-           end) == expected
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--maintainer",
+                   "jack"
+                 ])
+               end) == expected
+      end
+    )
   end
 
-  test "filtering by --dependency" do
-    expected = """
-    Found 2 workspace projects matching the given options.
-      * :package_default_a package_default_a/mix.exs :shared, area:core
-      * :package_default_h package_default_h/mix.exs
-    """
+  @tag :tmp_dir
+  test "filtering by --dependency", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        expected = """
+        Found 2 workspace projects matching the given options.
+          * :package_a package_a/mix.exs :shared, area:core
+          * :package_h package_h/mix.exs
+        """
 
-    assert capture_io(fn ->
-             ListTask.run([
-               "--workspace-path",
-               @sample_workspace_default_path,
-               "--dependency",
-               "package_default_d"
-             ])
-           end) == expected
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--dependency",
+                   "package_d"
+                 ])
+               end) == expected
+      end
+    )
   end
 
-  test "filtering by --dependent" do
-    expected = """
-    Found 3 workspace projects matching the given options.
-      * :package_default_b package_default_b/mix.exs - a dummy project
-      * :package_default_c package_default_c/mix.exs
-      * :package_default_d package_default_d/mix.exs
-    """
+  @tag :tmp_dir
+  test "filtering by --dependent", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        expected = """
+        Found 3 workspace projects matching the given options.
+          * :package_b package_b/mix.exs - a dummy project
+          * :package_c package_c/mix.exs
+          * :package_d package_d/mix.exs
+        """
 
-    assert capture_io(fn ->
-             ListTask.run([
-               "--workspace-path",
-               @sample_workspace_default_path,
-               "--dependent",
-               "package_default_a"
-             ])
-           end) == expected
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--dependent",
+                   "package_a"
+                 ])
+               end) == expected
+      end
+    )
   end
 
-  test "filtering by both --dependency and --dependent" do
-    expected = """
-    Found 1 workspace projects matching the given options.
-      * :package_default_c package_default_c/mix.exs
-    """
+  @tag :tmp_dir
+  test "filtering by both --dependency and --dependent", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        expected = """
+        Found 1 workspace projects matching the given options.
+          * :package_c package_c/mix.exs
+        """
 
-    assert capture_io(fn ->
-             ListTask.run([
-               "--workspace-path",
-               @sample_workspace_default_path,
-               "--dependency",
-               "package_default_e",
-               "--dependent",
-               "package_default_a"
-             ])
-           end) == expected
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--dependency",
+                   "package_e",
+                   "--dependent",
+                   "package_a"
+                 ])
+               end) == expected
+      end
+    )
   end
 
-  test "filtering by --path" do
-    expected = """
-    Found 2 workspace projects matching the given options.
-      * :package_default_c package_default_c/mix.exs
-      * :package_default_d package_default_d/mix.exs
-    """
+  @tag :tmp_dir
+  test "filtering by --path", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        expected = """
+        Found 2 workspace projects matching the given options.
+          * :package_c package_c/mix.exs
+          * :package_d package_d/mix.exs
+        """
 
-    assert capture_io(fn ->
-             ListTask.run([
-               "--workspace-path",
-               @sample_workspace_default_path,
-               "--path",
-               "package_default_c",
-               "--path",
-               "package_default_d"
-             ])
-           end) == expected
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--path",
+                   "package_c",
+                   "--path",
+                   "package_d"
+                 ])
+               end) == expected
+      end
+    )
   end
 
-  test "with --json option set" do
-    output = Path.join(@sample_workspace_changed_path, "workspace.json")
+  @tag :tmp_dir
+  test "with --json option set", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        Workspace.Test.modify_project(tmp_dir, "package_d")
+        Workspace.Test.modify_project(tmp_dir, "package_e")
 
-    expected = """
-    ==> generated #{output}
-    """
+        output = Path.join(tmp_dir, "workspace.json")
 
-    assert capture_io(fn ->
-             ListTask.run([
-               "--workspace-path",
-               @sample_workspace_changed_path,
-               "--json",
-               "--output",
-               output
-             ])
-           end) == expected
+        expected = """
+        ==> generated #{output}
+        """
 
-    data = File.read!(output) |> Jason.decode!()
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--json",
+                   "--output",
+                   output
+                 ])
+               end) == expected
 
-    assert length(data["projects"]) == 11
-    assert Path.type(data["workspace_path"]) == :absolute
+        data = File.read!(output) |> Jason.decode!()
 
-    for project <- data["projects"] do
-      assert Path.type(project["workspace_path"]) == :absolute
-      assert Path.type(project["mix_path"]) == :absolute
-      assert Path.type(project["path"]) == :absolute
-    end
-  after
-    File.rm!(Path.join(@sample_workspace_changed_path, "workspace.json"))
+        assert length(data["projects"]) == 11
+        assert Path.type(data["workspace_path"]) == :absolute
+
+        for project <- data["projects"] do
+          assert Path.type(project["workspace_path"]) == :absolute
+          assert Path.type(project["mix_path"]) == :absolute
+          assert Path.type(project["path"]) == :absolute
+        end
+      end,
+      git: true
+    )
   end
 
-  test "with --json and --relative-paths" do
-    output = Path.join(@sample_workspace_changed_path, "workspace.json")
+  @tag :tmp_dir
+  test "with --json and --relative-paths", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        output = Path.join(tmp_dir, "workspace.json")
 
-    expected = """
-    ==> generated #{output}
-    """
+        expected = """
+        ==> generated #{output}
+        """
 
-    assert capture_io(fn ->
-             ListTask.run([
-               "--workspace-path",
-               @sample_workspace_changed_path,
-               "--json",
-               "--output",
-               output,
-               "--relative-paths"
-             ])
-           end) == expected
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--json",
+                   "--output",
+                   output,
+                   "--relative-paths"
+                 ])
+               end) == expected
 
-    data = File.read!(output) |> Jason.decode!()
+        data = File.read!(output) |> Jason.decode!()
 
-    assert data["workspace_path"] == "."
-    assert length(data["projects"]) == 11
+        assert data["workspace_path"] == "."
+        assert length(data["projects"]) == 11
 
-    for project <- data["projects"] do
-      assert project["workspace_path"] == "."
-      assert Path.type(project["mix_path"]) == :relative
-      assert Path.type(project["path"]) == :relative
-    end
-  after
-    File.rm!(Path.join(@sample_workspace_changed_path, "workspace.json"))
+        for project <- data["projects"] do
+          assert project["workspace_path"] == "."
+          assert Path.type(project["mix_path"]) == :relative
+          assert Path.type(project["path"]) == :relative
+        end
+      end
+    )
   end
 
-  test "with --json option set and --exclude" do
-    output = Path.join(@sample_workspace_changed_path, "workspace.json")
+  @tag :tmp_dir
+  test "with --json option set and --exclude", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        output = Path.join(tmp_dir, "workspace.json")
 
-    expected = """
-    ==> generated #{output}
-    """
+        expected = """
+        ==> generated #{output}
+        """
 
-    assert capture_io(fn ->
-             ListTask.run([
-               "--workspace-path",
-               @sample_workspace_changed_path,
-               "--json",
-               "--output",
-               output,
-               "-e",
-               "package_changed_a",
-               "-e",
-               "package_changed_b"
-             ])
-           end) == expected
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--json",
+                   "--output",
+                   output,
+                   "-e",
+                   "package_a",
+                   "-e",
+                   "package_b"
+                 ])
+               end) == expected
 
-    assert %{"projects" => projects} = File.read!(output) |> Jason.decode!()
+        assert %{"projects" => projects} = File.read!(output) |> Jason.decode!()
 
-    assert length(projects) == 9
-  after
-    File.rm!(Path.join(@sample_workspace_changed_path, "workspace.json"))
+        assert length(projects) == 9
+      end
+    )
   end
 end
