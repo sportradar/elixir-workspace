@@ -134,13 +134,15 @@ defmodule Workspace.Test do
        deps: [
          {:package_b, path: "../package_b"},
          {:package_c, path: "../package_c"},
-         {:package_d, path: "../package_d"}
+         {:package_d, path: "../package_d"},
+         {:ex_doc, "~> 0.32"}
        ],
        package: [maintainers: ["Jack Sparrow"]],
        workspace: [tags: [:shared, {:area, :core}]]},
       {:package_b, "package_b",
        deps: [
-         {:package_g, path: "../package_g"}
+         {:package_g, path: "../package_g"},
+         {:foo, "~> 1.0"}
        ],
        description: "a dummy project"},
       {:package_c, "package_c",
@@ -161,9 +163,8 @@ defmodule Workspace.Test do
        ]},
       {:package_i, "package_i",
        deps: [
-         {:package_i, path: "../package_i"}
+         {:package_j, path: "../package_j"}
        ]},
-      {:package_i, "package_i", deps: []},
       {:package_j, "package_j", deps: []},
       {:package_k, "nested/package_k", deps: []}
     ]

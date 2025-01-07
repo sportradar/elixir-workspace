@@ -3,357 +3,422 @@ defmodule Mix.Tasks.Workspace.GraphTest do
   import ExUnit.CaptureIO
   alias Mix.Tasks.Workspace.Graph, as: GraphTask
 
-  @sample_workspace_default_path Path.join(
-                                   Workspace.TestUtils.tmp_path(),
-                                   "sample_workspace_default"
-                                 )
-  @sample_workspace_changed_path Path.join(
-                                   Workspace.TestUtils.tmp_path(),
-                                   "sample_workspace_changed"
-                                 )
-  @sample_workspace_committed_path Path.join(
-                                     Workspace.TestUtils.tmp_path(),
-                                     "sample_workspace_committed"
-                                   )
-
   setup do
     Application.put_env(:elixir, :ansi_enabled, false)
   end
 
-  test "prints the tree of the workspace" do
-    expected = """
-    :package_default_a
-    ├── :package_default_b
-    │   └── :package_default_g
-    ├── :package_default_c
-    │   ├── :package_default_e
-    │   └── :package_default_f
-    │       └── :package_default_g
-    └── :package_default_d
-    :package_default_h
-    └── :package_default_d
-    :package_default_i
-    └── :package_default_j
-    :package_default_k
-    """
+  @tag :tmp_dir
+  test "prints the tree of the workspace", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+      expected = """
+      :package_a
+      ├── :package_b
+      │   └── :package_g
+      ├── :package_c
+      │   ├── :package_e
+      │   └── :package_f
+      │       └── :package_g
+      └── :package_d
+      :package_h
+      └── :package_d
+      :package_i
+      └── :package_j
+      :package_k
+      """
 
-    assert capture_io(fn ->
-             GraphTask.run(["--workspace-path", @sample_workspace_default_path])
-           end) == expected
+      assert capture_io(fn ->
+               GraphTask.run(["--workspace-path", tmp_dir])
+             end) == expected
+    end)
   end
 
-  test "with focus set and default proximity" do
-    expected = """
-    :package_default_c
-    └── :package_default_f
-        └── :package_default_g
-    """
+  @tag :tmp_dir
+  test "with focus set and default proximity", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+      expected = """
+      :package_c
+      └── :package_f
+          └── :package_g
+      """
 
-    assert capture_io(fn ->
-             GraphTask.run([
-               "--workspace-path",
-               @sample_workspace_default_path,
-               "--focus",
-               "package_default_f"
-             ])
-           end) == expected
+      assert capture_io(fn ->
+               GraphTask.run([
+                 "--workspace-path",
+                 tmp_dir,
+                 "--focus",
+                 "package_f"
+               ])
+             end) == expected
+    end)
   end
 
-  test "with focus set and custom proximity" do
-    expected = """
-    :package_default_a
-    └── :package_default_c
-        └── :package_default_f
-            └── :package_default_g
-    """
+  @tag :tmp_dir
+  test "with focus set and custom proximity", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+      expected = """
+      :package_a
+      └── :package_c
+          └── :package_f
+              └── :package_g
+      """
 
-    assert capture_io(fn ->
-             GraphTask.run([
-               "--workspace-path",
-               @sample_workspace_default_path,
-               "--focus",
-               "package_default_f",
-               "--proximity",
-               "2"
-             ])
-           end) == expected
+      assert capture_io(fn ->
+               GraphTask.run([
+                 "--workspace-path",
+                 tmp_dir,
+                 "--focus",
+                 "package_f",
+                 "--proximity",
+                 "2"
+               ])
+             end) == expected
+    end)
   end
 
-  test "with plain output format" do
-    expected = """
-    :package_default_a
-    |-- :package_default_b
-    |   `-- :package_default_g
-    |-- :package_default_c
-    |   |-- :package_default_e
-    |   `-- :package_default_f
-    |       `-- :package_default_g
-    `-- :package_default_d
-    :package_default_h
-    `-- :package_default_d
-    :package_default_i
-    `-- :package_default_j
-    :package_default_k
-    """
+  @tag :tmp_dir
+  test "with plain output format", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+      expected = """
+      :package_a
+      |-- :package_b
+      |   `-- :package_g
+      |-- :package_c
+      |   |-- :package_e
+      |   `-- :package_f
+      |       `-- :package_g
+      `-- :package_d
+      :package_h
+      `-- :package_d
+      :package_i
+      `-- :package_j
+      :package_k
+      """
 
-    assert capture_io(fn ->
-             GraphTask.run([
-               "--workspace-path",
-               @sample_workspace_default_path,
-               "--format",
-               "plain"
-             ])
-           end) == expected
+      assert capture_io(fn ->
+               GraphTask.run([
+                 "--workspace-path",
+                 tmp_dir,
+                 "--format",
+                 "plain"
+               ])
+             end) == expected
+    end)
   end
 
-  test "prints the tree with project statuses" do
-    expected = """
-    :package_changed_a ●
-    ├── :package_changed_b ✔
-    │   └── :package_changed_g ✔
-    ├── :package_changed_c ●
-    │   ├── :package_changed_e ✚
-    │   └── :package_changed_f ✔
-    │       └── :package_changed_g ✔
-    └── :package_changed_d ✚
-    :package_changed_h ●
-    └── :package_changed_d ✚
-    :package_changed_i ✔
-    └── :package_changed_j ✔
-    :package_changed_k ✔
-    """
+  @tag :tmp_dir
+  test "prints the tree with project statuses", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        Workspace.Test.modify_project(tmp_dir, "package_d")
+        Workspace.Test.modify_project(tmp_dir, "package_e")
 
-    assert capture_io(fn ->
-             GraphTask.run(["--workspace-path", @sample_workspace_changed_path, "--show-status"])
-           end) == expected
-  end
-
-  test "with statuses and tags enabled" do
-    expected = """
-    :package_changed_a ● :shared, area:core
-    ├── :package_changed_b ✔
-    │   └── :package_changed_g ✔
-    ├── :package_changed_c ●
-    │   ├── :package_changed_e ✚
-    │   └── :package_changed_f ✔
-    │       └── :package_changed_g ✔
-    └── :package_changed_d ✚
-    :package_changed_h ●
-    └── :package_changed_d ✚
-    :package_changed_i ✔
-    └── :package_changed_j ✔
-    :package_changed_k ✔
-    """
-
-    assert capture_io(fn ->
-             GraphTask.run([
-               "--workspace-path",
-               @sample_workspace_changed_path,
-               "--show-status",
-               "--show-tags"
-             ])
-           end) == expected
-  end
-
-  test "prints the tree with project statuses when base and head are set" do
-    expected = """
-    :package_committed_a ●
-    ├── :package_committed_b ✔
-    │   └── :package_committed_g ✔
-    ├── :package_committed_c ✚
-    │   ├── :package_committed_e ✔
-    │   └── :package_committed_f ✔
-    │       └── :package_committed_g ✔
-    └── :package_committed_d ✔
-    :package_committed_h ✔
-    └── :package_committed_d ✔
-    :package_committed_i ✔
-    └── :package_committed_j ✔
-    :package_committed_k ✔
-    """
-
-    assert capture_io(fn ->
-             GraphTask.run([
-               "--workspace-path",
-               @sample_workspace_committed_path,
-               "--show-status",
-               "--base",
-               "HEAD~1",
-               "--head",
-               "HEAD"
-             ])
-           end) == expected
-  end
-
-  test "prints the tree with external dependencies" do
-    expected = """
-    :package_changed_a
-    ├── :ex_doc (external)
-    ├── :package_changed_b
-    │   ├── :foo (external)
-    │   └── :package_changed_g
-    ├── :package_changed_c
-    │   ├── :package_changed_e
-    │   └── :package_changed_f
-    │       └── :package_changed_g
-    └── :package_changed_d
-    :package_changed_h
-    └── :package_changed_d
-    :package_changed_i
-    └── :package_changed_j
-    :package_changed_k
-    """
-
-    assert capture_io(fn ->
-             GraphTask.run(["--workspace-path", @sample_workspace_changed_path, "--external"])
-           end) == expected
-  end
-
-  test "with external and focus" do
-    expected = """
-    :package_changed_a
-    └── :package_changed_b
-        ├── :foo (external)
-        └── :package_changed_g
-    """
-
-    assert capture_io(fn ->
-             GraphTask.run([
-               "--workspace-path",
-               @sample_workspace_changed_path,
-               "--external",
-               "--focus",
-               "package_changed_b"
-             ])
-           end) == expected
-  end
-
-  test "does not print excluded packages" do
-    expected = """
-    :package_changed_a
-    ├── :package_changed_c
-    │   └── :package_changed_e
-    └── :package_changed_d
-    :package_changed_g
-    :package_changed_h
-    └── :package_changed_d
-    :package_changed_i
-    └── :package_changed_j
-    :package_changed_k
-    """
-
-    assert capture_io(fn ->
-             GraphTask.run([
-               "--workspace-path",
-               @sample_workspace_changed_path,
-               "--exclude",
-               "package_changed_b",
-               "--exclude",
-               "package_changed_f"
-             ])
-           end) == expected
-  end
-
-  test "with dot output set" do
-    expected = """
-    digraph G {
-      package_changed_a -> package_changed_c;
-      package_changed_a -> package_changed_d;
-      package_changed_c -> package_changed_e;
-      package_changed_h -> package_changed_d;
-      package_changed_i -> package_changed_j;
-    }
-    """
-
-    assert capture_io(fn ->
-             GraphTask.run([
-               "--workspace-path",
-               @sample_workspace_changed_path,
-               "--exclude",
-               "package_changed_b",
-               "--exclude",
-               "package_changed_f",
-               "--format",
-               "dot"
-             ])
-           end) == expected
-  end
-
-  test "mermaid output format" do
-    expected = """
-    flowchart TD
-      package_changed_a
-      package_changed_b
-      package_changed_c
-      package_changed_d
-      package_changed_e
-      package_changed_f
-      package_changed_g
-      package_changed_h
-      package_changed_i
-      package_changed_j
-      package_changed_k
-
-      package_changed_a --> package_changed_b
-      package_changed_a --> package_changed_c
-      package_changed_a --> package_changed_d
-      package_changed_b --> package_changed_g
-      package_changed_c --> package_changed_e
-      package_changed_c --> package_changed_f
-      package_changed_f --> package_changed_g
-      package_changed_h --> package_changed_d
-      package_changed_i --> package_changed_j
-
-      classDef external fill:#999,color:#ee0;
-    """
-
-    assert capture_io(fn ->
-             GraphTask.run([
-               "--workspace-path",
-               @sample_workspace_changed_path,
-               "--format",
-               "mermaid"
-             ])
-           end) == expected
-
-    # with show status flag
-    expected =
-      expected <>
+        expected = """
+        :package_a ●
+        ├── :package_b ✔
+        │   └── :package_g ✔
+        ├── :package_c ●
+        │   ├── :package_e ✚
+        │   └── :package_f ✔
+        │       └── :package_g ✔
+        └── :package_d ✚
+        :package_h ●
+        └── :package_d ✚
+        :package_i ✔
+        └── :package_j ✔
+        :package_k ✔
         """
 
-          class package_changed_a affected;
-          class package_changed_c affected;
-          class package_changed_d modified;
-          class package_changed_e modified;
-          class package_changed_h affected;
+        assert capture_io(fn ->
+                 GraphTask.run(["--workspace-path", tmp_dir, "--show-status"])
+               end) == expected
+      end,
+      git: true
+    )
+  end
 
-          classDef affected fill:#FA6,color:#FFF;
-          classDef modified fill:#F33,color:#FFF;
+  @tag :tmp_dir
+  test "with statuses and tags enabled", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        Workspace.Test.modify_project(tmp_dir, "package_d")
+        Workspace.Test.modify_project(tmp_dir, "package_e")
+
+        expected = """
+        :package_a ● :shared, area:core
+        ├── :package_b ✔
+        │   └── :package_g ✔
+        ├── :package_c ●
+        │   ├── :package_e ✚
+        │   └── :package_f ✔
+        │       └── :package_g ✔
+        └── :package_d ✚
+        :package_h ●
+        └── :package_d ✚
+        :package_i ✔
+        └── :package_j ✔
+        :package_k ✔
         """
 
-    assert capture_io(fn ->
-             GraphTask.run([
-               "--workspace-path",
-               @sample_workspace_changed_path,
-               "--format",
-               "mermaid",
-               "--show-status"
-             ])
-           end) == expected
+        assert capture_io(fn ->
+                 GraphTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--show-status",
+                   "--show-tags"
+                 ])
+               end) == expected
+      end,
+      git: true
+    )
+  end
 
-    # with external deps flag
-    captured =
-      capture_io(fn ->
-        GraphTask.run([
-          "--workspace-path",
-          @sample_workspace_changed_path,
-          "--format",
-          "mermaid",
-          "--external"
-        ])
-      end)
+  @tag :tmp_dir
+  test "prints the tree with project statuses when base and head are set", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        Workspace.Test.modify_project(tmp_dir, "package_c")
+        Workspace.Test.commit_changes(tmp_dir)
 
-    assert captured =~ "foo"
-    assert captured =~ "package_changed_b --> foo"
+        expected = """
+        :package_a ●
+        ├── :package_b ✔
+        │   └── :package_g ✔
+        ├── :package_c ✚
+        │   ├── :package_e ✔
+        │   └── :package_f ✔
+        │       └── :package_g ✔
+        └── :package_d ✔
+        :package_h ✔
+        └── :package_d ✔
+        :package_i ✔
+        └── :package_j ✔
+        :package_k ✔
+        """
+
+        assert capture_io(fn ->
+                 GraphTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--show-status",
+                   "--base",
+                   "HEAD~1",
+                   "--head",
+                   "HEAD"
+                 ])
+               end) == expected
+      end,
+      git: true
+    )
+  end
+
+  @tag :tmp_dir
+  test "prints the tree with external dependencies", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        expected = """
+        :package_a
+        ├── :ex_doc (external)
+        ├── :package_b
+        │   ├── :foo (external)
+        │   └── :package_g
+        ├── :package_c
+        │   ├── :package_e
+        │   └── :package_f
+        │       └── :package_g
+        └── :package_d
+        :package_h
+        └── :package_d
+        :package_i
+        └── :package_j
+        :package_k
+        """
+
+        assert capture_io(fn ->
+                 GraphTask.run(["--workspace-path", tmp_dir, "--external"])
+               end) == expected
+      end,
+      git: true
+    )
+  end
+
+  @tag :tmp_dir
+  test "with external and focus", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+      expected = """
+      :package_a
+      └── :package_b
+          ├── :foo (external)
+          └── :package_g
+      """
+
+      assert capture_io(fn ->
+               GraphTask.run([
+                 "--workspace-path",
+                 tmp_dir,
+                 "--external",
+                 "--focus",
+                 "package_b"
+               ])
+             end) == expected
+    end)
+  end
+
+  @tag :tmp_dir
+  test "does not print excluded packages", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+      expected = """
+      :package_a
+      ├── :package_c
+      │   └── :package_e
+      └── :package_d
+      :package_g
+      :package_h
+      └── :package_d
+      :package_i
+      └── :package_j
+      :package_k
+      """
+
+      assert capture_io(fn ->
+               GraphTask.run([
+                 "--workspace-path",
+                 tmp_dir,
+                 "--exclude",
+                 "package_b",
+                 "--exclude",
+                 "package_f"
+               ])
+             end) == expected
+    end)
+  end
+
+  @tag :tmp_dir
+  test "with dot output set", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+      expected = """
+      digraph G {
+        package_a -> package_c;
+        package_a -> package_d;
+        package_c -> package_e;
+        package_h -> package_d;
+        package_i -> package_j;
+      }
+      """
+
+      assert capture_io(fn ->
+               GraphTask.run([
+                 "--workspace-path",
+                 tmp_dir,
+                 "--exclude",
+                 "package_b",
+                 "--exclude",
+                 "package_f",
+                 "--format",
+                 "dot"
+               ])
+             end) == expected
+    end)
+  end
+
+  @tag :tmp_dir
+  test "mermaid output format", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        Workspace.Test.modify_project(tmp_dir, "package_d")
+        Workspace.Test.modify_project(tmp_dir, "package_e")
+
+        expected = """
+        flowchart TD
+          package_a
+          package_b
+          package_c
+          package_d
+          package_e
+          package_f
+          package_g
+          package_h
+          package_i
+          package_j
+          package_k
+
+          package_a --> package_b
+          package_a --> package_c
+          package_a --> package_d
+          package_b --> package_g
+          package_c --> package_e
+          package_c --> package_f
+          package_f --> package_g
+          package_h --> package_d
+          package_i --> package_j
+
+          classDef external fill:#999,color:#ee0;
+        """
+
+        assert capture_io(fn ->
+                 GraphTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--format",
+                   "mermaid"
+                 ])
+               end) == expected
+
+        # with show status flag
+        expected =
+          expected <>
+            """
+
+              class package_a affected;
+              class package_c affected;
+              class package_d modified;
+              class package_e modified;
+              class package_h affected;
+
+              classDef affected fill:#FA6,color:#FFF;
+              classDef modified fill:#F33,color:#FFF;
+            """
+
+        assert capture_io(fn ->
+                 GraphTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--format",
+                   "mermaid",
+                   "--show-status"
+                 ])
+               end) == expected
+
+        # with external deps flag
+        captured =
+          capture_io(fn ->
+            GraphTask.run([
+              "--workspace-path",
+              tmp_dir,
+              "--format",
+              "mermaid",
+              "--external"
+            ])
+          end)
+
+        assert captured =~ "foo"
+        assert captured =~ "package_b --> foo"
+      end,
+      git: true
+    )
   end
 end
