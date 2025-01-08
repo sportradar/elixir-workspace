@@ -30,7 +30,7 @@ defmodule Workspace.Test do
             workspace: #{inspect(config)}
           ]
         end
-      end
+      end\
       """
       |> Code.format_string!()
     )
@@ -65,6 +65,16 @@ defmodule Workspace.Test do
         end
         """
         |> Code.format_string!()
+        |> Kernel.++(["\n"])
+      )
+
+      File.write!(
+        Path.join(path, ".formatter.exs"),
+        """
+        [
+          inputs: ["{mix,.formatter}.exs", "{config,lib,test}/**/*.{ex,exs}"]
+        ]
+        """
       )
 
       # create the lib folder in case any test needs to write a file
