@@ -5,7 +5,7 @@ defmodule Workspace.Test do
 
   import ExUnit.Assertions
 
-  def create_workspace(path, config, projects) do
+  def create_workspace(path, config, projects, opts \\ []) do
     workspace_path = Path.expand(path)
 
     File.mkdir_p!(workspace_path)
@@ -53,6 +53,7 @@ defmodule Workspace.Test do
           ],
           project_config
         )
+        |> Keyword.merge(opts[name] || [])
 
       File.write!(
         Path.join(path, "mix.exs"),
@@ -112,7 +113,7 @@ defmodule Workspace.Test do
     initial_path = :code.get_path()
     previous = :code.all_loaded()
 
-    create_workspace(fixture_path, config, projects)
+    create_workspace(fixture_path, config, projects, opts[:projects] || [])
 
     try do
       maybe_cd!(fixture_path, opts[:cd], fn ->
