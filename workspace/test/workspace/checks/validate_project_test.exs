@@ -3,8 +3,10 @@ defmodule Workspace.Checks.ValidateProjectTest do
   alias Workspace.Checks.ValidateProject
 
   setup do
-    fixture_path = Workspace.TestUtils.fixture_path(:sample_workspace)
-    %{workspace: Workspace.new!(fixture_path)}
+    workspace =
+      workspace_fixture([project_fixture(app: :package_a), project_fixture(app: :package_b)])
+
+    %{workspace: workspace}
   end
 
   test "raises if no validate function is set" do
