@@ -3,8 +3,6 @@ defmodule WorkspaceTest do
   import Workspace.TestUtils
   doctest Workspace
 
-  @sample_workspace_path fixture_path(:sample_workspace)
-
   setup do
     project_a = project_fixture(app: :foo)
     project_b = project_fixture(app: :bar)
@@ -15,53 +13,65 @@ defmodule WorkspaceTest do
   end
 
   describe "new/2" do
-    test "creates a workspace struct" do
-      {:ok, workspace} = Workspace.new(@sample_workspace_path)
+    @tag :tmp_dir
+    test "creates a workspace struct", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+        {:ok, workspace} = Workspace.new(tmp_dir)
 
-      assert %Workspace.State{} = workspace
-      refute workspace.status_updated?
-      assert map_size(workspace.projects) == 11
-      assert length(:digraph.vertices(workspace.graph)) == 11
-      assert length(:digraph.source_vertices(workspace.graph)) == 4
+        assert %Workspace.State{} = workspace
+        refute workspace.status_updated?
+        assert map_size(workspace.projects) == 11
+        assert length(:digraph.vertices(workspace.graph)) == 11
+        assert length(:digraph.source_vertices(workspace.graph)) == 4
+      end)
     end
 
-    test "with ignore_projects set" do
-      config = [
-        ignore_projects: [
-          PackageA.MixProject,
-          PackageB.MixProject
+    @tag :tmp_dir
+    test "with ignore_projects set", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+        config = [
+          ignore_projects: [
+            PackageA.MixProject,
+            PackageB.MixProject
+          ]
         ]
-      ]
 
-      {:ok, workspace} = Workspace.new(@sample_workspace_path, config)
+        {:ok, workspace} = Workspace.new(tmp_dir, config)
 
-      assert %Workspace.State{} = workspace
-      refute workspace.status_updated?
-      assert map_size(workspace.projects) == 9
-      assert length(:digraph.vertices(workspace.graph)) == 9
+        assert %Workspace.State{} = workspace
+        refute workspace.status_updated?
+        assert map_size(workspace.projects) == 9
+        assert length(:digraph.vertices(workspace.graph)) == 9
+      end)
     end
 
-    test "with ignore_paths set" do
-      config = [
-        ignore_paths: [
-          "package_a",
-          "package_b",
-          "package_c"
+    @tag :tmp_dir
+    test "with ignore_paths set", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+        config = [
+          ignore_paths: [
+            "package_a",
+            "package_b",
+            "package_c"
+          ]
         ]
-      ]
 
-      {:ok, workspace} = Workspace.new(@sample_workspace_path, config)
+        {:ok, workspace} = Workspace.new(tmp_dir, config)
 
-      assert %Workspace.State{} = workspace
-      refute workspace.status_updated?
-      assert map_size(workspace.projects) == 8
-      assert length(:digraph.vertices(workspace.graph)) == 8
+        assert %Workspace.State{} = workspace
+        refute workspace.status_updated?
+        assert map_size(workspace.projects) == 8
+        assert length(:digraph.vertices(workspace.graph)) == 8
+      end)
     end
 
-    test "error if the path is not a workspace" do
-      assert {:error, reason} = Workspace.new(Path.join(@sample_workspace_path, "package_a"))
-      assert reason =~ "The project is not properly configured as a workspace"
-      assert reason =~ "to be a workspace project. Some errors were detected"
+    @tag :tmp_dir
+    test "error if the path is not a workspace", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+        assert {:error, reason} = Workspace.new(Path.join(tmp_dir, "package_a"))
+        assert reason =~ "The project is not properly configured as a workspace"
+        assert reason =~ "to be a workspace project. Some errors were detected"
+      end)
     end
 
     test "error in case of an invalid path" do
@@ -95,10 +105,13 @@ defmodule WorkspaceTest do
   end
 
   describe "new!/2" do
-    test "error if the path is not a workspace" do
-      assert_raise ArgumentError, ~r"to be a workspace project", fn ->
-        Workspace.new!(Path.join(@sample_workspace_path, "package_a"))
-      end
+    @tag :tmp_dir
+    test "error if the path is not a workspace", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+        assert_raise ArgumentError, ~r"to be a workspace project", fn ->
+          Workspace.new!(Path.join(tmp_dir, "package_b"))
+        end
+      end)
     end
   end
 
