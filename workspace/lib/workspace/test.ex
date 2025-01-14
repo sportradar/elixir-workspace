@@ -5,7 +5,13 @@ defmodule Workspace.Test do
 
   import ExUnit.Assertions
 
-  def create_workspace(path, config, projects, opts \\ []) do
+  def create_workspace(path, config, fixture_or_projects, opts \\ [])
+
+  def create_workspace(path, config, fixture, opts) when is_atom(fixture) do
+    create_workspace(path, config, fixture(fixture), opts)
+  end
+
+  def create_workspace(path, config, projects, opts) do
     workspace_path = Path.expand(path)
 
     File.mkdir_p!(workspace_path)
@@ -100,43 +106,165 @@ defmodule Workspace.Test do
   ]
   ```
   """
-  def with_workspace(path, config, fixture_or_projects, test_fn, opts \\ [])
-
-  def with_workspace(path, config, fixture, test_fn, opts) when is_atom(fixture),
-    do: with_workspace(path, config, fixture(fixture), test_fn, opts)
-
-  def with_workspace(path, config, projects, test_fn, opts) do
+  def with_workspace(path, config, fixture_or_projects, test_fn, opts \\ []) do
     config = Keyword.merge(config, type: :workspace)
 
     fixture_path = Path.expand(path)
+    create_workspace(fixture_path, config, fixture_or_projects, opts[:projects] || [])
 
-    initial_path = :code.get_path()
-    previous = :code.all_loaded()
-
-    create_workspace(fixture_path, config, projects, opts[:projects] || [])
-
-    try do
+    in_fixture(fixture_path, fn ->
       maybe_cd!(fixture_path, opts[:cd], fn ->
         if opts[:git], do: init_git_project(fixture_path)
 
         test_fn.()
       end)
+    end)
+  end
+
+  @doc """
+  Runs the given test function unloading at the end any module or package initialized
+  from within the given `path`.
+
+  `path` is considered to be the fixture path. Any module that will be loaded during the
+  `test_fn` execution will be purged and deleted at the end.
+
+  It is advised to use this on any test that requires a fixture, in order to avoid
+  warnings about redefining packages.
+  """
+  def in_fixture(path, test_fn) do
+    path = Path.expand(path)
+    initial_path = :code.get_path()
+    previous = :code.all_loaded()
+
+    try do
+      test_fn.()
     after
       :code.set_path(initial_path)
 
       for {mod, file} <- :code.all_loaded() -- previous,
           file == [] or
-            (is_list(file) and List.starts_with?(file, String.to_charlist(fixture_path))) do
+            (is_list(file) and List.starts_with?(file, String.to_charlist(path))) do
         # IO.puts("purging #{mod}")
         :code.purge(mod)
         :code.delete(mod)
         Mix.State.clear_cache()
         # Mix.ProjectStack.clear_stack()
       end
-
-      # IO.puts("deleting fixture path")
-      # File.rm_rf!(fixture_path)
     end
+  end
+
+  @type project_fixture :: {atom(), Path.t(), keyword()}
+
+  @doc """
+  Generates a **virtual** workspace fixture.
+
+  It expects one of the following:
+
+  * A list of `Workspace.Project` structs.
+  * A list of tuples of the form, `{app, path, config}` which will be used for generating
+  project fixtures (see `project_fixture/4` for more details)
+  * An atom representing a default fixture.
+
+  > #### Virtual fixture {: .warning}
+  >
+  > Notice that this creates an in-memory virtual fixture. This means that the underlying mix
+  > projects do not exist and are not loaded.
+  >
+  > If you want to test something on an actual project you should use the `with_workspace/5`
+  > instead which generates the actual fixtures and loads them in memory.
+
+  ## Options
+
+  * `workspace_path` - The absolute workspace path to which this project belongs.
+  If not set defaults to `/usr/local/workspace`.
+  """
+  @spec workspace_fixture(
+          projects_or_fixture :: atom() | [Workspace.Project.t() | project_fixture()],
+          opts :: keyword()
+        ) :: Workspace.State.t()
+  def workspace_fixture(projects_or_fixture, opts \\ [])
+
+  def workspace_fixture(fixture, opts) when is_atom(fixture),
+    do: workspace_fixture(fixture(fixture), opts)
+
+  def workspace_fixture(projects, opts) when is_list(projects) do
+    workspace_path = Keyword.get(opts, :workspace_path, "/usr/local/workspace")
+    mix_path = Path.join(workspace_path, "mix.exs")
+
+    projects =
+      Enum.map(projects, fn project ->
+        case project do
+          %Workspace.Project{} ->
+            project
+
+          {app, path, config} ->
+            project_fixture(app, path, config, workspace_path: workspace_path)
+        end
+      end)
+
+    {:ok, workspace} = Workspace.new(workspace_path, mix_path, [], projects)
+    workspace
+  end
+
+  @doc """
+  Creates a **virtual** fixture for a mix project.
+
+  It expects the `app` name, a `path` relative to the workspace which indicates
+  the project's location and a project config.
+
+  Tests using this function can be safely executed in `async` mode.
+
+  ## Options
+
+  * `workspace_path` - The absolute workspace path to which this project belongs.
+  If not set defaults to `/usr/local/workspace`.
+
+  ## Examples
+
+      iex> Workspace.Test.project_fixture(:foo, "packages/foo", [description: "the foo package"])
+      %Workspace.Project{
+        app: :foo,
+        module: :"Foo.MixProject",
+        config: [description: "the foo package", app: :foo],
+        mix_path: "/usr/local/workspace/packages/foo/mix.exs",
+        path: "/usr/local/workspace/packages/foo",
+        workspace_path: "/usr/local/workspace",
+        skip: false,
+        status: :undefined,
+        root?: nil,
+        changes: nil,
+        tags: []
+      }
+
+  Notice that if `path` is not a relative path an exception will be raised.
+
+  > #### Virtual fixture {: .warning}
+  >
+  > Notice that this creates an in-memory virtual fixture. This means that the underlying mix
+  > project does not exist and is not loaded.
+  >
+  > If you want to test something on an actual project you should use the `with_workspace/5`
+  > instead which generates the actual fixtures and loads them in memory.
+  """
+  @spec project_fixture(app :: atom(), path :: Path.t(), config :: keyword(), opts :: keyword()) ::
+          Workspace.Project.t()
+  def project_fixture(app, path, config, opts \\ []) do
+    if Path.type(path) != :relative do
+      raise ArgumentError, "path must be relative, got: #{path}"
+    end
+
+    workspace_path = Keyword.get(opts, :workspace_path, "/usr/local/workspace")
+    project_path = Path.join([workspace_path, path])
+    mix_path = Path.join(project_path, "mix.exs")
+    module = project_module(app)
+    config = Keyword.merge(config, app: app)
+
+    Workspace.Project.new(workspace_path, mix_path, module, config)
+  end
+
+  defp project_module(app) do
+    (Macro.camelize(Atom.to_string(app)) <> ".MixProject")
+    |> String.to_atom()
   end
 
   defp fixture(:default) do
