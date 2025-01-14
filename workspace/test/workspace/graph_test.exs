@@ -1,15 +1,11 @@
 defmodule Workspace.GraphTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   alias Workspace.Graph
 
-  setup do
-    fixture_path = Workspace.TestUtils.fixture_path(:sample_workspace)
-    %{workspace: Workspace.new!(fixture_path)}
-  end
-
   describe "digraph/1" do
-    test "graph of sample workspace", %{workspace: workspace} do
+    test "graph of sample workspace" do
+      workspace = Workspace.Test.workspace_fixture(:default)
       graph = Graph.digraph(workspace)
 
       assert length(:digraph.vertices(graph)) == 11
@@ -18,7 +14,8 @@ defmodule Workspace.GraphTest do
       :digraph.delete(graph)
     end
 
-    test "with external dependencies set", %{workspace: workspace} do
+    test "with external dependencies set" do
+      workspace = Workspace.Test.workspace_fixture(:default)
       graph = Graph.digraph(workspace, external: true)
 
       nodes = Enum.map(:digraph.vertices(graph), fn node -> {node.app, node.type} end)
@@ -31,7 +28,8 @@ defmodule Workspace.GraphTest do
       :digraph.delete(graph)
     end
 
-    test "with exclude set", %{workspace: workspace} do
+    test "with exclude set" do
+      workspace = Workspace.Test.workspace_fixture(:default)
       graph = Graph.digraph(workspace, exclude: [:package_a, "package_b", "package_c"])
 
       assert length(:digraph.vertices(graph)) == 8
@@ -50,7 +48,8 @@ defmodule Workspace.GraphTest do
   end
 
   describe "with_digraph/2" do
-    test "runs a function on the graph", %{workspace: workspace} do
+    test "runs a function on the graph" do
+      workspace = Workspace.Test.workspace_fixture(:default)
       nodes = Graph.with_digraph(workspace, fn graph -> :digraph.source_vertices(graph) end)
 
       for node <- nodes do
@@ -68,7 +67,9 @@ defmodule Workspace.GraphTest do
     end
   end
 
-  test "source_projects/1", %{workspace: workspace} do
+  test "source_projects/1" do
+    workspace = Workspace.Test.workspace_fixture(:default)
+
     assert Graph.source_projects(workspace) |> Enum.sort() == [
              :package_a,
              :package_h,
@@ -79,7 +80,9 @@ defmodule Workspace.GraphTest do
     assert Graph.source_projects(workspace) == Graph.source_projects(workspace.graph)
   end
 
-  test "sink_projects/1", %{workspace: workspace} do
+  test "sink_projects/1" do
+    workspace = Workspace.Test.workspace_fixture(:default)
+
     assert Graph.sink_projects(workspace) |> Enum.sort() == [
              :package_d,
              :package_e,
@@ -92,11 +95,14 @@ defmodule Workspace.GraphTest do
   end
 
   describe "affected/2" do
-    test "nothing affected with no changes", %{workspace: workspace} do
+    test "nothing affected with no changes" do
+      workspace = Workspace.Test.workspace_fixture(:default)
       assert Graph.affected(workspace, []) == []
     end
 
-    test "proper traversing up of the graph", %{workspace: workspace} do
+    test "proper traversing up of the graph" do
+      workspace = Workspace.Test.workspace_fixture(:default)
+
       assert Graph.affected(workspace, [:package_k, :package_a]) |> Enum.sort() == [
                :package_a,
                :package_k
@@ -113,7 +119,8 @@ defmodule Workspace.GraphTest do
   end
 
   describe "dependencies/2" do
-    test "returns the neighbours of a given node", %{workspace: workspace} do
+    test "returns the neighbours of a given node" do
+      workspace = Workspace.Test.workspace_fixture(:default)
       assert Graph.dependencies(workspace, :package_d) == []
 
       assert Graph.dependencies(workspace, :package_a) |> Enum.sort() == [
