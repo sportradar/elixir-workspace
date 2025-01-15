@@ -11,9 +11,9 @@ defmodule Workspace.Checks.WorkspaceDepsPathsTest do
   end
 
   test "error if invalid dependencies relative paths", %{check: check} do
-    project1 = project_fixture([app: :foo, deps: []], path: "packages")
-    project2 = project_fixture([app: :bar, deps: [{:foo, path: "../foo"}]], path: "tools")
-    workspace = workspace_fixture([project1, project2])
+    project1 = Workspace.Test.project_fixture(:foo, "packages/foo", deps: [])
+    project2 = Workspace.Test.project_fixture(:bar, "tools/bar", deps: [{:foo, path: "../foo"}])
+    workspace = Workspace.Test.workspace_fixture([project1, project2])
 
     results = WorkspaceDepsPaths.check(workspace, check)
 
@@ -29,9 +29,9 @@ defmodule Workspace.Checks.WorkspaceDepsPathsTest do
   end
 
   test "no error if all relative paths are valid", %{check: check} do
-    project1 = project_fixture(app: :foo, deps: [])
-    project2 = project_fixture(app: :bar, deps: [{:foo, path: "../foo"}])
-    workspace = workspace_fixture([project1, project2])
+    project1 = Workspace.Test.project_fixture(:foo, "foo", deps: [])
+    project2 = Workspace.Test.project_fixture(:bar, "bar", deps: [{:foo, path: "../foo"}])
+    workspace = Workspace.Test.workspace_fixture([project1, project2])
 
     results = WorkspaceDepsPaths.check(workspace, check)
 

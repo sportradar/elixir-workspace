@@ -16,8 +16,8 @@ defmodule Workspace.Checks.ForbiddenDepsTest do
   end
 
   test "error if dependencies are defined", %{check: check} do
-    project = project_fixture(app: :test, deps: [{:foo}])
-    workspace = workspace_fixture([project])
+    project = Workspace.Test.project_fixture(:test, "test", deps: [{:foo}])
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = check[:module].check(workspace, check)
 
@@ -31,8 +31,8 @@ defmodule Workspace.Checks.ForbiddenDepsTest do
   end
 
   test "no error if no forbidden deps are set", %{check: check} do
-    project = project_fixture(app: :test, deps: [])
-    workspace = workspace_fixture([project])
+    project = Workspace.Test.project_fixture(:test, "test", deps: [])
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = check[:module].check(workspace, check)
 

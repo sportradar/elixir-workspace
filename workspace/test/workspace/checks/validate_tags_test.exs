@@ -16,8 +16,10 @@ defmodule Workspace.Checks.ValidateTagsTest do
   end
 
   test "error if invalid tags are defined", %{check: check} do
-    project = project_fixture(app: :test, workspace: [tags: [:bar, {:foo, :baz}]])
-    workspace = workspace_fixture([project])
+    project =
+      Workspace.Test.project_fixture(:test, "test", workspace: [tags: [:bar, {:foo, :baz}]])
+
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = check[:module].check(workspace, check)
 
@@ -31,8 +33,10 @@ defmodule Workspace.Checks.ValidateTagsTest do
   end
 
   test "no error if no forbidden tags are set", %{check: check} do
-    project = project_fixture(app: :test, workspace: [tags: [:foo, {:foo, :bar}]])
-    workspace = workspace_fixture([project])
+    project =
+      Workspace.Test.project_fixture(:test, "test", workspace: [tags: [:foo, {:foo, :bar}]])
+
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = check[:module].check(workspace, check)
 
@@ -41,8 +45,8 @@ defmodule Workspace.Checks.ValidateTagsTest do
   end
 
   test "no error if no tags are set", %{check: check} do
-    project = project_fixture(app: :test)
-    workspace = workspace_fixture([project])
+    project = Workspace.Test.project_fixture(:test, "test", [])
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = check[:module].check(workspace, check)
 

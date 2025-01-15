@@ -26,8 +26,10 @@ defmodule Workspace.Checks.RequiredScopeTagTest do
   end
 
   test "error if required scope tags are not defined", %{check: check} do
-    project = project_fixture(app: :test, workspace: [tags: [:bar, {:foo, :baz}]])
-    workspace = workspace_fixture([project])
+    project =
+      Workspace.Test.project_fixture(:test, "test", workspace: [tags: [:bar, {:foo, :baz}]])
+
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = check[:module].check(workspace, check)
 
@@ -38,8 +40,12 @@ defmodule Workspace.Checks.RequiredScopeTagTest do
   test "error if required scope tags are defined multiple times and multiple is false", %{
     check: check
   } do
-    project = project_fixture(app: :test, workspace: [tags: [{:type, :foo}, {:type, :bar}]])
-    workspace = workspace_fixture([project])
+    project =
+      Workspace.Test.project_fixture(:test, "test",
+        workspace: [tags: [{:type, :foo}, {:type, :bar}]]
+      )
+
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = check[:module].check(workspace, check)
 
@@ -53,8 +59,10 @@ defmodule Workspace.Checks.RequiredScopeTagTest do
   end
 
   test "no error if scoped tag is set", %{check: check} do
-    project = project_fixture(app: :test, workspace: [tags: [:bar, {:type, :baz}]])
-    workspace = workspace_fixture([project])
+    project =
+      Workspace.Test.project_fixture(:test, "test", workspace: [tags: [:bar, {:type, :baz}]])
+
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = check[:module].check(workspace, check)
 
@@ -63,8 +71,12 @@ defmodule Workspace.Checks.RequiredScopeTagTest do
   end
 
   test "no error with multiple set to true", %{check: check, check_multiple: check_multiple} do
-    project = project_fixture(app: :test, workspace: [tags: [{:type, :foo}, {:type, :baz}]])
-    workspace = workspace_fixture([project])
+    project =
+      Workspace.Test.project_fixture(:test, "test",
+        workspace: [tags: [{:type, :foo}, {:type, :baz}]]
+      )
+
+    workspace = Workspace.Test.workspace_fixture([project])
 
     # with multiple false it emits error
     results = check[:module].check(workspace, check)

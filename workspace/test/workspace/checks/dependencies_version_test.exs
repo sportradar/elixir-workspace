@@ -19,8 +19,9 @@ defmodule Workspace.Checks.DependenciesVersionTest do
       )
 
     package_a =
-      project_fixture(
-        app: :package_a,
+      Workspace.Test.project_fixture(
+        :package_a,
+        "package_a",
         deps: [
           {:foo, "== 0.1", only: :dev},
           {:bar, "== 0.2", only: :test},
@@ -29,8 +30,9 @@ defmodule Workspace.Checks.DependenciesVersionTest do
       )
 
     package_b =
-      project_fixture(
-        app: :package_b,
+      Workspace.Test.project_fixture(
+        :package_b,
+        "package_b",
         deps: [
           {:foo, "== 0.1", only: :test},
           {:bar, "== 0.2", only: :test},
@@ -39,22 +41,24 @@ defmodule Workspace.Checks.DependenciesVersionTest do
       )
 
     package_c =
-      project_fixture(
-        app: :package_c,
+      Workspace.Test.project_fixture(
+        :package_c,
+        "package_c",
         deps: [
           {:ban, "== 0.3"}
         ]
       )
 
     package_d =
-      project_fixture(
-        app: :package_d,
+      Workspace.Test.project_fixture(
+        :package_d,
+        "package_d",
         deps: [
           {:git, github: "test/test", branch: "test"}
         ]
       )
 
-    workspace = workspace_fixture([package_a, package_b, package_c, package_d])
+    workspace = Workspace.Test.workspace_fixture([package_a, package_b, package_c, package_d])
 
     %{check: check, workspace: workspace}
   end

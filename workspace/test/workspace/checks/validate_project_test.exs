@@ -4,7 +4,10 @@ defmodule Workspace.Checks.ValidateProjectTest do
 
   setup do
     workspace =
-      workspace_fixture([project_fixture(app: :package_a), project_fixture(app: :package_b)])
+      Workspace.Test.workspace_fixture([
+        {:package_a, "package_a", []},
+        {:package_b, "package_b", []}
+      ])
 
     %{workspace: workspace}
   end

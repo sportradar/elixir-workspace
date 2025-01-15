@@ -16,8 +16,7 @@ defmodule Workspace.Checks.EnsureDependenciesTest do
   end
 
   test "error if dependencies are missing", %{check: check} do
-    project = project_fixture(app: :test, deps: [])
-    workspace = workspace_fixture([project])
+    workspace = Workspace.Test.workspace_fixture([{:test, "test", deps: []}])
 
     results = EnsureDependencies.check(workspace, check)
 
@@ -31,8 +30,10 @@ defmodule Workspace.Checks.EnsureDependenciesTest do
   end
 
   test "no error if all dependencies are present", %{check: check} do
-    project = project_fixture(app: :test, deps: [{:foo, "1.0.0"}, {:bar, "2.0.0"}])
-    workspace = workspace_fixture([project])
+    project =
+      Workspace.Test.project_fixture(:test, "test", deps: [{:foo, "1.0.0"}, {:bar, "2.0.0"}])
+
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = EnsureDependencies.check(workspace, check)
 

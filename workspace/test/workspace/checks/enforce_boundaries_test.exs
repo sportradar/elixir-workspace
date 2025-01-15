@@ -4,14 +4,20 @@ defmodule Workspace.Checks.EnforceBoundariesTest do
 
   setup do
     project_a =
-      project_fixture(app: :foo, deps: [{:bar, path: "../bar"}], workspace: [tags: [:foo]])
+      Workspace.Test.project_fixture(:foo, "foo",
+        deps: [{:bar, path: "../bar"}],
+        workspace: [tags: [:foo]]
+      )
 
     project_b =
-      project_fixture(app: :bar, deps: [{:baz, path: "../baz"}], workspace: [tags: [:bar]])
+      Workspace.Test.project_fixture(:bar, "bar",
+        deps: [{:baz, path: "../baz"}],
+        workspace: [tags: [:bar]]
+      )
 
-    project_c = project_fixture(app: :baz, workspace: [tags: [:foo, :bar]])
+    project_c = Workspace.Test.project_fixture(:baz, "baz", workspace: [tags: [:foo, :bar]])
 
-    workspace = workspace_fixture([project_a, project_b, project_c])
+    workspace = Workspace.Test.workspace_fixture([project_a, project_b, project_c])
 
     %{workspace: workspace}
   end

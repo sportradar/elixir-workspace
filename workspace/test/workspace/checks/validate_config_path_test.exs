@@ -17,8 +17,8 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
   end
 
   test "error if config variable is not set", %{check: check} do
-    project = project_fixture(app: :foo)
-    workspace = workspace_fixture([project])
+    project = Workspace.Test.project_fixture(:foo, "packages/foo", [])
+    workspace = Workspace.Test.workspace_fixture([project])
     results = ValidateConfigPath.check(workspace, check)
 
     assert_check_status(results, :foo, :error)
@@ -26,8 +26,8 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
   end
 
   test "error if config variable is not correctly configured", %{check: check} do
-    project = project_fixture(app: :foo, a_path: "foo/bar")
-    workspace = workspace_fixture([project])
+    project = Workspace.Test.project_fixture(:foo, "packages/foo", a_path: "foo/bar")
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = ValidateConfigPath.check(workspace, check)
 
@@ -41,8 +41,8 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
   end
 
   test "error if config variable is not a proper path", %{check: check} do
-    project = project_fixture(app: :foo, a_path: [1, 2, 3])
-    workspace = workspace_fixture([project])
+    project = Workspace.Test.project_fixture(:foo, "packages/foo", a_path: [1, 2, 3])
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = ValidateConfigPath.check(workspace, check)
 
@@ -56,8 +56,8 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
   end
 
   test "ok if variable is properly configured", %{check: check} do
-    project = project_fixture(app: :foo, a_path: "../../artifacts/test")
-    workspace = workspace_fixture([project])
+    project = Workspace.Test.project_fixture(:foo, "packages/foo", a_path: "../../artifacts/test")
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = ValidateConfigPath.check(workspace, check)
 
@@ -76,8 +76,12 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
         ]
       )
 
-    project = project_fixture(app: :foo, deep: [config: [path: "../../artifacts/test"]])
-    workspace = workspace_fixture([project])
+    project =
+      Workspace.Test.project_fixture(:foo, "packages/foo",
+        deep: [config: [path: "../../artifacts/test"]]
+      )
+
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = ValidateConfigPath.check(workspace, check)
 
@@ -96,8 +100,8 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
         ]
       )
 
-    project = project_fixture(app: :foo, deep: 12)
-    workspace = workspace_fixture([project])
+    project = Workspace.Test.project_fixture(:foo, "packages/foo", deep: 12)
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = ValidateConfigPath.check(workspace, check)
 
@@ -121,8 +125,8 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
         ]
       )
 
-    project = project_fixture(app: :foo, a_path: "../../artifacts/test")
-    workspace = workspace_fixture([project])
+    project = Workspace.Test.project_fixture(:foo, "packages/foo", a_path: "../../artifacts/test")
+    workspace = Workspace.Test.workspace_fixture([project])
 
     results = ValidateConfigPath.check(workspace, check)
 
