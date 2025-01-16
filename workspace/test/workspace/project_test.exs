@@ -1,28 +1,63 @@
 defmodule Workspace.ProjectTest do
   use ExUnit.Case
 
-  alias Mix.Project
-  alias Mix.Project
   alias Workspace.Project
   doctest Workspace.Project
 
-  @sample_workspace_path Workspace.TestUtils.fixture_path(:sample_workspace)
-
   describe "new/2" do
-    test "creates a valid project" do
-      project_path = Path.join(@sample_workspace_path, "package_a")
-      project = Project.new(project_path, @sample_workspace_path)
+    @tag :tmp_dir
+    test "creates a valid project", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        [{:package_a, "package_a", [workspace: [tags: [:shared, {:area, :core}]]]}],
+        fn ->
+          project_path = Path.join(tmp_dir, "package_a")
+          project = Project.new(project_path, tmp_dir)
 
-      assert project.module == PackageA.MixProject
-      assert project.tags == [:shared, {:area, :core}]
+          assert project.module == PackageA.MixProject
+          assert project.tags == [:shared, {:area, :core}]
+        end
+      )
     end
 
-    test "evaluates project config functions if needed" do
-      project_path = Path.join(@sample_workspace_path, "package_d")
-      project = Project.new(project_path, @sample_workspace_path)
+    @tag :tmp_dir
+    test "evaluates project config functions if needed", %{tmp_dir: tmp_dir} do
+      Workspace.Test.in_fixture(tmp_dir, fn ->
+        mix_content = """
+        defmodule AnonymousFunction.MixProject do
+          use Mix.Project
 
-      assert project.config[:docs] == [foo: 1]
-      assert project.tags == []
+          def project do
+            [
+              app: :anonymous_function,
+              version: "0.1.0",
+              elixir: "~> 1.14",
+              start_permanent: Mix.env() == :prod,
+              deps: [],
+              docs: &docs/0
+            ]
+          end
+
+          def application, do: []
+
+          defp docs, do: [foo: 1]
+        end
+        """
+
+        Workspace.Test.create_mix_project(
+          tmp_dir,
+          :anonymous_function,
+          "anonymous_function",
+          mix_content
+        )
+
+        project_path = Path.join(tmp_dir, "anonymous_function")
+        project = Project.new(project_path, tmp_dir)
+
+        assert project.config[:docs] == [foo: 1]
+        assert project.tags == []
+      end)
     end
 
     # dummy test just for test coverage
@@ -60,18 +95,23 @@ defmodule Workspace.ProjectTest do
                Mix.Project.get!()
     end
 
-    test "another valid project" do
-      relative_path = Path.join(@sample_workspace_path, "package_a")
-      relative_mix_path = Path.join(relative_path, "mix.exs")
+    @tag :tmp_dir
+    test "handles both relative and absolute paths", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(tmp_dir, [], [{:foo, "foo", []}], fn ->
+        relative_path = Path.join(tmp_dir, "foo")
+        relative_mix_path = Path.join(relative_path, "mix.exs")
 
-      assert Project.in_project(relative_path, fn module -> module end) == PackageA.MixProject
-      assert Project.in_project(relative_mix_path, fn module -> module end) == PackageA.MixProject
+        assert Project.in_project(relative_path, fn module -> module end) == Foo.MixProject
 
-      assert Project.in_project(Path.expand(relative_path), fn module -> module end) ==
-               PackageA.MixProject
+        assert Project.in_project(relative_mix_path, fn module -> module end) ==
+                 Foo.MixProject
 
-      assert Project.in_project(Path.expand(relative_mix_path), fn module -> module end) ==
-               PackageA.MixProject
+        assert Project.in_project(Path.expand(relative_path), fn module -> module end) ==
+                 Foo.MixProject
+
+        assert Project.in_project(Path.expand(relative_mix_path), fn module -> module end) ==
+                 Foo.MixProject
+      end)
     end
 
     test "raises if invalid project or mix file" do
@@ -102,29 +142,39 @@ defmodule Workspace.ProjectTest do
     end
   end
 
-  test "relative_to_workspace/1" do
-    project_path = Path.join(@sample_workspace_path, "package_a")
-    project = Project.new(project_path, @sample_workspace_path)
+  @tag :tmp_dir
+  test "relative_to_workspace/1", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(tmp_dir, [], [{:foo, "foo", []}], fn ->
+      project_path = Path.join(tmp_dir, "foo")
+      project = Project.new(project_path, tmp_dir)
 
-    assert Project.relative_to_workspace(project) == "package_a"
+      assert Project.relative_to_workspace(project) == "foo"
+    end)
   end
 
-  test "to_map/1" do
-    project_path = Path.join(@sample_workspace_path, "package_a")
-    project = Project.new(project_path, @sample_workspace_path)
+  @tag :tmp_dir
+  test "to_map/1", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [{:foo_bar, "packages/foo_bar", [workspace: [tags: [:foo, {:area, :bar}]]]}],
+      fn ->
+        project_path = Path.join(tmp_dir, "packages/foo_bar")
+        project = Project.new(project_path, tmp_dir)
 
-    assert Project.to_map(project) == %{
-             module: "PackageA.MixProject",
-             status: "undefined",
-             path: Path.join(@sample_workspace_path, "package_a") |> Path.expand(),
-             root: nil,
-             app: "package_a",
-             mix_path:
-               Path.join([@sample_workspace_path, "package_a", "mix.exs"]) |> Path.expand(),
-             workspace_path: Path.expand(@sample_workspace_path),
-             changes: [],
-             tags: [":shared", "area:core"]
-           }
+        assert Project.to_map(project) == %{
+                 module: "FooBar.MixProject",
+                 status: "undefined",
+                 path: Path.join(tmp_dir, "packages/foo_bar") |> Path.expand(),
+                 root: nil,
+                 app: "foo_bar",
+                 mix_path: Path.join([tmp_dir, "packages/foo_bar", "mix.exs"]) |> Path.expand(),
+                 workspace_path: Path.expand(tmp_dir),
+                 changes: [],
+                 tags: [":foo", "area:bar"]
+               }
+      end
+    )
   end
 
   describe "tags tests" do
@@ -183,7 +233,7 @@ defmodule Workspace.ProjectTest do
 
   describe "modified/2" do
     test "raises if no changes" do
-      project = Workspace.TestUtils.project_fixture(app: :foo)
+      project = Workspace.Test.project_fixture(:foo, "foo", [])
 
       assert_raise ArgumentError,
                    "Cannot mark :foo as modified without any associated changes",
@@ -194,7 +244,7 @@ defmodule Workspace.ProjectTest do
 
     test "assigns the changes and marks the project modified" do
       project =
-        Workspace.TestUtils.project_fixture(app: :foo)
+        Workspace.Test.project_fixture(:foo, "foo", [])
         |> Project.modified(["README.md"])
 
       assert project.status == :modified

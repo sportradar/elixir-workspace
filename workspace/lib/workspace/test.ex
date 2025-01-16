@@ -44,37 +44,61 @@ defmodule Workspace.Test do
     File.write!(Path.join(workspace_path, ".workspace.exs"), "[]")
 
     # write the projects
-    for {name, path, project_config} <- projects, path = Path.join(workspace_path, path) do
-      File.mkdir_p!(path)
+    for {app, path, project_config} <- projects do
+      create_mix_project(workspace_path, app, path, project_config, opts)
+    end
+  end
 
-      module = Macro.camelize("#{name}") <> ".MixProject"
+  @doc """
+  Creates a mix project fixture under the given workspace path.
 
-      config =
-        Keyword.merge(
+  The `path` is expected to be the relative path with respect to the `workspace_path` where
+  the project will be located.
+
+  You can pass either a project config which will be merged with some default settings
+  and persisted, or directly the contents of the mix file. Notice that in the latter case
+  `app` is not used.
+
+  For example by calling:
+
+      create_mix_project("path/to/workspace", :foo, "packages/foo", [description: "The foo project"])
+
+  will write the following to `path/to/workspace/packages/foo/mix.exs`:
+      
+      defmodule Foo.MixProject do
+        use Mix.Project
+
+        def project do
           [
-            app: name,
+            app: :foo,
             elixir: "~> 1.14",
-            start_permanent: Mix.env() == :prod,
-            elixirc_paths: []
-          ],
-          project_config
-        )
-        |> Keyword.merge(opts[name] || [])
-
-      File.write!(
-        Path.join(path, "mix.exs"),
-        """
-        defmodule #{module} do
-          use Mix.Project
-          def project do
-            #{inspect(config)}
-          end
+            start_permanent: false,
+            elixirc_paths: [],
+            description: "The foo project"
+          ]
         end
-        """
-        |> Code.format_string!()
-        |> Kernel.++(["\n"])
-      )
+      end
 
+  ## Options
+
+  * `:formatter` - Whether to add a default `.formatter.exs`, defaults to `true`
+  * `:lib_folder` - Whether to create an empty `lib` sub folder, defaults to `true`
+  """
+  def create_mix_project(workspace_path, app, path, config_or_binary, opts \\ []) do
+    if Path.type(path) != :relative do
+      raise ArgumentError, "path must be relative, got: #{path}"
+    end
+
+    path = Path.join(workspace_path, path)
+    File.mkdir_p!(path)
+
+    mix_content = mix_file(app, config_or_binary, opts)
+
+    # add the project's mix.exs
+    File.write!(Path.join(path, "mix.exs"), mix_content)
+
+    # add the formatter if needed
+    if Keyword.get(opts, :formatter, true) do
       File.write!(
         Path.join(path, ".formatter.exs"),
         """
@@ -83,10 +107,41 @@ defmodule Workspace.Test do
         ]
         """
       )
+    end
 
-      # create the lib folder in case any test needs to write a file
+    # create the lib folder in case any test needs to write a file
+    if Keyword.get(opts, :lib_folder, true) do
       File.mkdir_p!(Path.join(path, "lib"))
     end
+  end
+
+  defp mix_file(_app, config, _opts) when is_binary(config), do: config
+
+  defp mix_file(app, config, opts) do
+    module = Macro.camelize("#{app}") <> ".MixProject"
+
+    config =
+      Keyword.merge(
+        [
+          app: app,
+          elixir: "~> 1.14",
+          start_permanent: Mix.env() == :prod,
+          elixirc_paths: []
+        ],
+        config
+      )
+      |> Keyword.merge(opts[app] || [])
+
+    """
+    defmodule #{module} do
+      use Mix.Project
+      def project do
+        #{inspect(config)}
+      end
+    end
+    """
+    |> Code.format_string!()
+    |> Kernel.++(["\n"])
   end
 
   @doc """
