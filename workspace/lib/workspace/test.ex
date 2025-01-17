@@ -160,6 +160,9 @@ defmodule Workspace.Test do
     start_permanent: Mix.env() == :prod,
   ]
   ```
+
+  The fixture directory is removed at the end of the invocation. Use `create_workspace/4`
+  directly if you wish to keep it for multiple tests.
   """
   def with_workspace(path, config, fixture_or_projects, test_fn, opts \\ []) do
     config = Keyword.merge(config, type: :workspace)
@@ -174,6 +177,8 @@ defmodule Workspace.Test do
         test_fn.()
       end)
     end)
+  after
+    File.rm_rf!(path)
   end
 
   @doc """
