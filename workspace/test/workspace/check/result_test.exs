@@ -3,8 +3,6 @@ defmodule Workspace.Check.ResultTest do
 
   alias Workspace.Check.Result
 
-  @sample_workspace_path Workspace.TestUtils.fixture_path(:sample_workspace)
-
   defmodule CheckModule do
     @behaviour Workspace.Check
 
@@ -15,19 +13,10 @@ defmodule Workspace.Check.ResultTest do
     def format_result(_result), do: []
   end
 
-  setup do
-    package_path = Path.join(@sample_workspace_path, "package_a")
-    project = Workspace.Project.new(package_path, @sample_workspace_path)
-
+  test "new/2" do
     {:ok, check} = Workspace.Check.validate(id: :test_check, module: CheckModule)
+    project = Workspace.Test.project_fixture(:foo, "foo", [])
 
-    %{
-      check: check,
-      project: project
-    }
-  end
-
-  test "new/2", %{check: check, project: project} do
     result = Result.new(check, project)
 
     assert result == %Result{module: CheckModule, check: check, project: project}
@@ -38,7 +27,10 @@ defmodule Workspace.Check.ResultTest do
     assert result.status == nil
   end
 
-  test "set_status/2", %{check: check, project: project} do
+  test "set_status/2" do
+    {:ok, check} = Workspace.Check.validate(id: :test_check, module: CheckModule)
+    project = Workspace.Test.project_fixture(:foo, "foo", [])
+
     result =
       Result.new(check, project)
       |> Result.set_status(:ok)
@@ -46,7 +38,10 @@ defmodule Workspace.Check.ResultTest do
     assert result.status == :ok
   end
 
-  test "set_metadata/2", %{check: check, project: project} do
+  test "set_metadata/2" do
+    {:ok, check} = Workspace.Check.validate(id: :test_check, module: CheckModule)
+    project = Workspace.Test.project_fixture(:foo, "foo", [])
+
     result =
       Result.new(check, project)
       |> Result.set_metadata(error: "an error")
