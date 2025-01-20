@@ -4,25 +4,31 @@ defmodule Workspace.GitTest do
   import Workspace.TestUtils
 
   describe "root" do
-    test "gets the proper root of a git repo" do
-      fixture_path = test_fixture_path()
+    @tag :tmp_dir
+    test "gets the proper root of a git repo", %{tmp_dir: tmp_dir} do
+      # fixture_path = test_fixture_path()
 
-      in_fixture("sample_workspace", fn ->
+      File.cd!(tmp_dir, fn ->
         init_git_project()
 
-        assert Workspace.Git.root() == {:ok, fixture_path}
+        assert Workspace.Git.root() == {:ok, tmp_dir}
 
         # should return the same from subfolders
+        File.mkdir("package_a")
         File.cd!("package_a")
-        assert Workspace.Git.root() == {:ok, fixture_path}
+        assert Workspace.Git.root() == {:ok, tmp_dir}
       end)
 
       # test with the cd flag
-      assert Workspace.Git.root(cd: fixture_path) == {:ok, fixture_path}
+      assert Workspace.Git.root(cd: tmp_dir) == {:ok, tmp_dir}
     end
 
     test "error if not a git repo" do
-      in_fixture("sample_workspace", fn ->
+      # we cannot use the standard tmp_dir here because we need a non-git folder
+      tmp_dir = Path.join(Workspace.TestUtils.tmp_path(), "no_git_repo")
+      File.mkdir_p!(tmp_dir)
+
+      File.cd!(tmp_dir, fn ->
         assert {:error, message} = Workspace.Git.root()
         assert message =~ "git rev-parse --show-toplevel failed"
         assert message =~ "not a git repository"
@@ -31,8 +37,12 @@ defmodule Workspace.GitTest do
   end
 
   describe "changed files" do
-    test "properly detects uncommitted, unstaged, changed files" do
-      in_fixture("sample_workspace", fn ->
+    @tag :tmp_dir
+    test "properly detects uncommitted, unstaged, changed files", %{tmp_dir: tmp_dir} do
+      File.cd!(tmp_dir, fn ->
+        # at least one file is needed to get the proper diff, otherwise git diff --name-only HEAD
+        # returns ambiguous HEAD error
+        File.touch!("mix.exs")
         init_git_project()
 
         # in main branch, no changes at all
@@ -41,6 +51,8 @@ defmodule Workspace.GitTest do
         assert Workspace.Git.untracked_files() == {:ok, []}
 
         # add a new file/modify an existing, it should be untracked
+        File.mkdir("package_a")
+        File.mkdir("package_b")
         File.touch!("package_a/tmp.exs")
         File.touch!("package_b/file.ex")
 
