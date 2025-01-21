@@ -8,9 +8,6 @@ defmodule Workspace.TestUtils do
   ## Working with fixtures
 
   def fixture_path, do: Path.expand("../fixtures", __DIR__)
-
-  def fixture_path(:sample_workspace), do: fixture_path("sample_workspace")
-
   def fixture_path(fixture) when is_binary(fixture), do: Path.join(fixture_path(), fixture)
 
   # tmp folders are created by default in a workspace_test_fixtures folder
