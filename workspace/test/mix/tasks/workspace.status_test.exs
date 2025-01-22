@@ -10,8 +10,10 @@ defmodule Mix.Tasks.Workspace.StatusTest do
     Application.put_env(:elixir, :ansi_enabled, false)
   end
 
-  @tag :tmp_dir
-  test "raises with no git repo", %{tmp_dir: tmp_dir} do
+  test "raises with no git repo" do
+    # we cannot use the standard tmp_dir here because we need a non-git folder
+    tmp_dir = Path.join(Workspace.TestUtils.tmp_path(), "no_git_repo")
+
     Workspace.Test.with_workspace(
       tmp_dir,
       [],
@@ -19,11 +21,29 @@ defmodule Mix.Tasks.Workspace.StatusTest do
       fn ->
         message =
           "status related operations require a git repo, " <>
-            "../../workspace_test_fixtures/no-git is not a valid git repo"
+            "../../workspace_test_fixtures/no_git_repo is not a valid git repo"
 
         assert_raise Mix.Error, message, fn ->
           StatusTask.run(["--workspace-path", tmp_dir])
         end
+      end
+    )
+  end
+
+  @tag :tmp_dir
+  test "raises if the workspace root is not the git repo", %{tmp_dir: tmp_dir} do
+    # to simulate this, we create a workspace within tmp_dir without initializing
+    # a repo. In this case it is still a git repo (the workspace project repo).
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [{:foo, "packages/foo", []}],
+      fn ->
+        assert_raise Mix.Error,
+                     ~r/status related operations require the workspace root folder to be the git/,
+                     fn ->
+                       StatusTask.run(["--workspace-path", tmp_dir])
+                     end
       end
     )
   end
