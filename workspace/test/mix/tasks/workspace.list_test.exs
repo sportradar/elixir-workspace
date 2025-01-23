@@ -8,7 +8,7 @@ defmodule Mix.Tasks.Workspace.ListTest do
   end
 
   @tag :tmp_dir
-  test "prints the tree of the workspace", %{tmp_dir: tmp_dir} do
+  test "prints the workspace projects with default settings", %{tmp_dir: tmp_dir} do
     Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
       expected = """
       Found 11 workspace projects matching the given options.
@@ -28,6 +28,15 @@ defmodule Mix.Tasks.Workspace.ListTest do
       assert capture_io(fn ->
                ListTask.run(["--workspace-path", tmp_dir])
              end) == expected
+    end)
+  end
+
+  @tag :tmp_dir
+  test "with an empty workspace", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(tmp_dir, [], [], fn ->
+      assert capture_io(fn ->
+               ListTask.run(["--workspace-path", tmp_dir])
+             end) == "No matching projects for the given options\n"
     end)
   end
 
