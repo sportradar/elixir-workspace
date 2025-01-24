@@ -11,10 +11,6 @@ defmodule Workspace.CheckCase do
     end
   end
 
-  def check_result(results, %Workspace.Project{app: app}) do
-    check_result(results, app)
-  end
-
   def check_result(results, app) when is_atom(app) do
     Enum.find(results, fn result -> result.project.app == app end)
   end
