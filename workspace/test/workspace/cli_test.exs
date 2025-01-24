@@ -14,39 +14,23 @@ defmodule Workspace.CliTest do
     on_exit(fn -> Application.put_env(:elixir, :ansi_enabled, false) end)
   end
 
-  @valid_options [
-    :affected,
-    :modified,
-    :exclude,
-    :verbose,
-    :workspace_path,
-    :config_path,
-    :project,
-    :show_status,
-    :base,
-    :head,
-    :tags,
-    :excluded_tags,
-    :dependency,
-    :dependent,
-    :paths
-  ]
+  test "default options sanity check" do
+    default_options = Workspace.CliOptions.default_options()
+    doc_sections = Workspace.CliOptions.doc_sections()
 
-  test "valid options sanity check" do
-    default_options =
-      Workspace.CliOptions.default_options()
-      |> Keyword.keys()
-      |> Enum.sort()
-
-    assert Enum.sort(@valid_options) == default_options
+    for {option, config} <- default_options do
+      assert config[:doc_section] != nil, "no doc_section defined for #{inspect(option)}"
+      assert Keyword.has_key?(doc_sections, config[:doc_section])
+    end
   end
 
   describe "options/2" do
     test "with no extra options" do
-      options = Cli.options(@valid_options)
+      default_options = Workspace.CliOptions.default_options()
+      options = Cli.options(Keyword.keys(default_options))
 
-      for option <- @valid_options do
-        assert options[option] == Workspace.CliOptions.default_options()[option]
+      for option <- Keyword.keys(default_options) do
+        assert options[option] == default_options[option]
       end
     end
 
