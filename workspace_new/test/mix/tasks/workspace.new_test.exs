@@ -7,14 +7,6 @@ defmodule Mix.Tasks.Workspace.NewTest do
 
   @moduletag :tmp_dir
 
-  setup context do
-    on_exit(fn ->
-      File.rm_rf!(context.tmp_dir)
-    end)
-
-    :ok
-  end
-
   describe "valid options" do
     test "new workspace", %{tmp_dir: tmp_dir} do
       in_tmp(tmp_dir, fn ->
@@ -24,6 +16,11 @@ defmodule Mix.Tasks.Workspace.NewTest do
           assert file =~ "defmodule HelloWorkspace.MixWorkspace do"
           assert file =~ "app: :hello_workspace"
           assert file =~ ~s'version: "0.1.0"'
+        end)
+
+        assert_file(tmp_dir, "hello_workspace/.formatter.exs", fn file ->
+          assert file =~ ~s'inputs: ["{mix,.formatter,.workspace}.exs", "config/*.exs"]'
+          assert file =~ ~s'subdirectories: ["packages/*"]'
         end)
 
         assert_file(tmp_dir, "hello_workspace/README.md", fn file ->
@@ -188,9 +185,6 @@ defmodule Mix.Tasks.Workspace.NewTest do
 
   defp in_tmp(tmp_dir, fun) do
     in_tmp(tmp_dir, "", fun)
-
-    # clean it afterwards
-    # File.rm_rf!(path)
   end
 
   defp in_tmp(tmp_dir, name, fun) do
@@ -199,9 +193,6 @@ defmodule Mix.Tasks.Workspace.NewTest do
     File.rm_rf!(path)
     File.mkdir_p!(path)
     File.cd!(path, fun)
-
-    # clean it afterwards
-    File.rm_rf!(path)
   end
 
   defp assert_file(path, file) do
