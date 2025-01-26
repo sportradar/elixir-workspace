@@ -1,5 +1,7 @@
 defmodule Mix.Tasks.Workspace.CheckTest do
   use ExUnit.Case, async: false
+
+  import ExUnit.CaptureIO
   import Workspace.TestUtils
 
   alias Mix.Tasks.Workspace.Check, as: CheckTask
@@ -200,6 +202,43 @@ defmodule Mix.Tasks.Workspace.CheckTest do
         assert_cli_output_match(captured, expected)
       end,
       projects: [package_h: [deps_path: "../deps"]]
+    )
+  end
+
+  @tag :tmp_dir
+  test "with check groups", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [{:foo, "packages/foo", []}, {:bar, "packages/bar", []}],
+      fn ->
+        expected = """
+        running 4 workspace checks on the workspace
+        ==> C000 deps_path all projects must have a common deps_path set
+
+        ## Documentation checks
+        ==> C001 docs_output_path all projects must have a common docs output path
+        ==> C002 source_url all projects must have the same source_url set
+
+        ## Testing checks
+        ==> C003 coverage all projects must have coverage threshold of at least 90%
+        """
+
+        captured =
+          capture_io(fn ->
+            CheckTask.run([
+              "--workspace-path",
+              tmp_dir,
+              "--config-path",
+              Path.expand("../../fixtures/configs/check_groups.exs", __DIR__)
+            ])
+          end)
+
+        Workspace.Test.assert_captured(captured, expected,
+          trim_trailing_newlines: true,
+          trim_whitespace: true
+        )
+      end
     )
   end
 end

@@ -400,11 +400,15 @@ defmodule Workspace.Test do
   Asserts that the captured cli output matches the expected value with respect to 
   the given options.
 
-  This helper assertion function provides some conveniences for working with cli output assertions:
+  This helper assertion function provides some conveniences for working with cli output assertions.
 
   ## Options
 
-  - `trim_trailing_newlines` - if set trailing newlines are ignored.
+  - `:trim_trailing_newlines` - if set trailing newlines are ignored.
+  - `:trim_whitespace` - if set either leading or trailing whitespace is ignored from
+  each line of the output.
+  - `:trim_leading` - if set leading whitespace is ignored from each line of the output.
+  - `:trim_trailing` - if set trailing whitespace is ignored from each line of the output.
 
   If no option is set a strict equality check is performed.
 
@@ -421,6 +425,13 @@ defmodule Workspace.Test do
   defp sanitize(string, opts) do
     string
     |> then_if(opts[:trim_trailing_newlines] == true, &String.trim_trailing(&1, "\n"))
+    |> String.split("\n")
+    |> Enum.map(fn line ->
+      line
+      |> then_if(opts[:trim_whitespace] == true, &String.trim(&1))
+      |> then_if(opts[:trim_leading] == true, &String.trim_leading(&1))
+      |> then_if(opts[:trim_trailing] == true, &String.trim_trailing(&1))
+    end)
   end
 
   defp then_if(value, true, then_fn), do: then_fn.(value)
