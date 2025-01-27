@@ -11,9 +11,12 @@ Require elixir v1.16
 ### Added
 
 * `workspace.list`: support filtering by root paths through the `--path` flag.
+
 * `workspace.run`: support filtering by root paths through the `--path` flag.
+
 * `workspace.run`: support filtering by `--dependency` and `--dependent` similarly
 to `workspace.list`.
+
 * Support passing most repeated CLI arguments as a comma separated list, for
   example you can now do:
 
@@ -22,6 +25,28 @@ to `workspace.list`.
   ```
 
 * `workspace.check`: support running specific checks through the `--check` option
+* `workspace.chek`: support grouping checks.
+
+  You can now configure the group of each check in your workspace config, with the
+  `group` option. Checks with the same group will be printed together on the CLI output,
+  under a group header.
+
+  Additionally you can specify `groups_for_checks` with which you can modify the default
+  look and feel of each check group, for example:
+
+  ```elixir
+  groups_for_checks: [
+    package: [
+      style: [:light_blue_background, :black],
+      title: " 📦 Package checks"
+    ],
+    documentation: [
+      style: [:yellow_background, :black],
+      title: " 📚 Documentation checks"
+    ]
+  ]
+  ```
+  
 
 ### Deprecated
 
