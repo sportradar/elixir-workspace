@@ -40,10 +40,6 @@
     docs: [
       style: [:light_cyan],
       title: "## Documentation checks"
-    ],
-    tests: [
-      style: [:yellow],
-      title: "## Testing checks"
     ]
   ]
 ]

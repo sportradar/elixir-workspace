@@ -185,9 +185,10 @@ defmodule Mix.Tasks.Workspace.Check do
     log("")
 
     title =
-      Keyword.get(groups_config[group], :title, inspect(group)) |> String.pad_trailing(width())
+      Keyword.get(groups_config[group] || [], :title, inspect(group))
+      |> String.pad_trailing(width())
 
-    style = Keyword.get(groups_config[group], :style, [:bright, :yellow])
+    style = Keyword.get(groups_config[group] || [], :style, [:bright, :yellow])
 
     log([style, title, :reset])
   end

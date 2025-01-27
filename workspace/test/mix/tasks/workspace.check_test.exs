@@ -220,7 +220,7 @@ defmodule Mix.Tasks.Workspace.CheckTest do
         ==> C001 docs_output_path all projects must have a common docs output path
         ==> C002 source_url all projects must have the same source_url set
 
-        ## Testing checks
+        :tests
         ==> C003 coverage all projects must have coverage threshold of at least 90%
         """
 
