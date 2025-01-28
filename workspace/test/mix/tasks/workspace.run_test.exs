@@ -76,6 +76,44 @@ defmodule Mix.Tasks.Workspace.RunTest do
     end
 
     @tag :tmp_dir
+    test "with postorder order set", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+        args = [
+          "--workspace-path",
+          tmp_dir,
+          "--order",
+          "postorder",
+          "--dry-run" | @default_run_task
+        ]
+
+        captured =
+          capture_io(fn ->
+            RunTask.run(args)
+          end)
+
+        order =
+          captured
+          |> String.split("\n")
+          |> Enum.filter(&String.starts_with?(&1, "==> :package"))
+          |> Enum.map(fn line ->
+            ["==>", ":" <> project | _rest] = String.split(line, " ")
+            String.to_existing_atom(project)
+          end)
+          |> Enum.with_index()
+
+        # since the order is not deterministic we do some sanity checks based
+        # on the graph topology
+        assert order[:package_g] < order[:package_f]
+        assert order[:package_g] < order[:package_b]
+        assert order[:package_b] < order[:package_a]
+        assert order[:package_e] < order[:package_c]
+        assert order[:package_d] < order[:package_a]
+        assert order[:package_d] < order[:package_h]
+        assert order[:package_j] < order[:package_i]
+      end)
+    end
+
+    @tag :tmp_dir
     test "with verbose on skipped projects are reported", %{tmp_dir: tmp_dir} do
       Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
         args = [

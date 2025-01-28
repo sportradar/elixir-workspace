@@ -29,7 +29,7 @@ defmodule Mix.Tasks.Workspace.Run do
     allow_failure: [
       type: :atom,
       doc: """
-      Allow the task for this specific project to fail. Can be set more than once. 
+      Allow the task for this specific project to fail. Can be set more than once.
       """,
       multiple: true,
       separator: ","
@@ -60,6 +60,21 @@ defmodule Mix.Tasks.Workspace.Run do
       run results.
       """,
       doc_section: :export
+    ],
+    order: [
+      type: :string,
+      doc: """
+      The execution order based on the workspace graph. Can be one of the
+      following:
+
+      * `alphabetical` - The projects are sorted alphabetically
+      * `postorder` - Performs a depth-first search on the project graph and returns the
+      projects in post-order. In this order, outer leaves (projects without dependencies)
+      are returned first, followed by their parent projects, respecting the dependency
+      relationships between them.
+      """,
+      default: "alphabetical",
+      allowed: ["alphabetical", "postorder"]
     ]
   ]
 
@@ -107,7 +122,7 @@ defmodule Mix.Tasks.Workspace.Run do
   You can pass task specific options after the return separator (`--`). For example:
 
       $ mix workspace.run -t format -p foo -p bar -- --check-formatted
-      
+
   ## Command-line Options
 
   #{CliOptions.docs(@options_schema, sort: true, sections: Workspace.CliOptions.doc_sections())}
@@ -143,7 +158,7 @@ defmodule Mix.Tasks.Workspace.Run do
 
   It consists of various packages, and two of them (`_b` and `_h`) are modified. Using
   the graph we can find the dependencies between packages and **limit the execution of
-  a task** only to the subset that makes sense. 
+  a task** only to the subset that makes sense.
 
   **Using the proper execution strategy wisely significantly improves the CI execution
   time**.
@@ -185,6 +200,21 @@ defmodule Mix.Tasks.Workspace.Run do
 
       # Run test only on top level projects
       $ mix workspace.run -t test --only-roots
+
+  ## Execution order
+
+  By default the given task will run on all projects (matching any provided filter) alphabetically
+  with respect to the project app name. You can also pass the `--order postorder` option
+  which applies a topologic sort. This will perform a depth first search on the project graph
+  and return the project in post-order, e.g. outer leaves are returned first respecting
+  your workspace graph.
+
+      $ mix workspace.run -t compile --order postorder
+
+  The `preorder` option ensures that dependencies are executed first, which can reduce
+  execution time by avoiding unnecessary task invocations on dependencies (only if the
+  task requires dependencies being executed first, e.g. `mix compile` with a common
+  build path).
 
   ## Run partitioning
 
@@ -268,7 +298,7 @@ defmodule Mix.Tasks.Workspace.Run do
     filtered_projects =
       opts
       |> Mix.WorkspaceUtils.load_and_filter_workspace()
-      |> Workspace.projects()
+      |> Workspace.projects(order: String.to_existing_atom(opts[:order]))
       |> filter_by_partition(opts[:partitions])
 
     case Enum.count(filtered_projects, &(not &1.skip)) do

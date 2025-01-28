@@ -143,4 +143,37 @@ defmodule WorkspaceTest do
     assert Workspace.project?(workspace, :foo)
     refute Workspace.project?(workspace, :food)
   end
+
+  test "projects/1 with order set" do
+    zoo =
+      Workspace.Test.project_fixture(:zoo, "zoo",
+        deps: [{:foo, path: "../foo"}, {:bar, path: "../bar"}]
+      )
+
+    foo = Workspace.Test.project_fixture(:foo, "foo", deps: [{:baz, path: "../baz"}])
+    bar = Workspace.Test.project_fixture(:bar, "bar", deps: [{:baz, path: "../baz"}])
+    baz = Workspace.Test.project_fixture(:baz, "baz", deps: [])
+
+    workspace = Workspace.Test.workspace_fixture([zoo, foo, bar, baz])
+
+    # without any order the response is not deterministic, we just check that we get all expected projects
+    assert Workspace.projects(workspace) |> Enum.count() == 4
+
+    # alphabetical order
+    assert Workspace.projects(workspace, order: :alphabetical) |> Enum.map(& &1.app) == [
+             :bar,
+             :baz,
+             :foo,
+             :zoo
+           ]
+
+    # postorder, again the response is not deterministic but the order should
+    # respect the graph topology
+    projects =
+      Workspace.projects(workspace, order: :postorder) |> Enum.map(& &1.app) |> Enum.with_index()
+
+    assert [{:baz, 0} | _rest] = projects
+    assert projects[:bar] < projects[:zoo]
+    assert projects[:foo] < projects[:zoo]
+  end
 end

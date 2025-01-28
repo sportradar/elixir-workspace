@@ -10,7 +10,12 @@ Require elixir v1.16
 
 ### Added
 
-* `workspace.list`: support filtering by root paths through the `--path` flag.
+* `workspace.run`: support specifying execution order through the `--option` flag.
+
+  Till now `workspace.run` was executing the tasks in alphabetical order. A new `--order`
+  cli option is added that support setting it to `preorder`. This will perform a
+  depth first search on the project graph and return the projects in post-order, e.g.
+  outer leaves are returned first respecting the topology of your workspace.
 
 * `workspace.run`: support filtering by root paths through the `--path` flag.
 
@@ -25,7 +30,7 @@ to `workspace.list`.
   ```
 
 * `workspace.check`: support running specific checks through the `--check` option
-* `workspace.chek`: support grouping checks.
+* `workspace.check`: support grouping checks.
 
   You can now configure the group of each check in your workspace config, with the
   `group` option. Checks with the same group will be printed together on the CLI output,
@@ -46,7 +51,8 @@ to `workspace.list`.
     ]
   ]
   ```
-  
+
+* `workspace.list`: support filtering by root paths through the `--path` flag.
 
 ### Deprecated
 

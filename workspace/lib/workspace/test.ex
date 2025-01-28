@@ -21,6 +21,8 @@ defmodule Workspace.Test do
             "cannot create a workspace in a non empty path, #{workspace_path} is not empty"
     end
 
+    config = Keyword.merge([type: :workspace], config)
+
     # write the workspace mix.exs and .workspace.exs
     File.write!(
       Path.join(workspace_path, "mix.exs"),

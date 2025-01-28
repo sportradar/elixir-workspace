@@ -428,12 +428,65 @@ defmodule Workspace do
 
   @doc """
   Returns the workspace projects as a list.
+
+  ## Options
+
+  * `:order` - Specifies the order in which the projects list will be returned. It can be
+    one of the following:
+    * `:alphabetical` - Sorts the projects by their application names in ascending order.
+    * `:postorder` - Performs a depth-first search on the project graph and returns the projects
+    in post-order. In this order, outer leaves (projects without dependencies) are returned
+    first, followed by their parent projects, respecting the dependency relationships between
+    them.
+    * If not specified, the projects will be returned in their original order without any
+    sorting.
+
+    For example for the following workspace graph:
+
+    ```mermaid
+    flowchart TD
+    zoo
+    bar
+    foo
+    baz
+
+    zoo --> bar
+    zoo --> foo
+    foo --> baz
+    bar --> baz
+    ```
+
+    we would get the following:
+
+    ```elixir
+    Workspace.projects(workspace, order: :alphabetical) # [:bar, :baz, :foo, :zoo]
+
+    # with :postorder set the packages are returned bottom to top respecting
+    # dependencies, notice this is not deterministic, e.g. you could also get
+    # [:baz, :bar, :foo, :zoo]
+    Workspace.projects(workspace, order: :postorder)    # [:baz, :foo, :bar, :zoo]
+    ```
   """
   @spec projects(workspace :: Workspace.State.t()) :: [Workspace.Project.t()]
-  def projects(workspace) do
-    workspace.projects
-    |> Map.values()
-    |> Enum.sort_by(fn project -> project.app end)
+  def projects(workspace, opts \\ []) do
+    projects = Map.values(workspace.projects)
+
+    case opts[:order] do
+      nil ->
+        projects
+
+      :alphabetical ->
+        Enum.sort_by(projects, fn project -> project.app end)
+
+      :postorder ->
+        ordering =
+          :digraph_utils.postorder(workspace.graph)
+          |> Enum.filter(fn node -> node.type == :workspace end)
+          |> Enum.map(& &1.app)
+          |> Enum.with_index()
+
+        Enum.sort_by(projects, fn project -> Keyword.fetch!(ordering, project.app) end, :asc)
+    end
   end
 
   @doc """
