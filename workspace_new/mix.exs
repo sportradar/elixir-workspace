@@ -50,8 +50,8 @@ defmodule WorkspaceNew.MixProject do
 
   defp deps do
     [
-      {:ex_doc, "== 0.35.1", only: :dev, runtime: false},
-      {:credo, "== 1.7.10", only: [:dev, :test], runtime: false},
+      {:ex_doc, "== 0.37.0", only: :dev, runtime: false},
+      {:credo, "== 1.7.11", only: [:dev, :test], runtime: false},
       {:dialyxir, "== 1.4.5", only: [:dev], runtime: false},
       {:doctor, "== 0.22.0", only: :dev, runtime: false}
     ]
