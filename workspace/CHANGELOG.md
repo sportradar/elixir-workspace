@@ -69,6 +69,8 @@ option.
 
 * Escape base and head references in git commands.
 
+* `workspace.test.coverage`: respect `ignore_modules` from coverage report
+
 ## [v0.1.2](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.1.2) (2024-09-30)
 
 ### Added

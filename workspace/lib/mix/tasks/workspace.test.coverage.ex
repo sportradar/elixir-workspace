@@ -527,9 +527,14 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
             nil
 
           _other ->
-            {:ok, function_data} = :cover.analyze(module, :calls, :function)
-            {:ok, line_data} = :cover.analyze(module, :calls, :line)
-            {module, project.app, function_data, line_data}
+            if ignored?(project, module) do
+              Workspace.Cli.debug("ignoring #{module} from coverage report")
+              nil
+            else
+              {:ok, function_data} = :cover.analyze(module, :calls, :function)
+              {:ok, line_data} = :cover.analyze(module, :calls, :line)
+              {module, project.app, function_data, line_data}
+            end
         end
 
       # ignore non relative paths to the workspace
@@ -537,4 +542,13 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
         nil
     end
   end
+
+  defp ignored?(project, module) do
+    ignored = Keyword.get(project.config, :test_coverage, []) |> Keyword.get(:ignore_modules, [])
+
+    Enum.any?(ignored, &ignored_any?(module, &1))
+  end
+
+  defp ignored_any?(module, %Regex{} = pattern), do: Regex.match?(pattern, inspect(module))
+  defp ignored_any?(module, ignored), do: module == ignored
 end
