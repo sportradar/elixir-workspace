@@ -43,6 +43,8 @@ defmodule Mix.Tasks.Workspace.New do
   For more details check the `Workspace` docs.
   """
 
+  @external_resource "template"
+
   use Mix.Task
 
   import Mix.Generator
@@ -53,8 +55,13 @@ defmodule Mix.Tasks.Workspace.New do
   ]
 
   root_path = Path.expand("../../../template", __DIR__)
+  template_files = ["README.md", ".formatter.exs", ".gitignore", "mix.exs", ".workspace.exs"]
 
-  @template_files ["README.md", ".formatter.exs", ".gitignore", "mix.exs", ".workspace.exs"]
+  for file <- template_files do
+    @external_resource Path.join(root_path, file)
+  end
+
+  @template_files template_files
                   |> Enum.map(fn filename ->
                     {filename, File.read!(Path.join(root_path, filename))}
                   end)
