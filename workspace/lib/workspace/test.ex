@@ -66,7 +66,7 @@ defmodule Workspace.Test do
       create_mix_project("path/to/workspace", :foo, "packages/foo", [description: "The foo project"])
 
   will write the following to `path/to/workspace/packages/foo/mix.exs`:
-      
+
       defmodule Foo.MixProject do
         use Mix.Project
 
@@ -149,22 +149,44 @@ defmodule Workspace.Test do
   @doc """
   Runs the given `test_fn` in a temporary workspace under the given `path`.
 
-  Projects is expected to be a list of tuples of the form `{name, path, config}`.
-  TODO: document default fixtures
+  You can pass a predefined fixture or a list of projects to be created. Check `create_workspace/4` for more details.
 
-  Config is the project config which will be merged with the default:
+  ## Options
 
-  ```elixir
-  [
-    app: name,
-    version: "0.1.0",
-    elixir: "~> 1.14",
-    start_permanent: Mix.env() == :prod,
-  ]
-  ```
+  * `:projects` - Additional project configuration to merge, defaults to `[]`. This is useful if you want to update
+  the project configuration of a default fixture. For example in order to add a description to the `package_a` project
+  you can do:
 
-  The fixture directory is removed at the end of the invocation. Use `create_workspace/4`
-  directly if you wish to keep it for multiple tests.
+      with_workspace(
+        "tmp/test_workspace", [], :default,
+        fn ->
+          # test code here
+        end,
+        projects: [package_a: [description: "Package A"]]
+      )
+
+  * `:cd` - Whether to change directory to the workspace path, defaults to `false`
+  * `:git` - Whether to initialize the workspace as a git repository, defaults to `false`
+
+  ## Cleanup
+
+  The fixture directory is automatically removed after the test function completes.
+  Use `create_workspace/4` directly if you need to preserve the workspace for multiple tests.
+
+  ## Examples
+
+      # Using default fixture
+      with_workspace("tmp/test_workspace", [], :default, fn ->
+        # Test code here
+      end)
+
+      # Using custom projects
+      with_workspace("tmp/test_workspace", [], [
+        {:app_a, "packages/app_a", [description: "App A"]},
+        {:app_b, "packages/app_b", [deps: [{:app_a, path: "../app_a"}]]}
+      ], fn ->
+        # Test code here
+      end, git: true)
   """
   def with_workspace(path, config, fixture_or_projects, test_fn, opts \\ []) do
     config = Keyword.merge(config, type: :workspace)
@@ -399,7 +421,7 @@ defmodule Workspace.Test do
   end
 
   @doc """
-  Asserts that the captured cli output matches the expected value with respect to 
+  Asserts that the captured cli output matches the expected value with respect to
   the given options.
 
   This helper assertion function provides some conveniences for working with cli output assertions.
