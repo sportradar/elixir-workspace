@@ -5,6 +5,36 @@ defmodule Workspace.Test do
 
   import ExUnit.Assertions
 
+  @doc """
+  Creates a workspace fixture at the given path.
+
+  It expects a workspace path, configuration, and either a predefined fixture or a list of projects
+  to be created.
+
+  Raises an `ArgumentError` if the workspace path is not empty
+
+  ## Options
+
+  * `:projects` - Additional project configuration to merge, defaults to `[]`. This is useful if you want to update
+  the project configuration of a default fixture. For example in order to add a description to the `package_a` project
+  you can do:
+
+        create_workspace("path/to/workspace", [], :default,
+          projects: [package_a: [description: "Package A"]]
+        )
+
+  ## Examples
+
+      # Using default fixture
+      create_workspace("tmp/test_workspace", [], :default)
+
+      # Using custom projects
+      create_workspace("tmp/test_workspace", [], [
+        {:app_a, "packages/app_a", [description: "App A"]},
+        {:app_b, "packages/app_b", [deps: [{:app_a, path: "../app_a"}]]}
+      ])
+
+  """
   def create_workspace(path, config, fixture_or_projects, opts \\ [])
 
   def create_workspace(path, config, fixture, opts) when is_atom(fixture) do
@@ -157,13 +187,13 @@ defmodule Workspace.Test do
   the project configuration of a default fixture. For example in order to add a description to the `package_a` project
   you can do:
 
-      with_workspace(
-        "tmp/test_workspace", [], :default,
-        fn ->
-          # test code here
-        end,
-        projects: [package_a: [description: "Package A"]]
-      )
+        with_workspace(
+          "tmp/test_workspace", [], :default,
+          fn ->
+            # test code here
+          end,
+          projects: [package_a: [description: "Package A"]]
+        )
 
   * `:cd` - Whether to change directory to the workspace path, defaults to `false`
   * `:git` - Whether to initialize the workspace as a git repository, defaults to `false`
@@ -396,6 +426,15 @@ defmodule Workspace.Test do
   defp maybe_cd!(fixture_path, true, test_fn), do: File.cd!(fixture_path, test_fn)
   defp maybe_cd!(_fixture_path, _cd, test_fn), do: test_fn.()
 
+  @doc """
+  Initializes a git repository in the given path.
+
+  Creates an initial commit with all files in the path and sets the default branch to `main`.
+
+  ## Examples
+
+      init_git_project("path/to/workspace")
+  """
   def init_git_project(path) do
     File.cd!(path, fn ->
       System.cmd("git", ~w[init])
@@ -405,6 +444,18 @@ defmodule Workspace.Test do
     end)
   end
 
+  @doc """
+  Simulates a modification to a project in the workspace by creating a dummy file.
+
+  Creates an empty file at `lib/file.ex` in the specified project path to simulate
+  project modifications. This is useful for testing workspace change detection.
+
+  Raises an `ArgumentError` if the project path does not exist
+
+  ## Examples
+
+      modify_project("/path/to/workspace", "packages/foo")
+  """
   def modify_project(workspace_path, project_path) do
     path = Path.join(workspace_path, project_path)
 
@@ -413,6 +464,16 @@ defmodule Workspace.Test do
     File.touch!(Path.join(path, "lib/file.ex"))
   end
 
+  @doc """
+  Creates a git commit with all current changes in the given path.
+
+  This is a helper function for testing that creates a commit with the message "changes"
+  after staging all modifications.
+
+  ## Examples
+
+      commit_changes("path/to/workspace")
+  """
   def commit_changes(path) do
     File.cd!(path, fn ->
       System.cmd("git", ~w[add .])
@@ -460,8 +521,4 @@ defmodule Workspace.Test do
 
   defp then_if(value, true, then_fn), do: then_fn.(value)
   defp then_if(value, false, _then_fn), do: value
-
-  # defp cli_output_to_list(string, opts) do
-  #  String.split(string, "\n")
-  # end
 end

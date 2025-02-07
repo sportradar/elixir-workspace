@@ -54,6 +54,8 @@ to `workspace.list`.
 
 * `workspace.list`: support filtering by root paths through the `--path` flag.
 
+* Promoted helper testing utilities to a `Workspace.Test` module.
+
 ### Deprecated
 
 * Check definitions without an `id` is deprecated. ids can be used for filtering

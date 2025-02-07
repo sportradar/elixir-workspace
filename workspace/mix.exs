@@ -114,6 +114,9 @@ defmodule Workspace.MixProject do
         "Test Coverage": [
           Workspace.Coverage.Exporter,
           Workspace.Coverage.LCOV
+        ],
+        Testing: [
+          Workspace.Test
         ]
       ],
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
