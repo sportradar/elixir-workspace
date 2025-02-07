@@ -16,6 +16,7 @@ defmodule Mix.Tasks.Workspace.NewTest do
           assert file =~ "defmodule HelloWorkspace.MixWorkspace do"
           assert file =~ "app: :hello_workspace"
           assert file =~ ~s'version: "0.1.0"'
+          assert file =~ ~s'{:workspace, "~> 0.2.0"}'
         end)
 
         assert_file(tmp_dir, "hello_workspace/.formatter.exs", fn file ->
