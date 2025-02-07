@@ -72,19 +72,19 @@ jobs:
         run: |
           shopt -s expand_aliases
           alias mix='elixir --erl "-elixir ansi_enabled true" -S mix'
-          mix workspace.run -t deps.get --only-roots ${{env.AFFECTED_ARGS}}
+          mix workspace.run -t deps.get ${{env.AFFECTED_ARGS}}
 
       - name: Compile dependencies
         run: |
           shopt -s expand_aliases
           alias mix='elixir --erl "-elixir ansi_enabled true" -S mix'
-          mix workspace.run -t deps.compile --only-roots ${{env.AFFECTED_ARGS}} -- --skip-local-deps
+          mix workspace.run -t deps.compile ${{env.AFFECTED_ARGS}} -- --skip-local-deps
 
       - name: Compile with warnings enabled
         run: |
           shopt -s expand_aliases
           alias mix='elixir --erl "-elixir ansi_enabled true" -S mix'
-          mix workspace.run -t compile ${{env.AFFECTED_ARGS}} -- --force --warnings-as-errors
+          mix workspace.run -t compile ${{env.AFFECTED_ARGS}} --order postorder -- --force --warnings-as-errors
 
       - name: Check code formatted
         run: |
@@ -97,7 +97,7 @@ jobs:
         run: |
           shopt -s expand_aliases
           alias mix='elixir --erl "-elixir ansi_enabled true" -S mix'
-          mix workspace.run -t test ${{env.AFFECTED_ARGS}} -- --cover --warnings-as-errors
+          mix workspace.run -t test ${{env.AFFECTED_ARGS}} --order postorder -- --cover --warnings-as-errors
 
       - name: Coverage
         run: |
