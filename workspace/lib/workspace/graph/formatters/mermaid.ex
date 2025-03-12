@@ -58,7 +58,9 @@ defmodule Workspace.Graph.Formatters.Mermaid do
     node_styles =
       Workspace.projects(workspace)
       |> Enum.filter(fn project -> project.status in [:modified, :affected] end)
-      |> Enum.map_join("\n", fn project -> "  class #{project.app} #{project.status};" end)
+      |> Enum.map(fn project -> "  class #{project.app} #{project.status};" end)
+      |> Enum.sort()
+      |> Enum.join("\n")
 
     """
 
