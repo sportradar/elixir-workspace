@@ -88,15 +88,22 @@ defmodule Workspace.Status do
   """
   @spec changed(workspace :: Workspace.State.t(), opts :: keyword()) :: %{atom() => file_info()}
   def changed(workspace, opts \\ []) do
+    # if the workspace has a git root then this is our starting point in order
+    # to get relative paths with respect to the root. This way we can afterwards
+    # create proper absolute paths since some git status commands only return relative files wrt
+    # the current directory
+    # if there is no git root then we use the workspace path as the root
+    base_path = workspace.git_root_path || workspace.workspace_path
+
     case Workspace.Git.changed(
-           cd: workspace.workspace_path,
+           cd: base_path,
            base: opts[:base],
            head: opts[:head]
          ) do
       {:ok, changed_files} ->
         changed_files
         |> Enum.map(fn {file, type} ->
-          full_path = Path.join(workspace.workspace_path, file) |> Path.expand()
+          full_path = Path.join(workspace.git_root_path, file) |> Path.expand()
 
           parent_project =
             case Workspace.Topology.parent_project(workspace, full_path) do

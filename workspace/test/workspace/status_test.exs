@@ -108,7 +108,7 @@ defmodule Workspace.StatusTest do
     end
 
     @tag :tmp_dir
-    test "with changed file not belonging to a projectm", %{tmp_dir: tmp_dir} do
+    test "with changed file not belonging to a project", %{tmp_dir: tmp_dir} do
       Workspace.Test.with_workspace(
         tmp_dir,
         [],
@@ -199,6 +199,69 @@ defmodule Workspace.StatusTest do
         assert_raise ArgumentError, ~r"failed to get changed files", fn ->
           Workspace.Status.affected(workspace)
         end
+      end)
+    end
+  end
+
+  describe "with multiple workspaces under a git root" do
+    test "with changed file not belonging to a project" do
+      tmp_dir = Path.join(Workspace.TestUtils.tmp_path(), "multiple_workspaces_in_git_root")
+      File.mkdir_p!(tmp_dir)
+
+      Workspace.Test.in_fixture(tmp_dir, fn ->
+        Workspace.Test.init_git_project(tmp_dir)
+
+        # add two workspaces there, one nested
+        workspace_path = Path.join(tmp_dir, "workspace")
+        another_workspace_path = Path.join(tmp_dir, "nested/another_workspace")
+
+        Workspace.Test.create_workspace(
+          workspace_path,
+          [],
+          [
+            {:bar, "packages/bar", []},
+            {:foo, "packages/foo", [deps: [{:bar, [path: "../bar"]}]]}
+          ],
+          workspace_module: "SomeTestWorkspace"
+        )
+
+        Workspace.Test.create_workspace(
+          another_workspace_path,
+          [],
+          [
+            {:other_bar, "packages/bar", []},
+            {:other_foo, "packages/foo", [deps: [{:other_bar, [path: "../bar"]}]]}
+          ],
+          workspace_module: "AnotherTestWorkspace"
+        )
+
+        Workspace.Test.commit_changes(tmp_dir)
+
+        # modify both workspaces 
+        Workspace.Test.modify_project(workspace_path, "packages/foo")
+        Workspace.Test.modify_project(another_workspace_path, "packages/bar")
+
+        workspace = Workspace.new!(workspace_path)
+        another_workspace = Workspace.new!(another_workspace_path)
+
+        # the changed files should include the changed project, with paths relative to
+        # the git root, the changed file of the other workspace should be under `nil` 
+        assert Workspace.Status.changed(workspace) == %{
+                 nil: [{"nested/another_workspace/packages/bar/lib/file.ex", :untracked}],
+                 foo: [{"workspace/packages/foo/lib/file.ex", :untracked}]
+               }
+
+        assert Workspace.Status.modified(workspace) == [:foo]
+        assert Workspace.Status.affected(workspace) == [:foo]
+
+        ## another_workspace
+        assert Workspace.Status.changed(another_workspace) == %{
+                 bar: [{"nested/another_workspace/packages/bar/lib/file.ex", :untracked}],
+                 nil: [{"workspace/packages/foo/lib/file.ex", :untracked}]
+               }
+
+        assert Workspace.Status.modified(another_workspace) == [:bar]
+        assert Workspace.Status.affected(another_workspace) == [:bar, :foo]
       end)
     end
   end

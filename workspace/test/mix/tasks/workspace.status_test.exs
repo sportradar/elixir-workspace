@@ -31,21 +31,113 @@ defmodule Mix.Tasks.Workspace.StatusTest do
   end
 
   @tag :tmp_dir
-  test "raises if the workspace root is not the git repo", %{tmp_dir: tmp_dir} do
-    # to simulate this, we create a workspace within tmp_dir without initializing
-    # a repo. In this case it is still a git repo (the workspace project repo).
-    Workspace.Test.with_workspace(
-      tmp_dir,
-      [],
-      [{:foo, "packages/foo", []}],
-      fn ->
-        assert_raise Mix.Error,
-                     ~r/status related operations require the workspace root folder to be the git/,
-                     fn ->
-                       StatusTask.run(["--workspace-path", tmp_dir])
-                     end
-      end
-    )
+  test "supports multiple workspaces under the same root folder" do
+    # we use an external tmp dir to avoid conflicts with the current git repo
+    tmp_dir = Path.join(Workspace.TestUtils.tmp_path(), "multiple_workspaces")
+    File.mkdir_p!(tmp_dir)
+
+    Workspace.Test.in_fixture(tmp_dir, fn ->
+      # initialize a git repository under the root folder
+      Workspace.Test.init_git_project(tmp_dir)
+
+      workspace_path = Path.join(tmp_dir, "workspace")
+      another_workspace_path = Path.join(tmp_dir, "another_workspace")
+
+      Workspace.Test.create_workspace(
+        workspace_path,
+        [],
+        [{:bar, "packages/bar", []}, {:foo, "packages/foo", [deps: [{:bar, [path: "../bar"]}]]}],
+        workspace_module: "SomeTestWorkspace"
+      )
+
+      Workspace.Test.create_workspace(
+        another_workspace_path,
+        [],
+        [
+          {:other_bar, "packages/bar", []},
+          {:other_foo, "packages/foo", [deps: [{:other_bar, [path: "../bar"]}]]}
+        ],
+        workspace_module: "AnotherTestWorkspace"
+      )
+
+      Workspace.Test.commit_changes(tmp_dir)
+
+      # if no file is changed
+      assert capture_io(fn ->
+               StatusTask.run(["--workspace-path", workspace_path])
+             end) == ""
+
+      assert capture_io(fn ->
+               StatusTask.run(["--workspace-path", another_workspace_path])
+             end) == ""
+
+      # modify the two root projects in the workspaces
+      Workspace.Test.modify_project(workspace_path, "packages/foo")
+      Workspace.Test.modify_project(another_workspace_path, "packages/foo")
+
+      expected = """
+      Modified projects:
+        :foo packages/foo/mix.exs
+          untracked packages/foo/lib/file.ex
+      """
+
+      assert_captured(
+        capture_io(fn ->
+          StatusTask.run(["--workspace-path", workspace_path])
+        end),
+        expected,
+        trim_trailing_newlines: true
+      )
+
+      assert_captured(
+        capture_io(fn ->
+          StatusTask.run(["--workspace-path", another_workspace_path])
+        end),
+        expected,
+        trim_trailing_newlines: true
+      )
+
+      Workspace.Test.commit_changes(tmp_dir)
+
+      Workspace.Test.modify_project(workspace_path, "packages/bar")
+
+      Workspace.Test.modify_project(another_workspace_path, "packages/foo",
+        file: "lib/another_file.ex"
+      )
+
+      expected_with_affected =
+        """
+        Modified projects:
+          :bar packages/bar/mix.exs
+            untracked packages/bar/lib/file.ex
+
+        Affected projects:
+          :foo packages/foo/mix.exs
+        """
+
+      assert_captured(
+        capture_io(fn ->
+          StatusTask.run(["--workspace-path", workspace_path])
+        end),
+        expected_with_affected,
+        trim_trailing_newlines: true
+      )
+
+      expected_without_affected =
+        """
+        Modified projects:
+          :foo packages/foo/mix.exs
+            untracked packages/foo/lib/another_file.ex
+        """
+
+      assert_captured(
+        capture_io(fn ->
+          StatusTask.run(["--workspace-path", another_workspace_path])
+        end),
+        expected_without_affected,
+        trim_trailing_newlines: true
+      )
+    end)
   end
 
   @tag :tmp_dir
