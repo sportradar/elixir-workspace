@@ -45,7 +45,7 @@ defmodule Mix.Tasks.Workspace.Status do
     Enum.each(modified, fn name ->
       project = Workspace.project!(workspace, name)
       print_project_status(project, :modified)
-      print_changes(project)
+      print_changes(workspace.git_root_path, project)
     end)
 
     Workspace.Cli.newline()
@@ -76,14 +76,14 @@ defmodule Mix.Tasks.Workspace.Status do
     ])
   end
 
-  defp print_changes(project) do
+  defp print_changes(git_root_path, project) do
     for {path, change_type} <- project.changes do
       Workspace.Cli.log([
         "    ",
         change_type_color(change_type),
         change_type(change_type),
         " ",
-        path,
+        Path.relative_to(Path.join(git_root_path, path), project.workspace_path),
         :reset
       ])
     end

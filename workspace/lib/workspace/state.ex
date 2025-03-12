@@ -15,6 +15,8 @@ defmodule Workspace.State do
     * `:mix_path` - absolute path to the workspace's root `mix.exs` file.
     * `:workspace_path` - absolute path of the workspace, this is by default the
     folder containing the workspace mix file.
+    * `:git_root_path` - the absolute path of the git repository containing the
+    workspace
     * `:config` - the workspace's configuration, check `Workspace.Config` for
     more details.
 
@@ -29,6 +31,7 @@ defmodule Workspace.State do
   * `:config` - The workspace configuration settings.
   * `:mix_path` - The path to the workspace's root `mix.exs`.
   * `:workspace_path` - The workspace root path.
+  * `:git_root_path` - The git root path, of the repository containing the workspace.
   * `:cwd` - The directory from which the workspace was generated.
   * `:graph` - The DAG (directed acyclic graph) of the workspace.
   * `:status_updated?` - Set to `true` if the workspace status has been updated.
@@ -38,6 +41,7 @@ defmodule Workspace.State do
           config: keyword(),
           mix_path: binary(),
           workspace_path: binary(),
+          git_root_path: binary() | nil,
           cwd: binary(),
           graph: :digraph.graph(),
           status_updated?: boolean()
@@ -49,6 +53,7 @@ defmodule Workspace.State do
             mix_path: nil,
             workspace_path: nil,
             cwd: nil,
+            git_root_path: nil,
             graph: nil,
             status_updated?: false
 
@@ -71,6 +76,7 @@ defmodule Workspace.State do
           projects :: [Workspace.Project.t()]
         ) :: t()
   def new(path, mix_path, config, projects) do
+    git_root_path = git_root_path(path)
     graph = Workspace.Graph.digraph(projects)
     projects = update_projects_topology(projects, graph)
 
@@ -79,9 +85,22 @@ defmodule Workspace.State do
       mix_path: mix_path,
       workspace_path: path,
       cwd: File.cwd!(),
-      graph: graph
+      graph: graph,
+      git_root_path: git_root_path
     }
     |> set_projects(projects)
+  end
+
+  defp git_root_path(path) do
+    if File.exists?(path) do
+      case Workspace.Git.root(cd: path) do
+        {:error, _reason} -> nil
+        {:ok, path} -> path
+      end
+    else
+      # this is mostly for tests where we use artificial non existing directories
+      nil
+    end
   end
 
   defp update_projects_topology(projects, graph) do
