@@ -23,6 +23,8 @@ defmodule Workspace.Test do
           projects: [package_a: [description: "Package A"]]
         )
 
+  * `:workspace_module` - Optional name for the workspace module fixture. If not set defaults to `TestWorkspace`
+
   ## Examples
 
       # Using default fixture
@@ -52,12 +54,13 @@ defmodule Workspace.Test do
     end
 
     config = Keyword.merge([type: :workspace], config)
+    workspace_module = opts[:workspace_module] || "TestWorkspace"
 
     # write the workspace mix.exs and .workspace.exs
     File.write!(
       Path.join(workspace_path, "mix.exs"),
       """
-      defmodule TestWorkspace.MixProject do
+      defmodule #{workspace_module}.MixProject do
         use Mix.Project
         def project do
           [
@@ -440,7 +443,7 @@ defmodule Workspace.Test do
       System.cmd("git", ~w[init])
       System.cmd("git", ~w[symbolic-ref HEAD refs/heads/main])
       System.cmd("git", ~w[add .])
-      System.cmd("git", ~w[commit -m "commit"])
+      System.cmd("git", ~w[commit --allow-empty -m "commit"])
     end)
   end
 
@@ -452,16 +455,21 @@ defmodule Workspace.Test do
 
   Raises an `ArgumentError` if the project path does not exist
 
+  ## Options
+
+  * `:file` - The relative path of the file with respect of the project dir to be
+  added. Defaults to `lib/file.ex`
+
   ## Examples
 
       modify_project("/path/to/workspace", "packages/foo")
   """
-  def modify_project(workspace_path, project_path) do
+  def modify_project(workspace_path, project_path, opts \\ []) do
     path = Path.join(workspace_path, project_path)
 
     if not File.exists?(path), do: raise(ArgumentError, "invalid project fixture path: #{path}")
 
-    File.touch!(Path.join(path, "lib/file.ex"))
+    File.touch!(Path.join(path, opts[:file] || "lib/file.ex"))
   end
 
   @doc """
