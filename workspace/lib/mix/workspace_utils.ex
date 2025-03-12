@@ -27,13 +27,13 @@ defmodule Mix.WorkspaceUtils do
   end
 
   defp validate_git_repo!(workspace) do
-    case Workspace.Git.root(cd: workspace.workspace_path) do
-      {:error, _reason} ->
+    case workspace.git_root_path do
+      nil ->
         path = Path.relative_to(workspace.workspace_path, File.cwd!(), force: true)
 
         Mix.raise("status related operations require a git repo, #{path} is not a valid git repo")
 
-      {:ok, _path} ->
+      _path ->
         :ok
     end
   end
