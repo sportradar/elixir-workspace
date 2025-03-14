@@ -285,6 +285,91 @@ defmodule Workspace do
   flags) should be set to either `1` or `true`, for example:
 
       $ WORKSPACE_DEBUG=true mix workspace.check
+
+  ## Multiple workspaces under the same git repo
+
+  You can have multiple workspaces under the same git repo with the only constraint
+  that they cannot be nested.
+
+  > #### Nested workspaces {: .warning}
+  >
+  > Notice that nested workspaces are not allowed, for example if you
+  > have the following structure:
+  >
+  > ```bash
+  > workspace
+  > ├── .workspace.exs
+  > ├── another_workspace
+  > │   ├── .workspace.exs
+  > │   └── mix.exs
+  > └── mix.exs
+  > ```
+  >
+  > an error will be raised.
+
+  This may be useful if you have a monorepo with various projects that have different
+  dependencies and/or different teams managing them with different policies.
+
+  For example, assuming a git repo under `my-repo` you could create as many workspaces as
+  you wish:
+
+  ```bash
+  $ cd my-repo
+  $ mix workspace.new common
+  $ mix workspace.new backend
+  $ mix workspace.new frontend/app_a
+  ```
+
+  > #### Isolated workspaces {: .info}
+  >
+  > Each workspace is treated in isolation, e.g. changes on workspace `common` do not
+  > affect the status of workspace `backend`, even if there are path dependencies
+  > between the two workspaces.
+
+  > #### Running workspace commands from the root of the repo {: .tip}
+  >
+  > If you wish you can install `workspace` at the root, and install commands from
+  > there, specifying the workspace path. This way you will not have to `cd` into the
+  > different workspaces, improving the developer experience.
+  >
+  > You will need a minimal `mix.exs` at the root for istalling `workspace`:
+  >
+  >
+  > ```elixir
+  > defmodule Root.MixWorkspace do
+  >   use Mix.Project
+  >
+  >   def project do
+  >     [
+  >       app: :root,
+  >       version: "0.2.0",
+  >       elixir: "~> 1.15",
+  >       start_permanent: Mix.env() == :prod,
+  >       deps: deps(),
+  >       elixirc_paths: []
+  >     ]
+  >   end
+  >
+  >   def application do
+  >     [
+  >       extra_applications: []
+  >     ]
+  >   end
+  >
+  >   defp deps do
+  >     [
+  >       {:workspace, "~> 0.2"}
+  >     ]
+  >   end
+  > end
+  > ```
+  >
+  > Now from the root you can run workspace commands on any workspace:
+  >
+  > ```bash
+  > $ mix workspace.list --workspace-path common
+  > $ mix workspace.status --workspace-path frontend/app_a
+  > ```
   """
 
   @doc """
