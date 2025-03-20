@@ -716,7 +716,48 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
       runs = File.read!(output) |> Jason.decode!()
 
+      for run <- runs do
+        assert run["status"] == "skip"
+        assert is_nil(run["status_code"])
+        assert is_nil(run["output"])
+      end
+
       assert length(runs) == 11
     end)
+  end
+
+  @tag :tmp_dir
+  test "the output of the executed tasks is exported", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [{:foo, "packages/foo", []}, {:bar, "packages/bar", []}],
+      fn ->
+        output_file = Path.join(tmp_dir, "run.json")
+
+        capture_io(fn ->
+          RunTask.run([
+            "--workspace-path",
+            tmp_dir,
+            "--task",
+            "cmd",
+            "--export",
+            output_file,
+            "--",
+            "echo \"Hello\nworld\""
+          ])
+        end)
+
+        runs = File.read!(output_file) |> Jason.decode!()
+
+        for run <- runs do
+          assert run["status"] == "ok"
+          assert run["status_code"] == 0
+          assert run["output"] == "Hello\nworld\n"
+        end
+
+        assert length(runs) == 2
+      end
+    )
   end
 end

@@ -273,6 +273,18 @@ defmodule Mix.Tasks.Workspace.Run do
 
       # Exporting execution results to test.json
       $ mix workspace.run -t test --export test.json
+
+  For each project the following will be included:
+
+  * The project info
+  * The executed task
+  * The run's status (one of `"ok", error", "skip"`)
+  * Execution time info like the `triggered_at` and `completed_at` timestamps
+  * The task's status code
+  * The task's output with ANSI sequences removed
+
+  Notice that all workspace projects will be included in the generated `json` including
+  the skipped projects.
   """
 
   use Mix.Task
@@ -329,6 +341,7 @@ defmodule Mix.Tasks.Workspace.Run do
             argv: opts[:argv],
             status: execution_status(result, allowed_to_fail?(project.app, opts[:allow_failure])),
             status_code: status_code(result),
+            output: cmd_output(result),
             triggered_at: triggered_at,
             completed_at: completed_at
           }
@@ -417,7 +430,7 @@ defmodule Mix.Tasks.Workspace.Run do
 
     command = System.find_executable(command)
 
-    status_code =
+    {status_code, output} =
       Port.open({:spawn_executable, command}, [
         :stream,
         :hide,
@@ -429,11 +442,11 @@ defmodule Mix.Tasks.Workspace.Run do
         cd: project.path,
         env: env
       ])
-      |> stream_output()
+      |> stream_output([])
 
     case status_code do
-      0 -> :ok
-      status_code -> {:error, status_code}
+      0 -> {:ok, output}
+      status_code -> {:error, status_code, output}
     end
   end
 
@@ -446,26 +459,33 @@ defmodule Mix.Tasks.Workspace.Run do
     ["elixir", "--erl-config", erl_config, "-S", "mix" | args]
   end
 
-  defp stream_output(port) do
+  defp stream_output(port, acc) do
     receive do
       {^port, {:data, data}} ->
+        clean_data = Workspace.ANSI.unescape(data)
+
         IO.write(data)
-        stream_output(port)
+        stream_output(port, [clean_data | acc])
 
       {^port, {:exit_status, status}} ->
-        status
+        {status, Enum.reverse(acc) |> Enum.join()}
     end
   end
 
   defp allowed_to_fail?(project, allowed_to_fail), do: project in allowed_to_fail
 
-  defp execution_status({:error, _status}, true), do: :warn
-  defp execution_status({:error, _status}, false), do: :error
-  defp execution_status(status, _allowed_to_fail), do: status
+  defp execution_status({:error, _status, _output}, true), do: :warn
+  defp execution_status({:error, _status, _output}, false), do: :error
+  defp execution_status({:ok, _output}, _allowed_to_fail), do: :ok
+  defp execution_status(:skip, _allowed_to_fail), do: :skip
 
-  defp status_code({:error, status}), do: status
   defp status_code(:skip), do: nil
-  defp status_code(:ok), do: 0
+  defp status_code({:ok, _output}), do: 0
+  defp status_code({:error, status, _output}), do: status
+
+  defp cmd_output(:skip), do: nil
+  defp cmd_output({:ok, output}), do: output
+  defp cmd_output({:error, _code, output}), do: output
 
   defp maybe_early_stop(result) do
     case result[:status] do
