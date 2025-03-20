@@ -279,7 +279,8 @@ defmodule Mix.Tasks.Workspace.Run do
   * The project info
   * The executed task
   * The run's status (one of `"ok", error", "skip"`)
-  * Execution time info like the `triggered_at` and `completed_at` timestamps
+  * Execution time info like the `triggered_at`, `completed_at` timestamps and the `duration`
+    of the task in milliseconds.
   * The task's status code
   * The task's output with ANSI sequences removed
 
@@ -343,7 +344,8 @@ defmodule Mix.Tasks.Workspace.Run do
             status_code: status_code(result),
             output: cmd_output(result),
             triggered_at: triggered_at,
-            completed_at: completed_at
+            completed_at: completed_at,
+            duration: completed_at - triggered_at
           }
 
         log_task_execution_result(execution_result)
@@ -504,7 +506,7 @@ defmodule Mix.Tasks.Workspace.Run do
         _other -> [" failed with ", highlight("#{result.status_code}", [:bright, :light_red])]
       end
 
-    duration = Workspace.Utils.format_duration(result.completed_at - result.triggered_at)
+    duration = Workspace.Utils.format_duration(result.duration)
 
     log([
       highlight(inspect(result.project.app), [:bright, status_color(status)]),

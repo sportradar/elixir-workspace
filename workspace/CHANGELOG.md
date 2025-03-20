@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * `workspace.run`: store task output in the exported `json`.
 
+* `workspace.run`: include the task duration in milliseconds in the exported `json`.
+
 ## [v0.2.1](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.2.0) (2025-03-14)
 
 * Allow having multiple workspaces under the same git repo.

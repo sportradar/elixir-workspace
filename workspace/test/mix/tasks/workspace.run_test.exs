@@ -720,6 +720,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
         assert run["status"] == "skip"
         assert is_nil(run["status_code"])
         assert is_nil(run["output"])
+        assert run["duration"] == run["completed_at"] - run["triggered_at"]
       end
 
       assert length(runs) == 11
