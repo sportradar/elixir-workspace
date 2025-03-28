@@ -170,6 +170,26 @@ defmodule CliOptions.SchemaTest do
       assert_raise ArgumentError, message, fn ->
         CliOptions.Schema.new!(schema)
       end
+
+      # with multiple set and default not a list
+      schema = [foo: [type: :string, multiple: true, default: "foo"]]
+
+      message =
+        "invalid schema for :foo, :default should be of type {:list, :string}, got: \"foo\""
+
+      assert_raise ArgumentError, message, fn ->
+        CliOptions.Schema.new!(schema)
+      end
+
+      # with multiple set and default invalid type
+      schema = [foo: [type: :integer, multiple: true, default: ["foo"]]]
+
+      message =
+        "invalid schema for :foo, :default should be of type {:list, :integer}, got: [\"foo\"]"
+
+      assert_raise ArgumentError, message, fn ->
+        CliOptions.Schema.new!(schema)
+      end
     end
 
     test "with duplicate aliases" do
