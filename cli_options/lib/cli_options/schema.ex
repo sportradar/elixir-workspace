@@ -58,7 +58,7 @@ defmodule CliOptions.Schema do
       doc: """
       The long name for the option, it is expected to be provided as `--{long_name}`. If
       not set defaults to the option name itself, casted to string with underscores
-      replaced by dashes. 
+      replaced by dashes.
 
       ```cli
       schema = [
@@ -87,7 +87,7 @@ defmodule CliOptions.Schema do
     aliases: [
       type: {:list, :string},
       doc: """
-      Long aliases for the option. It is expected to be a list of strings. 
+      Long aliases for the option. It is expected to be a list of strings.
 
       ```cli
       schema = [user_name: [aliases: ["user_name"]]]
@@ -430,6 +430,19 @@ defmodule CliOptions.Schema do
 
       false ->
         {:error, "invalid value #{inspect(value)} for :#{option}, allowed: #{inspect(allowed)}"}
+    end
+  end
+
+  defp maybe_validate_allowed_value(option, value, allowed) when is_list(value) do
+    invalid = Enum.reject(value, &(&1 in allowed))
+
+    case invalid do
+      [] ->
+        :ok
+
+      _ ->
+        {:error,
+         "invalid values #{inspect(invalid)} for :#{option}, allowed: #{inspect(allowed)}"}
     end
   end
 

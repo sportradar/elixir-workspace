@@ -272,6 +272,31 @@ defmodule CliOptionsTest do
       assert message == ":number expected an integer argument, got: 2a"
     end
 
+    test "multiple with allowed set" do
+      schema = [file: [type: :string, multiple: true, allowed: ["foo.ex", "bar.ex"]]]
+
+      assert {:error, message} =
+               CliOptions.parse(["--file", "foo.ex", "--file", "baz.ex"], schema)
+
+      assert message == "invalid values [\"baz.ex\"] for :file, allowed: [\"foo.ex\", \"bar.ex\"]"
+
+      assert {:ok, {[file: ["foo.ex", "bar.ex"]], [], []}} =
+               CliOptions.parse(["--file", "foo.ex", "--file", "bar.ex"], schema)
+
+      schema = [
+        file: [type: :string, multiple: true, separator: ",", allowed: ["foo.ex", "bar.ex"]]
+      ]
+
+      assert {:error, message} =
+               CliOptions.parse(["--file", "qux.ex,foo.ex,baz.ex"], schema)
+
+      assert message ==
+               "invalid values [\"qux.ex\", \"baz.ex\"] for :file, allowed: [\"foo.ex\", \"bar.ex\"]"
+
+      assert {:ok, {[file: ["foo.ex", "bar.ex"]], [], []}} =
+               CliOptions.parse(["--file", "foo.ex,bar.ex"], schema)
+    end
+
     test "multiple with separator set" do
       # without separator used
       schema = [project: [type: :string, short: "p", multiple: true, separator: ","]]
