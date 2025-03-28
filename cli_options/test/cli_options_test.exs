@@ -297,6 +297,23 @@ defmodule CliOptionsTest do
                CliOptions.parse(["--file", "foo.ex,bar.ex"], schema)
     end
 
+    test "multiple with default set" do
+      schema = [file: [type: :string, multiple: true, default: ["foo.ex", "bar.ex"]]]
+
+      assert {:ok, {[file: ["foo.ex", "bar.ex"]], [], []}} = CliOptions.parse([], schema)
+
+      # `default` does not have to be a list if `multiple` is true
+      schema = [file: [type: :string, multiple: true, default: "foo.ex"]]
+
+      assert {:ok, {[file: ["foo.ex"]], [], []}} = CliOptions.parse([], schema)
+
+      # multiple works as expected
+      assert {:ok, {[file: ["bar.ex"]], [], []}} = CliOptions.parse(["--file", "bar.ex"], schema)
+
+      assert {:ok, {[file: ["foo.ex", "bar.ex"]], [], []}} =
+               CliOptions.parse(["--file", "foo.ex", "--file", "bar.ex"], schema)
+    end
+
     test "multiple with separator set" do
       # without separator used
       schema = [project: [type: :string, short: "p", multiple: true, separator: ","]]
