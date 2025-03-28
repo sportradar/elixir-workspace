@@ -295,7 +295,7 @@ defmodule CliOptions.Schema do
   defp validate_default_value(opts) do
     opts = maybe_add_default_value(opts, opts[:type])
 
-    case validate_type_match(opts[:type], opts[:default]) do
+    case validate_type_match(option_type(opts), opts[:default]) do
       true ->
         {:ok, opts}
 
@@ -310,12 +310,19 @@ defmodule CliOptions.Schema do
   defp maybe_add_default_value(opts, _other), do: opts
 
   defp validate_type_match(_type, nil), do: true
+  defp validate_type_match({:list, type}, value), do: validate_type_match_all(type, value)
   defp validate_type_match(:integer, value), do: is_integer(value)
   defp validate_type_match(:counter, value), do: is_integer(value)
   defp validate_type_match(:string, value), do: is_binary(value)
   defp validate_type_match(:float, value), do: is_float(value)
   defp validate_type_match(:atom, value), do: is_atom(value)
   defp validate_type_match(:boolean, value), do: is_boolean(value)
+
+  defp validate_type_match_all(type, values) do
+    # even if `multiple` is set, `default` does not have to be a list
+    values = List.wrap(values)
+    Enum.all?(values, &validate_type_match(type, &1))
+  end
 
   defp validate_conflicting_options(opts) do
     validate_separator(opts)
@@ -452,6 +459,10 @@ defmodule CliOptions.Schema do
       _other -> schema[:type]
     end
   end
+
+  # cases where `multiple` is set and `default` is not a list
+  defp validate_type({:list, type}, option, values) when is_binary(values),
+    do: validate_type({:list, type}, option, List.wrap(values))
 
   defp validate_type({:list, type}, option, values) when is_list(values) do
     result =
