@@ -295,13 +295,13 @@ defmodule CliOptions.Schema do
   defp validate_default_value(opts) do
     opts = maybe_add_default_value(opts, opts[:type])
 
-    case validate_type_match(opts[:type], opts[:default]) do
+    case validate_type_match(option_type(opts), opts[:default]) do
       true ->
         {:ok, opts}
 
       false ->
         {:error,
-         ":default should be of type #{inspect(opts[:type])}, got: #{inspect(opts[:default])}"}
+         ":default should be of type #{inspect(option_type(opts))}, got: #{inspect(opts[:default])}"}
     end
   end
 
@@ -310,6 +310,12 @@ defmodule CliOptions.Schema do
   defp maybe_add_default_value(opts, _other), do: opts
 
   defp validate_type_match(_type, nil), do: true
+
+  defp validate_type_match({:list, type}, value) when is_list(value),
+    do: Enum.all?(value, &validate_type_match(type, &1))
+
+  defp validate_type_match({:list, _type}, value) when not is_list(value), do: false
+
   defp validate_type_match(:integer, value), do: is_integer(value)
   defp validate_type_match(:counter, value), do: is_integer(value)
   defp validate_type_match(:string, value), do: is_binary(value)
