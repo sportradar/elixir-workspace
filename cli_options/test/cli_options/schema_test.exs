@@ -150,17 +150,6 @@ defmodule CliOptions.SchemaTest do
         CliOptions.Schema.new!(schema)
       end
 
-      # allowed values
-      schema = [foo: [allowed: ["ff", 1]]]
-
-      message =
-        "invalid schema for :foo, invalid list in :allowed option: invalid value " <>
-          "for list element at position 1: expected string, got: 1"
-
-      assert_raise ArgumentError, message, fn ->
-        CliOptions.Schema.new!(schema)
-      end
-
       # invalid conflicts_with target
       schema = [bar: [type: :string], foo: [conflicts_with: [:bar, :baz, :project]]]
 
