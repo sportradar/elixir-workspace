@@ -35,7 +35,7 @@ defmodule CliOptions.DocsTest do
         """
         * `--verbose` (`boolean`) - [default: `false`]
         * `-p, --project...` (`string`) - Required. The project to use
-        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `parallel`]
+        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `\"parallel\"`]
         * `--with-dash` (`boolean`) - a key with a dash [default: `false`]
         """
         |> String.trim()
@@ -51,7 +51,7 @@ defmodule CliOptions.DocsTest do
 
         ### Test related options
 
-        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `parallel`]
+        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `\"parallel\"`]
         * `--with-dash` (`boolean`) - a key with a dash [default: `false`]
         """
         |> String.trim()
@@ -101,7 +101,7 @@ defmodule CliOptions.DocsTest do
 
         ### Test related options
 
-        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `parallel`]
+        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `\"parallel\"`]
         * `--with-dash` (`boolean`) - a key with a dash [default: `false`]
         """
         |> String.trim()
@@ -115,7 +115,7 @@ defmodule CliOptions.DocsTest do
     test "with sorting enabled" do
       expected =
         """
-        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `parallel`]
+        * `--mode` (`string`) - Allowed values: `["parallel", "serial"]`. [default: `\"parallel\"`]
         * `-p, --project...` (`string`) - Required. The project to use
         * `--verbose` (`boolean`) - [default: `false`]
         * `--with-dash` (`boolean`) - a key with a dash [default: `false`]
@@ -175,7 +175,7 @@ defmodule CliOptions.DocsTest do
 
       expected =
         """
-        * `-v, --var` (`string`) - a var [env: MY_ENV=] [default: `foo`] [aliases: `--var1`, `--var2`]
+        * `-v, --var` (`string`) - a var [env: MY_ENV=] [default: `\"foo\"`] [aliases: `--var1`, `--var2`]
         * `--another` (`integer`) - another var [env: ANOTHER_ENV=]
         """
         |> String.trim()
@@ -191,6 +191,33 @@ defmodule CliOptions.DocsTest do
       expected =
         """
         * `-v, --var...` (`string`) - a var [values can be grouped with the `;;` separator]
+        """
+        |> String.trim()
+
+      assert CliOptions.docs(schema) == expected
+    end
+
+    test "with default list" do
+      schema = [
+        var: [doc: "a var", default: ["foo", "bar"], multiple: true]
+      ]
+
+      expected =
+        """
+        * `--var...` (`string`) - a var [default: `[\"foo\", \"bar\"]`]
+        """
+        |> String.trim()
+
+      assert CliOptions.docs(schema) == expected
+
+      # atom type
+      schema = [
+        var: [type: :atom, doc: "a var", default: [:foo, :bar], multiple: true]
+      ]
+
+      expected =
+        """
+        * `--var...` (`atom`) - a var [default: `[:foo, :bar]`]
         """
         |> String.trim()
 
