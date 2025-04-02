@@ -193,7 +193,7 @@ defmodule CliOptions.Docs do
   defp maybe_default(schema) do
     case schema[:default] do
       nil -> ""
-      default -> "[default: `#{default}`]"
+      default -> "[default: `#{inspect(default)}`]"
     end
   end
 

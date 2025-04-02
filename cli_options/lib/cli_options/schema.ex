@@ -168,7 +168,7 @@ defmodule CliOptions.Schema do
       """
     ],
     allowed: [
-      type: {:list, :string},
+      type: {:list, :any},
       doc: """
       A set of allowed values for the option. If any other value is given an exception
       will be raised during parsing.
@@ -406,8 +406,8 @@ defmodule CliOptions.Schema do
     value = value_or_default(value, schema)
 
     with {:ok, value} <- validate_value(option, value, schema),
-         :ok <- maybe_validate_allowed_value(option, value, schema[:allowed]) do
-      validate_type(option_type(schema), option, value)
+         {:ok, value} <- validate_type(option_type(schema), option, value) do
+      maybe_validate_allowed_value(option, value, schema[:allowed])
     end
   end
 
@@ -427,28 +427,28 @@ defmodule CliOptions.Schema do
     end
   end
 
-  defp maybe_validate_allowed_value(_option, _value, nil), do: :ok
-
-  defp maybe_validate_allowed_value(option, value, allowed) when is_binary(value) do
-    case value in allowed do
-      true ->
-        :ok
-
-      false ->
-        {:error, "invalid value #{inspect(value)} for :#{option}, allowed: #{inspect(allowed)}"}
-    end
-  end
+  defp maybe_validate_allowed_value(_option, value, nil), do: {:ok, value}
 
   defp maybe_validate_allowed_value(option, value, allowed) when is_list(value) do
     invalid = Enum.reject(value, &(&1 in allowed))
 
     case invalid do
       [] ->
-        :ok
+        {:ok, value}
 
       _ ->
         {:error,
          "invalid values #{inspect(invalid)} for :#{option}, allowed: #{inspect(allowed)}"}
+    end
+  end
+
+  defp maybe_validate_allowed_value(option, value, allowed) do
+    case value in allowed do
+      true ->
+        {:ok, value}
+
+      false ->
+        {:error, "invalid value #{inspect(value)} for :#{option}, allowed: #{inspect(allowed)}"}
     end
   end
 
@@ -497,6 +497,8 @@ defmodule CliOptions.Schema do
 
   defp validate_type(:atom, _option, value) when is_binary(value),
     do: {:ok, String.to_atom(value)}
+
+  defp validate_type(:atom, _option, value) when is_atom(value), do: {:ok, value}
 
   defp validate_type(:boolean, _option, value) when is_boolean(value), do: {:ok, value}
 

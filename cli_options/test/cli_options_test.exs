@@ -198,7 +198,7 @@ defmodule CliOptionsTest do
 
     test "with allowed values set" do
       schema = [
-        mode: [type: :atom, allowed: ["fast", "slow"]]
+        mode: [type: :atom, allowed: [:fast, :slow]]
       ]
 
       assert {:ok, {opts, [], []}} = CliOptions.parse(["--mode", "fast"], schema)
@@ -206,7 +206,7 @@ defmodule CliOptionsTest do
 
       # with not allowed value
       assert {:error, message} = CliOptions.parse(["--mode", "other"], schema)
-      assert message == "invalid value \"other\" for :mode, allowed: [\"fast\", \"slow\"]"
+      assert message == "invalid value :other for :mode, allowed: [:fast, :slow]"
     end
 
     test "with default values" do
@@ -225,6 +225,56 @@ defmodule CliOptionsTest do
 
       assert opts == [file: "mix.exs", runs: 1, verbose: true]
       assert args == ["foo", "bar"]
+    end
+
+    test "with default and allowed values set" do
+      schema = [
+        mode: [type: :atom, default: :fast, allowed: [:fast, :slow]]
+      ]
+
+      # works when option from default
+      assert {:ok, {opts, [], []}} = CliOptions.parse([], schema)
+      assert opts == [mode: :fast]
+
+      # works when option from cli
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--mode", "slow"], schema)
+      assert opts == [mode: :slow]
+
+      # with not allowed value from cli
+      assert {:error, message} = CliOptions.parse(["--mode", "very_fast"], schema)
+      assert message == "invalid value :very_fast for :mode, allowed: [:fast, :slow]"
+
+      # with not allowed value from default
+      schema = [
+        mode: [type: :atom, default: :very_fast, allowed: [:fast, :slow]]
+      ]
+
+      assert {:error, message} = CliOptions.parse([], schema)
+      assert message == "invalid value :very_fast for :mode, allowed: [:fast, :slow]"
+
+      schema = [
+        attribute: [type: :integer, default: 1, allowed: [1, 2, 3]]
+      ]
+
+      # works when option from default
+      assert {:ok, {opts, [], []}} = CliOptions.parse([], schema)
+      assert opts == [attribute: 1]
+
+      # works when option from cli
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--attribute", "2"], schema)
+      assert opts == [attribute: 2]
+
+      # with not allowed value from cli
+      assert {:error, message} = CliOptions.parse(["--attribute", "4"], schema)
+      assert message == "invalid value 4 for :attribute, allowed: [1, 2, 3]"
+
+      # with not allowed value from default
+      schema = [
+        attribute: [type: :integer, default: 4, allowed: [1, 2, 3]]
+      ]
+
+      assert {:error, message} = CliOptions.parse([], schema)
+      assert message == "invalid value 4 for :attribute, allowed: [1, 2, 3]"
     end
 
     test "with required options" do
