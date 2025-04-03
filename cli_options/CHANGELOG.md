@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v0.1.6](https://github.com/sportradar/elixir-workspace/tree/cli_options/v0.1.6) (2025-04-03)
+
+### Fixed
+
+* Properly format default values in docs when they are lists.
+* Fix default values validation when allowed is set.
+
 ## [v0.1.5](https://github.com/sportradar/elixir-workspace/tree/cli_options/v0.1.5) (2025-03-28)
 
 ### Fixed
