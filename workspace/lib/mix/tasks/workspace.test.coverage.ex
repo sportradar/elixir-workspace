@@ -22,7 +22,8 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
                       :exclude,
                       :tags,
                       :excluded_tags,
-                      :verbose
+                      :verbose,
+                      :paths
                     ],
                     opts
                   )
