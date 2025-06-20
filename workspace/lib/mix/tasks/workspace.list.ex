@@ -49,7 +49,9 @@ defmodule Mix.Tasks.Workspace.List do
                       :excluded_tags,
                       :dependency,
                       :dependent,
-                      :show_status
+                      :show_status,
+                      :base,
+                      :head
                     ],
                     opts
                   )

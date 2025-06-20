@@ -377,4 +377,45 @@ defmodule Mix.Tasks.Workspace.ListTest do
       end
     )
   end
+
+  @tag :tmp_dir
+  test "prints the workspace projects when base and head are set", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        Workspace.Test.modify_project(tmp_dir, "package_c")
+        Workspace.Test.commit_changes(tmp_dir)
+
+        expected = """
+        Found 11 workspace projects matching the given options.
+          * :package_a ● package_a/mix.exs :shared, area:core
+          * :package_b ✔ package_b/mix.exs - a dummy project
+          * :package_c ✚ package_c/mix.exs
+          * :package_d ✔ package_d/mix.exs
+          * :package_e ✔ package_e/mix.exs
+          * :package_f ✔ package_f/mix.exs
+          * :package_g ✔ package_g/mix.exs
+          * :package_h ✔ package_h/mix.exs
+          * :package_i ✔ package_i/mix.exs
+          * :package_j ✔ package_j/mix.exs
+          * :package_k ✔ nested/package_k/mix.exs
+        """
+
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--show-status",
+                   "--base",
+                   "HEAD~1",
+                   "--head",
+                   "HEAD"
+                 ])
+               end) == expected
+      end,
+      git: true
+    )
+  end
 end
