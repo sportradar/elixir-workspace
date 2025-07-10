@@ -2,7 +2,7 @@ defmodule Workspace.MixProject do
   use Mix.Project
 
   @app :workspace
-  @version "0.2.1"
+  @version "0.2.2"
   @repo_url "https://github.com/sportradar/elixir-workspace"
 
   def project do
