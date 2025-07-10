@@ -1,21 +1,30 @@
 defmodule Mix.Tasks.Workspace.List do
   opts = [
+    format: [
+      type: :string,
+      default: "pretty",
+      doc: """
+      The output format of the list. It can be one of the following:
+        * `json` - pretty prints the list as a json.
+        * `pretty` - pretty prints the list.
+      """,
+      allowed: ["json", "pretty"]
+    ],
     json: [
       type: :boolean,
-      default: false,
       doc: """
       If set a `json` file will be generated with the list of workspace projects and
       associated metadata. By default it will be saved in `workspace.json` in the
       current directory. You can override the output path by setting the `--output`
       option.
       """,
+      deprecated: "Use `--format json` with `--output` instead.",
       doc_section: :export
     ],
     output: [
       type: :string,
-      default: "workspace.json",
       doc: """
-      The output file. Applicable only if `--json` is set.
+      Save the list to a file. Applicable only if `--format` is set to `json`.
       """,
       doc_section: :export
     ],
@@ -24,7 +33,7 @@ defmodule Mix.Tasks.Workspace.List do
       default: false,
       doc: """
       If set the paths in the exported json file will be relative with respect to the
-      workspace path. Applicable only if `--json` is set.
+      workspace path. Applicable only if `--format` is set to `json`.
       """,
       doc_section: :export
     ],
@@ -162,13 +171,18 @@ defmodule Mix.Tasks.Workspace.List do
   end
 
   defp list_or_save_workspace_projects(workspace, opts) do
-    case opts[:json] do
-      false -> list_workspace_projects(workspace, opts[:show_status])
-      true -> write_json(workspace, opts)
-    end
+    # TODO: remove --json support in 0.4.0
+    opts =
+      if opts[:json] do
+        Keyword.merge(opts, format: "json", output: opts[:output] || "workspace.json")
+      else
+        opts
+      end
+
+    output_result(workspace, opts, opts[:format])
   end
 
-  defp list_workspace_projects(workspace, show_status) do
+  defp output_result(workspace, opts, "pretty") do
     projects = Workspace.projects(workspace)
 
     case Enum.count(projects, &(not &1.skip)) do
@@ -184,13 +198,26 @@ defmodule Mix.Tasks.Workspace.List do
           :reset,
           " matching the given options."
         ])
+
+        max_project_length = max_project_length(projects)
+
+        projects
+        |> Enum.sort_by(& &1.app)
+        |> Enum.each(&print_project_info(&1, max_project_length, opts[:show_status]))
     end
+  end
 
-    max_project_length = max_project_length(projects)
+  defp output_result(workspace, opts, "json") do
+    json_data = Workspace.Export.to_json(workspace, sort: true, relative: opts[:relative_paths])
 
-    projects
-    |> Enum.sort_by(& &1.app)
-    |> Enum.each(&print_project_info(&1, max_project_length, show_status))
+    case opts[:output] do
+      nil ->
+        IO.puts(json_data)
+
+      output ->
+        File.write!(output, json_data)
+        Workspace.Cli.log([:green, "generated ", :reset, output], prefix: :header)
+    end
   end
 
   defp max_project_length([]), do: 0
@@ -222,14 +249,6 @@ defmodule Mix.Tasks.Workspace.List do
 
   defp description(nil), do: ""
   defp description(doc) when is_binary(doc), do: [" - ", doc]
-
-  defp write_json(workspace, opts) do
-    json_data = Workspace.Export.to_json(workspace, sort: true, relative: opts[:relative_paths])
-
-    File.write!(opts[:output], json_data)
-
-    Workspace.Cli.log([:green, "generated ", :reset, opts[:output]], prefix: :header)
-  end
 
   defp tags([]), do: []
 
