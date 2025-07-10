@@ -12,6 +12,12 @@ defmodule Mix.Tasks.Workspace.List do
     ],
     json: [
       type: :boolean,
+      doc: """
+      If set a `json` file will be generated with the list of workspace projects and
+      associated metadata. By default it will be saved in `workspace.json` in the
+      current directory. You can override the output path by setting the `--output`
+      option.
+      """,
       deprecated: "Use `--format json` with `--output` instead.",
       doc_section: :export
     ],
