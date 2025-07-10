@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * `workspace.run`: include the task duration in milliseconds in the exported `json`.
 
-* `workspace.list`: support `--base` and `--head` options.
+* `workspace.list`: support `--base`, `--head`, `--affected` and `---modified` options.
 
 * `workspace.test.coverage`: allow filtering by package path.
 
