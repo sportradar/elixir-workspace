@@ -50,6 +50,8 @@ defmodule Mix.Tasks.Workspace.List do
                       :dependency,
                       :dependent,
                       :show_status,
+                      :affected,
+                      :modified,
                       :base,
                       :head
                     ],
@@ -93,7 +95,7 @@ defmodule Mix.Tasks.Workspace.List do
       $ mix workspace.list --path packages/shared --path packages/infra
 
   In large monorepos you may want to get all projects depending on a specific package. You
-  can achieve this through the `--dependency` option: 
+  can achieve this through the `--dependency` option:
 
       $ mix workspace.list --dependency foo
 
