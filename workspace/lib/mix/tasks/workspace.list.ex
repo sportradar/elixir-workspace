@@ -12,15 +12,11 @@ defmodule Mix.Tasks.Workspace.List do
     ],
     json: [
       type: :boolean,
-      default: nil,
-      doc: """
-      deprecated: Use `--format json` with `--output` instead.
-      """,
+      deprecated: "Use `--format json` with `--output` instead.",
       doc_section: :export
     ],
     output: [
       type: :string,
-      default: nil,
       doc: """
       Save the list to a file. Applicable only if `--format` is set to `json`.
       """,
@@ -167,10 +163,9 @@ defmodule Mix.Tasks.Workspace.List do
   end
 
   defp list_or_save_workspace_projects(workspace, opts) do
-    # remove once we drop support for `--json`
+    # TODO: remove --json support in 0.4.0
     opts =
       if opts[:json] do
-        IO.warn("`--json` is deprecated, use `--format json` with `--output` instead")
         Keyword.merge(opts, format: "json", output: opts[:output] || "workspace.json")
       else
         opts
@@ -211,7 +206,9 @@ defmodule Mix.Tasks.Workspace.List do
       nil ->
         IO.puts(json_data)
 
-      output -> write_json(json_data, output)
+      output ->
+        File.write!(output, json_data)
+        Workspace.Cli.log([:green, "generated ", :reset, output], prefix: :header)
     end
   end
 
@@ -244,11 +241,6 @@ defmodule Mix.Tasks.Workspace.List do
 
   defp description(nil), do: ""
   defp description(doc) when is_binary(doc), do: [" - ", doc]
-
-  defp write_json(json_data, output) do
-    File.write!(output, json_data)
-    Workspace.Cli.log([:green, "generated ", :reset, output], prefix: :header)
-  end
 
   defp tags([]), do: []
 
