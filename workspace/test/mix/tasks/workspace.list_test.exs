@@ -460,14 +460,15 @@ defmodule Mix.Tasks.Workspace.ListTest do
       [],
       :default,
       fn ->
-        output = capture_io(fn ->
-          ListTask.run([
-            "--workspace-path",
-            tmp_dir,
-            "--format",
-            "json"
-          ])
-        end)
+        output =
+          capture_io(fn ->
+            ListTask.run([
+              "--workspace-path",
+              tmp_dir,
+              "--format",
+              "json"
+            ])
+          end)
 
         data = Jason.decode!(output)
 

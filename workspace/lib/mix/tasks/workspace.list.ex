@@ -197,11 +197,11 @@ defmodule Mix.Tasks.Workspace.List do
           " matching the given options."
         ])
 
-      max_project_length = max_project_length(projects)
+        max_project_length = max_project_length(projects)
 
-      projects
-      |> Enum.sort_by(& &1.app)
-      |> Enum.each(&print_project_info(&1, max_project_length, opts[:show_status]))
+        projects
+        |> Enum.sort_by(& &1.app)
+        |> Enum.each(&print_project_info(&1, max_project_length, opts[:show_status]))
     end
   end
 
