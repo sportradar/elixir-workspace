@@ -12,20 +12,17 @@ defmodule Mix.Tasks.Workspace.List do
     ],
     json: [
       type: :boolean,
-      default: false,
+      default: nil,
       doc: """
-      If set a `json` file will be generated with the list of workspace projects and
-      associated metadata. By default it will be saved in `workspace.json` in the
-      current directory. You can override the output path by setting the `--output`
-      option.
+      deprecated: Use `--format json` with `--output` instead.
       """,
       doc_section: :export
     ],
     output: [
       type: :string,
-      default: "workspace.json",
+      default: nil,
       doc: """
-      The output file. Applicable only if `--json` is set.
+      Save the list to a file. Applicable only if `--format` is set to `json`.
       """,
       doc_section: :export
     ],
@@ -34,7 +31,7 @@ defmodule Mix.Tasks.Workspace.List do
       default: false,
       doc: """
       If set the paths in the exported json file will be relative with respect to the
-      workspace path. Applicable only if `--json` is set.
+      workspace path. Applicable only if `--format` is set to `json`.
       """,
       doc_section: :export
     ],
@@ -132,9 +129,7 @@ defmodule Mix.Tasks.Workspace.List do
 
   """
   use Mix.Task
-
-  alias Workspace.List.Formatter
-  alias Workspace.List.Formatters
+  alias Workspace.Cli
 
   @impl Mix.Task
   def run(args) do
@@ -172,24 +167,96 @@ defmodule Mix.Tasks.Workspace.List do
   end
 
   defp list_or_save_workspace_projects(workspace, opts) do
-    case opts[:json] do
-      false -> print_workspace_projects(workspace, opts)
-      true -> write_json(workspace, opts)
+    # remove once we drop support for `--json`
+    opts =
+      if opts[:json] do
+        IO.warn("`--json` is deprecated, use `--format json` with `--output` instead")
+        Keyword.merge(opts, format: "json", output: opts[:output] || "workspace.json")
+      else
+        opts
+      end
+
+    output_result(workspace, opts, opts[:format])
+  end
+
+  defp output_result(workspace, opts, "pretty") do
+    projects = Workspace.projects(workspace)
+
+    case Enum.count(projects, &(not &1.skip)) do
+      0 ->
+        Cli.log([:bright, :yellow, "No matching projects for the given options", :reset])
+
+      valid ->
+        Cli.log([
+          "Found ",
+          :bright,
+          :blue,
+          "#{valid} workspace projects",
+          :reset,
+          " matching the given options."
+        ])
+
+      max_project_length = max_project_length(projects)
+
+      projects
+      |> Enum.sort_by(& &1.app)
+      |> Enum.each(&print_project_info(&1, max_project_length, opts[:show_status]))
     end
   end
 
-  defp print_workspace_projects(workspace, opts) do
-    case opts[:format] do
-      "pretty" -> Formatter.format(Formatters.Pretty, workspace, opts)
-      "json" -> Formatter.format(Formatters.Json, workspace, opts)
-    end
-  end
-
-  defp write_json(workspace, opts) do
+  defp output_result(workspace, opts, "json") do
     json_data = Workspace.Export.to_json(workspace, sort: true, relative: opts[:relative_paths])
 
-    File.write!(opts[:output], json_data)
+    case opts[:output] do
+      nil ->
+        IO.puts(json_data)
 
-    Workspace.Cli.log([:green, "generated ", :reset, opts[:output]], prefix: :header)
+      output -> write_json(json_data, output)
+    end
+  end
+
+  defp max_project_length([]), do: 0
+
+  defp max_project_length(projects) do
+    projects
+    |> Enum.map(fn project -> inspect(project.app) |> String.length() end)
+    |> Enum.max()
+  end
+
+  defp print_project_info(%Workspace.Project{skip: true}, _length, _show_status), do: :ok
+
+  defp print_project_info(project, max_project_length, show_status) do
+    indent_size = max_project_length - String.length(inspect(project.app))
+    indent = String.duplicate(" ", indent_size)
+
+    Cli.log([
+      "  * ",
+      Cli.project_name(project, show_status: show_status, pretty: true),
+      indent,
+      :light_black,
+      " ",
+      Path.relative_to(project.mix_path, project.workspace_path),
+      :reset,
+      description(project.config[:description]),
+      tags(project.tags)
+    ])
+  end
+
+  defp description(nil), do: ""
+  defp description(doc) when is_binary(doc), do: [" - ", doc]
+
+  defp write_json(json_data, output) do
+    File.write!(output, json_data)
+    Workspace.Cli.log([:green, "generated ", :reset, output], prefix: :header)
+  end
+
+  defp tags([]), do: []
+
+  defp tags(tags) do
+    tags =
+      Enum.map(tags, fn tag -> [:tag, Workspace.Project.format_tag(tag), :reset] end)
+      |> Enum.intersperse(", ")
+
+    [" " | tags]
   end
 end
