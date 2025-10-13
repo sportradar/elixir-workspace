@@ -281,15 +281,17 @@ defmodule Mix.Tasks.Workspace.ListTest do
         ==> generated #{output}
         """
 
-        assert capture_io(fn ->
-                 ListTask.run([
-                   "--workspace-path",
-                   tmp_dir,
-                   "--json",
-                   "--output",
-                   output
-                 ])
-               end) == expected
+        capture_io(:stderr, fn ->
+          assert capture_io(fn ->
+                   ListTask.run([
+                     "--workspace-path",
+                     tmp_dir,
+                     "--json",
+                     "--output",
+                     output
+                   ])
+                 end) == expected
+        end)
 
         data = File.read!(output) |> Jason.decode!()
 
@@ -319,16 +321,18 @@ defmodule Mix.Tasks.Workspace.ListTest do
         ==> generated #{output}
         """
 
-        assert capture_io(fn ->
-                 ListTask.run([
-                   "--workspace-path",
-                   tmp_dir,
-                   "--json",
-                   "--output",
-                   output,
-                   "--relative-paths"
-                 ])
-               end) == expected
+        capture_io(:stderr, fn ->
+          assert capture_io(fn ->
+                   ListTask.run([
+                     "--workspace-path",
+                     tmp_dir,
+                     "--json",
+                     "--output",
+                     output,
+                     "--relative-paths"
+                   ])
+                 end) == expected
+        end)
 
         data = File.read!(output) |> Jason.decode!()
 
@@ -357,19 +361,21 @@ defmodule Mix.Tasks.Workspace.ListTest do
         ==> generated #{output}
         """
 
-        assert capture_io(fn ->
-                 ListTask.run([
-                   "--workspace-path",
-                   tmp_dir,
-                   "--json",
-                   "--output",
-                   output,
-                   "-e",
-                   "package_a",
-                   "-e",
-                   "package_b"
-                 ])
-               end) == expected
+        capture_io(:stderr, fn ->
+          assert capture_io(fn ->
+                   ListTask.run([
+                     "--workspace-path",
+                     tmp_dir,
+                     "--json",
+                     "--output",
+                     output,
+                     "-e",
+                     "package_a",
+                     "-e",
+                     "package_b"
+                   ])
+                 end) == expected
+        end)
 
         assert %{"projects" => projects} = File.read!(output) |> Jason.decode!()
 
