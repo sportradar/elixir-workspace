@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
 * Add `:affected_by` option for explicit project dependencies
 
   Enables projects to declare dependencies on files outside their directory
@@ -36,6 +38,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Cross-language dependencies (e.g., Rust NIFs depending on Rust crates)
   - Shared configuration files across multiple projects
   - Documentation changes that affect project builds
+
+### Deprecated
+
+* Add `--format` option to `workspace.list` with support for `json` and `pretty` output formats
+
+  The new `--format` option provides a more flexible way to control output format:
+  - `--format json` outputs JSON data (replaces the deprecated `--json` flag)
+  - `--format pretty` outputs human-readable format (default)
+  
+  The `--json` option is now deprecated and will be removed in version 0.4.0.
+  Use `--format json` with `--output` instead for the same functionality.
 
 ## [v0.2.2](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.2.2) (2025-07-10)
 
