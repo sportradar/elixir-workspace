@@ -4,6 +4,39 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+* Add `:affected_by` option for explicit project dependencies
+
+  Enables projects to declare dependencies on files outside their directory
+  structure, addressing common monorepo scenarios where projects depend
+  on shared resources that cannot be detected through mix dependencies.
+
+  In order to explicitly declare dependencies, you can now add in your
+  `:workspace` config in the project's `mix.exs`:
+
+  ```elixir
+  def project do
+  [
+    app: :web,
+    # ... other config
+    workspace: [
+      affected_by: [
+        "../shared/config.ex",
+        "../docs/**/*.md",
+        "../rust/foo/"
+      ]
+    ]
+  ]
+  end
+  ```
+
+  Use cases include
+
+  - Cross-language dependencies (e.g., Rust NIFs depending on Rust crates)
+  - Shared configuration files across multiple projects
+  - Documentation changes that affect project builds
+
 ## [v0.2.2](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.2.2) (2025-07-10)
 
 ### Added
