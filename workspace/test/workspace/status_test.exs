@@ -237,7 +237,7 @@ defmodule Workspace.StatusTest do
 
         Workspace.Test.commit_changes(tmp_dir)
 
-        # modify both workspaces 
+        # modify both workspaces
         Workspace.Test.modify_project(workspace_path, "packages/foo")
         Workspace.Test.modify_project(another_workspace_path, "packages/bar")
 
@@ -245,7 +245,7 @@ defmodule Workspace.StatusTest do
         another_workspace = Workspace.new!(another_workspace_path)
 
         # the changed files should include the changed project, with paths relative to
-        # the git root, the changed file of the other workspace should be under `nil` 
+        # the git root, the changed file of the other workspace should be under `nil`
         assert Workspace.Status.changed(workspace) == %{
                  nil: [{"nested/another_workspace/packages/bar/lib/file.ex", :untracked}],
                  foo: [{"workspace/packages/foo/lib/file.ex", :untracked}]
@@ -264,5 +264,111 @@ defmodule Workspace.StatusTest do
         assert Workspace.Status.affected(another_workspace) == [:bar, :foo]
       end)
     end
+  end
+
+  describe "affected_by paths" do
+    @tag :tmp_dir
+    test "marks project as affected when affected_by files change", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        [
+          {:package_a, "package_a", [workspace: [affected_by: ["../shared/config.ex"]]]},
+          {:package_b, "package_b", [workspace: [affected_by: ["../docs/*.md"]]]}
+        ],
+        fn ->
+          # Create shared files
+          shared_dir = Path.join(tmp_dir, "shared")
+          File.mkdir_p!(shared_dir)
+          File.write!(Path.join(shared_dir, "config.ex"), "# config")
+
+          workspace = Workspace.new!(tmp_dir)
+          refute workspace.status_updated?
+
+          # Modify shared config file
+          File.write!(Path.join(shared_dir, "config.ex"), "# updated config")
+
+          workspace = Workspace.Status.update(workspace, [])
+          assert workspace.status_updated?
+
+          # package_a should be affected due to shared/config.ex change
+          assert workspace.projects[:package_a].status == :affected
+          # package_b should be unaffected
+          assert workspace.projects[:package_b].status == :undefined
+
+          docs_dir = Path.join(tmp_dir, "docs")
+          File.mkdir_p!(docs_dir)
+          File.write!(Path.join(docs_dir, "README.md"), "# docs")
+
+          workspace = Workspace.Status.update(workspace, force: true)
+          assert workspace.status_updated?
+
+          # package_b should be affected due to docs/*.md change
+          assert workspace.projects[:package_b].status == :affected
+        end,
+        git: true
+      )
+    end
+
+    @tag :tmp_dir
+    test "supports wildcard patterns in affected_by", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        [
+          {:package_a, "package_a", [workspace: [affected_by: ["../shared/*.ex"]]]}
+        ],
+        fn ->
+          # Create shared files
+          shared_dir = Path.join(tmp_dir, "shared")
+          File.mkdir_p!(shared_dir)
+
+          File.write!(Path.join(shared_dir, "config.txt"), "# config")
+
+          workspace = Workspace.new!(tmp_dir)
+          refute workspace.status_updated?
+
+          # should not be affected by a *.txt change
+          assert workspace.projects[:package_a].status == :undefined
+
+          # Modify .ex file in shared (should match)
+          File.write!(Path.join(shared_dir, "utils.ex"), "# updated utils")
+
+          workspace = Workspace.Status.update(workspace, force: true)
+          assert workspace.status_updated?
+
+          # package_a should be affected
+          assert workspace.projects[:package_a].status == :affected
+        end,
+        git: true
+      )
+    end
+  end
+
+  @tag :tmp_dir
+  test "supports parent directory in affected_by", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [
+        {:package_a, "package_a", [workspace: [affected_by: ["../shared"]]]}
+      ],
+      fn ->
+        workspace = Workspace.new!(tmp_dir)
+        workspace = Workspace.Status.update(workspace, force: true)
+
+        assert workspace.projects[:package_a].status == :undefined
+
+        # Create shared files
+        shared_dir = Path.join(tmp_dir, "shared")
+        File.mkdir_p!(shared_dir)
+
+        File.write!(Path.join(shared_dir, "config.txt"), "# config")
+
+        workspace = Workspace.Status.update(workspace, force: true)
+        assert workspace.projects[:package_a].status == :affected
+      end,
+      git: true
+    )
   end
 end

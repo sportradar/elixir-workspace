@@ -54,9 +54,16 @@ defmodule Workspace.Status do
             end)
           end)
 
-        # Affected projects
+        # Check for projects affected by their affected_by paths
+        affected_by_changes = check_affected_by_paths(workspace, changes)
+
+        # Affected projects (from dependencies + affected_by paths)
         modified = Enum.map(modifications, fn {project, _changes} -> project end)
-        affected = Workspace.Graph.affected(workspace, modified)
+
+        affected_by_modified =
+          Enum.map(affected_by_changes, fn {project, _changes} -> project end)
+
+        affected = Workspace.Graph.affected(workspace, modified ++ affected_by_modified)
 
         projects =
           Enum.reduce(affected, projects, fn project, workspace_projects ->
@@ -166,5 +173,49 @@ defmodule Workspace.Status do
     |> Enum.filter(fn {_name, project} -> Workspace.Project.affected?(project) end)
     |> Enum.map(fn {name, _project} -> name end)
     |> Enum.sort()
+  end
+
+  defp check_affected_by_paths(workspace, changes) do
+    base_path = workspace.git_root_path || workspace.workspace_path
+
+    # Expand all changed files to full paths
+    changed_files =
+      changes
+      |> Map.values()
+      |> List.flatten()
+      |> Enum.map(fn {changed_file, type} ->
+        {Path.expand(changed_file, base_path), type}
+      end)
+
+    # Check each project's affected_by paths
+    workspace.projects
+    |> Enum.filter(fn {_name, project} -> length(project.affected_by) > 0 end)
+    |> Enum.reduce(%{}, fn {name, project}, acc ->
+      affected_files =
+        project.affected_by
+        |> Enum.filter(fn affected_path ->
+          # affected_path is already expanded in project creation
+          # Check if any changed file matches this affected_by path
+          Enum.any?(changed_files, fn {full_changed_path, _type} ->
+            matches_affected_by_path?(full_changed_path, affected_path)
+          end)
+        end)
+
+      if length(affected_files) > 0 do
+        # Create file_info entries for the affected files
+        file_infos = Enum.map(affected_files, fn file -> {file, :modified} end)
+        Map.put(acc, name, file_infos)
+      else
+        acc
+      end
+    end)
+  end
+
+  defp matches_affected_by_path?(changed_path, affected_path) do
+    cond do
+      Workspace.Utils.Path.parent_dir?(affected_path, changed_path) -> true
+      changed_path in Path.wildcard(affected_path) -> true
+      true -> false
+    end
   end
 end

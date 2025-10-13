@@ -13,6 +13,25 @@ defmodule Workspace.Project do
       """,
       required: false,
       default: []
+    ],
+    affected_by: [
+      type: {:list, :string},
+      doc: """
+      List of file paths that if changed will mark this project as affected.
+      This is useful when a project depends on files outside of its root path.
+      Paths are relative to the project's root directory and support wildcards.
+
+      ```elixir
+      affected_by: ["../shared/config.ex", "../../docs/*.md", "config/*.json"]
+      ```
+
+      Supported wildcards:
+      - `*` matches any characters except path separators
+      - `?` matches a single character
+      - Directory paths will match any file within that directory
+      """,
+      required: false,
+      default: []
     ]
   ]
 
@@ -56,7 +75,8 @@ defmodule Workspace.Project do
           status: :undefined | :unaffected | :modified | :affected,
           root?: nil | boolean(),
           changes: nil | [{Path.t(), Workspace.Git.change_type()}],
-          tags: [tag()]
+          tags: [tag()],
+          affected_by: [String.t()]
         }
 
   @enforce_keys [:app, :module, :config, :mix_path, :path, :workspace_path]
@@ -70,7 +90,8 @@ defmodule Workspace.Project do
             status: :undefined,
             root?: nil,
             changes: nil,
-            tags: []
+            tags: [],
+            affected_by: []
 
   @doc """
   Creates a new project for the given project path.
@@ -109,15 +130,20 @@ defmodule Workspace.Project do
         ) :: t()
   def new(workspace_path, mix_path, module, config) do
     workspace_config = validate_workspace_project_config!(config)
+    project_path = Path.dirname(mix_path)
+
+    # Expand affected_by paths relative to the project path
+    affected_by = Enum.map(workspace_config[:affected_by], &Path.expand(&1, project_path))
 
     %__MODULE__{
       app: config[:app],
       module: module,
       config: config,
       mix_path: mix_path,
-      path: Path.dirname(mix_path),
+      path: project_path,
       workspace_path: workspace_path,
-      tags: workspace_config[:tags]
+      tags: workspace_config[:tags],
+      affected_by: affected_by
     }
   end
 

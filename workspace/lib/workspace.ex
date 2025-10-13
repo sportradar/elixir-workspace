@@ -44,12 +44,12 @@ defmodule Workspace do
   ```
   my_workspace
   ├── apps
-  │   ├── api         # an API app 
+  │   ├── api         # an API app
   │   └── ui          # the UI project
   ├── mix.exs         # this is the workspace root definition
   ├── .workspace.exs  # the workspace config
   └── packages        # various reusable packages under packages
-      ├── package_a 
+      ├── package_a
       ├── package_b
       └── package_c
   ```
@@ -91,7 +91,7 @@ defmodule Workspace do
   > an exception will be raised.
   >
   > For example the following workspace:
-  > 
+  >
   > ```
   > my_workspace
   > ├── apps
@@ -123,7 +123,7 @@ defmodule Workspace do
   each project with graph metadata.
 
   > #### Inspecting the graph {: .tip}
-  > 
+  >
   > You can use the `workspace.graph` command in order to see the
   > graph of the given `workspace`. For example:
   >
@@ -198,7 +198,7 @@ defmodule Workspace do
     * `:modified` - returns only the modified projects, e.g. projects for which
     the code has changed
     * `:affected` - returns all affected projects. Affected projects are the
-    modified ones plus the 
+    modified ones plus the
 
   `:modified` and `:affected` can be combined with the global filtering options.
 
@@ -213,7 +213,7 @@ defmodule Workspace do
   > should select a specific top level app when building the project. This will
   > ignore all other irrelevant apps.
   >   - When changing a specific set of projects, you should use `:modified` for
-  > formatting the code since everything else is not affected. 
+  > formatting the code since everything else is not affected.
   >   - Similarly for testing you should use the `:affected` filtering since a
   > change on a project may affect all parents.
   >   - It is advised to have generic CI pipelines on master/main branches that
@@ -258,7 +258,7 @@ defmodule Workspace do
   >   classDef affected fill:#FA6,color:#FFF;
   >   classDef modified fill:#F33,color:#FFF;
   > ```
-  > 
+  >
   > Modified projects are indicated with red colors, and affected projects are
   > highlighted with orange color.
   >
@@ -273,6 +273,55 @@ defmodule Workspace do
   >
   > # we want to test all the affected ones
   > mix workspace.run -t test --affected
+  > ```
+
+  ### Explicit dependencies
+
+  Sometimes you may want to specify explicit dependencies between projects and files
+  that cannot be deduced by the mix dependencies. For example you may have a Rust NIF
+  project which uses a Rust crate also present in your monorepo, or you may require
+  some `*.exs` files that are shared across the workspace.
+
+  In such cases you can use the `:affected_by` option in the project's workspace config
+  to explicitly define those dependencies. If any of the files defined there
+  is changed, then the project is considered affected.
+
+  When workspace status is updated, the system checks if any changed files match
+  the patterns defined in `affected_by`. If a match is found, the project is marked
+  as `:affected` and will be included in affected project lists.
+
+  > #### Path Resolution & Patterns {: .info}
+  >
+  > All paths in `:affected_by` are resolved relative to the **workspace's root directory**.
+  > This means you can reference files outside your project using relative paths like
+  > `../shared/config.ex` or `../../docs/README.md`.
+  >
+  > The `:affected_by` option supports several path patterns:
+  >
+  > - **Exact file paths**: `"../shared/config.ex"` - matches only this specific file
+  > - **Wildcard patterns**:
+  >   - `"../shared/*.ex"` - matches any `.ex` file in the `../shared/` directory
+  >   - `"../docs/**/*.md"` - matches any `.md` file in the `../docs/` directory including
+  > nested directories
+  > - **Directory paths**: `"../shared/"` - matches any file within the `../shared/` directory
+  >
+  > For example:
+  >
+  > ```elixir
+  > # In a project's mix.exs
+  > def project do
+  >   [
+  >     # ... other config
+  >     workspace: [
+  >       affected_by: [
+  >         "../shared/config.ex",           # Specific file
+  >         "../shared/*.ex",                # All .ex files in shared directory
+  >         "../../docs/**/*.md",             # All markdown files in docs including nested directories
+  >         "../shared/",                    # Any file in shared directory
+  >       ]
+  >     ]
+  >   ]
+  > end
   > ```
 
   ## Environment variables
@@ -575,7 +624,7 @@ defmodule Workspace do
   end
 
   @doc """
-  Returns `true` if the given `app` is a `workspace` project, `false` otherwise. 
+  Returns `true` if the given `app` is a `workspace` project, `false` otherwise.
   """
   @spec project?(workspace :: Workspace.State.t(), app :: atom()) :: boolean()
   def project?(workspace, app) when is_struct(workspace, Workspace.State) and is_atom(app),
