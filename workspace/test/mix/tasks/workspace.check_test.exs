@@ -241,4 +241,115 @@ defmodule Mix.Tasks.Workspace.CheckTest do
       end
     )
   end
+
+  @tag :tmp_dir
+  test "handles checks returning empty list", %{tmp_dir: tmp_dir} do
+    # Create a custom check module that returns empty list from format_result
+    defmodule EmptyListCheck do
+      @behaviour Workspace.Check
+
+      @impl Workspace.Check
+      def schema, do: []
+
+      @impl Workspace.Check
+      def check(workspace, check) do
+        Workspace.Check.check_projects(workspace, check, fn _project ->
+          {:ok, []}
+        end)
+      end
+
+      @impl Workspace.Check
+      def format_result(_result) do
+        []
+      end
+    end
+
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [{:test_project, "test_project", []}],
+      fn ->
+        config_content = """
+        [
+          checks: [
+            [
+              id: :empty_list_test,
+              module: Mix.Tasks.Workspace.CheckTest.EmptyListCheck,
+              description: "test that returns empty list from format_result"
+            ]
+          ]
+        ]
+        """
+
+        config_path = Path.join(tmp_dir, ".workspace.exs")
+        File.write!(config_path, config_content)
+
+        expected = [
+          "running 1 workspace checks on the workspace",
+          "==> C000 empty_list_test test that returns empty list from format_result",
+          "OK    :test_project"
+        ]
+
+        captured =
+          capture_io(fn ->
+            CheckTask.run([
+              "--workspace-path",
+              tmp_dir,
+              "--verbose"
+            ])
+          end)
+
+        assert_cli_output_match(captured, expected)
+      end
+    )
+  end
+
+  @tag :tmp_dir
+  test "emits warning for checks without id field", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [{:test_project, "test_project", []}],
+      fn ->
+        config_content = """
+        [
+          checks: [
+            [
+              module: Workspace.Checks.ValidateProject,
+              description: "test check without id field",
+              opts: [
+                validate: fn _project -> {:ok, "always passes"} end
+              ]
+            ]
+          ]
+        ]
+        """
+
+        config_path = Path.join(tmp_dir, ".workspace.exs")
+        File.write!(config_path, config_content)
+
+        expected = [
+          "running 1 workspace checks on the workspace",
+          "==> C000 test check without id field",
+          "OK    :test_project - always passes"
+        ]
+
+        warning =
+          capture_io(:stderr, fn ->
+            captured =
+              capture_io(fn ->
+                CheckTask.run([
+                  "--workspace-path",
+                  tmp_dir,
+                  "--verbose"
+                ])
+              end)
+
+            assert_cli_output_match(captured, expected)
+          end)
+
+        assert warning =~ "Having a check without id is deprecated"
+      end
+    )
+  end
 end

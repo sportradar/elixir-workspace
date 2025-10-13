@@ -220,8 +220,6 @@ defmodule Mix.Tasks.Workspace.List do
     end
   end
 
-  defp max_project_length([]), do: 0
-
   defp max_project_length(projects) do
     projects
     |> Enum.map(fn project -> inspect(project.app) |> String.length() end)
