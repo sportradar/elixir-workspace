@@ -52,12 +52,12 @@ defmodule Workspace.Check.Result do
   Sets the result's status.
   """
   @spec set_status(result :: t(), status :: atom()) :: t()
-  def set_status(result, status) when status in @valid_statuses,
-    do: %__MODULE__{result | status: status}
+  def set_status(%__MODULE__{} = result, status) when status in @valid_statuses,
+    do: %{result | status: status}
 
   @doc """
   Sets the result's metadata.
   """
   @spec set_metadata(result :: t(), metadata :: keyword()) :: t()
-  def set_metadata(result, metadata), do: %__MODULE__{result | meta: metadata}
+  def set_metadata(%__MODULE__{} = result, metadata), do: %{result | meta: metadata}
 end

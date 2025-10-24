@@ -122,13 +122,13 @@ defmodule Workspace.State do
     set_projects(workspace, projects)
   end
 
-  def set_projects(workspace, projects) when is_map(projects) do
-    %__MODULE__{workspace | projects: projects}
+  def set_projects(%__MODULE__{} = workspace, projects) when is_map(projects) do
+    %{workspace | projects: projects}
   end
 
   @doc false
   @spec status_updated(workspace :: t()) :: t()
-  def status_updated(workspace), do: %__MODULE__{workspace | status_updated?: true}
+  def status_updated(%__MODULE__{} = workspace), do: %{workspace | status_updated?: true}
 
   @doc false
   @spec status_updated?(workspace :: t()) :: boolean()

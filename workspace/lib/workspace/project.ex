@@ -231,21 +231,21 @@ defmodule Workspace.Project do
   Sets the status of the given `project`.
   """
   @spec set_status(project :: t(), status :: atom()) :: t()
-  def set_status(project, status) when status in @valid_statuses,
-    do: %Workspace.Project{project | status: status}
+  def set_status(%Workspace.Project{} = project, status) when status in @valid_statuses,
+    do: %{project | status: status}
 
   @doc """
   Flags the given `project` as root project or not.
   """
   @spec set_root(project :: t(), root? :: boolean()) :: t()
-  def set_root(project, root?) when is_boolean(root?),
-    do: %Workspace.Project{project | root?: root?}
+  def set_root(%Workspace.Project{} = project, root?) when is_boolean(root?),
+    do: %{project | root?: root?}
 
   @doc """
   Marks the given project as skippable.
   """
   @spec skip(project :: t()) :: t()
-  def skip(project), do: %Workspace.Project{project | skip: true}
+  def skip(%Workspace.Project{} = project), do: %{project | skip: true}
 
   @doc """
   Marks the given project as `:modified`.
@@ -261,8 +261,8 @@ defmodule Workspace.Project do
           "Cannot mark #{inspect(project.app)} as modified without any associated changes"
   end
 
-  def modified(project, changes) when is_list(changes) do
-    %Workspace.Project{
+  def modified(%Workspace.Project{} = project, changes) when is_list(changes) do
+    %{
       project
       | status: :modified,
         changes: changes
@@ -286,10 +286,10 @@ defmodule Workspace.Project do
   considered affected.
   """
   @spec affected(project :: t()) :: t()
-  def affected(project) when is_struct(project, Workspace.Project) do
+  def affected(%Workspace.Project{} = project) do
     case project.status do
       :modified -> project
-      _other -> %__MODULE__{project | status: :affected}
+      _other -> %{project | status: :affected}
     end
   end
 
