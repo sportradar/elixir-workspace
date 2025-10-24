@@ -384,7 +384,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "--env-var",
           "FOO=bar",
           "--",
-          "--shell",
+          maybe_shell(),
           "echo",
           "$FOO"
         ]
@@ -396,9 +396,9 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
         assert_cli_output_match(captured, [
           "Running task in 1 workspace projects",
-          "==> :package_a - mix cmd --shell echo $FOO",
+          ~r"==> :package_a - mix cmd(?: --shell)?\s+echo \$FOO",
           "bar",
-          ":package_a mix cmd --shell echo $FOO succeeded ["
+          ~r":package_a mix cmd(?: --shell)?\s+echo \$FOO succeeded \["
         ])
 
         assert System.get_env("FOO") == nil
@@ -418,7 +418,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "--workspace-path",
           tmp_dir,
           "--",
-          "--shell",
+          maybe_shell(),
           "exit",
           "1"
         ]
@@ -436,12 +436,12 @@ defmodule Mix.Tasks.Workspace.RunTest do
         assert_cli_output_match(
           captured,
           [
-            "==> :package_a - mix cmd --shell exit 1",
+            ~r"==> :package_a - mix cmd(?: --shell)?\s+exit 1",
             "** (exit) 1",
-            ":package_a mix cmd --shell exit 1 failed with 1",
-            "==> :package_b - mix cmd --shell exit 1",
+            ~r":package_a mix cmd(?: --shell)?\s+exit 1 failed with 1",
+            ~r"==> :package_b - mix cmd(?: --shell)?\s+exit 1",
             "** (exit) 1",
-            ":package_b mix cmd --shell exit 1 failed with 1"
+            ~r":package_b mix cmd(?: --shell)?\s+exit 1 failed with 1"
           ],
           partial: true
         )
@@ -462,7 +462,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "--workspace-path",
           tmp_dir,
           "--",
-          "--shell",
+          maybe_shell(),
           "exit",
           "1"
         ]
@@ -477,16 +477,16 @@ defmodule Mix.Tasks.Workspace.RunTest do
         assert_cli_output_match(
           captured,
           [
-            "==> :package_a - mix cmd --shell exit 1",
+            ~r"==> :package_a - mix cmd(?: --shell)?\s+exit 1",
             "** (exit) 1",
-            ":package_a mix cmd --shell exit 1 failed with 1"
+            ~r":package_a mix cmd(?: --shell)?\s+exit 1 failed with 1"
           ],
           partial: true
         )
 
         refute_cli_output_match(captured, [
-          "==> :package_b - mix cmd --shell exit 1",
-          ":package_b mix cmd --shell exit 1 failed with 1"
+          ~r"==> :package_b - mix cmd(?: --shell)?\s+exit 1",
+          ~r":package_b mix cmd(?: --shell)?\s+exit 1 failed with 1"
         ])
       end)
     end
@@ -505,7 +505,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "--workspace-path",
           tmp_dir,
           "--",
-          "--shell",
+          maybe_shell(),
           "exit",
           "0"
         ]
@@ -515,8 +515,8 @@ defmodule Mix.Tasks.Workspace.RunTest do
         assert_cli_output_match(
           captured,
           [
-            "==> :package_a - mix cmd --shell exit 0",
-            "==> :package_b - mix cmd --shell exit 0"
+            ~r"==> :package_a - mix cmd(?: --shell)?\s+exit 0",
+            ~r"==> :package_b - mix cmd(?: --shell)?\s+exit 0"
           ],
           partial: true
         )
@@ -540,7 +540,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "--workspace-path",
           tmp_dir,
           "--",
-          "--shell",
+          maybe_shell(),
           "exit",
           "1"
         ]
@@ -553,12 +553,12 @@ defmodule Mix.Tasks.Workspace.RunTest do
         assert_cli_output_match(
           captured,
           [
-            "==> :package_a - mix cmd --shell exit 1",
+            ~r"==> :package_a - mix cmd(?: --shell)?\s+exit 1",
             "** (exit) 1",
-            ":package_a mix cmd --shell exit 1 failed with 1",
-            "==> :package_b - mix cmd --shell exit 1",
+            ~r":package_a mix cmd(?: --shell)?\s+exit 1 failed with 1",
+            ~r"==> :package_b - mix cmd(?: --shell)?\s+exit 1",
             "** (exit) 1",
-            ":package_b mix cmd --shell exit 1 failed with 1",
+            ~r":package_b mix cmd(?: --shell)?\s+exit 1 failed with 1",
             "WARNING task failed in 2 projects but the --alow-failure flag is set",
             "failed projects - [:package_a, :package_b]"
           ],
@@ -750,7 +750,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
             "--export",
             output_file,
             "--",
-            "--shell",
+            maybe_shell(),
             "echo \"Hello\nworld\""
           ])
         end)
@@ -766,5 +766,13 @@ defmodule Mix.Tasks.Workspace.RunTest do
         assert length(runs) == 2
       end
     )
+  end
+
+  defp maybe_shell do
+    if System.version() |> String.starts_with?("1.19") do
+      "--shell"
+    else
+      ""
+    end
   end
 end
