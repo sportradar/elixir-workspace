@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [v0.3.1](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.3.1) (2025-10-24)
+
+### Fixed
+
+* Fix type violation warnings on Elixir 1.19
+
 ## [v0.3.0](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.3.0) (2025-10-13)
 
 ### Added
