@@ -29,6 +29,10 @@ defmodule Workspace.MixWorkspace do
     ]
   end
 
+  def cli do
+    [preferred_envs: ["workspace.test.coverage": :test]]
+  end
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [

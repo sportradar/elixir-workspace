@@ -31,10 +31,7 @@ defmodule CliOptions.MixProject do
       # Docs
       name: "CliOptions",
       docs: docs(),
-      source_url: @repo_url,
-
-      # Linters
-      dialyzer: dialyzer()
+      source_url: @repo_url
     ]
   end
 
@@ -47,10 +44,9 @@ defmodule CliOptions.MixProject do
   defp deps do
     [
       {:nimble_options, "~> 1.1.1"},
-      {:ex_doc, "== 0.37.2", only: :dev, runtime: false},
+      {:ex_doc, "== 0.39.1", only: :dev, runtime: false},
       {:fancy_fences, "~> 0.3.1", only: :dev, runtime: false},
-      {:credo, "== 1.7.11", only: [:dev, :test], runtime: false},
-      {:dialyxir, "== 1.4.5", only: [:dev], runtime: false},
+      {:credo, "== 1.7.13", only: [:dev, :test], runtime: false},
       {:doctor, "== 0.22.0", only: :dev, runtime: false}
     ]
   end
@@ -86,23 +82,6 @@ defmodule CliOptions.MixProject do
         LICENSE: [title: "License"]
       ],
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
-    ]
-  end
-
-  defp dialyzer do
-    [
-      plt_core_path: "../artifacts/plts",
-      plt_local_path: "../artifacts/plts",
-      plt_file: {:no_warn, "../artifacts/plts/cli_options.plt"},
-      plt_add_deps: :apps_direct,
-      plt_add_apps: [:mix],
-      flags: [
-        "-Werror_handling",
-        "-Wextra_return",
-        "-Wmissing_return",
-        "-Wunknown",
-        "-Wunderspecs"
-      ]
     ]
   end
 end

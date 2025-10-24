@@ -127,13 +127,8 @@
       opts: [
         deps: [
           nimble_options: [version: "~> 1.1.1"],
-          # dev dependencies
-          dialyxir: [
-            version: "== 1.4.5",
-            options: [only: [:dev], runtime: false]
-          ],
-          ex_doc: [version: "== 0.37.2"],
-          credo: [version: "== 1.7.11"],
+          ex_doc: [version: "== 0.39.1"],
+          credo: [version: "== 1.7.13"],
           doctor: [version: "== 0.22.0"]
         ]
       ]

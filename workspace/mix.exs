@@ -31,10 +31,7 @@ defmodule Workspace.MixProject do
       # Docs
       name: "Workspace",
       docs: docs(),
-      source_url: @repo_url,
-
-      # Linters
-      dialyzer: dialyzer()
+      source_url: @repo_url
     ]
   end
 
@@ -63,9 +60,8 @@ defmodule Workspace.MixProject do
       {:cli_options, "~> 0.1.4"},
       {:nimble_options, "~> 1.1.1"},
       {:jason, "~> 1.4.1", optional: true},
-      {:ex_doc, "== 0.37.2", only: :dev, runtime: false},
-      {:credo, "== 1.7.11", only: [:dev, :test], runtime: false},
-      {:dialyxir, "== 1.4.5", only: [:dev], runtime: false},
+      {:ex_doc, "== 0.39.1", only: :dev, runtime: false},
+      {:credo, "== 1.7.13", only: [:dev, :test], runtime: false},
       {:doctor, "== 0.22.0", only: :dev, runtime: false}
     ]
   end
@@ -152,19 +148,4 @@ defmodule Workspace.MixProject do
   end
 
   defp before_closing_body_tag(:epub), do: ""
-
-  defp dialyzer do
-    [
-      plt_file: {:no_warn, "../artifacts/plts/workspace"},
-      plt_add_deps: :apps_direct,
-      plt_add_apps: [:mix],
-      flags: [
-        "-Werror_handling",
-        "-Wextra_return",
-        "-Wmissing_return",
-        "-Wunknown",
-        "-Wunderspecs"
-      ]
-    ]
-  end
 end
