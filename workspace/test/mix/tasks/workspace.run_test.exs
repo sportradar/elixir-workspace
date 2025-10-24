@@ -384,6 +384,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "--env-var",
           "FOO=bar",
           "--",
+          "--shell",
           "echo",
           "$FOO"
         ]
@@ -395,9 +396,9 @@ defmodule Mix.Tasks.Workspace.RunTest do
 
         assert_cli_output_match(captured, [
           "Running task in 1 workspace projects",
-          "==> :package_a - mix cmd echo $FOO",
+          "==> :package_a - mix cmd --shell echo $FOO",
           "bar",
-          ":package_a mix cmd echo $FOO succeeded ["
+          ":package_a mix cmd --shell echo $FOO succeeded ["
         ])
 
         assert System.get_env("FOO") == nil
@@ -417,6 +418,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "--workspace-path",
           tmp_dir,
           "--",
+          "--shell",
           "exit",
           "1"
         ]
@@ -434,12 +436,12 @@ defmodule Mix.Tasks.Workspace.RunTest do
         assert_cli_output_match(
           captured,
           [
-            "==> :package_a - mix cmd exit 1",
+            "==> :package_a - mix cmd --shell exit 1",
             "** (exit) 1",
-            ":package_a mix cmd exit 1 failed with 1",
-            "==> :package_b - mix cmd exit 1",
+            ":package_a mix cmd --shell exit 1 failed with 1",
+            "==> :package_b - mix cmd --shell exit 1",
             "** (exit) 1",
-            ":package_b mix cmd exit 1 failed with 1"
+            ":package_b mix cmd --shell exit 1 failed with 1"
           ],
           partial: true
         )
@@ -460,6 +462,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "--workspace-path",
           tmp_dir,
           "--",
+          "--shell",
           "exit",
           "1"
         ]
@@ -474,16 +477,16 @@ defmodule Mix.Tasks.Workspace.RunTest do
         assert_cli_output_match(
           captured,
           [
-            "==> :package_a - mix cmd exit 1",
+            "==> :package_a - mix cmd --shell exit 1",
             "** (exit) 1",
-            ":package_a mix cmd exit 1 failed with 1"
+            ":package_a mix cmd --shell exit 1 failed with 1"
           ],
           partial: true
         )
 
         refute_cli_output_match(captured, [
-          "==> :package_b - mix cmd exit 1",
-          ":package_b mix cmd exit 1 failed with 1"
+          "==> :package_b - mix cmd --shell exit 1",
+          ":package_b mix cmd --shell exit 1 failed with 1"
         ])
       end)
     end
@@ -502,6 +505,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "--workspace-path",
           tmp_dir,
           "--",
+          "--shell",
           "exit",
           "0"
         ]
@@ -511,8 +515,8 @@ defmodule Mix.Tasks.Workspace.RunTest do
         assert_cli_output_match(
           captured,
           [
-            "==> :package_a - mix cmd exit 0",
-            "==> :package_b - mix cmd exit 0"
+            "==> :package_a - mix cmd --shell exit 0",
+            "==> :package_b - mix cmd --shell exit 0"
           ],
           partial: true
         )
@@ -536,6 +540,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "--workspace-path",
           tmp_dir,
           "--",
+          "--shell",
           "exit",
           "1"
         ]
@@ -548,12 +553,12 @@ defmodule Mix.Tasks.Workspace.RunTest do
         assert_cli_output_match(
           captured,
           [
-            "==> :package_a - mix cmd exit 1",
+            "==> :package_a - mix cmd --shell exit 1",
             "** (exit) 1",
-            ":package_a mix cmd exit 1 failed with 1",
-            "==> :package_b - mix cmd exit 1",
+            ":package_a mix cmd --shell exit 1 failed with 1",
+            "==> :package_b - mix cmd --shell exit 1",
             "** (exit) 1",
-            ":package_b mix cmd exit 1 failed with 1",
+            ":package_b mix cmd --shell exit 1 failed with 1",
             "WARNING task failed in 2 projects but the --alow-failure flag is set",
             "failed projects - [:package_a, :package_b]"
           ],
@@ -745,6 +750,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
             "--export",
             output_file,
             "--",
+            "--shell",
             "echo \"Hello\nworld\""
           ])
         end)

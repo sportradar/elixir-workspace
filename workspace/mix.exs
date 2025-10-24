@@ -17,6 +17,7 @@ defmodule Workspace.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
 
       # Tests
+      test_ignore_filters: [&String.contains?(&1, "test/fixtures/")],
       test_coverage: [
         ignore_modules: [Workspace.TestUtils],
         threshold: 97,

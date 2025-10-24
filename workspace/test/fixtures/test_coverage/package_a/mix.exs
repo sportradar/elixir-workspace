@@ -9,6 +9,7 @@ defmodule PackageA.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_pattern: "*_test_fixture.exs",
+      test_load_filters: [&String.ends_with?(&1, "_test_fixture.exs")],
       test_coverage: [
         export: "package_a"
       ]
