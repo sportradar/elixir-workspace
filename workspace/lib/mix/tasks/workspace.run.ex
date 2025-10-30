@@ -95,7 +95,8 @@ defmodule Mix.Tasks.Workspace.Run do
                       :show_status,
                       :paths,
                       :dependency,
-                      :dependent
+                      :dependent,
+                      :recursive
                     ],
                     opts
                   )

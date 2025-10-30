@@ -890,6 +890,117 @@ defmodule Mix.Tasks.Workspace.RunTest do
     )
   end
 
+  describe "filtering with --recursive option" do
+    @tag :tmp_dir
+    test "with --dependency and --recursive", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        :default,
+        fn ->
+          # Without --recursive: only package_b and package_f have package_g as direct dependency
+          # With --recursive: package_a also transitively depends on package_g
+          args = [
+            "--workspace-path",
+            tmp_dir,
+            "--dependency",
+            "package_g",
+            "--recursive",
+            "--dry-run" | @default_run_task
+          ]
+
+          captured =
+            capture_io(fn ->
+              RunTask.run(args)
+            end)
+
+          assert_cli_output_match(captured, [
+            "Running task in 4 workspace projects",
+            "==> :package_a - mix format --check-formatted mix.exs",
+            "==> :package_b - mix format --check-formatted mix.exs",
+            "==> :package_c - mix format --check-formatted mix.exs",
+            "==> :package_f - mix format --check-formatted mix.exs"
+          ])
+        end
+      )
+    end
+
+    @tag :tmp_dir
+    test "with --dependent and --recursive", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        :default,
+        fn ->
+          # Without --recursive: package_a depends directly on package_b, package_c, package_d
+          # With --recursive: also includes transitive dependencies
+          args = [
+            "--workspace-path",
+            tmp_dir,
+            "--dependent",
+            "package_a",
+            "--recursive",
+            "--dry-run" | @default_run_task
+          ]
+
+          captured =
+            capture_io(fn ->
+              RunTask.run(args)
+            end)
+
+          assert_cli_output_match(captured, [
+            "Running task in 6 workspace projects",
+            "==> :package_b - mix format --check-formatted mix.exs",
+            "==> :package_c - mix format --check-formatted mix.exs",
+            "==> :package_d - mix format --check-formatted mix.exs",
+            "==> :package_e - mix format --check-formatted mix.exs",
+            "==> :package_f - mix format --check-formatted mix.exs",
+            "==> :package_g - mix format --check-formatted mix.exs"
+          ])
+
+          # Verify package_a itself is not included
+          refute String.contains?(captured, "==> :package_a")
+        end
+      )
+    end
+
+    @tag :tmp_dir
+    test "with --dependency without --recursive only shows direct dependencies", %{
+      tmp_dir: tmp_dir
+    } do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        :default,
+        fn ->
+          # Without --recursive: only direct dependencies (package_b and package_f)
+          args = [
+            "--workspace-path",
+            tmp_dir,
+            "--dependency",
+            "package_g",
+            "--dry-run" | @default_run_task
+          ]
+
+          captured =
+            capture_io(fn ->
+              RunTask.run(args)
+            end)
+
+          assert_cli_output_match(captured, [
+            "Running task in 2 workspace projects",
+            "==> :package_b - mix format --check-formatted mix.exs",
+            "==> :package_f - mix format --check-formatted mix.exs"
+          ])
+
+          # Verify transitive dependents (package_a, package_c) are not included
+          refute String.contains?(captured, "==> :package_a")
+          refute String.contains?(captured, "==> :package_c")
+        end
+      )
+    end
+  end
+
   defp maybe_shell do
     if System.version() |> String.starts_with?("1.19") do
       "--shell"

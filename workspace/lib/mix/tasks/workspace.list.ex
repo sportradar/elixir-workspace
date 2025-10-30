@@ -59,6 +59,7 @@ defmodule Mix.Tasks.Workspace.List do
                       :excluded_tags,
                       :dependency,
                       :dependent,
+                      :recursive,
                       :show_status,
                       :affected,
                       :modified,
@@ -114,6 +115,15 @@ defmodule Mix.Tasks.Workspace.List do
 
       $ mix workspace.list --dependent foo
 
+  By default, both `--dependency` and `--dependent` consider only direct (first-level)
+  dependencies. You can use the `--recursive` flag to include all transitive dependencies:
+
+      # Get all projects that transitively depend on foo (direct and indirect)
+      $ mix workspace.list --dependency foo --recursive
+
+      # Get all transitive dependencies of foo (direct and indirect)
+      $ mix workspace.list --dependent foo --recursive
+
   You can also filter by the project's maintainer. The search is case insensitive. The
   maintainers are expected to be defined under `package`:
 
@@ -157,6 +167,8 @@ defmodule Mix.Tasks.Workspace.List do
   >
   > This creates a minimal workspace containing only the projects relevant to `my_api`,
   > making it easier to navigate and work with a specific subset of your monorepo.
+  >
+  > If you want to also include transitive dependencies, you can use the `--recursive` flag.
 
   """
   use Mix.Task

@@ -130,4 +130,80 @@ defmodule Workspace.GraphTest do
              ]
     end
   end
+
+  describe "all_dependencies/2" do
+    test "returns all transitive dependencies of a project" do
+      workspace = Workspace.Test.workspace_fixture(:default)
+
+      # package_d has no dependencies
+      assert Graph.all_dependencies(workspace, :package_d) == []
+
+      # package_a -> package_b -> package_g (transitive)
+      # package_a -> package_c -> package_e
+      # package_a -> package_c -> package_f -> package_g (transitive)
+      # package_a -> package_d
+      deps = Graph.all_dependencies(workspace, :package_a) |> Enum.sort()
+
+      assert :package_b in deps
+      assert :package_c in deps
+      assert :package_d in deps
+      assert :package_e in deps
+      assert :package_f in deps
+      assert :package_g in deps
+    end
+
+    test "includes nested transitive dependencies" do
+      workspace = Workspace.Test.workspace_fixture(:default)
+
+      # package_c -> package_e, package_f
+      # package_f -> package_g
+      deps = Graph.all_dependencies(workspace, :package_c) |> Enum.sort()
+
+      assert deps == [:package_e, :package_f, :package_g]
+    end
+
+    test "single level dependency returns only direct dependencies" do
+      workspace = Workspace.Test.workspace_fixture(:default)
+
+      # package_b -> package_g (single level)
+      deps = Graph.all_dependencies(workspace, :package_b)
+
+      assert deps == [:package_g]
+    end
+  end
+
+  describe "all_dependents/2" do
+    test "returns all projects that depend on the given project transitively" do
+      workspace = Workspace.Test.workspace_fixture(:default)
+
+      # package_g is depended on by package_b and package_f
+      # package_b is depended on by package_a
+      # package_f is depended on by package_c
+      # package_c is depended on by package_a
+      # So all_dependents of package_g should include: package_a, package_b, package_c, package_f
+      dependents = Graph.all_dependents(workspace, :package_g) |> Enum.sort()
+
+      assert :package_a in dependents
+      assert :package_b in dependents
+      assert :package_c in dependents
+      assert :package_f in dependents
+    end
+
+    test "returns empty list for projects with no dependents" do
+      workspace = Workspace.Test.workspace_fixture(:default)
+
+      # package_a is a source project with no dependents
+      assert Graph.all_dependents(workspace, :package_a) == []
+    end
+
+    test "returns direct and transitive dependents" do
+      workspace = Workspace.Test.workspace_fixture(:default)
+
+      # package_d is depended on by package_a and package_h
+      dependents = Graph.all_dependents(workspace, :package_d) |> Enum.sort()
+
+      assert :package_a in dependents
+      assert :package_h in dependents
+    end
+  end
 end

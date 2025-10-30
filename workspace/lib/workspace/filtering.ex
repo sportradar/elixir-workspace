@@ -37,6 +37,8 @@ defmodule Workspace.Filtering do
     Only projects located under any of the provided path will be considered.
     * `:dependency` (`t:atom/0`) - keeps only projects that have the given dependency.
     * `:dependent` (`t:atom/0`) - keeps only dependencies of the given project.
+    * `:recursive` (`t:boolean/0`) - if set, when used with `:dependency` or `:dependent`,
+    it will consider all transitive dependencies instead of just first-level ones. Defaults to `false`.
     * `:affected` (`t:boolean/0`) - if set only the affected projects will be
     included and everything else will be skipped. Defaults to `false`.
     * `:modified` (`t:boolean/0`) - if set only the modified projects will be
@@ -86,6 +88,7 @@ defmodule Workspace.Filtering do
       tags: Enum.map(opts[:tags] || [], &maybe_to_tag/1),
       dependency: maybe_to_atom(opts[:dependency]),
       dependent: maybe_to_atom(opts[:dependent]),
+      recursive: opts[:recursive] || false,
       paths: opts[:paths]
     ]
 
@@ -152,10 +155,10 @@ defmodule Workspace.Filtering do
     |> skip_if(workspace, fn project, _workspace -> not_affected?(project, opts[:affected]) end)
     |> skip_if(workspace, fn project, _workspace -> not_modified?(project, opts[:modified]) end)
     |> skip_if(workspace, fn project, workspace ->
-      not_dependency?(workspace, project, opts[:dependency])
+      not_dependency?(workspace, project, opts[:dependency], opts[:recursive])
     end)
     |> skip_if(workspace, fn project, workspace ->
-      not_dependent?(workspace, project, opts[:dependent])
+      not_dependent?(workspace, project, opts[:dependent], opts[:recursive])
     end)
   end
 
@@ -203,13 +206,29 @@ defmodule Workspace.Filtering do
   defp not_modified?(_project, false), do: false
   defp not_modified?(project, true), do: not Workspace.Project.modified?(project)
 
-  defp not_dependency?(_workspace, _project, nil), do: false
+  defp not_dependency?(_workspace, _project, nil, _recursive), do: false
 
-  defp not_dependency?(workspace, project, dependency),
-    do: dependency not in Workspace.Graph.dependencies(workspace, project.app)
+  defp not_dependency?(workspace, project, dependency, recursive) do
+    deps =
+      if recursive do
+        Workspace.Graph.all_dependencies(workspace, project.app)
+      else
+        Workspace.Graph.dependencies(workspace, project.app)
+      end
 
-  defp not_dependent?(_workspace, _project, nil), do: false
+    dependency not in deps
+  end
 
-  defp not_dependent?(workspace, project, dependent),
-    do: project.app not in Workspace.Graph.dependencies(workspace, dependent)
+  defp not_dependent?(_workspace, _project, nil, _recursive), do: false
+
+  defp not_dependent?(workspace, project, dependent, recursive) do
+    deps =
+      if recursive do
+        Workspace.Graph.all_dependencies(workspace, dependent)
+      else
+        Workspace.Graph.dependencies(workspace, dependent)
+      end
+
+    project.app not in deps
+  end
 end

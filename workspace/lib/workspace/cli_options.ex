@@ -69,6 +69,15 @@ defmodule Workspace.CliOptions do
       """,
       doc_section: :filtering
     ],
+    recursive: [
+      type: :boolean,
+      default: false,
+      doc: """
+      If set, when used with `--dependency` or `--dependent`, it will consider all transitive
+      dependencies instead of just first-level ones.
+      """,
+      doc_section: :filtering
+    ],
     excluded_tags: [
       type: :string,
       multiple: true,

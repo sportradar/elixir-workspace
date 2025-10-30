@@ -222,6 +222,33 @@ defmodule Workspace.Graph do
   end
 
   @doc """
+  Returns all transitive dependencies of the given `project`
+
+  This includes direct dependencies and all of their dependencies recursively.
+  """
+  @spec all_dependencies(workspace :: Workspace.State.t(), project :: atom()) :: [atom()]
+  def all_dependencies(workspace, project) do
+    node = node_by_app(workspace.graph, project)
+
+    :digraph_utils.reachable_neighbours([node], workspace.graph)
+    |> Enum.map(& &1.app)
+  end
+
+  @doc """
+  Returns all transitive dependents of the given `project`
+
+  This includes direct dependents (projects that depend on this project) and all
+  projects that depend on those, recursively.
+  """
+  @spec all_dependents(workspace :: Workspace.State.t(), project :: atom()) :: [atom()]
+  def all_dependents(workspace, project) do
+    node = node_by_app(workspace.graph, project)
+
+    :digraph_utils.reaching_neighbours([node], workspace.graph)
+    |> Enum.map(& &1.app)
+  end
+
+  @doc """
   Returns a subgraph around the given `project` and all nodes within the given `proximity`.
   """
   @spec subgraph(

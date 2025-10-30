@@ -19,17 +19,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   Example use cases:
 
   - Run tests on affected projects but always include critical services:
+  
     ```bash
     mix workspace.run -t test --affected --include auth --include payment
     ```
 
   - Get all dependencies of a project plus the project itself:
+  
     ```bash
     mix workspace.list --dependent my_api --include my_api --format json
     ```
 
   Note: `--exclude` always has the highest priority - excluded projects cannot
   be re-included with `--include`.
+
+* Add `--recursive` option for transitive dependency filtering
+
+  The `--recursive` option enables deep dependency traversal when used with
+  `--dependency` or `--dependent` flags, allowing you to work with all
+  transitive dependencies instead of just first-level ones.
+
+  Available in `workspace.run` and `workspace.list` tasks.
+
+  Example use cases:
+
+  - Get all projects that transitively depend on a shared library:
+  
+    ```bash
+    mix workspace.list --dependency shared_utils --recursive
+    ```
+
+  - Run tests on all transitive dependencies of an API service:
+  
+    ```bash
+    mix workspace.run -t test --dependent my_api --recursive
+    ```
+
+  - Find all projects affected by changes to a core dependency:
+  
+    ```bash
+    mix workspace.list --dependency core_lib --recursive --format json
+    ```
+
+  By default (without `--recursive`), `--dependency` and `--dependent` only
+  consider direct (first-level) dependencies to maintain backward compatibility.
 
 ## [v0.3.1](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.3.1) (2025-10-24)
 

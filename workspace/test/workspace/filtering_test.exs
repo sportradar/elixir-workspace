@@ -264,4 +264,100 @@ defmodule Workspace.FilteringTest do
       assert Workspace.project!(filtered, :baz).skip
     end
   end
+
+  describe "run/2 with recursive option" do
+    setup do
+      # Create a chain: foo -> bar -> baz
+      # foo depends on bar, bar depends on baz
+      project_a =
+        project_fixture(app: :foo, workspace: [tags: [:foo]], deps: [{:bar}])
+
+      project_b =
+        project_fixture(app: :bar, workspace: [tags: [:bar]], deps: [{:baz}])
+
+      project_c = project_fixture(app: :baz, workspace: [tags: [:baz]])
+
+      workspace = workspace_fixture([project_a, project_b, project_c])
+
+      %{workspace: workspace}
+    end
+
+    test "with dependency and recursive=false (default), considers only direct dependencies", %{
+      workspace: workspace
+    } do
+      # foo depends on bar (direct), and bar depends on baz (indirect)
+      # With dependency: :baz, only bar should be kept (direct dependency)
+      filtered = Workspace.Filtering.run(workspace, dependency: :baz, recursive: false)
+
+      assert Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+    end
+
+    test "with dependency and recursive=true, considers all transitive dependencies", %{
+      workspace: workspace
+    } do
+      # foo -> bar -> baz
+      # With dependency: :baz and recursive: true, both foo and bar should be kept
+      filtered = Workspace.Filtering.run(workspace, dependency: :baz, recursive: true)
+
+      refute Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+    end
+
+    test "with dependent and recursive=false (default), considers only direct dependencies", %{
+      workspace: workspace
+    } do
+      # foo -> bar -> baz (foo depends on bar, bar depends on baz)
+      # With dependent: :foo, only bar should be kept (foo's direct dependency)
+      filtered = Workspace.Filtering.run(workspace, dependent: :foo, recursive: false)
+
+      assert Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+    end
+
+    test "with dependent and recursive=true, considers all transitive dependencies", %{
+      workspace: workspace
+    } do
+      # foo -> bar -> baz
+      # With dependent: :foo and recursive: true, both bar and baz should be kept (all transitive dependencies of foo)
+      filtered = Workspace.Filtering.run(workspace, dependent: :foo, recursive: true)
+
+      assert Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+    end
+
+    test "with dependency and recursive=true on top-level project", %{workspace: workspace} do
+      # foo has transitive dependencies: bar, baz
+      # With dependency: :foo, no projects have foo as a dependency
+      filtered = Workspace.Filtering.run(workspace, dependency: :foo, recursive: true)
+
+      assert Workspace.project!(filtered, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+    end
+
+    test "recursive without dependency or dependent has no effect", %{workspace: workspace} do
+      # recursive alone should not filter anything
+      filtered = Workspace.Filtering.run(workspace, recursive: true)
+
+      refute Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+    end
+
+    test "recursive can be combined with include", %{workspace: workspace} do
+      # Filter with dependency: :baz and recursive: true (keeps foo and bar)
+      # Then include baz back
+      filtered =
+        Workspace.Filtering.run(workspace, dependency: :baz, recursive: true, include: [:baz])
+
+      refute Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+    end
+  end
 end

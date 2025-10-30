@@ -300,6 +300,68 @@ defmodule Mix.Tasks.Workspace.ListTest do
   end
 
   @tag :tmp_dir
+  test "filtering by --dependency with --recursive", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        # Without --recursive: only package_c and package_f have package_g as direct dependency
+        # With --recursive: package_a also transitively depends on package_g (through package_b and package_c->package_f)
+        expected = """
+        Found 4 workspace projects matching the given options.
+          * :package_a package_a/mix.exs :shared, area:core
+          * :package_b package_b/mix.exs - a dummy project
+          * :package_c package_c/mix.exs
+          * :package_f package_f/mix.exs
+        """
+
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--dependency",
+                   "package_g",
+                   "--recursive"
+                 ])
+               end) == expected
+      end
+    )
+  end
+
+  @tag :tmp_dir
+  test "filtering by --dependent with --recursive", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        # Without --recursive: package_a depends directly on package_b, package_c, package_d
+        # With --recursive: also includes transitive dependencies like package_e, package_f, package_g
+        expected = """
+        Found 6 workspace projects matching the given options.
+          * :package_b package_b/mix.exs - a dummy project
+          * :package_c package_c/mix.exs
+          * :package_d package_d/mix.exs
+          * :package_e package_e/mix.exs
+          * :package_f package_f/mix.exs
+          * :package_g package_g/mix.exs
+        """
+
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "--dependent",
+                   "package_a",
+                   "--recursive"
+                 ])
+               end) == expected
+      end
+    )
+  end
+
+  @tag :tmp_dir
   test "filtering by --path", %{tmp_dir: tmp_dir} do
     Workspace.Test.with_workspace(
       tmp_dir,
