@@ -71,7 +71,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   >
   > A custom check can be used to ensure it:
   >
-  > ```elixir 
+  > ```elixir
   > [
   >   module: Workspace.Checks.ValidateProject,
   >   description: "all projects must have test_coverage[:output] properly set",
@@ -180,16 +180,16 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
   It is responsible for processing the coverage data and generating a report in any format.
   Officially we support the following exporters
 
-  ### `lcov` exporter 
+  ### `lcov` exporter
 
   Generates an lcov file with both line and function coverage stats
 
   > #### Sample config {: .info}
-  >  
+  >
   > ```elixir
   > test_coverage: [
   >   exporters: [
-  >     lcov: fn workspace, coverage_stats -> 
+  >     lcov: fn workspace, coverage_stats ->
   >       Workspace.Coverage.export_lcov(
   >         workspace,
   >         coverage_stats,

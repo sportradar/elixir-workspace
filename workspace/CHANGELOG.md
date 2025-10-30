@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Added
+
+* Add `--include` / `-i` option for union-based filtering
+
+  The `--include` option allows you to add projects back to the filtered set,
+  even if they were filtered out by other flags. This acts as a union operation,
+  enabling powerful filtering combinations.
+
+  Available in `workspace.run` and `workspace.list` tasks.
+
+  Example use cases:
+
+  - Run tests on affected projects but always include critical services:
+    ```bash
+    mix workspace.run -t test --affected --include auth --include payment
+    ```
+
+  - Get all dependencies of a project plus the project itself:
+    ```bash
+    mix workspace.list --dependent my_api --include my_api --format json
+    ```
+
+  Note: `--exclude` always has the highest priority - excluded projects cannot
+  be re-included with `--include`.
+
 ## [v0.3.1](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.3.1) (2025-10-24)
 
 ### Fixed

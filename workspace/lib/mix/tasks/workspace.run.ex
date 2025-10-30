@@ -84,6 +84,7 @@ defmodule Mix.Tasks.Workspace.Run do
                       :config_path,
                       :project,
                       :exclude,
+                      :include,
                       :tags,
                       :excluded_tags,
                       :affected,
@@ -200,6 +201,25 @@ defmodule Mix.Tasks.Workspace.Run do
 
       # Run test only on top level projects
       $ mix workspace.run -t test --only-roots
+
+  ### Using `--include` to add specific projects
+
+  The `--include` option allows you to add projects back to the filtered set, acting as a
+  union operation. This is useful when you want to apply filters but still include specific
+  projects that would otherwise be excluded.
+
+  > #### Example: Run tests on affected projects plus critical ones {: .tip}
+  >
+  > You might want to run tests only on affected projects, but always include certain
+  > critical projects regardless of whether they're affected:
+  >
+  > ```bash
+  > # Run tests on affected projects, but always include auth and payment services
+  > $ mix workspace.run -t test --affected --include auth --include payment
+  > ```
+  >
+  > Note that `--exclude` always has the highest priority - if a project is excluded, it
+  > will not be included even if specified with `--include`.
 
   ## Execution order
 

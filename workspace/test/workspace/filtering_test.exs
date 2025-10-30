@@ -165,5 +165,103 @@ defmodule Workspace.FilteringTest do
       assert Workspace.project!(filtered, :baz).skip
       assert Workspace.project!(filtered, :foo).skip
     end
+
+    test "with include adds back filtered projects", %{workspace: workspace} do
+      # Filter to only foo project, but include bar back
+      filtered = Workspace.Filtering.run(workspace, project: [:foo], include: [:bar])
+
+      refute Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+    end
+
+    test "include with string values", %{workspace: workspace} do
+      filtered = Workspace.Filtering.run(workspace, project: ["foo"], include: ["bar"])
+
+      refute Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+    end
+
+    test "include with multiple projects", %{workspace: workspace} do
+      # Filter to only foo, but include bar and baz back
+      filtered = Workspace.Filtering.run(workspace, project: [:foo], include: [:bar, :baz])
+
+      refute Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+    end
+
+    test "include works with tags filter", %{workspace: workspace} do
+      # Filter to projects with :bar tag (bar and baz), but include foo back
+      filtered = Workspace.Filtering.run(workspace, tags: [:bar], include: [:foo])
+
+      refute Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+    end
+
+    test "exclude has priority over include", %{workspace: workspace} do
+      # Exclude bar, but try to include it - exclude wins
+      filtered = Workspace.Filtering.run(workspace, exclude: [:bar], include: [:bar])
+
+      assert Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :baz).skip
+    end
+
+    test "exclude has priority over include even with project filter", %{workspace: workspace} do
+      # Filter to only bar, include bar, but also exclude bar - exclude wins
+      filtered =
+        Workspace.Filtering.run(workspace, project: [:bar], exclude: [:bar], include: [:bar])
+
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :foo).skip
+      assert Workspace.project!(filtered, :baz).skip
+    end
+
+    test "include can add back projects filtered by excluded_tags", %{workspace: workspace} do
+      # Exclude projects with :bar tag (bar and baz), but include baz back
+      filtered = Workspace.Filtering.run(workspace, excluded_tags: [:bar], include: [:baz])
+
+      refute Workspace.project!(filtered, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+    end
+
+    test "include with paths filter", %{workspace: workspace} do
+      # Filter to projects under packages/foo only, but include bar back
+      filtered = Workspace.Filtering.run(workspace, paths: ["packages/foo"], include: [:bar])
+
+      refute Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+    end
+
+    test "include with dependency filter", %{workspace: workspace} do
+      # Filter to projects with :bar dependency (only foo has it), but include baz back
+      filtered = Workspace.Filtering.run(workspace, dependency: :bar, include: [:baz])
+
+      refute Workspace.project!(filtered, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+    end
+
+    test "include works when no other filters are set", %{workspace: workspace} do
+      # Include without any other filter should not change anything
+      filtered = Workspace.Filtering.run(workspace, include: [:foo])
+
+      refute Workspace.project!(filtered, :foo).skip
+      refute Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+    end
+
+    test "include with empty list does nothing", %{workspace: workspace} do
+      filtered = Workspace.Filtering.run(workspace, project: [:foo], include: [])
+
+      refute Workspace.project!(filtered, :foo).skip
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+    end
   end
 end

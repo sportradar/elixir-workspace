@@ -138,6 +138,67 @@ defmodule Mix.Tasks.Workspace.ListTest do
   end
 
   @tag :tmp_dir
+  test "with --include option set", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        # Filter to only package_a, but include package_b and package_c
+        expected = """
+        Found 3 workspace projects matching the given options.
+          * :package_a package_a/mix.exs :shared, area:core
+          * :package_b package_b/mix.exs - a dummy project
+          * :package_c package_c/mix.exs
+        """
+
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "-p",
+                   "package_a",
+                   "-i",
+                   "package_b",
+                   "-i",
+                   "package_c"
+                 ])
+               end) == expected
+      end
+    )
+  end
+
+  @tag :tmp_dir
+  test "with --include but exclude has priority", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      :default,
+      fn ->
+        # Filter to package_a and package_b, exclude package_b, but try to include it
+        # Exclude should win
+        expected = """
+        Found 1 workspace projects matching the given options.
+          * :package_a package_a/mix.exs :shared, area:core
+        """
+
+        assert capture_io(fn ->
+                 ListTask.run([
+                   "--workspace-path",
+                   tmp_dir,
+                   "-p",
+                   "package_a,package_b",
+                   "-e",
+                   "package_b",
+                   "-i",
+                   "package_b"
+                 ])
+               end) == expected
+      end
+    )
+  end
+
+  @tag :tmp_dir
   test "filtering by --maintainer", %{tmp_dir: tmp_dir} do
     Workspace.Test.with_workspace(
       tmp_dir,

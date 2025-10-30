@@ -149,6 +149,95 @@ defmodule Mix.Tasks.Workspace.RunTest do
         )
       end)
     end
+
+    @tag :tmp_dir
+    test "with include option adds back filtered projects", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+        # Filter to only package_a, but include package_b and package_c back
+        args = [
+          "--workspace-path",
+          tmp_dir,
+          "-p",
+          "package_a",
+          "-i",
+          "package_b",
+          "-i",
+          "package_c",
+          "--dry-run" | @default_run_task
+        ]
+
+        captured =
+          capture_io(fn ->
+            RunTask.run(args)
+          end)
+
+        assert_cli_output_match(captured, [
+          "Running task in 3 workspace projects",
+          "==> :package_a - mix format --check-formatted mix.exs",
+          "==> :package_b - mix format --check-formatted mix.exs",
+          "==> :package_c - mix format --check-formatted mix.exs"
+        ])
+      end)
+    end
+
+    @tag :tmp_dir
+    test "exclude has priority over include", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+        # Exclude package_b but also try to include it - exclude should win
+        args = [
+          "--workspace-path",
+          tmp_dir,
+          "-p",
+          "package_a,package_b,package_c",
+          "-e",
+          "package_b",
+          "-i",
+          "package_b",
+          "--dry-run" | @default_run_task
+        ]
+
+        captured =
+          capture_io(fn ->
+            RunTask.run(args)
+          end)
+
+        assert_cli_output_match(captured, [
+          "Running task in 2 workspace projects",
+          "==> :package_a - mix format --check-formatted mix.exs",
+          "==> :package_c - mix format --check-formatted mix.exs"
+        ])
+
+        refute String.contains?(captured, "package_b")
+      end)
+    end
+
+    @tag :tmp_dir
+    test "include with comma separated values", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+        # Filter to only package_a, but include package_b,package_c back
+        args = [
+          "--workspace-path",
+          tmp_dir,
+          "-p",
+          "package_a",
+          "-i",
+          "package_b,package_c",
+          "--dry-run" | @default_run_task
+        ]
+
+        captured =
+          capture_io(fn ->
+            RunTask.run(args)
+          end)
+
+        assert_cli_output_match(captured, [
+          "Running task in 3 workspace projects",
+          "==> :package_a - mix format --check-formatted mix.exs",
+          "==> :package_b - mix format --check-formatted mix.exs",
+          "==> :package_c - mix format --check-formatted mix.exs"
+        ])
+      end)
+    end
   end
 
   describe "codebase changes flags" do
@@ -240,6 +329,39 @@ defmodule Mix.Tasks.Workspace.RunTest do
             "==> :package_k - mix format --check-formatted mix.exs"
           ])
         end,
+        cd: true
+      )
+    end
+
+    @tag :tmp_dir
+    test "include works with affected flag", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        :default,
+        fn ->
+          # Modify only package_d
+          Workspace.Test.modify_project(tmp_dir, "package_d")
+
+          # Run on affected, but also include package_k (which is not affected)
+          captured =
+            capture_io(fn ->
+              RunTask.run(["--affected", "-i", "package_k", "--dry-run" | @default_run_task])
+            end)
+
+          assert_cli_output_match(
+            captured,
+            [
+              "Running task in 4 workspace projects",
+              "==> :package_a - mix format --check-formatted mix.exs",
+              "==> :package_d - mix format --check-formatted mix.exs",
+              "==> :package_h - mix format --check-formatted mix.exs",
+              "==> :package_k - mix format --check-formatted mix.exs"
+            ],
+            partial: true
+          )
+        end,
+        git: true,
         cd: true
       )
     end

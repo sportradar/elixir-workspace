@@ -20,6 +20,17 @@ defmodule Workspace.CliOptions do
       doc: "Ignore the given projects",
       doc_section: :filtering
     ],
+    include: [
+      type: :string,
+      short: "i",
+      multiple: true,
+      separator: ",",
+      doc: """
+      Always include the given projects, even if they were filtered out by other flags.
+      Acts as a union with the filtered results. Note that `:exclude` has highest priority.
+      """,
+      doc_section: :filtering
+    ],
     paths: [
       type: :string,
       multiple: true,

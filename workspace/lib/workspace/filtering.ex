@@ -25,6 +25,9 @@ defmodule Workspace.Filtering do
     always skipped.
     * `:exclude_tags` (list of `t:Workspace.Project.tag()`) - a list of tags to be
     ignored. Any project that has any of the provided tags will be skipped.
+    * `:include` (list of `t:atom/0`) - a list of projects to always include. This
+    acts as a union with the filtered results, adding back projects even if they
+    were filtered out by other flags (except `:exclude` which has highest priority).
     * `:project` (list of `t:atom/0`) - a list of projects to consider. If set all
     projects that are not included in the list are considered skippable.
     * `:tags` (list of `t:Workspace.Project.tag()`) - a list of tags to be
@@ -47,12 +50,13 @@ defmodule Workspace.Filtering do
     It is used only if `:base` is set.
 
   > #### Filtering order {: .neutral}
-  > 
+  >
   > Notice that projects are filtered using the following precedence:
   >
   > * Excluded projects (`:exclude` or `:exclude_tags` options set)
   > * Selected projects (`:project` or `:tags` option set)
   > * Code status modifiers (`:affected`, `:modified` and `:only_roots`)
+  > * Included projects (`:include` option set) - added back as a union after all other filters
   """
   @spec run(workspace :: Workspace.State.t(), opts :: keyword()) :: Workspace.State.t()
   def run(%Workspace.State{} = workspace, opts) do
@@ -72,7 +76,7 @@ defmodule Workspace.Filtering do
   defp maybe_update_status(workspace, _opts, _other), do: workspace
 
   defp filter_projects(workspace, opts) do
-    opts = [
+    filter_opts = [
       excluded: Enum.map(opts[:exclude] || [], &maybe_to_atom/1),
       selected: Enum.map(opts[:project] || [], &maybe_to_atom/1),
       affected: opts[:affected] || false,
@@ -85,7 +89,25 @@ defmodule Workspace.Filtering do
       paths: opts[:paths]
     ]
 
-    Enum.map(workspace.projects, fn {_name, project} -> maybe_skip(workspace, project, opts) end)
+    included = Enum.map(opts[:include] || [], &maybe_to_atom/1)
+
+    workspace.projects
+    |> Enum.map(fn {_name, project} -> maybe_skip(workspace, project, filter_opts) end)
+    |> maybe_include(included, filter_opts[:excluded])
+  end
+
+  # Un-skip projects in the include list, unless they're in the exclude list
+  # (exclude has highest priority)
+  defp maybe_include(projects, [], _excluded), do: projects
+
+  defp maybe_include(projects, included, excluded) do
+    Enum.map(projects, fn project ->
+      if project.app in included and project.app not in excluded do
+        Workspace.Project.unskip(project)
+      else
+        project
+      end
+    end)
   end
 
   defp maybe_to_atom(nil), do: nil

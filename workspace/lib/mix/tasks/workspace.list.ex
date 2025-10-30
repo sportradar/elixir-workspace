@@ -53,6 +53,7 @@ defmodule Mix.Tasks.Workspace.List do
                       :config_path,
                       :project,
                       :exclude,
+                      :include,
                       :paths,
                       :tags,
                       :excluded_tags,
@@ -130,6 +131,32 @@ defmodule Mix.Tasks.Workspace.List do
 
       # notice that the search is case insensitive, this works as well
       $ mix workspace.list --maintainer sparrow
+
+  ### Using `--include` for union operations
+
+  The `--include` option allows you to add projects back to the filtered set, even if they
+  were filtered out by other flags. This is useful when you want to combine filtering logic
+  with specific additions.
+
+  > #### Example: Generate a focused VS Code workspace {: .tip}
+  >
+  > You can use `--include` with `--dependent` to get all dependencies of a project plus
+  > the project itself, export it as JSON, and generate a VS Code workspace file with `jq`:
+  >
+  > ```bash
+  > # Get all dependencies of 'my_api' plus the project itself
+  > $ mix workspace.list --dependent my_api --include my_api \
+  >   --relative-paths --format json --output projects.json
+  >
+  > # Generate a VS Code workspace file
+  > $ jq '{folders: [.projects[] | {path: .path}]}' projects.json > my_api.code-workspace
+  >
+  > # Open the focused workspace in VS Code
+  > $ code my_api.code-workspace
+  > ```
+  >
+  > This creates a minimal workspace containing only the projects relevant to `my_api`,
+  > making it easier to navigate and work with a specific subset of your monorepo.
 
   """
   use Mix.Task
