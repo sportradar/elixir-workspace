@@ -515,6 +515,141 @@ defmodule CliOptionsTest do
     end
   end
 
+  describe "values starting with dash" do
+    test "negative integer values" do
+      schema = [number: [type: :integer]]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--number", "-10"], schema)
+      assert opts == [number: -10]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--number", "-999"], schema)
+      assert opts == [number: -999]
+    end
+
+    test "negative float values" do
+      schema = [temperature: [type: :float]]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--temperature", "-3.14"], schema)
+      assert opts == [temperature: -3.14]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--temperature", "-100.5"], schema)
+      assert opts == [temperature: -100.5]
+    end
+
+    test "string values starting with dash" do
+      schema = [password: [type: :string]]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--password", "-fgd*&"], schema)
+      assert opts == [password: "-fgd*&"]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--password", "-abc123"], schema)
+      assert opts == [password: "-abc123"]
+    end
+
+    test "multiple negative values" do
+      schema = [numbers: [type: :integer, multiple: true]]
+
+      assert {:ok, {opts, [], []}} =
+               CliOptions.parse(["--numbers", "-10", "--numbers", "-20"], schema)
+
+      assert opts == [numbers: [-10, -20]]
+    end
+
+    test "negative values with short options" do
+      schema = [number: [type: :integer, short: "n"]]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["-n", "-42"], schema)
+      assert opts == [number: -42]
+    end
+
+    test "values starting with dash mixed with positional args" do
+      schema = [number: [type: :integer], name: [type: :string]]
+
+      assert {:ok, {opts, args, []}} =
+               CliOptions.parse(["--number", "-10", "file.txt", "--name", "-abc"], schema)
+
+      assert opts == [number: -10, name: "-abc"]
+      assert args == ["file.txt"]
+    end
+
+    test "-x value when x is NOT a defined option" do
+      # If -x is not defined as an option, it should be treated as a value
+      schema = [password: [type: :string]]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--password", "-x"], schema)
+      assert opts == [password: "-x"]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--password", "-v"], schema)
+      assert opts == [password: "-v"]
+    end
+
+    test "-x value when x IS a defined option should stop parsing" do
+      # If -v is defined as an option, it should be treated as an option, not a value
+      schema = [password: [type: :string], verbose: [type: :boolean, short: "v"]]
+
+      # This should fail because -v is recognized as the verbose flag
+      assert {:error, ":password expected at least 1 arguments"} =
+               CliOptions.parse(["--password", "-v"], schema)
+
+      # if instead we pass -x it should be treated as a value
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--password", "-x"], schema)
+      assert opts == [password: "-x", verbose: false]
+    end
+
+    test "--xxx value when NOT a defined option should be treated as a value" do
+      # If --not-an-option is not defined in the schema, it should be treated as a value
+      schema = [name: [type: :string]]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--name", "--not-an-option"], schema)
+      assert opts == [name: "--not-an-option"]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--name", "--weird-value"], schema)
+      assert opts == [name: "--weird-value"]
+    end
+
+    test "--xxx value when IS a defined option should stop parsing" do
+      # If --verbose is defined as an option, it should be treated as an option, not a value
+      schema = [name: [type: :string], verbose: [type: :boolean]]
+
+      # This should fail because --verbose is recognized as the verbose flag
+      assert {:error, ":name expected at least 1 arguments"} =
+               CliOptions.parse(["--name", "--verbose"], schema)
+
+      # The verbose flag should be set instead
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--verbose"], schema)
+      assert opts == [verbose: true]
+    end
+
+    test "invalid --xxx option (not as a value) returns error" do
+      # A standalone invalid option should return an error
+      schema = [name: [type: :string]]
+
+      assert {:error, "invalid option \"not-defined\""} =
+               CliOptions.parse(["--not-defined"], schema)
+
+      assert {:error, "invalid option \"unknown-flag\""} =
+               CliOptions.parse(["--name", "foo", "--unknown-flag"], schema)
+    end
+
+    test "mix of defined and undefined -- values" do
+      schema = [
+        input: [type: :string],
+        output: [type: :string],
+        verbose: [type: :boolean]
+      ]
+
+      # Undefined --foo can be a value, but --verbose stops parsing
+      assert {:ok, {opts, [], []}} =
+               CliOptions.parse(["--input", "--not-a-flag", "--output", "file.txt"], schema)
+
+      assert opts == [input: "--not-a-flag", output: "file.txt", verbose: false]
+
+      # But --verbose as a value doesn't work
+      assert {:error, ":input expected at least 1 arguments"} =
+               CliOptions.parse(["--input", "--verbose", "--output", "file.txt"], schema)
+    end
+  end
+
   describe ":env set" do
     @env_schema [
       name: [type: :string, env: "TEST_NAME", required: true],

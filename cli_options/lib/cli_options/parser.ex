@@ -96,7 +96,7 @@ defmodule CliOptions.Parser do
   defp parse_option(cli_option, short_or_long, rest, schema) do
     with {:ok, option, opts} <-
            CliOptions.Schema.ensure_valid_option(cli_option, short_or_long, schema),
-         {:ok, args, rest} <- fetch_option_args(option, opts, rest) do
+         {:ok, args, rest} <- fetch_option_args(option, opts, rest, schema) do
       if deprecation_message = Keyword.get(opts, :deprecated) do
         IO.warn(
           "#{render_option(cli_option, short_or_long)} is deprecated, " <> deprecation_message
@@ -113,12 +113,12 @@ defmodule CliOptions.Parser do
   defp render_option(option, :short), do: "-" <> option
   defp render_option(option, :long), do: "--" <> option
 
-  defp fetch_option_args(option, opts, rest) do
+  defp fetch_option_args(option, opts, rest, schema) do
     # TODO: currently we handle only one item per option, we can extend it with
     # min max args support like clap
     expected_args = CliOptions.Schema.expected_args(opts)
 
-    {args, rest} = next_args_greedily(rest, expected_args, [])
+    {args, rest} = next_args_greedily(rest, expected_args, [], schema)
 
     # here we take the min with 1 since in case of multiple args
     # the argument may be passed again later
@@ -145,22 +145,37 @@ defmodule CliOptions.Parser do
   # it stops parsing when
   #
   # * the rest is empty
-  # * an option or alias is encountered
+  # * a defined option is encountered (checked against schema)
   # * max args have been read
   #
   # returns the read args and the remaining args in rest
-  defp next_args_greedily(rest, 0, _args), do: {nil, rest}
+  defp next_args_greedily(rest, 0, _args, _schema), do: {nil, rest}
 
-  defp next_args_greedily([], _max, args), do: {Enum.reverse(args), []}
+  defp next_args_greedily([], _max, args, _schema), do: {Enum.reverse(args), []}
 
-  defp next_args_greedily(rest, max, args) when length(args) == max,
+  defp next_args_greedily(rest, max, args, _schema) when length(args) == max,
     do: {Enum.reverse(args), rest}
 
-  defp next_args_greedily(["-" <> _arg | _other] = rest, _max, args),
-    do: {Enum.reverse(args), rest}
+  defp next_args_greedily([arg | _other] = rest, max, args, schema) do
+    if is_defined_option?(arg, schema) do
+      {Enum.reverse(args), rest}
+    else
+      next_args_greedily(tl(rest), max, [arg | args], schema)
+    end
+  end
 
-  defp next_args_greedily([arg | rest], max, args),
-    do: next_args_greedily(rest, max, [arg | args])
+  # Check if a string is a defined option in the schema
+  # This allows values like "-10", "-x", "-fgd*&" to be treated as values
+  # unless they are actually defined as options in the schema
+  defp is_defined_option?("--" <> long_name, schema) do
+    Map.has_key?(schema.long_mappings, long_name)
+  end
+
+  defp is_defined_option?("-" <> short_name, schema) when byte_size(short_name) == 1 do
+    Map.has_key?(schema.short_mappings, short_name)
+  end
+
+  defp is_defined_option?(_arg, _schema), do: false
 
   defp validate_option_alias_length(option_alias) do
     case String.length(option_alias) do

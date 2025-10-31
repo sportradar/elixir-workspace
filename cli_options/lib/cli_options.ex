@@ -26,13 +26,13 @@ defmodule CliOptions do
   schema = [
     name: [
       type: :string,
-      required: true 
+      required: true
     ],
     num: [
       type: :integer,
       default: 4,
       short: "n"
-    ] 
+    ]
   ]
 
   CliOptions.parse(["--name", "foo"], schema)
@@ -83,6 +83,44 @@ defmodule CliOptions do
   > # with option re-definition
   > CliOptions.parse(["--name", "foo", "--name", "bar"], schema)
   > ```
+
+  > #### Values starting with dashes {: .warning}
+  >
+  > The parser is **schema-aware** when handling values that start with `-` or `--`.
+  > This means that if a value looks like a defined option, it will be treated as an
+  > option, not a value. This is important when passing:
+  >
+  > - Negative numbers: `--number -10` ✅ Works (unless `-1` is a defined short option)
+  > - String values: `--password -abc123` ✅ Works (unless matching a defined option)
+  > - Values matching options: `--name -v` ❌ Fails if `-v` is a defined option
+  >
+  > ```cli
+  > schema = [
+  >   number: [type: :integer],
+  >   name: [type: :string],
+  >   verbose: [type: :boolean, short: "v"]
+  > ]
+  >
+  > # negative numbers work fine
+  > CliOptions.parse(["--number", "-10"], schema)
+  > >>>
+  >
+  > # arbitrary dash-prefixed strings work if not matching defined options
+  > CliOptions.parse(["--name", "-abc123"], schema)
+  > >>>
+  >
+  > # but if the value matches a defined option, it's treated as an option
+  > CliOptions.parse(["--name", "-v"], schema)
+  > >>>
+  >
+  > # undefined options as values work fine
+  > CliOptions.parse(["--name", "--not-defined"], schema)
+  > >>>
+  > ```
+  >
+  > **Recommendation:** When designing your CLI schema, avoid single-letter short
+  > options that might conflict with common value patterns (e.g., `-1`, `-0`), or
+  > clearly document this limitation to your users.
   """
 
   @type argv :: [String.t()]
@@ -131,7 +169,7 @@ defmodule CliOptions do
   >   @impl Mix.Task
   >   def run(argv) do
   >     {opts, args, extra} = CliOptions.parse!(args, @schema)
-  >    
+  >
   >     # your task code here
   >   end
   > end
@@ -206,12 +244,12 @@ defmodule CliOptions do
   > schema = [
   >   file: [
   >     type: :string,
-  >     required: true 
+  >     required: true
   >   ],
   >   number: [
   >     type: :integer,
   >     short: "n"
-  >   ] 
+  >   ]
   > ]
   >
   > # parses valid arguments
@@ -295,7 +333,7 @@ defmodule CliOptions do
     retries: [
       type: :integer,
       default: 1
-    ] 
+    ]
   ]
 
   CliOptions.parse([], schema)
@@ -353,7 +391,7 @@ defmodule CliOptions do
   CliOptions.parse(["-f", "foo.ex"], schema)
   >>>
 
-  # all passed items are validated based on the expected type 
+  # all passed items are validated based on the expected type
   CliOptions.parse(["-n", "2", "-n", "xyz"], schema)
   >>>
 
@@ -417,7 +455,7 @@ defmodule CliOptions do
   >   foo: [type: :boolean, conflicts_with: [:bar]],
   >   bar: [type: :boolean]
   > ]
-  > 
+  >
   > CliOptions.parse(["--foo", "--bar"], schema)
   > >>>
   >
@@ -425,7 +463,7 @@ defmodule CliOptions do
   >   foo: [type: :boolean],
   >   bar: [type: :boolean, conflicts_with: [:foo]]
   > ]
-  > 
+  >
   > CliOptions.parse(["--foo", "--bar"], schema)
   > >>>
   > ```

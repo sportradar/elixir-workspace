@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Fixed
+
+* Fixed parsing of values starting with dashes (`-` or `--`). The parser now correctly handles:
+  - Negative numbers: `--number -10`, `--temperature -3.14`
+  - String values starting with dash: `--password -abc123`, `--name -fgd*&`
+  - Values that look like undefined options: `--name --not-an-option`
+  
+  The parser is now schema-aware and only treats dash-prefixed values as options if they
+  are actually defined in the schema. Previously, any value starting with `-` was incorrectly
+  treated as an option, causing parsing errors.
+
+  **Note:** If a value matches a defined option (e.g., `--name -v` when `-v` is defined as
+  a short option), it will still be treated as an option. See documentation for details and
+  recommendations.
+
 ## [v0.1.6](https://github.com/sportradar/elixir-workspace/tree/cli_options/v0.1.6) (2025-04-03)
 
 ### Fixed
