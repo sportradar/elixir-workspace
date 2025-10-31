@@ -2,7 +2,7 @@ defmodule CliOptions.MixProject do
   use Mix.Project
 
   @app :cli_options
-  @version "0.1.6"
+  @version "0.1.7"
   @description "An opinionated cli options parser"
   @repo_url "https://github.com/sportradar/elixir-workspace"
 

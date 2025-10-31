@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [v0.1.7](https://github.com/sportradar/elixir-workspace/tree/cli_options/v0.1.6) (2025-10-31)
 
 ### Fixed
 
