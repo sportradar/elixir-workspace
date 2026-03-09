@@ -61,8 +61,8 @@ defmodule Workspace.MixProject do
       {:cli_options, "~> 0.1.4"},
       {:nimble_options, "~> 1.1.1"},
       {:jason, "~> 1.4.1", optional: true},
-      {:ex_doc, "== 0.39.1", only: :dev, runtime: false},
-      {:credo, "== 1.7.13", only: [:dev, :test], runtime: false},
+      {:ex_doc, "== 0.40.1", only: :dev, runtime: false},
+      {:credo, "== 1.7.17", only: [:dev, :test], runtime: false},
       {:doctor, "== 0.22.0", only: :dev, runtime: false}
     ]
   end
