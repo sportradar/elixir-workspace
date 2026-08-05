@@ -440,12 +440,16 @@ defmodule Workspace.Test do
   """
   def init_git_project(path) do
     File.cd!(path, fn ->
-      System.cmd("git", ~w[init])
-      System.cmd("git", ~w[symbolic-ref HEAD refs/heads/main])
-      System.cmd("git", ~w[add .])
-      System.cmd("git", ~w[commit --allow-empty -m "commit"])
+      git!(~w[init])
+      git!(~w[symbolic-ref HEAD refs/heads/main])
+      git!(~w[add .])
+      git!(~w[commit --allow-empty -m "commit"])
     end)
   end
+
+  # stderr is redirected to stdout, so that it is captured with the rest of the
+  # output instead of polluting the test logs (e.g. git's default branch hints)
+  defp git!(args), do: System.cmd("git", args, stderr_to_stdout: true)
 
   @doc """
   Simulates a modification to a project in the workspace by creating a dummy file.
@@ -484,8 +488,8 @@ defmodule Workspace.Test do
   """
   def commit_changes(path) do
     File.cd!(path, fn ->
-      System.cmd("git", ~w[add .])
-      System.cmd("git", ~w[commit -m "changes"])
+      git!(~w[add .])
+      git!(~w[commit -m "changes"])
     end)
   end
 

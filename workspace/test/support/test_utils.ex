@@ -184,12 +184,16 @@ defmodule Workspace.TestUtils do
 
   def init_git_project(path) do
     File.cd!(path, fn ->
-      System.cmd("git", ~w[init])
-      System.cmd("git", ~w[symbolic-ref HEAD refs/heads/main])
-      System.cmd("git", ~w[add .])
-      System.cmd("git", ~w[commit -m "commit"])
+      git!(~w[init])
+      git!(~w[symbolic-ref HEAD refs/heads/main])
+      git!(~w[add .])
+      git!(~w[commit -m "commit"])
     end)
   end
+
+  # stderr is redirected to stdout, so that it is captured with the rest of the
+  # output instead of polluting the test logs (e.g. git's default branch hints)
+  defp git!(args), do: System.cmd("git", args, stderr_to_stdout: true)
 
   def cmd_in_path(path, cmd, args) do
     File.cd!(path, fn -> System.cmd(cmd, args) end)
