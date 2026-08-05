@@ -15,23 +15,20 @@ defmodule CliOptions.Docs do
     |> Enum.join("\n\n")
   end
 
-  @sections_schema NimbleOptions.new!(
-                     *: [
-                       type: :keyword_list,
-                       keys: [
-                         header: [
-                           type: :string,
-                           required: true
-                         ],
-                         doc: [type: :string]
-                       ]
-                     ]
-                   )
+  @section_schema [
+    header: [type: :string, required: true],
+    doc: [type: :string]
+  ]
 
   defp validate_sections!(_schema, nil), do: :ok
 
   defp validate_sections!(schema, sections) do
-    sections = NimbleOptions.validate!(sections, @sections_schema)
+    for {name, settings} <- sections do
+      case CliOptions.Schema.Validator.validate(settings, @section_schema) do
+        {:ok, _settings} -> :ok
+        {:error, reason} -> raise ArgumentError, "invalid section #{inspect(name)}, #{reason}"
+      end
+    end
 
     configured_sections =
       schema

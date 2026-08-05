@@ -80,6 +80,16 @@ defmodule CliOptions.SchemaTest do
         CliOptions.Schema.new!(schema)
       end
 
+      # non atom doc section
+      schema = [foo: [doc_section: "section"]]
+
+      message =
+        "invalid schema for :foo, invalid value for :doc_section option: expected atom, got: \"section\""
+
+      assert_raise ArgumentError, message, fn ->
+        CliOptions.Schema.new!(schema)
+      end
+
       # invalid boolean flags
       schema = [foo: [required: 1]]
 
@@ -248,7 +258,7 @@ defmodule CliOptions.SchemaTest do
     test "default value validations" do
       schema = CliOptions.Schema.schema()
 
-      {:in, valid_types} = schema.schema[:type][:type]
+      {:in, valid_types} = schema[:type][:type]
 
       valid_defaults = [
         string: "foo",

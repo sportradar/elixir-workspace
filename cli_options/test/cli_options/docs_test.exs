@@ -68,10 +68,23 @@ defmodule CliOptions.DocsTest do
 
     test "raises with invalid section settings" do
       message =
-        "unknown options [:heder], valid options are: [:header, :doc] (in options [:test])"
+        "invalid section :test, unknown options [:heder], valid options are: [:header, :doc]"
 
-      assert_raise NimbleOptions.ValidationError, message, fn ->
+      assert_raise ArgumentError, message, fn ->
         CliOptions.docs(@test_schema, sections: [test: [heder: "Test related options"]])
+      end
+
+      message = "invalid section :test, required :header option not found"
+
+      assert_raise ArgumentError, message, fn ->
+        CliOptions.docs(@test_schema, sections: [test: [doc: "Test related options"]])
+      end
+
+      message =
+        "invalid section :test, invalid value for :header option: expected string, got: 1"
+
+      assert_raise ArgumentError, message, fn ->
+        CliOptions.docs(@test_schema, sections: [test: [header: 1]])
       end
     end
 

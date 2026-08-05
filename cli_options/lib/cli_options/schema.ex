@@ -201,7 +201,7 @@ defmodule CliOptions.Schema do
     ]
   ]
 
-  @schema NimbleOptions.new!(option_schema)
+  @schema option_schema
 
   @moduledoc """
   The schema for command line options.
@@ -211,7 +211,7 @@ defmodule CliOptions.Schema do
   The following are the options supported in a schema. They are used for validating
   passed command line arguments:
 
-  #{NimbleOptions.docs(@schema)}
+  #{CliOptions.Schema.Docs.generate(@schema)}
   """
 
   @typedoc """
@@ -273,7 +273,7 @@ defmodule CliOptions.Schema do
   end
 
   defp validate_option_schema!(option, opts) do
-    with {:ok, opts} <- validate_nimble_schema(opts),
+    with {:ok, opts} <- validate_settings(opts),
          {:ok, opts} <- validate_default_value(opts),
          {:ok, opts} <- validate_conflicting_options(opts) do
       opts = Keyword.put_new(opts, :long, default_long_name(option))
@@ -283,12 +283,7 @@ defmodule CliOptions.Schema do
     end
   end
 
-  defp validate_nimble_schema(opts) do
-    case NimbleOptions.validate(opts, @schema) do
-      {:ok, opts} -> {:ok, opts}
-      {:error, %NimbleOptions.ValidationError{message: message}} -> {:error, message}
-    end
-  end
+  defp validate_settings(opts), do: CliOptions.Schema.Validator.validate(opts, @schema)
 
   defp default_long_name(option), do: Atom.to_string(option) |> String.replace("_", "-")
 

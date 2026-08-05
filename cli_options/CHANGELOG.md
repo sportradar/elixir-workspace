@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+
+### Removed
+
+* Removed the `nimble_options` dependency. `cli_options` is now dependency free,
+  schema validation is handled by an internal minimal validator covering only the
+  types actually used by the package.
+
+### Changed
+
+* `CliOptions.docs/2` now raises an `ArgumentError` instead of a
+  `NimbleOptions.ValidationError` if the given `:sections` are invalid. The error
+  messages are also scoped to the offending section, for example:
+
+      invalid section :test, required :header option not found
+
 ## [v0.1.7](https://github.com/sportradar/elixir-workspace/tree/cli_options/v0.1.6) (2025-10-31)
 
 ### Fixed
