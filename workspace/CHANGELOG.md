@@ -64,6 +64,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   By default (without `--recursive`), `--dependency` and `--dependent` only
   consider direct (first-level) dependencies to maintain backward compatibility.
 
+### Fixed
+
+* Fix `--exclude-tag` having no effect
+
+  The tags provided through the command line were not normalized to atoms
+  (or `{scope, tag}` tuples for scoped tags), so they never matched the
+  projects' tags and no project was excluded. This affected all tasks
+  supporting the option, e.g. `workspace.run`, `workspace.list`,
+  `workspace.check` and `workspace.test.coverage`.
+
 ## [v0.3.1](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.3.1) (2025-10-24)
 
 ### Fixed

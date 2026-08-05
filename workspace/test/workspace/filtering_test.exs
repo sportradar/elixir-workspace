@@ -70,6 +70,42 @@ defmodule Workspace.FilteringTest do
       assert Workspace.project!(filtered, :foo).skip
     end
 
+    test "with binary excluded tags", %{workspace: workspace} do
+      filtered = Workspace.Filtering.run(workspace, excluded_tags: ["bar"])
+
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+      refute Workspace.project!(filtered, :foo).skip
+    end
+
+    test "with scoped excluded tags", %{workspace: workspace} do
+      filtered = Workspace.Filtering.run(workspace, excluded_tags: [{:scope, :ui}])
+
+      refute Workspace.project!(filtered, :bar).skip
+      refute Workspace.project!(filtered, :baz).skip
+      assert Workspace.project!(filtered, :foo).skip
+    end
+
+    test "with binary scoped excluded tags", %{workspace: workspace} do
+      filtered = Workspace.Filtering.run(workspace, excluded_tags: ["scope:ui", "bar"])
+
+      assert Workspace.project!(filtered, :bar).skip
+      assert Workspace.project!(filtered, :baz).skip
+      assert Workspace.project!(filtered, :foo).skip
+    end
+
+    test "with invalid excluded tags", %{workspace: workspace} do
+      message = "invalid tag, it should be `tag` or `scope:tag`, got: \"scope:with:ui\""
+
+      assert_raise ArgumentError, message, fn ->
+        Workspace.Filtering.run(workspace, excluded_tags: ["scope:with:ui"])
+      end
+
+      assert_raise ArgumentError, fn ->
+        Workspace.Filtering.run(workspace, excluded_tags: [1])
+      end
+    end
+
     test "with a single selected tag", %{
       workspace: workspace
     } do

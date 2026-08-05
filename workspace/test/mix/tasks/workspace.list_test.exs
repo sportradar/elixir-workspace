@@ -199,6 +199,30 @@ defmodule Mix.Tasks.Workspace.ListTest do
   end
 
   @tag :tmp_dir
+  test "filtering by --exclude-tag", %{tmp_dir: tmp_dir} do
+    projects = [
+      {:foo, "foo", [workspace: [tags: [:shared, {:area, :core}]]]},
+      {:bar, "bar", []}
+    ]
+
+    Workspace.Test.with_workspace(tmp_dir, [], projects, fn ->
+      expected = """
+      Found 1 workspace projects matching the given options.
+        * :bar bar/mix.exs
+      """
+
+      assert capture_io(fn ->
+               ListTask.run(["--workspace-path", tmp_dir, "--exclude-tag", "shared"])
+             end) == expected
+
+      # scoped tags are also supported
+      assert capture_io(fn ->
+               ListTask.run(["--workspace-path", tmp_dir, "--exclude-tag", "area:core"])
+             end) == expected
+    end)
+  end
+
+  @tag :tmp_dir
   test "filtering by --maintainer", %{tmp_dir: tmp_dir} do
     Workspace.Test.with_workspace(
       tmp_dir,

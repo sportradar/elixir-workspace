@@ -84,7 +84,7 @@ defmodule Workspace.Filtering do
       affected: opts[:affected] || false,
       modified: opts[:modified] || false,
       only_roots: opts[:only_roots] || false,
-      excluded_tags: opts[:excluded_tags] || [],
+      excluded_tags: Enum.map(opts[:excluded_tags] || [], &maybe_to_tag/1),
       tags: Enum.map(opts[:tags] || [], &maybe_to_tag/1),
       dependency: maybe_to_atom(opts[:dependency]),
       dependent: maybe_to_atom(opts[:dependent]),

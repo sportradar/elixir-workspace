@@ -151,6 +151,38 @@ defmodule Mix.Tasks.Workspace.RunTest do
     end
 
     @tag :tmp_dir
+    test "with exclude-tag set the tagged projects are skipped", %{tmp_dir: tmp_dir} do
+      projects = [
+        {:foo, "foo", [workspace: [tags: [:shared, {:area, :core}]]]},
+        {:bar, "bar", []}
+      ]
+
+      Workspace.Test.with_workspace(tmp_dir, [], projects, fn ->
+        for tag <- ["shared", "area:core"] do
+          args = [
+            "--workspace-path",
+            tmp_dir,
+            "--exclude-tag",
+            tag,
+            "--dry-run" | @default_run_task
+          ]
+
+          captured =
+            capture_io(fn ->
+              RunTask.run(args)
+            end)
+
+          assert_cli_output_match(captured, [
+            "Running task in 1 workspace projects",
+            "==> :bar - mix format --check-formatted mix.exs"
+          ])
+
+          refute captured =~ ":foo - mix format"
+        end
+      end)
+    end
+
+    @tag :tmp_dir
     test "with include option adds back filtered projects", %{tmp_dir: tmp_dir} do
       Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
         # Filter to only package_a, but include package_b and package_c back
