@@ -188,33 +188,50 @@ defmodule CliOptions.Parser do
   end
 
   defp maybe_append_env_values(opts, schema) do
-    args_from_env =
+    env_args =
       schema.schema
       |> Enum.reject(fn {_key, opts} -> is_nil(opts[:env]) end)
       |> Enum.reject(fn {key, _opts} -> Keyword.has_key?(opts, key) end)
-      |> Enum.map(fn {_key, opts} -> maybe_read_env(opts) end)
-      |> List.flatten()
+      |> Enum.map(fn {key, opts} -> maybe_read_env(key, opts) end)
 
-    with {:ok, env_opts, []} <- parse(args_from_env, schema, [], []) do
-      {:ok, Keyword.merge(opts, env_opts)}
+    with {:ok, args} <- collect_env_args(env_args) do
+      case parse(args, schema, [], []) do
+        {:ok, env_opts, []} -> {:ok, Keyword.merge(opts, env_opts)}
+        {:ok, _env_opts, args} -> {:error, "unexpected environment arguments: #{inspect(args)}"}
+        {:error, _reason} = error -> error
+      end
     end
   end
 
-  defp maybe_read_env(opts) do
+  defp collect_env_args(env_args) do
+    Enum.reduce_while(env_args, {:ok, []}, fn
+      {:ok, args}, {:ok, acc} -> {:cont, {:ok, acc ++ args}}
+      {:error, _reason} = error, _acc -> {:halt, error}
+    end)
+  end
+
+  defp maybe_read_env(key, opts) do
     env = System.get_env(String.upcase(opts[:env]))
 
     cond do
       is_nil(env) ->
-        []
+        {:ok, []}
 
       opts[:type] == :boolean and truthy?(env) ->
-        ["--" <> opts[:long]]
+        {:ok, ["--" <> opts[:long]]}
 
       opts[:type] == :boolean ->
-        []
+        {:ok, []}
+
+      # counters take no argument, the flag is repeated as many times as the value
+      opts[:type] == :counter ->
+        case Integer.parse(env) do
+          {count, ""} when count >= 0 -> {:ok, List.duplicate("--" <> opts[:long], count)}
+          _other -> {:error, ":#{key} expected a non negative integer, got: #{env}"}
+        end
 
       true ->
-        ["--" <> opts[:long], env]
+        {:ok, ["--" <> opts[:long], env]}
     end
   end
 

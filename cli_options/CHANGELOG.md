@@ -24,6 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * Fix `:conflicts_with` failing for options with default values, even if not set by the user
 * Fix crash when a `:float` option has a default value
+* Fix `:env` for `:counter` options, the environment variable is now the count
 
 ## [v0.1.7](https://github.com/sportradar/elixir-workspace/tree/cli_options/v0.1.6) (2025-10-31)
 

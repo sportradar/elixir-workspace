@@ -732,6 +732,25 @@ defmodule CliOptionsTest do
       end
     end
 
+    test "env vars for counters" do
+      schema = [verbose: [type: :counter, env: "TEST_VERBOSE"]]
+      on_exit(fn -> System.delete_env("TEST_VERBOSE") end)
+
+      System.put_env("TEST_VERBOSE", "3")
+      assert CliOptions.parse([], schema) == {:ok, {[verbose: 3], [], []}}
+      assert CliOptions.parse!(["--verbose"], schema) == {[verbose: 1], [], []}
+
+      System.put_env("TEST_VERBOSE", "0")
+      assert CliOptions.parse([], schema) == {:ok, {[verbose: 0], [], []}}
+
+      for value <- ["invalid", "-1", "1.5"] do
+        System.put_env("TEST_VERBOSE", value)
+
+        assert CliOptions.parse([], schema) ==
+                 {:error, ":verbose expected a non negative integer, got: #{value}"}
+      end
+    end
+
     test "env vars casing definition does not matter" do
       System.put_env("TEST_NAME", "foo")
 

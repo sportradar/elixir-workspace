@@ -189,7 +189,8 @@ defmodule CliOptions.Schema do
       is ignored.
 
       For boolean options, the flag is considered set if the environment variable has
-      a truthy value (`1`, `true`) and ignored in any other case.
+      a truthy value (`1`, `true`) and ignored in any other case. For counter options,
+      the environment variable is expected to be a non negative integer.
       """
     ],
     conflicts_with: [
