@@ -142,4 +142,12 @@ defmodule Workspace.ExportTest do
       assert run["output"] == "caf\uFFFD\n"
     end
   end
+
+  test "assert_jason!/2 raises if jason is not available" do
+    assert Workspace.Export.assert_jason!("to_json/1") == :ok
+
+    assert_raise RuntimeError, ~r/to_json\/1 depends on the :jason package/, fn ->
+      Workspace.Export.assert_jason!("to_json/1", Workspace.NotAvailableJason)
+    end
+  end
 end

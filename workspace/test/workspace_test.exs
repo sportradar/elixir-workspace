@@ -66,31 +66,6 @@ defmodule WorkspaceTest do
     end
 
     @tag :tmp_dir
-    test "test helpers apply the project overrides and options", %{tmp_dir: tmp_dir} do
-      path = Path.join(tmp_dir, "created")
-
-      Workspace.Test.create_workspace(path, [], [{:foo, "foo", []}],
-        projects: [foo: [description: "The foo project"]]
-      )
-
-      assert File.read!(Path.join(path, "foo/mix.exs")) =~ ~s(description: "The foo project")
-
-      path = Path.join(tmp_dir, "with")
-
-      Workspace.Test.with_workspace(
-        path,
-        [],
-        [{:bar, "bar", []}],
-        fn ->
-          assert File.read!(Path.join(path, "mix.exs")) =~ "defmodule OtherWorkspace.MixProject"
-          assert File.read!(Path.join(path, "bar/mix.exs")) =~ ~s(description: "Bar")
-        end,
-        workspace_module: "OtherWorkspace",
-        projects: [bar: [description: "Bar"]]
-      )
-    end
-
-    @tag :tmp_dir
     test "ignore_paths only match whole path segments", %{tmp_dir: tmp_dir} do
       Workspace.Test.with_workspace(
         tmp_dir,

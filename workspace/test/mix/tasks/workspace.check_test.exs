@@ -243,6 +243,61 @@ defmodule Mix.Tasks.Workspace.CheckTest do
   end
 
   @tag :tmp_dir
+  test "check group headings are padded to the terminal width", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [{:foo, "packages/foo", []}],
+      fn ->
+        terminal = start_terminal(60)
+        group_leader = Process.group_leader()
+        Process.group_leader(self(), terminal)
+
+        try do
+          CheckTask.run([
+            "--workspace-path",
+            tmp_dir,
+            "--config-path",
+            Path.expand("../../fixtures/configs/check_groups.exs", __DIR__)
+          ])
+        after
+          Process.group_leader(self(), group_leader)
+        end
+
+        send(terminal, {:output, self()})
+        assert_receive {:output, output}
+
+        heading = output |> String.split("\n") |> Enum.find(&(&1 =~ "Documentation checks"))
+        assert String.length(heading) == 60
+      end
+    )
+  end
+
+  # a minimal io server reporting the given terminal columns and collecting the output
+  defp start_terminal(columns) do
+    spawn_link(fn -> terminal_loop(columns, []) end)
+  end
+
+  defp terminal_loop(columns, output) do
+    receive do
+      {:io_request, from, ref, {:get_geometry, :columns}} ->
+        send(from, {:io_reply, ref, columns})
+        terminal_loop(columns, output)
+
+      {:io_request, from, ref, {:put_chars, _encoding, chars}} ->
+        send(from, {:io_reply, ref, :ok})
+        terminal_loop(columns, [output | chars])
+
+      {:io_request, from, ref, _request} ->
+        send(from, {:io_reply, ref, {:error, :request}})
+        terminal_loop(columns, output)
+
+      {:output, pid} ->
+        send(pid, {:output, IO.chardata_to_string(output)})
+    end
+  end
+
+  @tag :tmp_dir
   test "handles checks returning empty list", %{tmp_dir: tmp_dir} do
     # Create a custom check module that returns empty list from format_result
     defmodule EmptyListCheck do
