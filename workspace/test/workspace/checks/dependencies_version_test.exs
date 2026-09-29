@@ -101,7 +101,7 @@ defmodule Workspace.Checks.DependenciesVersionTest do
         module: DependenciesVersion,
         opts: [
           deps: [
-            foo: [version: "== 0.1", options: [only: :dev, runtime: false]],
+            foo: [version: "== 0.1", options: [only: [:dev, :test], runtime: false]],
             bar: [version: [github: "x/bar", branch: "main"]],
             baz: [version: [github: "x/baz", tag: "v1.0"]]
           ]
@@ -112,7 +112,7 @@ defmodule Workspace.Checks.DependenciesVersionTest do
       Workspace.Test.workspace_fixture([
         {:package_a, "package_a",
          deps: [
-           {:foo, "== 0.1", runtime: false, only: :dev},
+           {:foo, "== 0.1", runtime: false, only: [:test, :dev]},
            {:bar, branch: "main", github: "x/bar"},
            {:baz, github: "x/baz", tag: "v1.0"}
          ]},

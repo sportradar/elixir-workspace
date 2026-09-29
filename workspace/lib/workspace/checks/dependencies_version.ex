@@ -163,11 +163,21 @@ defmodule Workspace.Checks.DependenciesVersion do
     end
   end
 
-  # keyword lists are compared regardless of the order of their keys
+  # keyword lists are compared regardless of the order of their keys, and of
+  # the order of any list value, e.g. `only: [:dev, :test]`
   defp same?(value, expected) when is_list(value) and is_list(expected),
-    do: Enum.sort(value) == Enum.sort(expected)
+    do: normalize(value) == normalize(expected)
 
   defp same?(value, expected), do: value == expected
+
+  defp normalize(keyword) do
+    keyword
+    |> Enum.map(fn
+      {key, value} when is_list(value) -> {key, Enum.sort(value)}
+      other -> other
+    end)
+    |> Enum.sort()
+  end
 
   defp check_metadata(mismatches, configured, expected) do
     [
