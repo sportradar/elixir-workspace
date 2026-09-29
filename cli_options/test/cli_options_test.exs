@@ -428,6 +428,28 @@ defmodule CliOptionsTest do
                CliOptions.parse(["--include", "foo", "--exclude", "foo"], schema)
     end
 
+    test "mutually exclusive options with defaults" do
+      schema = [
+        all: [type: :boolean, conflicts_with: [:project, :verbose]],
+        project: [type: :string, default: "foo"],
+        verbose: [type: :counter]
+      ]
+
+      # defaults are not considered as set
+      assert {:ok, {opts, [], []}} = CliOptions.parse([], schema)
+      assert opts == [all: false, project: "foo", verbose: 0]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--all"], schema)
+      assert opts == [all: true, project: "foo", verbose: 0]
+
+      assert {:ok, {opts, [], []}} = CliOptions.parse(["--project", "bar", "--verbose"], schema)
+      assert opts == [all: false, project: "bar", verbose: 1]
+
+      # explicitly set options still conflict
+      assert {:error, "--all is mutually exclusive with --project"} =
+               CliOptions.parse(["--all", "--project", "bar"], schema)
+    end
+
     test "with post_validate set" do
       schema = [project: [type: :string, multiple: true], name: [type: :string]]
 

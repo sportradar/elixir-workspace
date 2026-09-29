@@ -375,9 +375,10 @@ defmodule CliOptions.Schema do
   @doc false
   @spec validate(opts :: keyword(), schema :: t()) :: {:ok, keyword()} | {:error, String.t()}
   def validate(opts, schema) do
-    with {:ok, opts} <- validate_options(opts, schema),
-         :ok <- validate_mutually_exclusive(opts, schema) do
-      {:ok, opts}
+    # conflicts are checked before applying the defaults, since only options
+    # explicitly set by the user may conflict
+    with :ok <- validate_mutually_exclusive(opts, schema) do
+      validate_options(opts, schema)
     end
   end
 
