@@ -76,6 +76,11 @@ defmodule Workspace.GitTest do
         assert {:error, message} = Workspace.Git.root()
         assert message =~ "git rev-parse --show-toplevel"
         assert message =~ "not a git repository"
+
+        # the no commits fallback is not used outside of a repository
+        assert {:error, message} = Workspace.Git.uncommitted_files()
+        assert message =~ "not a git repository"
+        refute message =~ "--cached"
       end)
     end
   end

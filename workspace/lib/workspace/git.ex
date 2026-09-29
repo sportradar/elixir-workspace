@@ -147,14 +147,17 @@ defmodule Workspace.Git do
   def uncommitted_files(opts \\ []) do
     cd = opts[:cd] || File.cwd!()
 
-    # without any commit HEAD cannot be resolved, so we diff the index instead
-    diff_against =
-      case git_in_path(cd, ~w[rev-parse --verify --quiet HEAD]) do
-        {:ok, _commit} -> "HEAD"
-        {:error, _reason} -> "--cached"
-      end
+    # without any commit HEAD cannot be resolved, so we diff the index instead,
+    # we first ensure it is a repository so that other errors are not hidden
+    with {:ok, _git_dir} <- git_in_path(cd, ~w[rev-parse --git-dir]) do
+      diff_against =
+        case git_in_path(cd, ~w[rev-parse --verify --quiet HEAD]) do
+          {:ok, _commit} -> "HEAD"
+          {:error, _reason} -> "--cached"
+        end
 
-    git_files(cd, ~w[diff --name-only --no-renames] ++ [diff_against])
+      git_files(cd, ~w[diff --name-only --no-renames] ++ [diff_against])
+    end
   end
 
   @doc """
