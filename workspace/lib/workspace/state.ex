@@ -17,6 +17,9 @@ defmodule Workspace.State do
     folder containing the workspace mix file.
     * `:git_root_path` - the absolute path of the git repository containing the
     workspace
+    * `:git_workspace_path` - the absolute path of the workspace within the git
+    repository. It differs from the `:workspace_path` only if the workspace path
+    is a symlink pointing inside the repository.
     * `:config` - the workspace's configuration, check `Workspace.Config` for
     more details.
 
@@ -32,6 +35,7 @@ defmodule Workspace.State do
   * `:mix_path` - The path to the workspace's root `mix.exs`.
   * `:workspace_path` - The workspace root path.
   * `:git_root_path` - The git root path, of the repository containing the workspace.
+  * `:git_workspace_path` - The workspace path within the git repository.
   * `:cwd` - The directory from which the workspace was generated.
   * `:graph` - The DAG (directed acyclic graph) of the workspace, including the
   `:affected_by` paths of the projects as `:path` nodes.
@@ -43,6 +47,7 @@ defmodule Workspace.State do
           mix_path: binary(),
           workspace_path: binary(),
           git_root_path: binary() | nil,
+          git_workspace_path: binary() | nil,
           cwd: binary(),
           graph: :digraph.graph(),
           status_updated?: boolean()
@@ -55,6 +60,7 @@ defmodule Workspace.State do
             workspace_path: nil,
             cwd: nil,
             git_root_path: nil,
+            git_workspace_path: nil,
             graph: nil,
             status_updated?: false
 
@@ -87,7 +93,8 @@ defmodule Workspace.State do
       workspace_path: path,
       cwd: File.cwd!(),
       graph: graph,
-      git_root_path: git_root_path
+      git_root_path: git_root_path,
+      git_workspace_path: git_workspace_path(path, git_root_path)
     }
     |> set_projects(projects)
   end
@@ -102,6 +109,31 @@ defmodule Workspace.State do
       # this is mostly for tests where we use artificial non existing directories
       nil
     end
+  end
+
+  defp git_workspace_path(_path, nil), do: nil
+
+  defp git_workspace_path(path, git_root_path) do
+    {:ok, prefix} = Workspace.Git.prefix(cd: path)
+    Path.join(git_root_path, prefix) |> Path.expand()
+  end
+
+  @doc """
+  Returns the absolute path of a file given relative to the git root.
+
+  The path is returned in the form of the workspace path, e.g. if the workspace
+  path is a symlink pointing inside the repository, the returned path is under
+  the symlinked workspace path, so that it can be compared with the projects paths.
+
+  The workspace is expected to be in a git repository.
+  """
+  @spec git_file_path(workspace :: t(), file :: Path.t()) :: Path.t()
+  def git_file_path(%__MODULE__{git_root_path: git_root_path} = workspace, file)
+      when is_binary(git_root_path) do
+    workspace.git_root_path
+    |> Path.join(file)
+    |> Path.relative_to(workspace.git_workspace_path, force: true)
+    |> Path.expand(workspace.workspace_path)
   end
 
   defp update_projects_topology(projects, graph) do

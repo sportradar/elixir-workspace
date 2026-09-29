@@ -17,6 +17,10 @@ defmodule Workspace.GitTest do
         File.mkdir("package_a")
         File.cd!("package_a")
         assert Workspace.Git.root() == {:ok, tmp_dir}
+
+        # the prefix is the relative path within the repository
+        assert Workspace.Git.prefix() == {:ok, "package_a/"}
+        assert Workspace.Git.prefix(cd: tmp_dir) == {:ok, ""}
       end)
 
       # test with the cd flag

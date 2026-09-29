@@ -44,7 +44,7 @@ defmodule Workspace.Checks.ValidateAffectedBy do
 
   defp repo_files(workspace) do
     case Workspace.Git.files(cd: workspace.git_root_path) do
-      {:ok, files} -> Enum.map(files, &Path.expand(&1, workspace.git_root_path))
+      {:ok, files} -> Enum.map(files, &Workspace.State.git_file_path(workspace, &1))
       {:error, _reason} -> nil
     end
   end

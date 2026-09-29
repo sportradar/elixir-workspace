@@ -38,6 +38,24 @@ defmodule Workspace.Git do
     end
   end
 
+  @doc """
+  Get the relative path of the given path in its git repository
+
+  Returns `{:ok, prefix}` in case of success, where `prefix` is an empty
+  string for the repository root, or `{:error, reason}` in case of failure.
+
+  ## Options
+
+  * `:cd` - the path to get the prefix of, if not set defaults to the
+  current working directory.
+  """
+  @spec prefix(opts :: keyword()) :: {:ok, binary()} | {:error, binary()}
+  def prefix(opts \\ []) do
+    cd = Path.expand(opts[:cd] || File.cwd!())
+
+    git_in_path(cd, ~w[rev-parse --show-prefix])
+  end
+
   defp strip_suffix(path, suffix) do
     path = Path.split(path)
     suffix = Path.split(suffix)

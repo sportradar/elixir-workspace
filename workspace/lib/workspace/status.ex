@@ -149,7 +149,7 @@ defmodule Workspace.Status do
       {:ok, changed_files} ->
         changed_files
         |> Enum.map(fn {file, type} ->
-          full_path = Path.join(workspace.git_root_path, file) |> Path.expand()
+          full_path = Workspace.State.git_file_path(workspace, file)
 
           parent_project =
             case Workspace.Topology.parent_project(workspace, full_path) do
@@ -217,13 +217,13 @@ defmodule Workspace.Status do
   # Returns a map with the changed files of each affected_by path, paths
   # without any changed file are not included
   defp match_paths(workspace, changes) do
-    base_path = workspace.git_root_path || workspace.workspace_path
-
     changed_files =
       changes
       |> Map.values()
       |> List.flatten()
-      |> Enum.map(fn {file, _type} = file_info -> {Path.expand(file, base_path), file_info} end)
+      |> Enum.map(fn {file, _type} = file_info ->
+        {Workspace.State.git_file_path(workspace, file), file_info}
+      end)
 
     # a path shared by many projects is matched once, the declaring project's
     # path is matched literally since it may contain wildcard characters

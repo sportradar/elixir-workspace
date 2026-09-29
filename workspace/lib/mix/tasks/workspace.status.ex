@@ -54,8 +54,8 @@ defmodule Mix.Tasks.Workspace.Status do
     Enum.each(modified, fn name ->
       project = Workspace.project!(workspace, name)
       print_project_status(project, :modified)
-      print_changes(workspace.git_root_path, project)
-      print_affected_by_changes(workspace.git_root_path, project)
+      print_changes(workspace, project)
+      print_affected_by_changes(workspace, project)
     end)
 
     Workspace.Cli.newline()
@@ -69,7 +69,7 @@ defmodule Mix.Tasks.Workspace.Status do
     Enum.each(affected, fn name ->
       project = Workspace.project!(workspace, name)
       print_project_status(project, :affected)
-      print_affected_by_changes(workspace.git_root_path, project)
+      print_affected_by_changes(workspace, project)
     end)
 
     Workspace.Cli.newline()
@@ -88,13 +88,13 @@ defmodule Mix.Tasks.Workspace.Status do
     ])
   end
 
-  defp print_changes(git_root_path, project) do
+  defp print_changes(workspace, project) do
     for change <- project.changes do
-      print_change(git_root_path, project, change, "    ")
+      print_change(workspace, change, "    ")
     end
   end
 
-  defp print_affected_by_changes(git_root_path, project) do
+  defp print_affected_by_changes(workspace, project) do
     for {path, changes} <- project.affected_by_changes || [] do
       Workspace.Cli.log([
         "    ",
@@ -105,18 +105,18 @@ defmodule Mix.Tasks.Workspace.Status do
       ])
 
       for change <- changes do
-        print_change(git_root_path, project, change, "      ")
+        print_change(workspace, change, "      ")
       end
     end
   end
 
-  defp print_change(git_root_path, project, {path, change_type}, indent) do
+  defp print_change(workspace, {path, change_type}, indent) do
     Workspace.Cli.log([
       indent,
       change_type_color(change_type),
       change_type(change_type),
       " ",
-      Path.relative_to(Path.join(git_root_path, path), project.workspace_path),
+      Path.relative_to(Workspace.State.git_file_path(workspace, path), workspace.workspace_path),
       :reset
     ])
   end
