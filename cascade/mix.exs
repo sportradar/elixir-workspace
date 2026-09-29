@@ -3,7 +3,7 @@ defmodule Cascade.MixProject do
 
   @app :cascade
   @repo_url "https://github.com/sportradar/elixir-workspace"
-  @version "0.2.0"
+  @version "0.3.0"
 
   def project do
     [
@@ -41,8 +41,8 @@ defmodule Cascade.MixProject do
 
   defp deps do
     [
-      {:cli_options, path: "../cli_options/"},
-      # {:cli_options, "~> 0.1.3"},
+      # {:cli_options, path: "../cli_options/"},
+      {:cli_options, "~> 0.2"},
       {:ex_doc, "== 0.40.4", only: :dev, runtime: false},
       {:credo, "== 1.7.17", only: [:dev, :test], runtime: false},
       {:doctor, "== 0.22.0", only: :dev, runtime: false}
