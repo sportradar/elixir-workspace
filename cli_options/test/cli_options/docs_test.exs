@@ -86,6 +86,14 @@ defmodule CliOptions.DocsTest do
       assert_raise ArgumentError, message, fn ->
         CliOptions.docs(@test_schema, sections: [test: [header: 1]])
       end
+
+      for sections <- ["test", [:test]] do
+        message = ":sections must be a keyword list, got: #{inspect(sections)}"
+
+        assert_raise ArgumentError, message, fn ->
+          CliOptions.docs(@test_schema, sections: sections)
+        end
+      end
     end
 
     test "raises if no section info is provided for an option" do

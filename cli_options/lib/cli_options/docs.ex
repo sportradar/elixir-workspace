@@ -23,6 +23,10 @@ defmodule CliOptions.Docs do
   defp validate_sections!(_schema, nil), do: :ok
 
   defp validate_sections!(schema, sections) do
+    if not Keyword.keyword?(sections) do
+      raise ArgumentError, ":sections must be a keyword list, got: #{inspect(sections)}"
+    end
+
     for {name, settings} <- sections do
       case CliOptions.Schema.Validator.validate(settings, @section_schema) do
         {:ok, _settings} -> :ok
