@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 * Fix template arguments defaults and required checks not applied for empty arguments or keyword options
+* Fix generation failing for `.heex` assets, which were formatted as Elixir code
 
 ## [v0.2.0](https://github.com/sportradar/elixir-workspace/tree/cascade/v0.2.0) (2024-10-21)
 

@@ -105,6 +105,17 @@ defmodule CascadeTest do
       assert File.read!(Path.join(tmp_dir, "hello.md")) == "Hello Erlang false"
     end
 
+    @tag :tmp_dir
+    test "heex assets are not formatted as elixir code", %{tmp_dir: tmp_dir} do
+      heex = ~s(<div class="greeting"><%= name %></div>\n)
+      File.write!(Path.join(@assets_path_tests, "with_args/page.html.heex"), heex)
+
+      capture_io(fn -> Cascade.generate(:with_args, tmp_dir, name: "Elixir") end)
+
+      assert File.read!(Path.join(tmp_dir, "page.html.heex")) ==
+               ~s(<div class="greeting">Elixir</div>\n)
+    end
+
     test "required arguments are validated" do
       assert Cascade.generate(:with_args, "foo", []) == {:error, "option :name is required"}
 

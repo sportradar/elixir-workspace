@@ -192,7 +192,7 @@ defmodule Cascade.Template do
     end
   end
 
-  @elixir_extensions [".ex", ".exs", ".heex"]
+  @elixir_extensions [".ex", ".exs"]
 
   defp maybe_format(body, path) do
     extension = Path.extname(path)
