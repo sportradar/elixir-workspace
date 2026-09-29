@@ -100,6 +100,25 @@ defmodule Workspace.Git do
   end
 
   @doc """
+  Returns the files of the repository
+
+  Both tracked files and untracked files which are not ignored are
+  included. The paths are relative to the `:cd` path.
+
+  ## Options
+
+    * `:cd` (`t:binary/0`) - The git repo path, defaults to the current working directory.
+  """
+  @spec files(opts :: keyword()) :: {:ok, [binary()]} | {:error, binary()}
+  def files(opts \\ []) do
+    cd = opts[:cd] || File.cwd!()
+
+    with {:ok, output} <- git_in_path(cd, ~w[ls-files --cached --others --exclude-standard]) do
+      {:ok, parse_git_output(output)}
+    end
+  end
+
+  @doc """
   Get list of untracked files
 
   ## Options

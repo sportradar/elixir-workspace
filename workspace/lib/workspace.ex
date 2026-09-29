@@ -290,6 +290,22 @@ defmodule Workspace do
   the patterns defined in `affected_by`. If a match is found, the project is marked
   as `:affected` and will be included in affected project lists.
 
+  > #### Validate your `:affected_by` paths {: .warning}
+  >
+  > A path which does not match any file, e.g. due to a typo or a renamed directory,
+  > is silently ignored. Changes that should affect the project will not be detected,
+  > and the project will be missing from the affected projects.
+  >
+  > It is strongly advised to enable the `Workspace.Checks.ValidateAffectedBy` check
+  > in your `.workspace.exs`, which verifies that all configured paths are valid:
+  >
+  > ```elixir
+  > [
+  >   module: Workspace.Checks.ValidateAffectedBy,
+  >   description: "all affected_by paths must be valid"
+  > ]
+  > ```
+
   > #### Path Resolution & Patterns {: .info}
   >
   > All paths in `:affected_by` are resolved relative to the **project's root directory**,

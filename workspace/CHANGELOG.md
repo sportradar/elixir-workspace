@@ -8,6 +8,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
+* Add `Workspace.Checks.ValidateAffectedBy` check
+
+  Verifies that the `:affected_by` paths of the projects match at least one
+  file of the repository and are not within the project's own path. A mistyped
+  or stale path would otherwise be silently ignored, and changes that should
+  affect the project would not be detected.
+
+  ```elixir
+  [
+    module: Workspace.Checks.ValidateAffectedBy,
+    description: "all affected_by paths must be valid"
+  ]
+  ```
+
 * Include `:affected_by` paths in the workspace graph
 
   Each distinct `:affected_by` path is now a `:path` node of the workspace graph,
