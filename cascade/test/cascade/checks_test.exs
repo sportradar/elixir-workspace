@@ -13,6 +13,10 @@ defmodule Cascade.ChecksTest do
     assert_raise ArgumentError,
                  "Module name must be a valid Elixir alias (for example: Foo.Bar), got: \"Foo.Bar#\"",
                  fn -> Cascade.Checks.check_module_name_validity!("Foo.Bar#") end
+
+    assert_raise ArgumentError, ~r/Module name must be a valid Elixir alias/, fn ->
+      Cascade.Checks.check_module_name_validity!("Foo\n")
+    end
   end
 
   test "check_module_name_availability!/1" do
