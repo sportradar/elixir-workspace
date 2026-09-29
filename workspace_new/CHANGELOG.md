@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * Fix generated workspaces depending on `workspace` v0.2, they now use v0.3
 * Fix generated `mix.exs` and `.workspace.exs` not being formatted
+* Fix `--app` and `--module` values with a trailing newline passing validation
 
 ## [v0.2.0](https://github.com/sportradar/elixir-workspace/tree/workspace_new/v0.2.0) (2025-02-07)
 

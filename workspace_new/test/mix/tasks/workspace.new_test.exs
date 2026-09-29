@@ -131,12 +131,24 @@ defmodule Mix.Tasks.Workspace.NewTest do
                        New.run(["path", "--app", "003invalid"])
                      end
       end)
+
+      in_tmp(tmp_dir, "trailing_newline", fn ->
+        assert_raise Mix.Error,
+                     ~r"Application name must start with a lowercase ASCII letter, followed by lowercase",
+                     fn ->
+                       New.run(["path", "--app", "foo\n"])
+                     end
+      end)
     end
 
     test "with an invalid module name", %{tmp_dir: tmp_dir} do
       in_tmp(tmp_dir, "invalid_module", fn ->
         assert_raise Mix.Error, ~r"Module name must be a valid Elixir alias", fn ->
           New.run(["valid", "--module", "not.valid"])
+        end
+
+        assert_raise Mix.Error, ~r"Module name must be a valid Elixir alias", fn ->
+          New.run(["valid", "--module", "Valid\n"])
         end
       end)
     end
