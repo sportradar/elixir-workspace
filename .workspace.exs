@@ -127,7 +127,7 @@
       opts: [
         deps: [
           nimble_options: [version: "~> 1.1.1"],
-          ex_doc: [version: "== 0.40.1"],
+          ex_doc: [version: "== 0.40.4"],
           credo: [version: "== 1.7.17"],
           doctor: [version: "== 0.22.0"]
         ]
