@@ -482,6 +482,8 @@ defmodule CliOptions.Schema do
     end
   end
 
+  defp validate_type(:float, _option, value) when is_float(value), do: {:ok, value}
+
   defp validate_type(:float, option, value) when is_binary(value) do
     case Float.parse(value) do
       {value, ""} -> {:ok, value}

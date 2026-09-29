@@ -213,17 +213,22 @@ defmodule CliOptionsTest do
       schema = [
         file: [type: :string, default: "mix.exs"],
         runs: [type: :integer, default: 2],
+        weight: [type: :float, default: 1.5],
+        ratios: [type: :float, multiple: true, default: [0.5, 1.0]],
         verbose: [type: :boolean]
       ]
 
       assert {:ok, {opts, args, []}} = CliOptions.parse(["foo", "bar"], schema)
-      assert opts == [file: "mix.exs", runs: 2, verbose: false]
+      assert opts == [file: "mix.exs", runs: 2, weight: 1.5, ratios: [0.5, 1.0], verbose: false]
       assert args == ["foo", "bar"]
 
       assert {:ok, {opts, args, []}} =
-               CliOptions.parse(["--runs", "1", "--verbose", "foo", "bar"], schema)
+               CliOptions.parse(
+                 ["--runs", "1", "--weight", "2", "--verbose", "foo", "bar"],
+                 schema
+               )
 
-      assert opts == [file: "mix.exs", runs: 1, verbose: true]
+      assert opts == [file: "mix.exs", runs: 1, weight: 2.0, ratios: [0.5, 1.0], verbose: true]
       assert args == ["foo", "bar"]
     end
 
