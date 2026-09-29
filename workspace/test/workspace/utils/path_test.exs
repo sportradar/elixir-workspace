@@ -18,4 +18,56 @@ defmodule Workspace.Utils.Path.PathTest do
       refute Utils.Path.parent_dir?("../workspace", "/usr/local/workspace_foo")
     end
   end
+
+  describe "glob_match?" do
+    test "exact paths and directories" do
+      assert Utils.Path.glob_match?("/ws/shared/config.ex", "/ws/shared/config.ex")
+      refute Utils.Path.glob_match?("/ws/shared/config.ex", "/ws/shared/config.exs")
+
+      assert Utils.Path.glob_match?("/ws/shared", "/ws/shared/nested/config.ex")
+      assert Utils.Path.glob_match?("/ws/shared/", "/ws/shared/config.ex")
+      refute Utils.Path.glob_match?("/ws/shared", "/ws/shared2/config.ex")
+    end
+
+    test "single star does not cross directories" do
+      assert Utils.Path.glob_match?("/ws/shared/*.ex", "/ws/shared/config.ex")
+      refute Utils.Path.glob_match?("/ws/shared/*.ex", "/ws/shared/config.txt")
+      refute Utils.Path.glob_match?("/ws/shared/*.ex", "/ws/shared/nested/config.ex")
+    end
+
+    test "double star matches nested directories" do
+      assert Utils.Path.glob_match?("/ws/docs/**/*.md", "/ws/docs/README.md")
+      assert Utils.Path.glob_match?("/ws/docs/**/*.md", "/ws/docs/a/b/README.md")
+      refute Utils.Path.glob_match?("/ws/docs/**/*.md", "/ws/docs/a/b/README.txt")
+      assert Utils.Path.glob_match?("/ws/docs/**", "/ws/docs/a/b/README.txt")
+    end
+
+    test "a matching directory matches all files under it" do
+      assert Utils.Path.glob_match?("/ws/native/*", "/ws/native/foo/src/lib.rs")
+      refute Utils.Path.glob_match?("/ws/native/*", "/ws/other/foo/src/lib.rs")
+    end
+
+    test "question mark, alternatives and character classes" do
+      assert Utils.Path.glob_match?("/ws/file?.ex", "/ws/file1.ex")
+      refute Utils.Path.glob_match?("/ws/file?.ex", "/ws/file10.ex")
+
+      assert Utils.Path.glob_match?("/ws/*.{ex,exs}", "/ws/config.exs")
+      assert Utils.Path.glob_match?("/ws/*.{ex,exs}", "/ws/config.ex")
+      refute Utils.Path.glob_match?("/ws/*.{ex,exs}", "/ws/config.eex")
+      assert Utils.Path.glob_match?("/ws/a,b", "/ws/a,b")
+
+      assert Utils.Path.glob_match?("/ws/file[12].ex", "/ws/file2.ex")
+      refute Utils.Path.glob_match?("/ws/file[12].ex", "/ws/file3.ex")
+    end
+
+    test "special regex characters are escaped" do
+      assert Utils.Path.glob_match?("/ws/c++/(lib).ex", "/ws/c++/(lib).ex")
+      refute Utils.Path.glob_match?("/ws/a.ex", "/ws/aXex")
+    end
+
+    test "paths are expanded" do
+      assert Utils.Path.glob_match?("/ws/project/../shared/*.ex", "/ws/shared/config.ex")
+      assert Utils.Path.glob_match?("/ws/shared", "/ws/project/../shared/config.ex")
+    end
+  end
 end

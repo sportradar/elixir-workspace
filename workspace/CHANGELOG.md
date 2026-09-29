@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## Unreleased
+
+### Fixed
+
+* Match `:affected_by` patterns without accessing the filesystem
+
+  Wildcard patterns were previously expanded with `Path.wildcard/1`, so deleted
+  files never matched them, e.g. removing a `.rs` file under a `native/**/*.rs`
+  pattern did not mark the project as affected. Patterns are now matched
+  directly against the changed paths.
+
 ## [v0.3.2](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.3.2) (2026-08-05)
 
 ### Added

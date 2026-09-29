@@ -346,6 +346,32 @@ defmodule Workspace.StatusTest do
   end
 
   @tag :tmp_dir
+  test "deleted files match affected_by wildcards", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [
+        {:package_a, "package_a", [workspace: [affected_by: ["../native/**/*.rs"]]]}
+      ],
+      fn ->
+        File.mkdir_p!(Path.join(tmp_dir, "native/src"))
+        File.write!(Path.join(tmp_dir, "native/src/lib.rs"), "// lib")
+        Workspace.Test.commit_changes(tmp_dir)
+
+        workspace = Workspace.new!(tmp_dir)
+        workspace = Workspace.Status.update(workspace, force: true)
+        assert workspace.projects[:package_a].status == :undefined
+
+        File.rm!(Path.join(tmp_dir, "native/src/lib.rs"))
+
+        workspace = Workspace.Status.update(workspace, force: true)
+        assert workspace.projects[:package_a].status == :affected
+      end,
+      git: true
+    )
+  end
+
+  @tag :tmp_dir
   test "supports parent directory in affected_by", %{tmp_dir: tmp_dir} do
     Workspace.Test.with_workspace(
       tmp_dir,

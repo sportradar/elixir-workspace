@@ -196,8 +196,10 @@ defmodule Workspace.Status do
         |> Enum.filter(fn affected_path ->
           # affected_path is already expanded in project creation
           # Check if any changed file matches this affected_by path
+          regex = Workspace.Utils.Path.glob_to_regex(affected_path)
+
           Enum.any?(changed_files, fn {full_changed_path, _type} ->
-            matches_affected_by_path?(full_changed_path, affected_path)
+            Regex.match?(regex, full_changed_path)
           end)
         end)
 
@@ -209,13 +211,5 @@ defmodule Workspace.Status do
         acc
       end
     end)
-  end
-
-  defp matches_affected_by_path?(changed_path, affected_path) do
-    cond do
-      Workspace.Utils.Path.parent_dir?(affected_path, changed_path) -> true
-      changed_path in Path.wildcard(affected_path) -> true
-      true -> false
-    end
   end
 end
