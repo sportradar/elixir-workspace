@@ -275,8 +275,8 @@ defmodule CliOptions.Schema do
 
   defp validate_option_schema!(option, opts) do
     with {:ok, opts} <- validate_settings(opts),
-         {:ok, opts} <- validate_default_value(opts),
-         {:ok, opts} <- validate_conflicting_options(opts) do
+         {:ok, opts} <- validate_conflicting_options(opts),
+         {:ok, opts} <- validate_default_value(opts) do
       opts = Keyword.put_new(opts, :long, default_long_name(option))
       {option, opts}
     else
@@ -320,7 +320,18 @@ defmodule CliOptions.Schema do
   defp validate_type_match(:boolean, value), do: is_boolean(value)
 
   defp validate_conflicting_options(opts) do
-    validate_separator(opts)
+    with {:ok, opts} <- validate_separator(opts) do
+      validate_multiple(opts)
+    end
+  end
+
+  # boolean and counter options are negated or counted, they cannot be repeated
+  defp validate_multiple(opts) do
+    if opts[:multiple] && opts[:type] in [:boolean, :counter] do
+      {:error, "multiple is not supported for #{inspect(opts[:type])} options"}
+    else
+      {:ok, opts}
+    end
   end
 
   defp validate_separator(opts) do

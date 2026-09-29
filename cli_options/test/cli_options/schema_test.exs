@@ -232,6 +232,19 @@ defmodule CliOptions.SchemaTest do
       end
     end
 
+    test "with multiple set for boolean or counter options" do
+      for type <- [:boolean, :counter] do
+        schema = [foo: [type: type, multiple: true]]
+
+        message =
+          "invalid schema for :foo, multiple is not supported for #{inspect(type)} options"
+
+        assert_raise ArgumentError, message, fn ->
+          CliOptions.Schema.new!(schema)
+        end
+      end
+    end
+
     test "long short names do not interfer" do
       schema = [foo: [type: :string, long: "f"], bar: [type: :string, short_aliases: ["f"]]]
       assert %CliOptions.Schema{} = CliOptions.Schema.new!(schema)
