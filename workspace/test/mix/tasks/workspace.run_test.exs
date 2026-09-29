@@ -618,6 +618,8 @@ defmodule Mix.Tasks.Workspace.RunTest do
           "--early-stop",
           "--workspace-path",
           tmp_dir,
+          "--export",
+          Path.join(tmp_dir, "run.json"),
           "--",
           maybe_shell(),
           "exit",
@@ -645,6 +647,10 @@ defmodule Mix.Tasks.Workspace.RunTest do
           ~r"==> :package_b - mix cmd(?: --shell)?\s+exit 1",
           ~r":package_b mix cmd(?: --shell)?\s+exit 1 failed with 1"
         ])
+
+        # the executed tasks are exported before terminating
+        assert [%{"status" => "error"}] =
+                 Path.join(tmp_dir, "run.json") |> File.read!() |> Jason.decode!()
       end)
     end
 

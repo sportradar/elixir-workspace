@@ -349,9 +349,10 @@ defmodule Mix.Tasks.Workspace.Run do
         ])
     end
 
-    results =
-      filtered_projects
-      |> Enum.map(fn project ->
+    # with --early-stop the execution halts on the first error, the results
+    # so far are still exported before terminating
+    {results, halted?} =
+      Enum.reduce_while(filtered_projects, {[], false}, fn project, {results, false} ->
         triggered_at = System.os_time(:millisecond)
         result = run_task(project, opts)
         completed_at = System.os_time(:millisecond)
@@ -371,14 +372,17 @@ defmodule Mix.Tasks.Workspace.Run do
 
         log_task_execution_result(execution_result)
 
-        if opts[:early_stop] do
-          maybe_early_stop(execution_result)
+        case opts[:early_stop] && execution_result.status == :error do
+          true -> {:halt, {[execution_result | results], true}}
+          _other -> {:cont, {[execution_result | results], false}}
         end
-
-        execution_result
       end)
 
+    results = Enum.reverse(results)
+
     if opts[:export], do: export_execution_results(results, opts[:export])
+
+    if halted?, do: Mix.raise("--early-stop is set - terminating workspace.run")
 
     grouped_results = Enum.group_by(results, fn result -> result.status end)
 
@@ -510,16 +514,6 @@ defmodule Mix.Tasks.Workspace.Run do
   defp cmd_output(:skip), do: nil
   defp cmd_output({:ok, output}), do: output
   defp cmd_output({:error, _code, output}), do: output
-
-  defp maybe_early_stop(result) do
-    case result[:status] do
-      :error ->
-        Mix.raise("--early-stop is set - terminating workspace.run")
-
-      _other ->
-        result
-    end
-  end
 
   defp log_task_execution_result(%{status: status} = result) when status not in [:skip] do
     result_message =

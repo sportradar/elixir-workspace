@@ -57,6 +57,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+* Fix `workspace.run --export` not writing the results when terminated by `--early-stop`
 * Fix `--env-var` rejecting values containing `=` and upper casing the variable names
 * Fix `DependenciesVersion` check failing for options in a different order, git `:tag` or `:ref` versions, or projects without deps
 * Fix `WorkspaceDepsPaths` check crashing on dependencies without a path, with a version requirement, or projects without deps
