@@ -292,9 +292,10 @@ defmodule Workspace do
 
   > #### Path Resolution & Patterns {: .info}
   >
-  > All paths in `:affected_by` are resolved relative to the **workspace's root directory**.
-  > This means you can reference files outside your project using relative paths like
-  > `../shared/config.ex` or `../../docs/README.md`.
+  > All paths in `:affected_by` are resolved relative to the **project's root directory**,
+  > e.g. the directory of the project's `mix.exs`. This means you can reference files
+  > outside your project using relative paths like `../shared/config.ex` or
+  > `../../docs/README.md`.
   >
   > The `:affected_by` option supports several path patterns:
   >
@@ -303,7 +304,12 @@ defmodule Workspace do
   >   - `"../shared/*.ex"` - matches any `.ex` file in the `../shared/` directory
   >   - `"../docs/**/*.md"` - matches any `.md` file in the `../docs/` directory including
   > nested directories
+  >   - `"../config/*.{exs,json}"` - matches any `.exs` or `.json` file in the `../config/`
+  > directory
   > - **Directory paths**: `"../shared/"` - matches any file within the `../shared/` directory
+  >
+  > Patterns are matched against the changed file paths, so deleted files are matched
+  > as well.
   >
   > For example:
   >

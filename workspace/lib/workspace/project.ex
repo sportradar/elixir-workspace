@@ -27,7 +27,10 @@ defmodule Workspace.Project do
 
       Supported wildcards:
       - `*` matches any characters except path separators
-      - `?` matches a single character
+      - `**` matches any characters including path separators
+      - `?` matches a single character except path separators
+      - `{a,b}` matches any of the comma separated alternatives
+      - `[abc]` matches any of the enclosed characters
       - Directory paths will match any file within that directory
       """,
       required: false,
