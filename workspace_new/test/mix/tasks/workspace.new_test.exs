@@ -31,6 +31,14 @@ defmodule Mix.Tasks.Workspace.NewTest do
 
         assert_file(tmp_dir, "hello_workspace/.gitignore")
         assert_file(tmp_dir, "hello_workspace/.workspace.exs")
+
+        # generated elixir files are formatted
+        for file <- ~w[mix.exs .formatter.exs .workspace.exs] do
+          content = File.read!(Path.join([tmp_dir, "hello_workspace", file]))
+          formatted = IO.iodata_to_binary([Code.format_string!(content), "\n"])
+
+          assert content == formatted, "expected #{file} to be formatted"
+        end
       end)
     end
 
