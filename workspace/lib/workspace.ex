@@ -330,6 +330,42 @@ defmodule Workspace do
   > end
   > ```
 
+  > #### Paths in the workspace graph {: .tip}
+  >
+  > Each distinct `:affected_by` path is a node of the workspace graph, shared by all
+  > projects declaring it. For example, if `nif` declares `../native/common` and
+  > `../proto/*.proto`, `other` declares `../native/common` and `api` depends on
+  > `nif`, you can visualize a change in `native/common` using
+  > `workspace.graph --format mermaid --show-status`
+  >
+  > ```mermaid
+  > flowchart TD
+  >   api
+  >   nif
+  >   other
+  >   path_0[/"native/common"/]
+  >   path_1[/"proto/*.proto"/]
+  >
+  >   api --> nif
+  >   nif --> path_0
+  >   nif --> path_1
+  >   other --> path_0
+  >
+  >   class path_1 path;
+  >   classDef path fill:#eee,color:#333;
+  >
+  >   class api affected;
+  >   class nif affected;
+  >   class other affected;
+  >   class path_0 modified;
+  >
+  >   classDef affected fill:#FA6,color:#FFF;
+  >   classDef modified fill:#F33,color:#FFF;
+  > ```
+  >
+  > The changed path is indicated with red color. Both `nif` and `other` are affected
+  > since they depend on it, and `api` is affected through `nif`.
+
   ## Environment variables
 
   The following environment variables are supported:

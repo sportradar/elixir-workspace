@@ -55,7 +55,7 @@ defmodule Workspace.Status do
           end)
 
         # Match the changed files against the affected_by paths of the graph
-        path_changes = changed_paths(workspace, changes)
+        path_changes = match_paths(workspace, changes)
 
         projects =
           Map.new(projects, fn {name, project} ->
@@ -84,6 +84,30 @@ defmodule Workspace.Status do
         |> Workspace.State.set_projects(projects)
         |> Workspace.State.status_updated()
     end
+  end
+
+  @doc """
+  Returns the `:affected_by` paths with at least one changed file.
+
+  The paths are returned expanded, as defined in the projects' `:affected_by`.
+
+  ## Options
+
+    * `:base` (`String.t()`) - The base git reference for detecting changed files,
+    if not set only working tree changes will be included.
+    * `:head` (`String.t()`) - The head git reference for detecting changed files. It
+    is used only if `:base` is set.
+  """
+  @spec changed_paths(workspace :: Workspace.State.t(), opts :: keyword()) :: [String.t()]
+  def changed_paths(workspace, opts \\ []) do
+    workspace = update(workspace, opts)
+
+    workspace.projects
+    |> Map.values()
+    |> Enum.flat_map(fn project -> project.affected_by_changes || [] end)
+    |> Enum.map(fn {path, _files} -> path end)
+    |> Enum.uniq()
+    |> Enum.sort()
   end
 
   defp should_update_status?(_workspace, true), do: true
@@ -185,7 +209,7 @@ defmodule Workspace.Status do
 
   # Returns a map with the changed files of each graph path node, path nodes
   # without any changed file are not included
-  defp changed_paths(workspace, changes) do
+  defp match_paths(workspace, changes) do
     base_path = workspace.git_root_path || workspace.workspace_path
 
     changed_files =

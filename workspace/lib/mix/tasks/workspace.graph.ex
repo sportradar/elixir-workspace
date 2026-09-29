@@ -153,6 +153,23 @@ defmodule Mix.Tasks.Workspace.Graph do
       :back_office
       └── :cli_tools
 
+  ## Explicit path dependencies
+
+  Paths declared in a project's `:affected_by` config are always included
+  in the graph, shared by all projects declaring them:
+
+      $ mix workspace.graph
+      :api
+      └── :nif
+          ├── native/common (path)
+          └── proto/*.proto (path)
+      :other
+      └── native/common (path)
+
+  If `--show-status` is set, paths with changed files are marked as
+  modified. In `mermaid` and `dot` output paths are rendered with a
+  distinct node shape.
+
   ## Command Line Options
 
   #{CliOptions.docs(@options_schema, sort: true, sections: Workspace.CliOptions.doc_sections())}

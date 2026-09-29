@@ -14,12 +14,13 @@ defmodule Workspace.Graph.Formatters.PrintTree do
   @impl true
   def render(graph, workspace, opts) do
     pretty = Keyword.fetch!(opts, :pretty)
+    changed_paths = changed_paths(workspace, opts[:show_status])
 
     callback = fn {node, _format} ->
       children =
         :digraph.out_neighbours(graph, node)
+        |> Enum.sort_by(&sort_key/1)
         |> Enum.map(fn node -> {node, nil} end)
-        |> Enum.sort()
 
       case node.type do
         :workspace ->
@@ -30,6 +31,9 @@ defmodule Workspace.Graph.Formatters.PrintTree do
         :external ->
           display = format_ansi([:light_black, inspect(node.app), " (external)", :reset])
           {{display, nil}, children}
+
+        :path ->
+          {{path_format(node, node.path in changed_paths), nil}, children}
       end
     end
 
@@ -41,6 +45,21 @@ defmodule Workspace.Graph.Formatters.PrintTree do
 
     print_tree(root_nodes, callback, pretty: pretty)
   end
+
+  # workspace and external projects are listed before the paths
+  defp sort_key(node), do: {Workspace.Graph.Node.path?(node), node.app, node.label}
+
+  defp changed_paths(workspace, true), do: Workspace.Status.changed_paths(workspace)
+  defp changed_paths(_workspace, _show_status), do: []
+
+  defp path_format(node, true = _changed) do
+    [:modified, node.label, " (path)", :reset, :modified, " ✚", :reset]
+    |> Workspace.Cli.format()
+    |> format_ansi()
+  end
+
+  defp path_format(node, false = _changed),
+    do: format_ansi([:light_black, node.label, " (path)", :reset])
 
   defp node_format(project, show_status, show_tags) do
     Workspace.Cli.project_name(project, show_status: show_status, default_style: :gray)

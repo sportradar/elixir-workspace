@@ -384,6 +384,8 @@ defmodule Workspace.StatusTest do
 
         assert workspace.projects[:unrelated].status == :undefined
         assert workspace.projects[:unrelated].affected_by_changes == nil
+
+        assert Workspace.Status.changed_paths(workspace) == [common]
       end,
       git: true
     )

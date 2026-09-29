@@ -31,7 +31,8 @@ defmodule Workspace.Graph.Formatter do
         end
       end,
       external: opts[:external] || false,
-      exclude: opts[:exclude] || []
+      exclude: opts[:exclude] || [],
+      paths: true
     )
   end
 

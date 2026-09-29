@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+* Include `:affected_by` paths in the workspace graph
+
+  Each distinct `:affected_by` path is now a `:path` node of the workspace graph,
+  shared by all projects declaring it. Affected projects are computed through
+  the graph, and the changed files matching each path are recorded in the new
+  `:affected_by_changes` project field.
+
+  Paths are rendered by `mix workspace.graph` in all formats, and paths with
+  changed files are highlighted when `--show-status` is set:
+
+  ```
+  $ mix workspace.graph --show-status
+  :api ●
+  └── :nif ●
+      ├── native/common (path) ✚
+      └── proto/*.proto (path)
+  :other ●
+  └── native/common (path) ✚
+  ```
+
 ### Fixed
 
 * Match `:affected_by` patterns without accessing the filesystem

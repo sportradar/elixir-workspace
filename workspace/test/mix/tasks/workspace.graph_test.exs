@@ -421,4 +421,109 @@ defmodule Mix.Tasks.Workspace.GraphTest do
       git: true
     )
   end
+
+  describe "affected_by paths" do
+    @paths_projects [
+      {:nif, "nif", [workspace: [affected_by: ["../native/common", "../proto/*.proto"]]]},
+      {:api, "api", [deps: [{:nif, path: "../nif"}]]},
+      {:other, "other", [workspace: [affected_by: ["../native/common/"]]]}
+    ]
+
+    @tag :tmp_dir
+    test "are printed in the tree with their status", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        @paths_projects,
+        fn ->
+          File.mkdir_p!(Path.join(tmp_dir, "native/common"))
+          File.write!(Path.join(tmp_dir, "native/common/lib.rs"), "// lib")
+
+          expected = """
+          :api ●
+          └── :nif ●
+              ├── native/common (path) ✚
+              └── proto/*.proto (path)
+          :other ●
+          └── native/common (path) ✚
+          """
+
+          assert capture_io(fn ->
+                   GraphTask.run(["--workspace-path", tmp_dir, "--show-status"])
+                 end) == expected
+        end,
+        git: true
+      )
+    end
+
+    @tag :tmp_dir
+    test "with dot output set", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(tmp_dir, [], @paths_projects, fn ->
+        expected = """
+        digraph G {
+          "native/common" [shape=folder];
+          "proto/*.proto" [shape=folder];
+          api -> nif;
+          nif -> "native/common";
+          nif -> "proto/*.proto";
+          other -> "native/common";
+        }
+        """
+
+        assert capture_io(fn ->
+                 GraphTask.run(["--workspace-path", tmp_dir, "--format", "dot"])
+               end) == expected
+      end)
+    end
+
+    @tag :tmp_dir
+    test "with mermaid output set", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        @paths_projects,
+        fn ->
+          File.mkdir_p!(Path.join(tmp_dir, "native/common"))
+          File.write!(Path.join(tmp_dir, "native/common/lib.rs"), "// lib")
+
+          expected = """
+          flowchart TD
+            api
+            nif
+            other
+            path_0[/"native/common"/]
+            path_1[/"proto/*.proto"/]
+
+            api --> nif
+            nif --> path_0
+            nif --> path_1
+            other --> path_0
+
+            classDef external fill:#999,color:#ee0;
+            class path_1 path;
+            classDef path fill:#eee,color:#333;
+
+            class api affected;
+            class nif affected;
+            class other affected;
+            class path_0 modified;
+
+            classDef affected fill:#FA6,color:#FFF;
+            classDef modified fill:#F33,color:#FFF;
+          """
+
+          assert capture_io(fn ->
+                   GraphTask.run([
+                     "--workspace-path",
+                     tmp_dir,
+                     "--format",
+                     "mermaid",
+                     "--show-status"
+                   ])
+                 end) == expected
+        end,
+        git: true
+      )
+    end
+  end
 end
