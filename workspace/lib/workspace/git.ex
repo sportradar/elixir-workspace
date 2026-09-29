@@ -119,9 +119,7 @@ defmodule Workspace.Git do
         {:error, _reason} -> "--cached"
       end
 
-    with {:ok, output} <- git_in_path(cd, ~w[diff --name-only --no-renames] ++ [diff_against]) do
-      {:ok, parse_git_output(output)}
-    end
+    git_files(cd, ~w[diff --name-only --no-renames] ++ [diff_against])
   end
 
   @doc """
@@ -138,9 +136,7 @@ defmodule Workspace.Git do
   def files(opts \\ []) do
     cd = opts[:cd] || File.cwd!()
 
-    with {:ok, output} <- git_in_path(cd, ~w[ls-files --cached --others --exclude-standard]) do
-      {:ok, parse_git_output(output)}
-    end
+    git_files(cd, ~w[ls-files --cached --others --exclude-standard])
   end
 
   @doc """
@@ -154,9 +150,7 @@ defmodule Workspace.Git do
   def untracked_files(opts \\ []) do
     cd = opts[:cd] || File.cwd!()
 
-    with {:ok, output} <- git_in_path(cd, ~w[ls-files --others --exclude-standard]) do
-      {:ok, parse_git_output(output)}
-    end
+    git_files(cd, ~w[ls-files --others --exclude-standard])
   end
 
   @doc """
@@ -175,35 +169,30 @@ defmodule Workspace.Git do
   def changed_files(base, head, opts \\ []) do
     cd = opts[:cd] || File.cwd!()
 
-    with {:ok, output} <-
-           git_in_path(cd, [
-             "diff",
-             "--name-only",
-             "--no-renames",
-             "--relative",
-             "#{base}...#{head}"
-           ]) do
-      {:ok, parse_git_output(output)}
-    end
+    git_files(cd, ["diff", "--name-only", "--no-renames", "--relative", "#{base}...#{head}"])
   end
 
-  defp git_in_path(path, git_command) do
+  defp git_in_path(path, git_command, opts \\ []) do
     {output, status} =
       File.cd!(path, fn ->
         System.cmd("git", git_command, stderr_to_stdout: true)
       end)
 
-    output = String.trim(output)
-
     case status do
-      0 -> {:ok, output}
-      status -> {:error, "git #{Enum.join(git_command, " ")} failed with #{status}: #{output}"}
+      0 ->
+        {:ok, if(Keyword.get(opts, :trim, true), do: String.trim(output), else: output)}
+
+      status ->
+        {:error,
+         "git #{Enum.join(git_command, " ")} failed with #{status}: #{String.trim(output)}"}
     end
   end
 
-  defp parse_git_output(output) do
-    output
-    |> String.split("\n")
-    |> Enum.filter(fn file -> file != "" end)
+  # Runs a git command listing files. With -z paths are NUL separated and never
+  # quoted, e.g. for non ASCII characters, so they are returned verbatim.
+  defp git_files(path, [subcommand | args]) do
+    with {:ok, output} <- git_in_path(path, [subcommand, "-z" | args], trim: false) do
+      {:ok, output |> String.split(<<0>>) |> Enum.reject(&(&1 == ""))}
+    end
   end
 end

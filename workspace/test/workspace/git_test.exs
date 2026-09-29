@@ -89,6 +89,28 @@ defmodule Workspace.GitTest do
     end
 
     @tag :tmp_dir
+    test "file names are not quoted", %{tmp_dir: tmp_dir} do
+      names = ["café.ex", "quote\"d.ex", "tab\tname.ex", "back\\slash.ex", "space .ex"]
+
+      File.cd!(tmp_dir, fn ->
+        File.touch!("mix.exs")
+        init_git_project()
+
+        for name <- names, do: File.write!(name, "")
+        assert Workspace.Git.untracked_files() == {:ok, Enum.sort(names)}
+
+        System.cmd("git", ~w[add .])
+        assert Workspace.Git.uncommitted_files() == {:ok, Enum.sort(names)}
+
+        System.cmd("git", ~w[commit --quiet -m files])
+        assert Workspace.Git.changed_files("HEAD~1", "HEAD") == {:ok, Enum.sort(names)}
+
+        {:ok, files} = Workspace.Git.files()
+        assert Enum.all?(names, &(&1 in files))
+      end)
+    end
+
+    @tag :tmp_dir
     test "detects changes in a repo without any commits", %{tmp_dir: tmp_dir} do
       File.cd!(tmp_dir, fn ->
         System.cmd("git", ~w[init --quiet])
