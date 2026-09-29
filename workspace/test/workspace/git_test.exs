@@ -64,6 +64,22 @@ defmodule Workspace.GitTest do
 
   describe "changed files" do
     @tag :tmp_dir
+    test "detects changes in a repo without any commits", %{tmp_dir: tmp_dir} do
+      File.cd!(tmp_dir, fn ->
+        System.cmd("git", ~w[init --quiet])
+
+        File.touch!("staged.ex")
+        File.touch!("untracked.ex")
+        System.cmd("git", ~w[add staged.ex])
+
+        assert Workspace.Git.uncommitted_files() == {:ok, ["staged.ex"]}
+
+        assert Workspace.Git.changed() ==
+                 {:ok, [{"staged.ex", :uncommitted}, {"untracked.ex", :untracked}]}
+      end)
+    end
+
+    @tag :tmp_dir
     test "properly detects uncommitted, unstaged, changed files", %{tmp_dir: tmp_dir} do
       File.cd!(tmp_dir, fn ->
         # at least one file is needed to get the proper diff, otherwise git diff --name-only HEAD

@@ -101,6 +101,9 @@ defmodule Workspace.Git do
 
   Uncommitted are considered the files that are staged but not committed yet.
 
+  If the repository has no commits yet, all staged files are considered
+  uncommitted.
+
   ## Options
 
     * `:cd` (`t:binary/0`) - The git repo path, defaults to the current working directory.
@@ -109,7 +112,14 @@ defmodule Workspace.Git do
   def uncommitted_files(opts \\ []) do
     cd = opts[:cd] || File.cwd!()
 
-    with {:ok, output} <- git_in_path(cd, ~w[diff --name-only --no-renames HEAD]) do
+    # without any commit HEAD cannot be resolved, so we diff the index instead
+    diff_against =
+      case git_in_path(cd, ~w[rev-parse --verify --quiet HEAD]) do
+        {:ok, _commit} -> "HEAD"
+        {:error, _reason} -> "--cached"
+      end
+
+    with {:ok, output} <- git_in_path(cd, ~w[diff --name-only --no-renames] ++ [diff_against]) do
       {:ok, parse_git_output(output)}
     end
   end

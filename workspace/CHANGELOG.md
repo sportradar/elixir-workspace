@@ -57,6 +57,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+* Support status related operations in repositories without commits
+
+  Detecting the uncommitted files relied on `git diff HEAD`, which fails if
+  the repository has no commits yet, so any status related operation, e.g.
+  `mix workspace.run --affected`, raised. Staged files are now considered
+  uncommitted in this case.
+
 * Reset previous statuses on a forced `Workspace.Status.update/2`
 
   A forced status update only marked the currently modified and affected
