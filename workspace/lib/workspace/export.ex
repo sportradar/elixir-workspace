@@ -53,7 +53,10 @@ defmodule Workspace.Export do
 
     results
     |> Enum.map(fn result ->
-      Map.put(result, :project, Workspace.Project.to_map(result.project))
+      result
+      |> Map.put(:project, Workspace.Project.to_map(result.project))
+      # the output of a task may not be valid UTF-8, which cannot be encoded
+      |> Map.update(:output, nil, &maybe_replace_invalid/1)
     end)
     |> Jason.encode!(pretty: true)
   end
@@ -78,4 +81,7 @@ defmodule Workspace.Export do
 
   defp maybe_sort(projects, true), do: Enum.sort_by(projects, & &1.app)
   defp maybe_sort(projects, _other), do: projects
+
+  defp maybe_replace_invalid(output) when is_binary(output), do: String.replace_invalid(output)
+  defp maybe_replace_invalid(output), do: output
 end

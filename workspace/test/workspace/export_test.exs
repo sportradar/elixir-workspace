@@ -123,4 +123,23 @@ defmodule Workspace.ExportTest do
       )
     end
   end
+
+  describe "run_results_to_json/1" do
+    test "invalid utf-8 bytes of the output are replaced" do
+      result = %{
+        project: Workspace.Test.project_fixture(:foo, "foo", []),
+        task: "cmd",
+        argv: [],
+        status: :ok,
+        status_code: 0,
+        output: <<"caf", 0xE9, "\n">>,
+        triggered_at: 0,
+        completed_at: 0,
+        duration: 0
+      }
+
+      assert [run] = Workspace.Export.run_results_to_json([result]) |> Jason.decode!()
+      assert run["output"] == "caf\uFFFD\n"
+    end
+  end
 end
