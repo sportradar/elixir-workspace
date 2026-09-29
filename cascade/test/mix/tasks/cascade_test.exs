@@ -45,6 +45,23 @@ defmodule Mix.Tasks.CascadeTest do
     end)
   end
 
+  test "new template with an absolute assets path", %{tmp_dir: tmp_dir} do
+    in_tmp(tmp_dir, "absolute_assets", fn ->
+      assert_raise Mix.Error, ~r/--assets-path must be relative to the root path/, fn ->
+        Mix.Tasks.Cascade.run([
+          "template",
+          "--",
+          "--name",
+          "foo",
+          "--assets-path",
+          Path.join(tmp_dir, "templates")
+        ])
+      end
+
+      assert File.ls!(Path.join(tmp_dir, "absolute_assets")) == []
+    end)
+  end
+
   test "new template with an invalid name", %{tmp_dir: tmp_dir} do
     in_tmp(tmp_dir, "invalid_name", fn ->
       for name <- ["../../evil", "Foo", "foo-bar", "1foo", "foo\n"] do

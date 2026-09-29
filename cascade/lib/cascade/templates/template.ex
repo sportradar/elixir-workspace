@@ -8,8 +8,8 @@ defmodule Cascade.Templates.Template do
     assets_path: [
       type: :string,
       doc: """
-      The assets path with respect to the current working directory.
-      This is where all template assets should be added. By convention
+      The assets path relative to the root path. This is where all
+      template assets should be added. By convention
       it defaults to a `templates` folder at the same level as your
       `lib` folder.
       """,
@@ -51,6 +51,7 @@ defmodule Cascade.Templates.Template do
   @impl Cascade.Template
   def validate_cli_opts(opts) do
     with :ok <- validate_name(opts[:name]),
+         :ok <- validate_assets_path(opts[:assets_path]),
          {:ok, templates_path} <- templates_path(opts[:templates_path]),
          {:ok, module} <- module(templates_path, opts[:name]) do
       relative_assets_to_templates_path =
@@ -78,6 +79,13 @@ defmodule Cascade.Templates.Template do
       {:error,
        "invalid template name #{inspect(name)}, it must start with a lowercase letter " <>
          "and contain only lowercase letters, numbers and underscores"}
+    end
+  end
+
+  defp validate_assets_path(assets_path) do
+    case Path.type(assets_path) do
+      :relative -> :ok
+      _other -> {:error, "--assets-path must be relative to the root path, got: #{assets_path}"}
     end
   end
 
