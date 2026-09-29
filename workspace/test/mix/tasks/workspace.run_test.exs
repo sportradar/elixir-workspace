@@ -655,9 +655,14 @@ defmodule Mix.Tasks.Workspace.RunTest do
           ~r":package_b mix cmd(?: --shell)?\s+exit 1 failed with 1"
         ])
 
-        # the executed tasks are exported before terminating
-        assert [%{"status" => "error"}] =
-                 Path.join(tmp_dir, "run.json") |> File.read!() |> Jason.decode!()
+        # all projects are exported before terminating, the ones not executed are skipped
+        runs = Path.join(tmp_dir, "run.json") |> File.read!() |> Jason.decode!()
+        statuses = Map.new(runs, fn run -> {run["project"]["app"], run["status"]} end)
+
+        assert map_size(statuses) == 11
+        assert statuses["package_a"] == "error"
+        assert statuses["package_b"] == "skip"
+        assert statuses |> Map.delete("package_a") |> Map.values() |> Enum.uniq() == ["skip"]
       end)
     end
 

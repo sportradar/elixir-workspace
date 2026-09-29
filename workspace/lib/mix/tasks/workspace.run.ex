@@ -353,22 +353,7 @@ defmodule Mix.Tasks.Workspace.Run do
     # so far are still exported before terminating
     {results, halted?} =
       Enum.reduce_while(filtered_projects, {[], false}, fn project, {results, false} ->
-        triggered_at = System.os_time(:millisecond)
-        result = run_task(project, opts)
-        completed_at = System.os_time(:millisecond)
-
-        execution_result =
-          %{
-            project: project,
-            task: opts[:task],
-            argv: opts[:argv],
-            status: execution_status(result, allowed_to_fail?(project.app, opts[:allow_failure])),
-            status_code: status_code(result),
-            output: cmd_output(result),
-            triggered_at: triggered_at,
-            completed_at: completed_at,
-            duration: completed_at - triggered_at
-          }
+        execution_result = execute(project, opts)
 
         log_task_execution_result(execution_result)
 
@@ -378,7 +363,13 @@ defmodule Mix.Tasks.Workspace.Run do
         end
       end)
 
-    results = Enum.reverse(results)
+    # projects not executed due to an early stop are considered skipped
+    not_executed =
+      filtered_projects
+      |> Enum.drop(length(results))
+      |> Enum.map(&execution_result(&1, :skip, opts, System.os_time(:millisecond)))
+
+    results = Enum.reverse(results) ++ not_executed
 
     if opts[:export], do: export_execution_results(results, opts[:export])
 
@@ -427,6 +418,29 @@ defmodule Mix.Tasks.Workspace.Run do
   end
 
   # if the project is skipped we only print a message if --verbose is set
+  defp execute(project, opts) do
+    triggered_at = System.os_time(:millisecond)
+    result = run_task(project, opts)
+
+    execution_result(project, result, opts, triggered_at)
+  end
+
+  defp execution_result(project, result, opts, triggered_at) do
+    completed_at = System.os_time(:millisecond)
+
+    %{
+      project: project,
+      task: opts[:task],
+      argv: opts[:argv],
+      status: execution_status(result, allowed_to_fail?(project.app, opts[:allow_failure])),
+      status_code: status_code(result),
+      output: cmd_output(result),
+      triggered_at: triggered_at,
+      completed_at: completed_at,
+      duration: completed_at - triggered_at
+    }
+  end
+
   defp run_task(%{skip: true} = project, options) do
     if options[:verbose] do
       log_with_title(
