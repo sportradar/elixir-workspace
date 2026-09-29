@@ -15,7 +15,8 @@ defmodule Workspace.Checks.ValidateConfigPath do
               can either be a relative path with respect to workspace root or an
               anonymous function taking as input a `Workspace.Project` and returning
               a dynamic expected path.
-              """
+              """,
+              required: true
             ]
           )
   @moduledoc """

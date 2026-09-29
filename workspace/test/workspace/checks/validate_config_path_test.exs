@@ -16,6 +16,17 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
     %{check: check}
   end
 
+  test "expected_path is required" do
+    assert {:error, message} =
+             Workspace.Check.validate(
+               id: :test_check,
+               module: ValidateConfigPath,
+               opts: [config_attribute: :a_path]
+             )
+
+    assert message =~ "required :expected_path option not found"
+  end
+
   test "error if config variable is not set", %{check: check} do
     project = Workspace.Test.project_fixture(:foo, "packages/foo", [])
     workspace = Workspace.Test.workspace_fixture([project])
