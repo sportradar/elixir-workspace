@@ -73,7 +73,7 @@ defmodule Cascade.Templates.Template do
 
   # the name is used in paths and module names
   defp validate_name(name) do
-    if name =~ ~r/\A[a-z][a-z0-9_]*\z/ do
+    if is_binary(name) and name =~ ~r/\A[a-z][a-z0-9_]*\z/ do
       :ok
     else
       {:error,
@@ -83,9 +83,10 @@ defmodule Cascade.Templates.Template do
   end
 
   defp validate_assets_path(assets_path) do
-    case Path.type(assets_path) do
-      :relative -> :ok
-      _other -> {:error, "--assets-path must be relative to the root path, got: #{assets_path}"}
+    if is_binary(assets_path) and Path.type(assets_path) == :relative do
+      :ok
+    else
+      {:error, "--assets-path must be relative to the root path, got: #{inspect(assets_path)}"}
     end
   end
 
@@ -96,7 +97,10 @@ defmodule Cascade.Templates.Template do
     end
   end
 
-  defp templates_path(templates_path), do: {:ok, templates_path}
+  defp templates_path(templates_path) when is_binary(templates_path), do: {:ok, templates_path}
+
+  defp templates_path(templates_path),
+    do: {:error, "--templates-path must be a string, got: #{inspect(templates_path)}"}
 
   defp module(templates_path, name) do
     module = Path.join(templates_path, name) |> Macro.camelize()

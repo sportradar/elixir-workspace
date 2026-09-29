@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Pass the expanded output path to `c:Cascade.Template.pre_generate/2`, as with `c:Cascade.Template.post_generate/2`
 * Fix `Cascade.Checks.check_module_name_validity!/1` accepting names with a trailing newline
 * Fix generated Elixir files missing a trailing newline, failing `mix format --check-formatted`
+* Return an error instead of crashing for non string options of the `template` template
 
 ## [v0.2.0](https://github.com/sportradar/elixir-workspace/tree/cascade/v0.2.0) (2024-10-21)
 

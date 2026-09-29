@@ -154,6 +154,17 @@ defmodule CascadeTest do
       assert File.read!(Path.join(tmp_dir, "hello.md")) == "Hi Elixir false"
     end
 
+    test "template options of an invalid type return an error" do
+      assert {:error, "invalid template name :foo" <> _rest} =
+               Cascade.generate(:template, "root", name: :foo)
+
+      assert Cascade.generate(:template, "root", name: "foo", assets_path: nil) ==
+               {:error, "--assets-path must be relative to the root path, got: nil"}
+
+      assert Cascade.generate(:template, "root", name: "foo", templates_path: :foo) ==
+               {:error, "--templates-path must be a string, got: :foo"}
+    end
+
     test "required arguments are validated" do
       assert Cascade.generate(:with_args, "foo", []) == {:error, "option :name is required"}
 
