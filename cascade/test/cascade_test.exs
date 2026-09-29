@@ -31,13 +31,13 @@ defmodule CascadeTest do
     def args_schema, do: [name: [type: :string]]
 
     @impl true
-    def pre_generate(_output_path, _opts) do
-      send(self(), :pre_generate)
+    def pre_generate(output_path, _opts) do
+      send(self(), {:pre_generate, output_path})
     end
 
     @impl true
-    def post_generate(_output_path, _opts) do
-      send(self(), :post_generate)
+    def post_generate(output_path, _opts) do
+      send(self(), {:post_generate, output_path})
     end
   end
 
@@ -77,15 +77,17 @@ defmodule CascadeTest do
     test "custom callbacks are called if implemented", %{tmp_dir: tmp_dir} do
       create_asset(Path.join(@assets_path_tests, "custom_callbacks/hello.md"))
 
-      capture_io(fn -> Cascade.generate(:custom_callbacks, tmp_dir, name: "Elixir") end)
+      # callbacks get the expanded path even if a relative one is given
+      relative_path = Path.relative_to_cwd(tmp_dir)
+      capture_io(fn -> Cascade.generate(:custom_callbacks, relative_path, name: "Elixir") end)
 
       expected_file = Path.join(tmp_dir, "hello.md")
 
       assert File.exists?(expected_file)
       assert File.read!(expected_file) == "Hello Elixir\n"
 
-      assert_received :pre_generate
-      assert_received :post_generate
+      assert_received {:pre_generate, ^tmp_dir}
+      assert_received {:post_generate, ^tmp_dir}
     end
   end
 

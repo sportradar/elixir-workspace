@@ -18,6 +18,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Fix the default `--templates-path` of the `template` template, it is now based on the app name instead of the current directory
 * Reject an absolute `--assets-path` in the `template` template, which generated assets in a wrong location
 * Ask before overwriting existing files, they were silently overwritten
+* Pass the expanded output path to `c:Cascade.Template.pre_generate/2`, as with `c:Cascade.Template.post_generate/2`
 
 ## [v0.2.0](https://github.com/sportradar/elixir-workspace/tree/cascade/v0.2.0) (2024-10-21)
 

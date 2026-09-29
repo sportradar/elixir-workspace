@@ -171,9 +171,9 @@ defmodule Cascade.Template do
           generate_opts :: keyword()
         ) :: :ok
   def generate(template, output_path, opts, generate_opts \\ []) do
-    pre_generate(template, output_path, opts)
-
     output_path = Path.expand(output_path)
+
+    pre_generate(template, output_path, opts)
 
     for asset <- template_assets(template), not File.dir?(asset) do
       relative_asset_path = Path.relative_to(asset, template.assets_path())
