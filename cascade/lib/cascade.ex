@@ -46,15 +46,43 @@ defmodule Cascade do
     end
   end
 
+  # an empty list is considered command line arguments, in both cases the
+  # defaults and required options of the template's schema are applied
   defp validate_template_opts(template, args_or_opts) do
-    if Keyword.keyword?(args_or_opts) do
-      template.validate_cli_opts(args_or_opts)
-    else
-      args_schema = template.args_schema()
+    args_schema = template.args_schema()
 
-      with {:ok, {opts, _args, _extra}} <- CliOptions.parse(args_or_opts, args_schema) do
-        template.validate_cli_opts(opts)
+    result =
+      if args_or_opts != [] and Keyword.keyword?(args_or_opts) do
+        with_schema_defaults(args_or_opts, args_schema)
+      else
+        with {:ok, {opts, _args, _extra}} <- CliOptions.parse(args_or_opts, args_schema) do
+          {:ok, opts}
+        end
       end
+
+    with {:ok, opts} <- result do
+      template.validate_cli_opts(opts)
+    end
+  end
+
+  defp with_schema_defaults(opts, args_schema) do
+    schema = CliOptions.Schema.new!(args_schema).schema
+
+    missing =
+      for {key, key_schema} <- schema,
+          key_schema[:required],
+          not Keyword.has_key?(opts, key),
+          do: key
+
+    defaults =
+      for {key, key_schema} <- schema,
+          Keyword.has_key?(key_schema, :default),
+          not Keyword.has_key?(opts, key),
+          do: {key, key_schema[:default]}
+
+    case missing do
+      [] -> {:ok, opts ++ defaults}
+      [key | _rest] -> {:error, "option #{inspect(key)} is required"}
     end
   end
 end

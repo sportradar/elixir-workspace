@@ -41,6 +41,25 @@ defmodule CascadeTest do
     end
   end
 
+  defmodule TemplateWithArgs do
+    use Cascade.Template
+
+    @impl true
+    def name, do: :with_args
+
+    @impl true
+    def assets_path, do: Path.expand("tmp/with_args", __DIR__)
+
+    @impl true
+    def args_schema do
+      [
+        name: [type: :string, required: true],
+        greeting: [type: :string, default: "Hello"],
+        loud: [type: :boolean]
+      ]
+    end
+  end
+
   setup do
     on_exit(fn ->
       if File.exists?(@assets_path_tests), do: File.rm_rf!(@assets_path_tests)
@@ -67,6 +86,30 @@ defmodule CascadeTest do
 
       assert_received :pre_generate
       assert_received :post_generate
+    end
+  end
+
+  describe "generate/3 arguments" do
+    setup do
+      path = Path.join(@assets_path_tests, "with_args/hello.md")
+      File.mkdir_p!(Path.dirname(path))
+      File.write!(path, "<%= greeting %> <%= name %> <%= loud %>")
+    end
+
+    @tag :tmp_dir
+    test "defaults are applied to both cli arguments and options", %{tmp_dir: tmp_dir} do
+      capture_io(fn -> Cascade.generate(:with_args, tmp_dir, ["--name", "Elixir"]) end)
+      assert File.read!(Path.join(tmp_dir, "hello.md")) == "Hello Elixir false"
+
+      capture_io(fn -> Cascade.generate(:with_args, tmp_dir, name: "Erlang") end)
+      assert File.read!(Path.join(tmp_dir, "hello.md")) == "Hello Erlang false"
+    end
+
+    test "required arguments are validated" do
+      assert Cascade.generate(:with_args, "foo", []) == {:error, "option :name is required"}
+
+      assert Cascade.generate(:with_args, "foo", loud: true) ==
+               {:error, "option :name is required"}
     end
   end
 
