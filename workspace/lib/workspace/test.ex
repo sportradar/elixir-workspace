@@ -78,11 +78,19 @@ defmodule Workspace.Test do
 
     File.write!(Path.join(workspace_path, ".workspace.exs"), "[]")
 
-    # write the projects
+    # write the projects, merging any project specific overrides
+    project_overrides = opts[:projects] || []
+
     for {app, path, project_config} <- projects do
+      project_config = maybe_merge_config(project_config, project_overrides[app])
       create_mix_project(workspace_path, app, path, project_config, opts)
     end
   end
+
+  defp maybe_merge_config(config, overrides) when is_list(config) and is_list(overrides),
+    do: Keyword.merge(config, overrides)
+
+  defp maybe_merge_config(config, _overrides), do: config
 
   @doc """
   Creates a mix project fixture under the given workspace path.
@@ -127,7 +135,7 @@ defmodule Workspace.Test do
     path = Path.join(workspace_path, path)
     File.mkdir_p!(path)
 
-    mix_content = mix_file(app, config_or_binary, opts)
+    mix_content = mix_file(app, config_or_binary)
 
     # add the project's mix.exs
     File.write!(Path.join(path, "mix.exs"), mix_content)
@@ -150,9 +158,9 @@ defmodule Workspace.Test do
     end
   end
 
-  defp mix_file(_app, config, _opts) when is_binary(config), do: config
+  defp mix_file(_app, config) when is_binary(config), do: config
 
-  defp mix_file(app, config, opts) do
+  defp mix_file(app, config) do
     module = Macro.camelize("#{app}") <> ".MixProject"
 
     config =
@@ -165,7 +173,6 @@ defmodule Workspace.Test do
         ],
         config
       )
-      |> Keyword.merge(opts[app] || [])
 
     """
     defmodule #{module} do
@@ -225,7 +232,7 @@ defmodule Workspace.Test do
     config = Keyword.merge(config, type: :workspace)
 
     fixture_path = Path.expand(path)
-    create_workspace(fixture_path, config, fixture_or_projects, opts[:projects] || [])
+    create_workspace(fixture_path, config, fixture_or_projects, opts)
 
     in_fixture(fixture_path, fn ->
       maybe_cd!(fixture_path, opts[:cd], fn ->
