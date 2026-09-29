@@ -197,12 +197,11 @@ defmodule CliOptions.Parser do
       |> Enum.reject(fn {key, _opts} -> Keyword.has_key?(opts, key) end)
       |> Enum.map(fn {key, opts} -> maybe_read_env(key, opts) end)
 
-    with {:ok, args} <- collect_env_args(env_args) do
-      case parse(args, schema, [], []) do
-        {:ok, env_opts, []} -> {:ok, Keyword.merge(opts, env_opts)}
-        {:ok, _env_opts, args} -> {:error, "unexpected environment arguments: #{inspect(args)}"}
-        {:error, _reason} = error -> error
-      end
+    # environment values are always consumed as option arguments, so no
+    # positional arguments are expected
+    with {:ok, args} <- collect_env_args(env_args),
+         {:ok, env_opts, []} <- parse(args, schema, [], []) do
+      {:ok, Keyword.merge(opts, env_opts)}
     end
   end
 

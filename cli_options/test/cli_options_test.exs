@@ -725,6 +725,17 @@ defmodule CliOptionsTest do
                {:error, ":age expected an integer argument, got: invalid"}
     end
 
+    test "env vars values are parsed as option arguments" do
+      schema = [
+        name: [type: :string, env: "TEST_NAME"],
+        verbose: [type: :boolean, short: "v"]
+      ]
+
+      # an env value looking like an option is not accepted as an argument
+      System.put_env("TEST_NAME", "-v")
+      assert CliOptions.parse([], schema) == {:error, ":name expected at least 1 arguments"}
+    end
+
     test "env vars truthy values" do
       for value <- ["1", "true", "TRUE", "tRuE"] do
         System.put_env("TEST_ENABLE", value)
