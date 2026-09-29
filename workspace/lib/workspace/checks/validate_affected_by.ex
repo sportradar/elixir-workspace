@@ -66,7 +66,7 @@ defmodule Workspace.Checks.ValidateAffectedBy do
   end
 
   defp invalid_reason(project, path, files) do
-    regex = Workspace.Utils.Path.glob_to_regex(path)
+    regex = Workspace.Utils.Path.glob_to_regex(path, project.path)
 
     cond do
       Workspace.Utils.Path.parent_dir?(project.path, path) -> :within_project

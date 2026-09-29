@@ -248,17 +248,6 @@ defmodule Workspace.Graph do
     )
   end
 
-  @doc """
-  Returns the expanded path patterns of all `:path` nodes of the workspace graph.
-  """
-  @spec paths(workspace :: Workspace.State.t()) :: [String.t()]
-  def paths(workspace) do
-    workspace.graph
-    |> :digraph.vertices()
-    |> Enum.filter(&Workspace.Graph.Node.path?/1)
-    |> Enum.map(& &1.path)
-  end
-
   defp node_by_path(graph, path) do
     Enum.find(:digraph.vertices(graph), &(Workspace.Graph.Node.path?(&1) and &1.path == path))
   end

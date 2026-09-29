@@ -83,17 +83,41 @@ defmodule Workspace.Utils.Path do
   The pattern is expanded before compilation. The returned regex matches
   a path if the path or any of its parent directories matches the pattern.
   Check `glob_match?/2` for the supported wildcards.
+
+  If a `literal_base` is given, the leading path segments shared by the expanded
+  pattern and the base are matched literally. This is useful for patterns
+  expanded relative to a base directory, e.g. a project's path, since any
+  wildcard characters in the base directory name are not part of the glob.
   """
-  @spec glob_to_regex(pattern :: Path.t()) :: Regex.t()
-  def glob_to_regex(pattern) do
+  @spec glob_to_regex(pattern :: Path.t(), literal_base :: Path.t() | nil) :: Regex.t()
+  def glob_to_regex(pattern, literal_base \\ nil) do
+    segments = pattern |> Path.expand() |> Path.split()
+    base_segments = if literal_base, do: literal_base |> Path.expand() |> Path.split(), else: []
+
+    {literal, glob} = Enum.split(segments, common_prefix_length(segments, base_segments, 0))
+
     source =
-      pattern
-      |> Path.expand()
-      |> String.graphemes()
-      |> translate_glob(0, [])
+      case {literal, glob} do
+        {[], glob} -> glob |> Path.join() |> translate()
+        {literal, []} -> literal |> Path.join() |> Regex.escape()
+        {literal, glob} -> Regex.escape(dir_prefix(literal)) <> translate(Path.join(glob))
+      end
 
     Regex.compile!("^" <> source <> "(?:/.*)?$")
   end
+
+  # joins the segments with a trailing separator, e.g. ["/"] is already "/"
+  defp dir_prefix(segments) do
+    path = Path.join(segments)
+    if String.ends_with?(path, "/"), do: path, else: path <> "/"
+  end
+
+  defp common_prefix_length([head | rest], [head | base_rest], count),
+    do: common_prefix_length(rest, base_rest, count + 1)
+
+  defp common_prefix_length(_segments, _base_segments, count), do: count
+
+  defp translate(glob), do: glob |> String.graphemes() |> translate_glob(0, [])
 
   # depth tracks the nesting level of `{}` alternatives, commas are
   # treated as separators only within braces
@@ -108,8 +132,12 @@ defmodule Workspace.Utils.Path do
   defp translate_glob(["*" | rest], depth, acc), do: translate_glob(rest, depth, ["[^/]*" | acc])
   defp translate_glob(["?" | rest], depth, acc), do: translate_glob(rest, depth, ["[^/]" | acc])
 
-  defp translate_glob(["{" | rest], depth, acc),
-    do: translate_glob(rest, depth + 1, ["(?:" | acc])
+  # a brace without a closing one is matched literally
+  defp translate_glob(["{" | rest], depth, acc) do
+    if "}" in rest,
+      do: translate_glob(rest, depth + 1, ["(?:" | acc]),
+      else: translate_glob(rest, depth, ["\\{" | acc])
+  end
 
   defp translate_glob(["}" | rest], depth, acc) when depth > 0,
     do: translate_glob(rest, depth - 1, [")" | acc])

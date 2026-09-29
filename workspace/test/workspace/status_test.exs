@@ -450,6 +450,24 @@ defmodule Workspace.StatusTest do
   end
 
   @tag :tmp_dir
+  test "wildcard characters in the workspace path are matched literally", %{tmp_dir: tmp_dir} do
+    workspace_path = Path.join(tmp_dir, "ws[1]")
+
+    Workspace.Test.with_workspace(
+      workspace_path,
+      [],
+      [{:foo, "foo", [workspace: [affected_by: ["../shared"]]]}],
+      fn ->
+        File.mkdir_p!(Path.join(workspace_path, "shared"))
+        File.write!(Path.join(workspace_path, "shared/config.exs"), "[]")
+
+        assert Workspace.Status.affected(Workspace.new!(workspace_path)) == [:foo]
+      end,
+      git: true
+    )
+  end
+
+  @tag :tmp_dir
   test "deleted files match affected_by wildcards", %{tmp_dir: tmp_dir} do
     Workspace.Test.with_workspace(
       tmp_dir,

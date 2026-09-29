@@ -70,4 +70,26 @@ defmodule Workspace.Utils.Path.PathTest do
       assert Utils.Path.glob_match?("/ws/shared", "/ws/project/../shared/config.ex")
     end
   end
+
+  describe "glob_to_regex/2 with a literal base" do
+    defp match?(pattern, base, path),
+      do: Regex.match?(Utils.Path.glob_to_regex(pattern, base), path)
+
+    test "wildcard characters in the base are matched literally" do
+      assert match?("/ws[1]/shared", "/ws[1]/bar", "/ws[1]/shared/config.exs")
+      refute match?("/ws[1]/shared", "/ws[1]/bar", "/ws1/shared/config.exs")
+
+      assert match?("/ws/pkgs[1]/shared", "/ws/pkgs[1]/bar", "/ws/pkgs[1]/shared/a.ex")
+      assert match?("/ws{1/shared/*.ex", "/ws{1/bar", "/ws{1/shared/a.ex")
+    end
+
+    test "the pattern after the base is still a glob" do
+      assert match?("/ws[1]/native/**/*.rs", "/ws[1]/bar", "/ws[1]/native/src/lib.rs")
+      refute match?("/ws[1]/native/**/*.rs", "/ws[1]/bar", "/ws[1]/native/src/lib.ex")
+    end
+
+    test "unbalanced braces are matched literally" do
+      assert Utils.Path.glob_match?("/ws/foo{bar", "/ws/foo{bar/a.ex")
+    end
+  end
 end

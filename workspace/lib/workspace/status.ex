@@ -214,7 +214,7 @@ defmodule Workspace.Status do
     |> Enum.sort()
   end
 
-  # Returns a map with the changed files of each graph path node, path nodes
+  # Returns a map with the changed files of each affected_by path, paths
   # without any changed file are not included
   defp match_paths(workspace, changes) do
     base_path = workspace.git_root_path || workspace.workspace_path
@@ -225,10 +225,14 @@ defmodule Workspace.Status do
       |> List.flatten()
       |> Enum.map(fn {file, _type} = file_info -> {Path.expand(file, base_path), file_info} end)
 
-    workspace
-    |> Workspace.Graph.paths()
-    |> Enum.map(fn path ->
-      regex = Workspace.Utils.Path.glob_to_regex(path)
+    # a path shared by many projects is matched once, the declaring project's
+    # path is matched literally since it may contain wildcard characters
+    workspace.projects
+    |> Map.values()
+    |> Enum.flat_map(fn project -> Enum.map(project.affected_by, &{&1, project.path}) end)
+    |> Enum.uniq_by(fn {path, _project_path} -> path end)
+    |> Enum.map(fn {path, project_path} ->
+      regex = Workspace.Utils.Path.glob_to_regex(path, project_path)
 
       files =
         changed_files
