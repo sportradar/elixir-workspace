@@ -11,9 +11,10 @@ defmodule Workspace.Git do
   Returns `{:ok, path}` in case of success or `{:error, reason}` in
   case of failure.
 
-  The root is expanded relative to the given path, so if it is under a
-  symlinked directory the symlinked form is preserved. This way the root
-  can be safely compared with paths derived from the given path.
+  If the given path is under a symlinked directory, the symlinked form of the
+  root is returned, so that it can be safely compared with paths derived from
+  the given path. If the path is itself a symlink pointing inside a repository
+  there is no symlinked form of the root and the resolved root is returned.
 
   ## Options
 
@@ -24,11 +25,25 @@ defmodule Workspace.Git do
   def root(opts \\ []) do
     cd = Path.expand(opts[:cd] || File.cwd!())
 
-    # --show-toplevel returns the resolved path, instead we get the relative
-    # path to the root and expand it
-    with {:ok, cdup} <- git_in_path(cd, ~w[rev-parse --show-cdup]) do
-      {:ok, Path.expand(cdup, cd)}
+    # --show-toplevel returns the resolved path, we strip the relative path of
+    # cd in the repo (--show-prefix) from cd in order to keep its symlinked form
+    with {:ok, output} <- git_in_path(cd, ~w[rev-parse --show-toplevel --show-prefix]) do
+      {toplevel, prefix} =
+        case String.split(output, "\n") do
+          [toplevel] -> {toplevel, ""}
+          [toplevel, prefix] -> {toplevel, prefix}
+        end
+
+      {:ok, strip_suffix(cd, prefix) || toplevel}
     end
+  end
+
+  defp strip_suffix(path, suffix) do
+    path = Path.split(path)
+    suffix = Path.split(suffix)
+    {base, tail} = Enum.split(path, length(path) - length(suffix))
+
+    if tail == suffix, do: Path.join(base), else: nil
   end
 
   @doc """

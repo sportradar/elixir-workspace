@@ -36,6 +36,19 @@ defmodule Workspace.GitTest do
       assert Workspace.Git.root(cd: Path.join(link_path, "package_a")) == {:ok, link_path}
     end
 
+    @tag :tmp_dir
+    test "falls back to the resolved root for symlinks into the repo", %{tmp_dir: tmp_dir} do
+      repo_path = Path.join(tmp_dir, "repo")
+      link_path = Path.join(tmp_dir, "link")
+      File.mkdir_p!(Path.join(repo_path, "sub/workspace"))
+      File.ln_s!(Path.join(repo_path, "sub/workspace"), link_path)
+
+      File.cd!(repo_path, fn -> init_git_project() end)
+
+      # there is no symlinked form of the root, since the link points inside the repo
+      assert Workspace.Git.root(cd: link_path) == {:ok, repo_path}
+    end
+
     test "error if not a git repo" do
       # we cannot use the standard tmp_dir here because we need a non-git folder
       tmp_dir = Path.join(Workspace.TestUtils.tmp_path(), "no_git_repo")
@@ -43,7 +56,7 @@ defmodule Workspace.GitTest do
 
       File.cd!(tmp_dir, fn ->
         assert {:error, message} = Workspace.Git.root()
-        assert message =~ "git rev-parse --show-cdup failed"
+        assert message =~ "git rev-parse --show-toplevel"
         assert message =~ "not a git repository"
       end)
     end
