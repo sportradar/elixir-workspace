@@ -29,12 +29,12 @@ defmodule Workspace.Checks.WorkspaceDepsPaths do
   end
 
   defp validate_workspace_deps_paths(project, workspace) do
-    workspace_deps = workspace_deps(project.config[:deps], workspace)
+    workspace_deps = workspace_deps(project.config[:deps] || [], workspace)
 
     invalid_paths =
       workspace_deps
+      |> Enum.reject(fn {app, path} -> valid_path?(project, workspace, app, path) end)
       |> Enum.map(fn {app, path} -> {app, path, expected_path(project, workspace, app)} end)
-      |> Enum.reject(fn {_app, path, expected} -> sanitize(path) == expected end)
 
     case invalid_paths do
       [] -> {:ok, check_metadata([])}
@@ -42,22 +42,27 @@ defmodule Workspace.Checks.WorkspaceDepsPaths do
     end
   end
 
+  # dependencies on workspace projects defined with a path, any other
+  # dependency, e.g. a hex or git one, is not validated
   defp workspace_deps(deps, workspace) do
     deps
     |> Enum.filter(fn dep -> workspace_project?(dep, workspace) end)
-    # TODO: this expects a keyword list, make it more robust in case it is an absolute version
-    |> Enum.map(fn {app, opts} -> {app, opts[:path]} end)
+    |> Enum.map(fn dep -> {elem(dep, 0), dep_opts(dep)[:path]} end)
+    |> Enum.reject(fn {_app, path} -> is_nil(path) end)
   end
+
+  defp dep_opts({_app, opts}) when is_list(opts), do: opts
+  defp dep_opts({_app, _requirement, opts}) when is_list(opts), do: opts
+  defp dep_opts(_dep), do: []
+
+  defp valid_path?(project, workspace, app, path),
+    do: Path.expand(path, project.path) == Workspace.project!(workspace, app).path
 
   defp expected_path(project, workspace, app) do
     project_path = project.path
     dependency_path = Workspace.project!(workspace, app).path
 
     Path.relative_to(dependency_path, project_path, force: true)
-  end
-
-  defp sanitize(path) do
-    path |> Path.split() |> Path.join()
   end
 
   defp workspace_project?(dep, workspace) do
