@@ -73,6 +73,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Fix `ValidateConfigPath` check crashing if `:expected_path` is not set, it is now required
 * Fix `ValidateConfigPath` check failing for absolute configured or expected paths
 * Fix changes of files with non ASCII or special characters in their names not being detected
+* Fix git warnings, e.g. about line endings or deprecated config options, hiding changed files or crashing workspace loading
 * Fix `--base` including files changed only on the base branch, changes are now computed against the merge base (`base...head`)
 * Fix `:ignore_paths` also ignoring paths sharing the same prefix, e.g. `cover` ignored `coverage_tools`
 

@@ -25,9 +25,15 @@ defmodule Workspace.Git do
   def root(opts \\ []) do
     cd = Path.expand(opts[:cd] || File.cwd!())
 
+    command = ~w[rev-parse --show-toplevel --show-prefix]
+
     # --show-toplevel returns the resolved path, we strip the relative path of
-    # cd in the repo (--show-prefix) from cd in order to keep its symlinked form
-    with {:ok, output} <- git_in_path(cd, ~w[rev-parse --show-toplevel --show-prefix]) do
+    # cd in the repo (--show-prefix) from cd in order to keep its symlinked form.
+    #
+    # it is expected to fail outside of a repository, so it is first executed
+    # capturing stderr, in order not to print any error to the terminal
+    with {:ok, _output} <- git_capturing_stderr(cd, command),
+         {:ok, output} <- git_in_path(cd, command) do
       {toplevel, prefix} =
         case String.split(output, "\n") do
           [toplevel] -> {toplevel, ""}
@@ -210,27 +216,45 @@ defmodule Workspace.Git do
     git_files(cd, ["diff", "--name-only", "--no-renames", "--relative", "#{base}...#{head}"])
   end
 
-  defp git_in_path(path, git_command, opts \\ []) do
-    {output, status} =
-      File.cd!(path, fn ->
-        System.cmd("git", git_command, stderr_to_stdout: true)
-      end)
-
-    case status do
-      0 ->
-        {:ok, if(Keyword.get(opts, :trim, true), do: String.trim(output), else: output)}
-
-      status ->
-        {:error,
-         "git #{Enum.join(git_command, " ")} failed with #{status}: #{String.trim(output)}"}
+  defp git_in_path(path, git_command) do
+    with {:ok, output} <- run_git(path, git_command) do
+      {:ok, String.trim(output)}
     end
   end
 
   # Runs a git command listing files. With -z paths are NUL separated and never
   # quoted, e.g. for non ASCII characters, so they are returned verbatim.
   defp git_files(path, [subcommand | args]) do
-    with {:ok, output} <- git_in_path(path, [subcommand, "-z" | args], trim: false) do
+    with {:ok, output} <- run_git(path, [subcommand, "-z" | args]) do
       {:ok, output |> String.split(<<0>>) |> Enum.reject(&(&1 == ""))}
+    end
+  end
+
+  # stderr is not captured, since any git warning, e.g. about line endings or
+  # deprecated config options, would be mixed with the parsed output. In case
+  # of a failure the command is executed again capturing stderr in order to get
+  # the error message.
+  defp run_git(path, command) do
+    {output, status} = File.cd!(path, fn -> System.cmd("git", command) end)
+
+    case status do
+      0 -> {:ok, output}
+      status -> git_error(path, command, status)
+    end
+  end
+
+  defp git_error(path, command, status) do
+    {output, _status} =
+      File.cd!(path, fn -> System.cmd("git", command, stderr_to_stdout: true) end)
+
+    {:error, "git #{Enum.join(command, " ")} failed with #{status}: #{String.trim(output)}"}
+  end
+
+  # the output is mixed with any warnings, it is not meant to be parsed
+  defp git_capturing_stderr(path, command) do
+    case File.cd!(path, fn -> System.cmd("git", command, stderr_to_stdout: true) end) do
+      {output, 0} -> {:ok, output}
+      {_output, status} -> git_error(path, command, status)
     end
   end
 end

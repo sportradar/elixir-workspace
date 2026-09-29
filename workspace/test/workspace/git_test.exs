@@ -41,6 +41,18 @@ defmodule Workspace.GitTest do
     end
 
     @tag :tmp_dir
+    test "git warnings are not included in the output", %{tmp_dir: tmp_dir} do
+      File.mkdir_p!(Path.join(tmp_dir, "sub"))
+      File.cd!(tmp_dir, fn -> init_git_project() end)
+
+      # deprecated config options make git print a warning on every command
+      System.cmd("git", ~w[config core.fsyncObjectFiles true], cd: tmp_dir)
+
+      assert Workspace.Git.root(cd: Path.join(tmp_dir, "sub")) == {:ok, tmp_dir}
+      assert Workspace.Git.prefix(cd: Path.join(tmp_dir, "sub")) == {:ok, "sub/"}
+    end
+
+    @tag :tmp_dir
     test "symlinks with the same name as their target", %{tmp_dir: tmp_dir} do
       repo_path = Path.join(tmp_dir, "repo")
       link_path = Path.join(tmp_dir, "links/ws")
@@ -130,6 +142,20 @@ defmodule Workspace.GitTest do
 
         {:ok, files} = Workspace.Git.files()
         assert Enum.all?(names, &(&1 in files))
+      end)
+    end
+
+    @tag :tmp_dir
+    test "git warnings are not included in the files", %{tmp_dir: tmp_dir} do
+      File.cd!(tmp_dir, fn ->
+        File.write!("file.ex", "a\n")
+        init_git_project()
+
+        # git warns about the line endings of modified files
+        System.cmd("git", ~w[config core.autocrlf true])
+        File.write!("file.ex", "b\n")
+
+        assert Workspace.Git.uncommitted_files() == {:ok, ["file.ex"]}
       end)
     end
 
