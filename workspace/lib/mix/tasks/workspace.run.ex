@@ -232,7 +232,7 @@ defmodule Mix.Tasks.Workspace.Run do
 
       $ mix workspace.run -t compile --order postorder
 
-  The `preorder` option ensures that dependencies are executed first, which can reduce
+  The `postorder` option ensures that dependencies are executed first, which can reduce
   execution time by avoiding unnecessary task invocations on dependencies (only if the
   task requires dependencies being executed first, e.g. `mix compile` with a common
   build path).
@@ -545,7 +545,7 @@ defmodule Mix.Tasks.Workspace.Run do
         :reset,
         "task failed in #{length(projects)} projects but the ",
         :light_cyan,
-        "--alow-failure",
+        "--allow-failure",
         :reset,
         " flag is set"
       ])

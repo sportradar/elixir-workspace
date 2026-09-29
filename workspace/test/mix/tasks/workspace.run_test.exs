@@ -722,7 +722,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
             ~r"==> :package_b - mix cmd(?: --shell)?\s+exit 1",
             "** (exit) 1",
             ~r":package_b mix cmd(?: --shell)?\s+exit 1 failed with 1",
-            "WARNING task failed in 2 projects but the --alow-failure flag is set",
+            "WARNING task failed in 2 projects but the --allow-failure flag is set",
             "failed projects - [:package_a, :package_b]"
           ],
           partial: true
