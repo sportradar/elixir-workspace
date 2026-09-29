@@ -21,9 +21,9 @@ defmodule Workspace.Filtering do
   ## Options
 
     * `:exclude` (list of `t:atom/0`) - a list of projects to be ignored. This has
-    the highest priority, e.g. if the project is in the `:ignore` list it is
+    the highest priority, e.g. if the project is in the `:exclude` list it is
     always skipped.
-    * `:exclude_tags` (list of `t:Workspace.Project.tag()`) - a list of tags to be
+    * `:excluded_tags` (list of `t:Workspace.Project.tag()`) - a list of tags to be
     ignored. Any project that has any of the provided tags will be skipped.
     * `:include` (list of `t:atom/0`) - a list of projects to always include. This
     acts as a union with the filtered results, adding back projects even if they
@@ -55,7 +55,7 @@ defmodule Workspace.Filtering do
   >
   > Notice that projects are filtered using the following precedence:
   >
-  > * Excluded projects (`:exclude` or `:exclude_tags` options set)
+  > * Excluded projects (`:exclude` or `:excluded_tags` options set)
   > * Selected projects (`:project` or `:tags` option set)
   > * Code status modifiers (`:affected`, `:modified` and `:only_roots`)
   > * Included projects (`:include` option set) - added back as a union after all other filters
