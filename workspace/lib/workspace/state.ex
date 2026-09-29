@@ -130,10 +130,15 @@ defmodule Workspace.State do
   @spec git_file_path(workspace :: t(), file :: Path.t()) :: Path.t()
   def git_file_path(%__MODULE__{git_root_path: git_root_path} = workspace, file)
       when is_binary(git_root_path) do
-    workspace.git_root_path
-    |> Path.join(file)
-    |> Path.relative_to(workspace.git_workspace_path, force: true)
-    |> Path.expand(workspace.workspace_path)
+    relative_path =
+      workspace.git_root_path
+      |> Path.join(file)
+      |> Path.relative_to(workspace.git_workspace_path, force: true)
+
+    # joined before expanding, otherwise a leading ~ is expanded to the home directory
+    workspace.workspace_path
+    |> Path.join(relative_path)
+    |> Path.expand()
   end
 
   defp update_projects_topology(projects, graph) do
