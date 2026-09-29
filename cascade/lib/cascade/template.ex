@@ -156,9 +156,21 @@ defmodule Cascade.Template do
 
   @doc """
   Generates a template
+
+  The `opts` are the template's options, used as bindings for its assets.
+
+  ## Generate options
+
+    * `:force` - if set existing files are overwritten without asking, defaults
+    to `false`.
   """
-  @spec generate(template :: module(), output_path :: Path.t(), opts :: keyword()) :: :ok
-  def generate(template, output_path, opts) do
+  @spec generate(
+          template :: module(),
+          output_path :: Path.t(),
+          opts :: keyword(),
+          generate_opts :: keyword()
+        ) :: :ok
+  def generate(template, output_path, opts, generate_opts \\ []) do
     pre_generate(template, output_path, opts)
 
     output_path = Path.expand(output_path)
@@ -172,7 +184,7 @@ defmodule Cascade.Template do
         |> EEx.eval_file(opts)
         |> maybe_format(destination_path)
 
-      Mix.Generator.create_file(destination_path, body, force: true)
+      Mix.Generator.create_file(destination_path, body, force: generate_opts[:force] || false)
     end
 
     post_generate(template, output_path, opts)

@@ -12,6 +12,10 @@ defmodule Mix.Tasks.Cascade do
         current working directory.
         - If is is an absolute path it is used unchanged.
       """
+    ],
+    force: [
+      type: :boolean,
+      doc: "If set existing files are overwritten without asking."
     ]
   ]
 
@@ -49,7 +53,7 @@ defmodule Mix.Tasks.Cascade do
         template = String.to_atom(template)
         root_path = Path.expand(opts[:root] || File.cwd!())
 
-        case Cascade.generate(template, root_path, extra) do
+        case Cascade.generate(template, root_path, extra, force: opts[:force]) do
           {:error, reason} -> Mix.raise(reason)
           _other -> :ok
         end

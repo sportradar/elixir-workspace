@@ -98,11 +98,13 @@ defmodule CascadeTest do
 
     @tag :tmp_dir
     test "defaults are applied to both cli arguments and options", %{tmp_dir: tmp_dir} do
-      capture_io(fn -> Cascade.generate(:with_args, tmp_dir, ["--name", "Elixir"]) end)
-      assert File.read!(Path.join(tmp_dir, "hello.md")) == "Hello Elixir false"
+      cli_path = Path.join(tmp_dir, "cli")
+      capture_io(fn -> Cascade.generate(:with_args, cli_path, ["--name", "Elixir"]) end)
+      assert File.read!(Path.join(cli_path, "hello.md")) == "Hello Elixir false"
 
-      capture_io(fn -> Cascade.generate(:with_args, tmp_dir, name: "Erlang") end)
-      assert File.read!(Path.join(tmp_dir, "hello.md")) == "Hello Erlang false"
+      opts_path = Path.join(tmp_dir, "opts")
+      capture_io(fn -> Cascade.generate(:with_args, opts_path, name: "Erlang") end)
+      assert File.read!(Path.join(opts_path, "hello.md")) == "Hello Erlang false"
     end
 
     @tag :tmp_dir
@@ -114,6 +116,27 @@ defmodule CascadeTest do
 
       assert File.read!(Path.join(tmp_dir, "page.html.heex")) ==
                ~s(<div class="greeting">Elixir</div>\n)
+    end
+
+    @tag :tmp_dir
+    test "existing files are overwritten only if confirmed or forced", %{tmp_dir: tmp_dir} do
+      Mix.shell(Mix.Shell.Process)
+      on_exit(fn -> Mix.shell(Mix.Shell.IO) end)
+
+      path = Path.join(tmp_dir, "hello.md")
+      File.write!(path, "user edits")
+
+      send(self(), {:mix_shell_input, :yes?, false})
+      Cascade.generate(:with_args, tmp_dir, name: "Elixir")
+      assert File.read!(path) == "user edits"
+
+      send(self(), {:mix_shell_input, :yes?, true})
+      Cascade.generate(:with_args, tmp_dir, name: "Elixir")
+      assert File.read!(path) == "Hello Elixir false"
+
+      File.write!(path, "user edits")
+      Cascade.generate(:with_args, tmp_dir, [name: "Elixir"], force: true)
+      assert File.read!(path) == "Hello Elixir false"
     end
 
     test "required arguments are validated" do

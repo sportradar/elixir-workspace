@@ -23,17 +23,23 @@ defmodule Cascade do
   * `args_or_opts` can be an arbitrary keyword list with the template options or
   a list of command line arguments passed to the `mix cascade` task. In the latter
   case the arguments will be validated using the template's `c:Cascade.Template.args_schema/0`.
+
+  ## Options
+
+    * `:force` - if set existing files are overwritten without asking, defaults
+    to `false`.
   """
   @spec generate(
           name :: atom(),
           root_path :: String.t(),
-          args_or_opts :: keyword() | [String.t()]
+          args_or_opts :: keyword() | [String.t()],
+          opts :: keyword()
         ) ::
           {:error, String.t()} | :ok
-  def generate(name, root_path, args_or_opts \\ []) do
+  def generate(name, root_path, args_or_opts \\ [], opts \\ []) do
     with {:ok, template} <- template_from_name(name),
-         {:ok, opts} <- validate_template_opts(template, args_or_opts) do
-      Cascade.Template.generate(template, root_path, opts)
+         {:ok, template_opts} <- validate_template_opts(template, args_or_opts) do
+      Cascade.Template.generate(template, root_path, template_opts, opts)
     end
   end
 

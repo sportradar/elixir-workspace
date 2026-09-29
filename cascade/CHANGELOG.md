@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## Unreleased
 
+### Added
+
+* Add a `--force` option to `mix cascade` for overwriting existing files without asking
+
 ### Fixed
 
 * Fix template arguments defaults and required checks not applied for empty arguments or keyword options
@@ -13,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Validate the `--name` of the `template` template, invalid names could write files outside the root path
 * Fix the default `--templates-path` of the `template` template, it is now based on the app name instead of the current directory
 * Reject an absolute `--assets-path` in the `template` template, which generated assets in a wrong location
+* Ask before overwriting existing files, they were silently overwritten
 
 ## [v0.2.0](https://github.com/sportradar/elixir-workspace/tree/cascade/v0.2.0) (2024-10-21)
 
