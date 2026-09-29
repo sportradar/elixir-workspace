@@ -191,6 +191,9 @@ defmodule Workspace.Graph do
   @doc """
   Return the sink projects of the workspace
 
+  A project is a sink if it has no dependencies. Its `:affected_by` paths are
+  not considered dependencies in this context.
+
   Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
   """
@@ -202,8 +205,14 @@ defmodule Workspace.Graph do
 
   def sink_projects(graph) do
     graph
-    |> :digraph.sink_vertices()
-    |> project_names()
+    |> :digraph.vertices()
+    |> Enum.reject(&Workspace.Graph.Node.path?/1)
+    |> Enum.filter(fn node ->
+      graph
+      |> :digraph.out_neighbours(node)
+      |> Enum.all?(&Workspace.Graph.Node.path?/1)
+    end)
+    |> Enum.map(& &1.app)
   end
 
   @doc """

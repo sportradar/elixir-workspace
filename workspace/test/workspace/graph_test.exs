@@ -143,7 +143,7 @@ defmodule Workspace.GraphTest do
       workspace = paths_workspace()
 
       assert Enum.sort(Graph.source_projects(workspace)) == [:nif_a, :nif_b]
-      assert Enum.sort(Graph.sink_projects(workspace)) == [:utils]
+      assert Enum.sort(Graph.sink_projects(workspace)) == [:nif_b, :utils]
       assert Graph.dependencies(workspace, :nif_a) == [:utils]
       assert Graph.dependencies(workspace, :nif_b) == []
       assert Graph.all_dependencies(workspace, :nif_a) == [:utils]
