@@ -66,6 +66,20 @@ defmodule WorkspaceTest do
     end
 
     @tag :tmp_dir
+    test "ignore_paths only match whole path segments", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        [{:foo, "tools/foo", []}, {:bar, "tools_extra/bar", []}],
+        fn ->
+          {:ok, workspace} = Workspace.new(tmp_dir, ignore_paths: ["tools"])
+
+          assert Map.keys(workspace.projects) == [:bar]
+        end
+      )
+    end
+
+    @tag :tmp_dir
     test "error if the path is not a workspace", %{tmp_dir: tmp_dir} do
       Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
         assert {:error, reason} = Workspace.new(Path.join(tmp_dir, "package_a"))

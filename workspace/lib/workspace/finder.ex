@@ -65,6 +65,6 @@ defmodule Workspace.Finder do
   defp ignored_path?(mix_path, ignore_paths, workspace_path) do
     ignore_paths
     |> Enum.map(fn path -> workspace_path |> Path.join(path) |> Path.expand() end)
-    |> Enum.any?(fn path -> String.starts_with?(mix_path, path) end)
+    |> Enum.any?(fn path -> Workspace.Utils.Path.parent_dir?(path, mix_path) end)
   end
 end

@@ -57,6 +57,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+* Fix `:ignore_paths` also ignoring paths sharing the same prefix, e.g. `cover` ignored `coverage_tools`
+
 * Support status related operations in repositories without commits
 
   Detecting the uncommitted files relied on `git diff HEAD`, which fails if
