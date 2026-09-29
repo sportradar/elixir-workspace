@@ -211,17 +211,47 @@ defmodule Workspace.Graph do
 
   Notice that the project names are returned, you can use `Workspace.project/2`
   to map them back into projects.
-  """
-  @spec affected(workspace :: Workspace.State.t(), projects :: [atom()]) :: [atom()]
-  def affected(workspace, projects) do
-    with_digraph(workspace, fn graph ->
-      nodes = Enum.map(projects, fn project -> node_by_app(graph, project) end)
 
-      :digraph_utils.reaching_neighbours(nodes, graph)
-      |> Enum.map(& &1.app)
-      |> Enum.concat(projects)
-      |> Enum.uniq()
-    end)
+  ## Options
+
+    * `:paths` - a list of changed `:affected_by` path patterns. The projects
+    depending on these paths, and all their dependents, are also considered
+    affected. Each path is expected to be expanded, as in the project's
+    `:affected_by`.
+  """
+  @spec affected(workspace :: Workspace.State.t(), projects :: [atom()], opts :: keyword()) ::
+          [atom()]
+  def affected(workspace, projects, opts \\ []) do
+    opts = Keyword.validate!(opts, paths: [])
+
+    with_digraph(
+      workspace,
+      fn graph ->
+        nodes = Enum.map(projects, fn project -> node_by_app(graph, project) end)
+        path_nodes = Enum.map(opts[:paths], fn path -> node_by_path(graph, path) end)
+
+        :digraph_utils.reaching_neighbours(nodes ++ path_nodes, graph)
+        |> project_names()
+        |> Enum.concat(projects)
+        |> Enum.uniq()
+      end,
+      paths: true
+    )
+  end
+
+  @doc """
+  Returns the expanded path patterns of all `:path` nodes of the workspace graph.
+  """
+  @spec paths(workspace :: Workspace.State.t()) :: [String.t()]
+  def paths(workspace) do
+    workspace.graph
+    |> :digraph.vertices()
+    |> Enum.filter(&Workspace.Graph.Node.path?/1)
+    |> Enum.map(& &1.path)
+  end
+
+  defp node_by_path(graph, path) do
+    Enum.find(:digraph.vertices(graph), &(Workspace.Graph.Node.path?(&1) and &1.path == path))
   end
 
   defp node_by_app(graph, app) do

@@ -346,6 +346,50 @@ defmodule Workspace.StatusTest do
   end
 
   @tag :tmp_dir
+  test "affected_by changes propagate and are recorded", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [
+        {:nif, "nif", [workspace: [affected_by: ["../native/common"]]]},
+        {:api, "api", [deps: [{:nif, path: "../nif"}]]},
+        {:other, "other", [workspace: [affected_by: ["../native/common/"]]]},
+        {:unrelated, "unrelated", []}
+      ],
+      fn ->
+        File.mkdir_p!(Path.join(tmp_dir, "native/common"))
+        File.write!(Path.join(tmp_dir, "native/common/lib.rs"), "// lib")
+        File.write!(Path.join(tmp_dir, "other/lib.ex"), "# lib")
+
+        workspace = Workspace.new!(tmp_dir) |> Workspace.Status.update()
+        [common] = workspace.projects[:nif].affected_by
+
+        # the project declaring the path is affected and the change is recorded
+        assert workspace.projects[:nif].status == :affected
+
+        assert workspace.projects[:nif].affected_by_changes == [
+                 {common, [{"native/common/lib.rs", :untracked}]}
+               ]
+
+        # dependents are affected as well
+        assert workspace.projects[:api].status == :affected
+        assert workspace.projects[:api].affected_by_changes == nil
+
+        # modified projects remain modified
+        assert workspace.projects[:other].status == :modified
+
+        assert workspace.projects[:other].affected_by_changes == [
+                 {common, [{"native/common/lib.rs", :untracked}]}
+               ]
+
+        assert workspace.projects[:unrelated].status == :undefined
+        assert workspace.projects[:unrelated].affected_by_changes == nil
+      end,
+      git: true
+    )
+  end
+
+  @tag :tmp_dir
   test "deleted files match affected_by wildcards", %{tmp_dir: tmp_dir} do
     Workspace.Test.with_workspace(
       tmp_dir,

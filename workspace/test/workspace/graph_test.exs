@@ -127,6 +127,18 @@ defmodule Workspace.GraphTest do
       assert path_nodes(workspace.graph) == ["native/common", "native/nif_a/**/*.rs"]
     end
 
+    test "can be used as starting points for affected projects" do
+      workspace = paths_workspace()
+
+      assert Graph.affected(workspace, [], paths: ["/usr/local/workspace/native/common"])
+             |> Enum.sort() == [:nif_a, :nif_b]
+
+      assert Graph.affected(workspace, [:utils],
+               paths: ["/usr/local/workspace/native/nif_a/**/*.rs"]
+             )
+             |> Enum.sort() == [:nif_a, :utils]
+    end
+
     test "are never returned by the project helpers" do
       workspace = paths_workspace()
 

@@ -79,7 +79,8 @@ defmodule Workspace.Project do
           root?: nil | boolean(),
           changes: nil | [{Path.t(), Workspace.Git.change_type()}],
           tags: [tag()],
-          affected_by: [String.t()]
+          affected_by: [String.t()],
+          affected_by_changes: nil | [{String.t(), [{Path.t(), Workspace.Git.change_type()}]}]
         }
 
   @enforce_keys [:app, :module, :config, :mix_path, :path, :workspace_path]
@@ -94,7 +95,8 @@ defmodule Workspace.Project do
             root?: nil,
             changes: nil,
             tags: [],
-            affected_by: []
+            affected_by: [],
+            affected_by_changes: nil
 
   @doc """
   Creates a new project for the given project path.
@@ -301,6 +303,25 @@ defmodule Workspace.Project do
       _other -> %{project | status: :affected}
     end
   end
+
+  @doc """
+  Sets the changed files matching the project's `:affected_by` paths.
+
+  `changes` is a list of tuples of the form `{affected_by_path, changed_files}`,
+  one for each `:affected_by` path with at least one changed file. Notice that
+  this does not update the project's status, use `affected/1` for this.
+
+  If `changes` is empty the `:affected_by_changes` is set to `nil`.
+  """
+  @spec set_affected_by_changes(
+          project :: t(),
+          changes :: [{String.t(), [{Path.t(), Workspace.Git.change_type()}]}]
+        ) :: t()
+  def set_affected_by_changes(%Workspace.Project{} = project, []),
+    do: %{project | affected_by_changes: nil}
+
+  def set_affected_by_changes(%Workspace.Project{} = project, changes) when is_list(changes),
+    do: %{project | affected_by_changes: changes}
 
   @doc """
   Returns `true` if the project is affected, `false` otherwise.

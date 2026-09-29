@@ -54,16 +54,24 @@ defmodule Workspace.Status do
             end)
           end)
 
-        # Check for projects affected by their affected_by paths
-        affected_by_changes = check_affected_by_paths(workspace, changes)
+        # Match the changed files against the affected_by paths of the graph
+        path_changes = changed_paths(workspace, changes)
+
+        projects =
+          Map.new(projects, fn {name, project} ->
+            affected_by_changes =
+              project.affected_by
+              |> Enum.filter(&Map.has_key?(path_changes, &1))
+              |> Enum.map(fn path -> {path, path_changes[path]} end)
+
+            {name, Workspace.Project.set_affected_by_changes(project, affected_by_changes)}
+          end)
 
         # Affected projects (from dependencies + affected_by paths)
         modified = Enum.map(modifications, fn {project, _changes} -> project end)
 
-        affected_by_modified =
-          Enum.map(affected_by_changes, fn {project, _changes} -> project end)
-
-        affected = Workspace.Graph.affected(workspace, modified ++ affected_by_modified)
+        affected =
+          Workspace.Graph.affected(workspace, modified, paths: Map.keys(path_changes))
 
         projects =
           Enum.reduce(affected, projects, fn project, workspace_projects ->
@@ -175,41 +183,30 @@ defmodule Workspace.Status do
     |> Enum.sort()
   end
 
-  defp check_affected_by_paths(workspace, changes) do
+  # Returns a map with the changed files of each graph path node, path nodes
+  # without any changed file are not included
+  defp changed_paths(workspace, changes) do
     base_path = workspace.git_root_path || workspace.workspace_path
 
-    # Expand all changed files to full paths
     changed_files =
       changes
       |> Map.values()
       |> List.flatten()
-      |> Enum.map(fn {changed_file, type} ->
-        {Path.expand(changed_file, base_path), type}
-      end)
+      |> Enum.map(fn {file, _type} = file_info -> {Path.expand(file, base_path), file_info} end)
 
-    # Check each project's affected_by paths
-    workspace.projects
-    |> Enum.filter(fn {_name, project} -> length(project.affected_by) > 0 end)
-    |> Enum.reduce(%{}, fn {name, project}, acc ->
-      affected_files =
-        project.affected_by
-        |> Enum.filter(fn affected_path ->
-          # affected_path is already expanded in project creation
-          # Check if any changed file matches this affected_by path
-          regex = Workspace.Utils.Path.glob_to_regex(affected_path)
+    workspace
+    |> Workspace.Graph.paths()
+    |> Enum.map(fn path ->
+      regex = Workspace.Utils.Path.glob_to_regex(path)
 
-          Enum.any?(changed_files, fn {full_changed_path, _type} ->
-            Regex.match?(regex, full_changed_path)
-          end)
-        end)
+      files =
+        changed_files
+        |> Enum.filter(fn {full_path, _file_info} -> Regex.match?(regex, full_path) end)
+        |> Enum.map(fn {_full_path, file_info} -> file_info end)
 
-      if length(affected_files) > 0 do
-        # Create file_info entries for the affected files
-        file_infos = Enum.map(affected_files, fn file -> {file, :modified} end)
-        Map.put(acc, name, file_infos)
-      else
-        acc
-      end
+      {path, files}
     end)
+    |> Enum.reject(fn {_path, files} -> files == [] end)
+    |> Map.new()
   end
 end
