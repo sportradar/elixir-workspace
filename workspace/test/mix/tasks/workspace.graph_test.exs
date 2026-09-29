@@ -309,11 +309,11 @@ defmodule Mix.Tasks.Workspace.GraphTest do
     Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
       expected = """
       digraph G {
-        package_a -> package_c;
-        package_a -> package_d;
-        package_c -> package_e;
-        package_h -> package_d;
-        package_i -> package_j;
+        "package_a" -> "package_c";
+        "package_a" -> "package_d";
+        "package_c" -> "package_e";
+        "package_h" -> "package_d";
+        "package_i" -> "package_j";
       }
       """
 
@@ -463,10 +463,10 @@ defmodule Mix.Tasks.Workspace.GraphTest do
         digraph G {
           "native/common" [shape=folder];
           "proto/*.proto" [shape=folder];
-          api -> nif;
-          nif -> "native/common";
-          nif -> "proto/*.proto";
-          other -> "native/common";
+          "api" -> "nif";
+          "nif" -> "native/common";
+          "nif" -> "proto/*.proto";
+          "other" -> "native/common";
         }
         """
 

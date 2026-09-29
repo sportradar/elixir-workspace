@@ -57,6 +57,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+* Fix invalid `workspace.graph --format dot` output for projects named after DOT keywords, ids are now quoted
 * Fix `workspace.run --export` crashing on task output that is not valid UTF-8
 * Fix `workspace.run --export` not writing the results when terminated by `--early-stop`
 * Fix `--env-var` rejecting values containing `=` and upper casing the variable names

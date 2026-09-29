@@ -86,14 +86,14 @@ defmodule Mix.Tasks.Workspace.Graph do
 
       $ mix workspace.graph --format dot
       digraph G {
-        accounts -> ecto_utils;
-        api -> accounts;
-        api -> cli_tools;
-        api -> orders;
-        back_office -> cli_tools;
-        orders -> string_utils;
-        orders -> warehouse;
-        warehouse -> ecto_utils;
+        "accounts" -> "ecto_utils";
+        "api" -> "accounts";
+        "api" -> "cli_tools";
+        "api" -> "orders";
+        "back_office" -> "cli_tools";
+        "orders" -> "string_utils";
+        "orders" -> "warehouse";
+        "warehouse" -> "ecto_utils";
       }
 
   ## Showing project's statuses

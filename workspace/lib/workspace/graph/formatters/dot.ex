@@ -28,8 +28,9 @@ defmodule Workspace.Graph.Formatters.Dot do
     |> IO.puts()
   end
 
-  defp node_id(%Workspace.Graph.Node{type: :path, label: label}),
-    do: ~s("#{String.replace(label, "\"", "\\\"")}")
+  # ids are always quoted, since project names may be DOT keywords, e.g. graph
+  defp node_id(%Workspace.Graph.Node{type: :path, label: label}), do: quote_id(label)
+  defp node_id(node), do: quote_id(to_string(node.app))
 
-  defp node_id(node), do: node.app
+  defp quote_id(id), do: ~s("#{String.replace(id, "\"", "\\\"")}")
 end
