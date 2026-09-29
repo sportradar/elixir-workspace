@@ -518,6 +518,13 @@ defmodule Mix.Tasks.Workspace.RunTest do
           assert_raise Mix.Error, expected_message, fn ->
             RunTask.run(args)
           end
+
+          # empty values are not supported, they would unset the variable
+          args = ["-p", "package_default_a", "--env-var", "FOO=" | @default_run_task]
+
+          assert_raise Mix.Error, ~r/ENV_VAR_NAME=value, got: FOO=/, fn ->
+            RunTask.run(args)
+          end
         end,
         cd: true
       )

@@ -390,10 +390,11 @@ defmodule Mix.Tasks.Workspace.Run do
     raise_if_errors(grouped_results[:error] || [])
   end
 
-  # the value may contain = characters, only the first one is the separator
+  # the value may contain = characters, only the first one is the separator,
+  # empty values are not supported since they unset the variable in the port
   defp parse_environment_variable(var) do
     case String.split(var, "=", parts: 2) do
-      [name, value] when name != "" ->
+      [name, value] when name != "" and value != "" ->
         {String.to_charlist(name), String.to_charlist(value)}
 
       _other ->
