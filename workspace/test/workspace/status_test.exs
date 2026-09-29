@@ -392,6 +392,35 @@ defmodule Workspace.StatusTest do
   end
 
   @tag :tmp_dir
+  test "detects changes in a workspace under a symlinked path", %{tmp_dir: tmp_dir} do
+    real_path = Path.join(tmp_dir, "real")
+    link_path = Path.join(tmp_dir, "link")
+    File.mkdir_p!(real_path)
+    File.ln_s!(real_path, link_path)
+
+    Workspace.Test.with_workspace(
+      link_path,
+      [],
+      [
+        {:foo, "foo", [workspace: [affected_by: ["../shared"]]]},
+        {:bar, "bar", []}
+      ],
+      fn ->
+        Workspace.Test.modify_project(link_path, "bar")
+        File.mkdir_p!(Path.join(link_path, "shared"))
+        File.write!(Path.join(link_path, "shared/config.exs"), "[]")
+
+        workspace = Workspace.new!(link_path) |> Workspace.Status.update()
+
+        assert workspace.git_root_path == link_path
+        assert workspace.projects[:bar].status == :modified
+        assert workspace.projects[:foo].status == :affected
+      end,
+      git: true
+    )
+  end
+
+  @tag :tmp_dir
   test "deleted files match affected_by wildcards", %{tmp_dir: tmp_dir} do
     Workspace.Test.with_workspace(
       tmp_dir,

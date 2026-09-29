@@ -43,6 +43,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+* Detect changes of workspaces under symlinked paths
+
+  The git root was resolved to its real path, while project paths kept the
+  symlinked form of the workspace path, so no changed file matched any project.
+  For example, workspaces under `/var` on macOS, which links to `/private/var`,
+  had no modified or affected projects. The git root now keeps the form of the
+  workspace path.
+
 * Match `:affected_by` patterns without accessing the filesystem
 
   Wildcard patterns were previously expanded with `Path.wildcard/1`, so deleted

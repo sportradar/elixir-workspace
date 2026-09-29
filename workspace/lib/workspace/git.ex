@@ -11,6 +11,10 @@ defmodule Workspace.Git do
   Returns `{:ok, path}` in case of success or `{:error, reason}` in
   case of failure.
 
+  The root is expanded relative to the given path, so if it is under a
+  symlinked directory the symlinked form is preserved. This way the root
+  can be safely compared with paths derived from the given path.
+
   ## Options
 
   * `:cd` - the path to use for getting the git root, if not
@@ -18,9 +22,13 @@ defmodule Workspace.Git do
   """
   @spec root(opts :: keyword()) :: {:ok, binary()} | {:error, binary()}
   def root(opts \\ []) do
-    cd = opts[:cd] || File.cwd!()
+    cd = Path.expand(opts[:cd] || File.cwd!())
 
-    git_in_path(cd, ~w[rev-parse --show-toplevel])
+    # --show-toplevel returns the resolved path, instead we get the relative
+    # path to the root and expand it
+    with {:ok, cdup} <- git_in_path(cd, ~w[rev-parse --show-cdup]) do
+      {:ok, Path.expand(cdup, cd)}
+    end
   end
 
   @doc """

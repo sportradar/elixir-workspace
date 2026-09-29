@@ -23,6 +23,19 @@ defmodule Workspace.GitTest do
       assert Workspace.Git.root(cd: tmp_dir) == {:ok, tmp_dir}
     end
 
+    @tag :tmp_dir
+    test "keeps the symlinked form of the given path", %{tmp_dir: tmp_dir} do
+      repo_path = Path.join(tmp_dir, "repo")
+      link_path = Path.join(tmp_dir, "link")
+      File.mkdir_p!(Path.join(repo_path, "package_a"))
+      File.ln_s!(repo_path, link_path)
+
+      File.cd!(repo_path, fn -> init_git_project() end)
+
+      assert Workspace.Git.root(cd: link_path) == {:ok, link_path}
+      assert Workspace.Git.root(cd: Path.join(link_path, "package_a")) == {:ok, link_path}
+    end
+
     test "error if not a git repo" do
       # we cannot use the standard tmp_dir here because we need a non-git folder
       tmp_dir = Path.join(Workspace.TestUtils.tmp_path(), "no_git_repo")
@@ -30,7 +43,7 @@ defmodule Workspace.GitTest do
 
       File.cd!(tmp_dir, fn ->
         assert {:error, message} = Workspace.Git.root()
-        assert message =~ "git rev-parse --show-toplevel failed"
+        assert message =~ "git rev-parse --show-cdup failed"
         assert message =~ "not a git repository"
       end)
     end
