@@ -156,8 +156,10 @@ defmodule Mix.Tasks.Workspace.New do
 
         # you can add as many internal projects as you wish, by default
         # they are expected under the packages folder
-        mix new packages/package_a
-        mix new packages/package_b
+        mkdir packages && cd packages
+        mix new package_a
+        mix new package_b
+        cd ..
 
         # test all projects
         mix workspace.run -t test

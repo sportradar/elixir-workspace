@@ -13,13 +13,13 @@ defmodule Mix.Tasks.Workspace.NewTest do
         output = capture_io(fn -> New.run(["hello_workspace"]) end)
 
         # projects are suggested under the formatter's subdirectories
-        assert output =~ "mix new packages/package_a"
+        assert output =~ "mkdir packages && cd packages\n    mix new package_a"
 
         assert_file(tmp_dir, "hello_workspace/mix.exs", fn file ->
           assert file =~ "defmodule HelloWorkspace.MixWorkspace do"
           assert file =~ "app: :hello_workspace"
           assert file =~ ~s'version: "0.1.0"'
-          assert file =~ ~s'{:workspace, "~> 0.3"}'
+          assert file =~ ~s'{:workspace, "~> 0.4"}'
         end)
 
         assert_file(tmp_dir, "hello_workspace/.formatter.exs", fn file ->
