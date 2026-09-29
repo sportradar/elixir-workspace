@@ -213,7 +213,7 @@ defmodule Mix.Tasks.Workspace.List do
   end
 
   defp list_or_save_workspace_projects(workspace, opts) do
-    # TODO: remove --json support in 0.4.0
+    # TODO: remove --json support in 0.5.0
     opts =
       if opts[:json] do
         Keyword.merge(opts, format: "json", output: opts[:output] || "workspace.json")

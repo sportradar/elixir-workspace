@@ -465,7 +465,7 @@ defmodule Workspace do
   >
   >   defp deps do
   >     [
-  >       {:workspace, "~> 0.2"}
+  >       {:workspace, "~> 0.4"}
   >     ]
   >   end
   > end

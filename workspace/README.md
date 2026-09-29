@@ -239,7 +239,7 @@ top level dependency:
 ```elixir
 def deps do
   [
-    {:workspace, "~> 0.2.0"}
+    {:workspace, "~> 0.4.0"}
   ]
 end
 ```
