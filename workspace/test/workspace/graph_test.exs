@@ -139,6 +139,20 @@ defmodule Workspace.GraphTest do
              |> Enum.sort() == [:nif_a, :utils]
     end
 
+    test "mermaid ids do not collide with project names" do
+      workspace =
+        Workspace.Test.workspace_fixture([
+          {:api, "api", [workspace: [affected_by: ["../shared"]]]},
+          {:path_0, "path_0", []}
+        ])
+
+      mermaid = Workspace.Graph.Formatters.Mermaid.to_mermaid(workspace.graph, workspace, [])
+
+      assert mermaid =~ ~s(  path_0\n)
+      assert mermaid =~ ~s(  path_1[/"shared"/])
+      assert mermaid =~ "  api --> path_1"
+    end
+
     test "are never returned by the project helpers" do
       workspace = paths_workspace()
 

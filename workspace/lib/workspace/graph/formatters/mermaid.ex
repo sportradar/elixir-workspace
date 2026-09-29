@@ -16,13 +16,24 @@ defmodule Workspace.Graph.Formatters.Mermaid do
     show_status = opts[:show_status] || false
 
     # mermaid ids cannot contain arbitrary characters, so paths get generated
-    # ids, sorted by label for deterministic output
-    path_ids =
+    # ids, sorted by label for deterministic output, skipping any id that is
+    # already used by a project
+    taken_ids =
+      :digraph.vertices(graph)
+      |> Enum.reject(&Workspace.Graph.Node.path?/1)
+      |> MapSet.new(&to_string(&1.app))
+
+    path_nodes =
       :digraph.vertices(graph)
       |> Enum.filter(&Workspace.Graph.Node.path?/1)
       |> Enum.sort_by(& &1.label)
-      |> Enum.with_index(fn node, index -> {node, "path_#{index}"} end)
-      |> Map.new()
+
+    path_ids =
+      Stream.iterate(0, &(&1 + 1))
+      |> Stream.map(&"path_#{&1}")
+      |> Stream.reject(&MapSet.member?(taken_ids, &1))
+      |> Enum.zip(path_nodes)
+      |> Map.new(fn {id, node} -> {node, id} end)
 
     vertices =
       :digraph.vertices(graph)
