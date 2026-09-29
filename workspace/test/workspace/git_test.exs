@@ -41,6 +41,20 @@ defmodule Workspace.GitTest do
     end
 
     @tag :tmp_dir
+    test "symlinks with the same name as their target", %{tmp_dir: tmp_dir} do
+      repo_path = Path.join(tmp_dir, "repo")
+      link_path = Path.join(tmp_dir, "links/ws")
+      File.mkdir_p!(Path.join(repo_path, "ws"))
+      File.mkdir_p!(Path.dirname(link_path))
+      File.ln_s!(Path.join(repo_path, "ws"), link_path)
+
+      File.cd!(repo_path, fn -> init_git_project() end)
+
+      # stripping the prefix from the link path would give links, which is not the root
+      assert Workspace.Git.root(cd: link_path) == {:ok, repo_path}
+    end
+
+    @tag :tmp_dir
     test "falls back to the resolved root for symlinks into the repo", %{tmp_dir: tmp_dir} do
       repo_path = Path.join(tmp_dir, "repo")
       link_path = Path.join(tmp_dir, "link")

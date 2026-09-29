@@ -34,8 +34,25 @@ defmodule Workspace.Git do
           [toplevel, prefix] -> {toplevel, prefix}
         end
 
-      {:ok, strip_suffix(cd, prefix) || toplevel}
+      {:ok, symlinked_root(cd, prefix, toplevel)}
     end
+  end
+
+  # the path stripped from its prefix is only a valid root if it is the same
+  # directory as the resolved root, e.g. a link with the same name as its
+  # target would give a different directory
+  defp symlinked_root(cd, prefix, toplevel) do
+    case strip_suffix(cd, prefix) do
+      nil -> toplevel
+      root -> if same_directory?(root, toplevel), do: root, else: toplevel
+    end
+  end
+
+  defp same_directory?(path, other) do
+    %File.Stat{inode: inode, major_device: device} = File.stat!(path)
+    %File.Stat{inode: other_inode, major_device: other_device} = File.stat!(other)
+
+    inode == other_inode and device == other_device
   end
 
   @doc """
