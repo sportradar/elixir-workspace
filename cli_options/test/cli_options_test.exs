@@ -735,15 +735,21 @@ defmodule CliOptionsTest do
                {:error, ":age expected an integer argument, got: invalid"}
     end
 
-    test "env vars values are parsed as option arguments" do
+    test "env vars values are used as is" do
       schema = [
         name: [type: :string, env: "TEST_NAME"],
+        tags: [type: :string, multiple: true, separator: ",", env: "TEST_TAGS"],
         verbose: [type: :boolean, short: "v"]
       ]
 
-      # an env value looking like an option is not accepted as an argument
+      on_exit(fn -> System.delete_env("TEST_TAGS") end)
+
+      # an env value looking like a defined option is still a value
       System.put_env("TEST_NAME", "-v")
-      assert CliOptions.parse([], schema) == {:error, ":name expected at least 1 arguments"}
+      System.put_env("TEST_TAGS", "a,--verbose")
+
+      assert CliOptions.parse([], schema) ==
+               {:ok, {[name: "-v", tags: ["a", "--verbose"], verbose: false], [], []}}
     end
 
     test "env vars truthy values" do

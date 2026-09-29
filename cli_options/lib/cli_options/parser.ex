@@ -198,7 +198,7 @@ defmodule CliOptions.Parser do
       |> Enum.reject(fn {key, _opts} -> Keyword.has_key?(opts, key) end)
       |> Enum.map(fn {key, opts} -> maybe_read_env(key, opts) end)
 
-    # environment values are always consumed as option arguments, so no
+    # only boolean flags are parsed, any other value is set directly, so no
     # positional arguments are expected
     with {:ok, args, direct_opts} <- collect_env_values(env_values),
          {:ok, env_opts, []} <- parse(args, schema, [], []) do
@@ -238,8 +238,12 @@ defmodule CliOptions.Parser do
           _other -> {:error, ":#{key} expected a non negative integer, got: #{env}"}
         end
 
+      # values are set directly, so they are never mistaken for an option
+      opts[:multiple] ->
+        {:ok, [], [{key, maybe_split([env], opts[:separator])}]}
+
       true ->
-        {:ok, ["--" <> opts[:long], env], []}
+        {:ok, [], [{key, env}]}
     end
   end
 

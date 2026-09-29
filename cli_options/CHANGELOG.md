@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Treat a single `-` as a positional argument instead of returning an invalid alias error
 * Document in the generated docs that passing a boolean flag defaulting to `true` sets it to `false`
 * Fix multi byte short options being consumed as values of preceding options
+* Fix environment variable values matching a defined option being rejected
 
 ## [v0.1.7](https://github.com/sportradar/elixir-workspace/tree/cli_options/v0.1.6) (2025-10-31)
 
