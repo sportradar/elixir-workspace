@@ -83,7 +83,8 @@ defmodule Mix.Tasks.Workspace.New do
         check_mod_name_validity!(mod)
         check_mod_name_availability!(mod)
 
-        if path != "." do
+        # the current directory may be given in any form, e.g. "./"
+        if Path.expand(path) != File.cwd!() do
           if File.exists?(path) do
             Mix.raise(
               "Directory #{path} already exists, please select another directory for your workspace"

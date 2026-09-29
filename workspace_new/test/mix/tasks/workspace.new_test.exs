@@ -45,6 +45,16 @@ defmodule Mix.Tasks.Workspace.NewTest do
       end)
     end
 
+    test "in the current directory", %{tmp_dir: tmp_dir} do
+      for {path, dir} <- [{".", "dot"}, {"./", "dot_slash"}] do
+        in_tmp(tmp_dir, dir, fn ->
+          capture_io(fn -> New.run([path, "--app", "hello"]) end)
+
+          assert_file(tmp_dir, "#{dir}/mix.exs", ~r/app: :hello/)
+        end)
+      end
+    end
+
     test "with module set", %{tmp_dir: tmp_dir} do
       in_tmp(tmp_dir, fn ->
         capture_io(fn -> New.run(["hello_workspace", "--module", "Hello"]) end)
