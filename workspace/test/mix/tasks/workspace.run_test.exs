@@ -1034,7 +1034,7 @@ defmodule Mix.Tasks.Workspace.RunTest do
   end
 
   defp maybe_shell do
-    if System.version() |> String.starts_with?("1.19") do
+    if Version.match?(System.version(), ">= 1.19.0") do
       "--shell"
     else
       ""
