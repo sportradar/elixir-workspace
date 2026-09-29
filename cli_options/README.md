@@ -103,7 +103,7 @@ in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:cli_options, "~> 0.1.4"}
+    {:cli_options, "~> 0.2"}
   ]
 end
 ```
