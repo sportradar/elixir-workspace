@@ -8,7 +8,9 @@ defmodule Workspace.Checks.DependenciesVersion do
           type_doc: "`t:String.t/0` or `t:Keyword.t/0`",
           doc: """
           The required version of the package. This can either be a string indicating
-          hex version numbers or a keyword list for git or path dependencies.
+          hex version numbers or a keyword list for git or path dependencies. In the
+          latter case the `:git`, `:github`, `:path`, `:branch`, `:tag`, `:ref`,
+          `:sparse` and `:subdir` options of the dependency are considered its version.
           """,
           required: true
         ],
@@ -79,6 +81,9 @@ defmodule Workspace.Checks.DependenciesVersion do
   # TODO: handle path dependencies specially
   @behaviour Workspace.Check
 
+  # the options defining the source of a dependency, considered part of its version
+  @source_opts [:git, :github, :path, :branch, :tag, :ref, :sparse, :subdir]
+
   @impl Workspace.Check
   def schema, do: @schema
 
@@ -92,7 +97,7 @@ defmodule Workspace.Checks.DependenciesVersion do
   end
 
   defp check_dependencies_versions(project, expected_deps) do
-    project_deps = Enum.map(project.config[:deps], &split_dep_tuple/1)
+    project_deps = Enum.map(project.config[:deps] || [], &split_dep_tuple/1)
 
     mismatches =
       project_deps
@@ -123,7 +128,7 @@ defmodule Workspace.Checks.DependenciesVersion do
         {dep_name, version, []}
 
       {opts} when is_list(opts) ->
-        {version_opts, rest_opts} = Keyword.split(opts, [:git, :path, :github, :branch])
+        {version_opts, rest_opts} = Keyword.split(opts, @source_opts)
 
         {dep_name, version_opts, rest_opts}
     end
@@ -145,7 +150,7 @@ defmodule Workspace.Checks.DependenciesVersion do
   defp check_versions_match(version, expected) do
     expected_version = Keyword.fetch!(expected, :version)
 
-    version == expected_version
+    same?(version, expected_version)
   end
 
   defp maybe_check_options_match(options, expected) do
@@ -154,9 +159,15 @@ defmodule Workspace.Checks.DependenciesVersion do
         true
 
       expected_options ->
-        expected_options == options
+        same?(options, expected_options)
     end
   end
+
+  # keyword lists are compared regardless of the order of their keys
+  defp same?(value, expected) when is_list(value) and is_list(expected),
+    do: Enum.sort(value) == Enum.sort(expected)
+
+  defp same?(value, expected), do: value == expected
 
   defp check_metadata(mismatches, configured, expected) do
     [

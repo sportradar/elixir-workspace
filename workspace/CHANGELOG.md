@@ -57,6 +57,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+* Fix `DependenciesVersion` check failing for options in a different order, git `:tag` or `:ref` versions, or projects without deps
 * Fix `WorkspaceDepsPaths` check crashing on dependencies without a path, with a version requirement, or projects without deps
 * Fix `ValidateConfigPath` check crashing if `:expected_path` is not set, it is now required
 * Fix `ValidateConfigPath` check failing for absolute configured or expected paths

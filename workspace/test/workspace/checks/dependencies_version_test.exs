@@ -93,4 +93,37 @@ defmodule Workspace.Checks.DependenciesVersionTest do
 
     assert_plain_result(results, :package_d, expected_d)
   end
+
+  test "keyword versions and options are compared regardless of order" do
+    {:ok, check} =
+      Workspace.Check.validate(
+        id: :test_check,
+        module: DependenciesVersion,
+        opts: [
+          deps: [
+            foo: [version: "== 0.1", options: [only: :dev, runtime: false]],
+            bar: [version: [github: "x/bar", branch: "main"]],
+            baz: [version: [github: "x/baz", tag: "v1.0"]]
+          ]
+        ]
+      )
+
+    workspace =
+      Workspace.Test.workspace_fixture([
+        {:package_a, "package_a",
+         deps: [
+           {:foo, "== 0.1", runtime: false, only: :dev},
+           {:bar, branch: "main", github: "x/bar"},
+           {:baz, github: "x/baz", tag: "v1.0"}
+         ]},
+        {:package_b, "package_b", deps: [{:baz, github: "x/baz", tag: "v2.0"}]},
+        {:package_c, "package_c", []}
+      ])
+
+    results = DependenciesVersion.check(workspace, check)
+
+    assert_check_status(results, :package_a, :ok)
+    assert_check_status(results, :package_b, :error)
+    assert_check_status(results, :package_c, :ok)
+  end
 end
