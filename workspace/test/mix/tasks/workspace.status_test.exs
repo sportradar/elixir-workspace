@@ -273,4 +273,30 @@ defmodule Mix.Tasks.Workspace.StatusTest do
       git: true
     )
   end
+
+  @tag :tmp_dir
+  test "changed files outside the workspace are printed relative to it", %{tmp_dir: tmp_dir} do
+    workspace_path = Path.join(tmp_dir, "ws")
+
+    Workspace.Test.in_fixture(tmp_dir, fn ->
+      Workspace.Test.create_workspace(workspace_path, [], [
+        {:nif, "nif", [workspace: [affected_by: ["../../native"]]]}
+      ])
+
+      Workspace.Test.init_git_project(tmp_dir)
+      File.mkdir_p!(Path.join(tmp_dir, "native"))
+      File.write!(Path.join(tmp_dir, "native/lib.rs"), "// lib")
+
+      assert_captured(
+        capture_io(fn -> StatusTask.run(["--workspace-path", workspace_path]) end),
+        """
+        Affected projects:
+          :nif nif/mix.exs
+            affected by ../native
+              untracked ../native/lib.rs
+        """,
+        trim_trailing_newlines: true
+      )
+    end)
+  end
 end

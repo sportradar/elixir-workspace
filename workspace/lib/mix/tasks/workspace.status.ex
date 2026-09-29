@@ -116,7 +116,11 @@ defmodule Mix.Tasks.Workspace.Status do
       change_type_color(change_type),
       change_type(change_type),
       " ",
-      Path.relative_to(Workspace.State.git_file_path(workspace, path), workspace.workspace_path),
+      Path.relative_to(
+        Workspace.State.git_file_path(workspace, path),
+        workspace.workspace_path,
+        force: true
+      ),
       :reset
     ])
   end
