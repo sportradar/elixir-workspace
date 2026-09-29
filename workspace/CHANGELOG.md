@@ -28,6 +28,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   └── native/common (path) ✚
   ```
 
+  `mix workspace.status` prints the matched paths and their changed files under
+  each project, and they are included under `affected_by_changes` in the JSON
+  export of the projects:
+
+  ```
+  $ mix workspace.status
+  Affected projects:
+    :api api/mix.exs
+    :nif nif/mix.exs
+      affected by native/**/*.rs
+        untracked native/src/lib.rs
+  ```
+
 ### Fixed
 
 * Match `:affected_by` patterns without accessing the filesystem

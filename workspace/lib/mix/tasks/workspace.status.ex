@@ -13,6 +13,15 @@ defmodule Mix.Tasks.Workspace.Status do
 
       $ mix workspace.status
 
+  For projects affected by their `:affected_by` paths, the matched paths
+  and the corresponding changed files are also printed:
+
+      $ mix workspace.status
+      Affected projects:
+        :nif nif/mix.exs
+          affected by native/common
+            untracked native/common/lib.rs
+
   ## Command line options
 
   #{CliOptions.docs(@options_schema, sort: true, sections: Workspace.CliOptions.doc_sections())}
@@ -46,6 +55,7 @@ defmodule Mix.Tasks.Workspace.Status do
       project = Workspace.project!(workspace, name)
       print_project_status(project, :modified)
       print_changes(workspace.git_root_path, project)
+      print_affected_by_changes(workspace.git_root_path, project)
     end)
 
     Workspace.Cli.newline()
@@ -57,7 +67,9 @@ defmodule Mix.Tasks.Workspace.Status do
     Workspace.Cli.log([:light_gray, "Affected projects:", :reset], prefix: "")
 
     Enum.each(affected, fn name ->
-      print_project_status(Workspace.project!(workspace, name), :affected)
+      project = Workspace.project!(workspace, name)
+      print_project_status(project, :affected)
+      print_affected_by_changes(workspace.git_root_path, project)
     end)
 
     Workspace.Cli.newline()
@@ -77,16 +89,36 @@ defmodule Mix.Tasks.Workspace.Status do
   end
 
   defp print_changes(git_root_path, project) do
-    for {path, change_type} <- project.changes do
+    for change <- project.changes do
+      print_change(git_root_path, project, change, "    ")
+    end
+  end
+
+  defp print_affected_by_changes(git_root_path, project) do
+    for {path, changes} <- project.affected_by_changes || [] do
       Workspace.Cli.log([
         "    ",
-        change_type_color(change_type),
-        change_type(change_type),
-        " ",
-        Path.relative_to(Path.join(git_root_path, path), project.workspace_path),
+        :light_gray,
+        "affected by ",
+        Path.relative_to(path, project.workspace_path, force: true),
         :reset
       ])
+
+      for change <- changes do
+        print_change(git_root_path, project, change, "      ")
+      end
     end
+  end
+
+  defp print_change(git_root_path, project, {path, change_type}, indent) do
+    Workspace.Cli.log([
+      indent,
+      change_type_color(change_type),
+      change_type(change_type),
+      " ",
+      Path.relative_to(Path.join(git_root_path, path), project.workspace_path),
+      :reset
+    ])
   end
 
   defp change_type_color(:untracked), do: :gold

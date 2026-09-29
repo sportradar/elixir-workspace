@@ -97,5 +97,30 @@ defmodule Workspace.ExportTest do
         git: true
       )
     end
+
+    @tag :tmp_dir
+    test "with affected_by changes", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        [{:nif, "nif", [workspace: [affected_by: ["../native"]]]}],
+        fn ->
+          File.mkdir_p!(Path.join(tmp_dir, "native"))
+          File.write!(Path.join(tmp_dir, "native/lib.rs"), "// lib")
+
+          workspace = Workspace.new!(tmp_dir) |> Workspace.Status.update()
+
+          json_data = Workspace.Export.to_json(workspace, relative: true) |> Jason.decode!()
+
+          assert [project] = json_data["projects"]
+          assert project["status"] == "affected"
+
+          assert project["affected_by_changes"] == [
+                   %{"path" => "native", "changes" => ["native/lib.rs"]}
+                 ]
+        end,
+        git: true
+      )
+    end
   end
 end

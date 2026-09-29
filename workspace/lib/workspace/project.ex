@@ -192,7 +192,10 @@ defmodule Workspace.Project do
   Returns a map including the key properties of the given project.
 
   Only `:app`, `:module`, `:mix_path`, `:path`, `:workspace_path`, `:status`,
-  `:root` and `:changes` are included.
+  `:root`, `:changes`, `:affected_by_changes` and `:tags` are included.
+
+  `:affected_by_changes` is a list of maps with the matched `:affected_by`
+  `:path` and its changed files under `:changes`.
 
   ## Options
 
@@ -205,6 +208,14 @@ defmodule Workspace.Project do
     opts = Keyword.validate!(opts, relative: false)
 
     changes = Enum.map(project.changes || [], fn {file, _type} -> file end)
+
+    affected_by_changes =
+      Enum.map(project.affected_by_changes || [], fn {path, changes} ->
+        %{
+          path: maybe_relative(path, project.workspace_path, opts[:relative]),
+          changes: Enum.map(changes, fn {file, _type} -> file end)
+        }
+      end)
 
     workspace_path =
       case opts[:relative] do
@@ -221,6 +232,7 @@ defmodule Workspace.Project do
       status: Atom.to_string(project.status),
       root: project.root?,
       changes: changes,
+      affected_by_changes: affected_by_changes,
       tags: Enum.map(project.tags, &format_tag/1)
     }
   end

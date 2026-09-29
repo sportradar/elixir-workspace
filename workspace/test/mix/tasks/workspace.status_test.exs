@@ -221,4 +221,56 @@ defmodule Mix.Tasks.Workspace.StatusTest do
       git: true
     )
   end
+
+  @tag :tmp_dir
+  test "prints the affected_by changes", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [
+        {:nif, "nif", [workspace: [affected_by: ["../native/**/*.rs"]]]},
+        {:api, "api", [deps: [{:nif, path: "../nif"}]]}
+      ],
+      fn ->
+        File.mkdir_p!(Path.join(tmp_dir, "native/src"))
+        File.write!(Path.join(tmp_dir, "native/src/lib.rs"), "// lib")
+        File.write!(Path.join(tmp_dir, "native/README.md"), "# native")
+
+        assert_captured(
+          capture_io(fn ->
+            StatusTask.run(["--workspace-path", tmp_dir])
+          end),
+          """
+          Affected projects:
+            :api api/mix.exs
+            :nif nif/mix.exs
+              affected by native/**/*.rs
+                untracked native/src/lib.rs
+          """,
+          trim_trailing_newlines: true
+        )
+
+        # modified projects also print the matched paths after their changes
+        Workspace.Test.modify_project(tmp_dir, "nif")
+
+        assert_captured(
+          capture_io(fn ->
+            StatusTask.run(["--workspace-path", tmp_dir])
+          end),
+          """
+          Modified projects:
+            :nif nif/mix.exs
+              untracked nif/lib/file.ex
+              affected by native/**/*.rs
+                untracked native/src/lib.rs
+
+          Affected projects:
+            :api api/mix.exs
+          """,
+          trim_trailing_newlines: true
+        )
+      end,
+      git: true
+    )
+  end
 end

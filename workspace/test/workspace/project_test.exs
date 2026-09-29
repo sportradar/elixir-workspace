@@ -171,6 +171,7 @@ defmodule Workspace.ProjectTest do
                  mix_path: Path.join([tmp_dir, "packages/foo_bar", "mix.exs"]) |> Path.expand(),
                  workspace_path: Path.expand(tmp_dir),
                  changes: [],
+                 affected_by_changes: [],
                  tags: [":foo", "area:bar"]
                }
       end
