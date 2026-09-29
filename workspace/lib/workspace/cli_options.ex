@@ -157,7 +157,8 @@ defmodule Workspace.CliOptions do
       status: [
         header: "Workspace status options",
         doc: """
-        Status is retrieved from the diff between the given `--base` and `--head`. Knowing the
+        Status is retrieved from the files changed on `--head` since it diverged from `--base`,
+        similar to `git diff base...head`, and any uncommitted or untracked files. Knowing the
         changed files we can limit the execution of workspace commands only to relevant projects.
         """
       ],

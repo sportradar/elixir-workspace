@@ -53,16 +53,16 @@ defmodule Workspace.Git do
 
     - Uncommitted files in the working directory
     - Untracked files in the working directory
-    - If `:base` is provided it also includes:
-      - The changed files between `:base` and `HEAD` if no `:head` is set.
-      - The changed files between `:base` and `:head` if `:head` is set.
+    - If `:base` is provided it also includes the files changed on `:head` since
+    it diverged from `:base`, e.g. `git diff base...head`. `:head` defaults to
+    `HEAD` if not set.
 
   A list of tuples of the form `{"path/to/changed/file", change_type}` is
   returned, where `change_type` can be one of the following:
 
   * `:uncommitted` - for changed files under version control that are not committed
   * `:untracked` - for new files that are not under version control
-  * `:modified` - for changed committed files between the `HEAD` and the `BASE`
+  * `:modified` - for changed committed files on `:head` since it diverged from `:base`
 
   ## Options
 
@@ -160,15 +160,19 @@ defmodule Workspace.Git do
   end
 
   @doc """
-  Get changed files between the given `head` and `base` git references.
+  Get the changed files of the `head` git reference since it diverged from `base`.
+
+  The `head` is compared against the merge base of `base` and `head`, e.g.
+  changes of `base` after `head` diverged from it are not included. This is
+  equivalent to `git diff base...head`.
 
   ## Options
 
     * `:cd` (`t:binary/0`) - The git repo path, defaults to the current working directory.
   """
-  @spec changed_files(head :: binary(), base :: binary(), opts :: keyword()) ::
+  @spec changed_files(base :: binary(), head :: binary(), opts :: keyword()) ::
           {:ok, [binary()]} | {:error, binary()}
-  def changed_files(head, base, opts \\ []) do
+  def changed_files(base, head, opts \\ []) do
     cd = opts[:cd] || File.cwd!()
 
     with {:ok, output} <-
@@ -177,8 +181,7 @@ defmodule Workspace.Git do
              "--name-only",
              "--no-renames",
              "--relative",
-             "#{base}",
-             "#{head}"
+             "#{base}...#{head}"
            ]) do
       {:ok, parse_git_output(output)}
     end

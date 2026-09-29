@@ -64,6 +64,31 @@ defmodule Workspace.GitTest do
 
   describe "changed files" do
     @tag :tmp_dir
+    test "with base only changes since the merge base are included", %{tmp_dir: tmp_dir} do
+      File.cd!(tmp_dir, fn ->
+        File.touch!("mix.exs")
+        init_git_project()
+
+        System.cmd("git", ~w[checkout --quiet -b feature])
+        File.touch!("feature.ex")
+        System.cmd("git", ~w[add feature.ex])
+        System.cmd("git", ~w[commit --quiet -m feature])
+
+        # main moves forward after the feature branch was created
+        System.cmd("git", ~w[checkout --quiet main])
+        File.touch!("main.ex")
+        System.cmd("git", ~w[add main.ex])
+        System.cmd("git", ~w[commit --quiet -m main])
+        System.cmd("git", ~w[checkout --quiet feature])
+
+        assert Workspace.Git.changed(base: "main") == {:ok, [{"feature.ex", :modified}]}
+
+        assert Workspace.Git.changed(base: "main", head: "feature") ==
+                 {:ok, [{"feature.ex", :modified}]}
+      end)
+    end
+
+    @tag :tmp_dir
     test "detects changes in a repo without any commits", %{tmp_dir: tmp_dir} do
       File.cd!(tmp_dir, fn ->
         System.cmd("git", ~w[init --quiet])
