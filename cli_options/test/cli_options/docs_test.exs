@@ -162,6 +162,14 @@ defmodule CliOptions.DocsTest do
       assert CliOptions.docs(schema) == expected
     end
 
+    test "boolean options defaulting to true are negated when set" do
+      schema = [cache: [type: :boolean, default: true, doc: "Use the cache."]]
+
+      assert CliOptions.docs(schema) ==
+               "* `--cache` (`boolean`) - Use the cache. " <>
+                 "[default: `true`, passing the flag sets it to `false`]"
+    end
+
     test "custom long name is used" do
       schema = [var: [doc: "a var", long: "variable"]]
 

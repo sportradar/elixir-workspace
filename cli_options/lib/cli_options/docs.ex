@@ -191,10 +191,12 @@ defmodule CliOptions.Docs do
     end
   end
 
+  # a boolean flag negates its default, so passing it may actually disable it
   defp maybe_default(schema) do
-    case schema[:default] do
-      nil -> ""
-      default -> "[default: `#{inspect(default)}`]"
+    case {schema[:type], schema[:default]} do
+      {_type, nil} -> ""
+      {:boolean, true} -> "[default: `true`, passing the flag sets it to `false`]"
+      {_type, default} -> "[default: `#{inspect(default)}`]"
     end
   end
 
