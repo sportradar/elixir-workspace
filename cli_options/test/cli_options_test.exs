@@ -763,6 +763,10 @@ defmodule CliOptionsTest do
       System.put_env("TEST_VERBOSE", "0")
       assert CliOptions.parse([], schema) == {:ok, {[verbose: 0], [], []}}
 
+      # the count is set directly, it is not expanded to repeated flags
+      System.put_env("TEST_VERBOSE", "1000000000")
+      assert CliOptions.parse([], schema) == {:ok, {[verbose: 1_000_000_000], [], []}}
+
       for value <- ["invalid", "-1", "1.5"] do
         System.put_env("TEST_VERBOSE", value)
 

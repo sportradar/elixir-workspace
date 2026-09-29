@@ -191,7 +191,7 @@ defmodule CliOptions.Parser do
   end
 
   defp maybe_append_env_values(opts, schema) do
-    env_args =
+    env_values =
       schema.schema
       |> Enum.reject(fn {_key, opts} -> is_nil(opts[:env]) end)
       |> Enum.reject(fn {key, _opts} -> Keyword.has_key?(opts, key) end)
@@ -199,41 +199,46 @@ defmodule CliOptions.Parser do
 
     # environment values are always consumed as option arguments, so no
     # positional arguments are expected
-    with {:ok, args} <- collect_env_args(env_args),
+    with {:ok, args, direct_opts} <- collect_env_values(env_values),
          {:ok, env_opts, []} <- parse(args, schema, [], []) do
-      {:ok, Keyword.merge(opts, env_opts)}
+      {:ok, opts |> Keyword.merge(env_opts) |> Keyword.merge(direct_opts)}
     end
   end
 
-  defp collect_env_args(env_args) do
-    Enum.reduce_while(env_args, {:ok, []}, fn
-      {:ok, args}, {:ok, acc} -> {:cont, {:ok, acc ++ args}}
-      {:error, _reason} = error, _acc -> {:halt, error}
+  defp collect_env_values(env_values) do
+    Enum.reduce_while(env_values, {:ok, [], []}, fn
+      {:ok, args, opts}, {:ok, acc_args, acc_opts} ->
+        {:cont, {:ok, acc_args ++ args, acc_opts ++ opts}}
+
+      {:error, _reason} = error, _acc ->
+        {:halt, error}
     end)
   end
 
+  # returns the arguments to be parsed and any options set directly
   defp maybe_read_env(key, opts) do
     env = System.get_env(String.upcase(opts[:env]))
 
     cond do
       is_nil(env) ->
-        {:ok, []}
+        {:ok, [], []}
 
       opts[:type] == :boolean and truthy?(env) ->
-        {:ok, ["--" <> opts[:long]]}
+        {:ok, ["--" <> opts[:long]], []}
 
       opts[:type] == :boolean ->
-        {:ok, []}
+        {:ok, [], []}
 
-      # counters take no argument, the flag is repeated as many times as the value
+      # counters take no argument, the value is the count itself
       opts[:type] == :counter ->
         case Integer.parse(env) do
-          {count, ""} when count >= 0 -> {:ok, List.duplicate("--" <> opts[:long], count)}
+          {0, ""} -> {:ok, [], []}
+          {count, ""} when count > 0 -> {:ok, [], [{key, count}]}
           _other -> {:error, ":#{key} expected a non negative integer, got: #{env}"}
         end
 
       true ->
-        {:ok, ["--" <> opts[:long], env]}
+        {:ok, ["--" <> opts[:long], env], []}
     end
   end
 
