@@ -57,6 +57,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+* Fix invalid `workspace.graph --format mermaid` output for projects named after mermaid keywords, e.g. `end`
 * Fix `Workspace.Test.create_workspace/4` ignoring the `:projects` option and `with_workspace/5` not forwarding its options
 * Fix malformed `FNF` and `FNH` function counts in LCOV coverage exports
 * Fix `workspace.list --maintainer` skipping projects added with `--include`

@@ -153,6 +153,22 @@ defmodule Workspace.GraphTest do
       assert mermaid =~ "  api --> path_1"
     end
 
+    test "mermaid ids of projects named after keywords are generated" do
+      workspace =
+        Workspace.Test.workspace_fixture([
+          {:end, "end", []},
+          {:end_project, "end_project", []},
+          {:api, "api", [deps: [{:end, path: "../end"}]]}
+        ])
+
+      mermaid = Workspace.Graph.Formatters.Mermaid.to_mermaid(workspace.graph, workspace, [])
+
+      assert mermaid =~ ~s(  end_project_1["end"]\n)
+      assert mermaid =~ "  end_project\n"
+      assert mermaid =~ "  api --> end_project_1"
+      refute mermaid =~ ~r/^  end$/m
+    end
+
     test "dot ids escape quotes and backslashes" do
       workspace =
         Workspace.Test.workspace_fixture([
