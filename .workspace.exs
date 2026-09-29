@@ -351,17 +351,17 @@
       id: :minimum_coverage,
       group: :tests,
       module: Workspace.Checks.ValidateProject,
-      description: "all projects must have a minimum coverage threshold of 95",
+      description: "all projects must have a coverage threshold of 100",
       opts: [
         validate: fn project ->
           config = project.config
           coverage_opts = config[:test_coverage] || []
           threshold = coverage_opts[:threshold] || 0
 
-          if threshold >= 95 do
+          if threshold == 100 do
             {:ok, "threshold is at #{threshold}%"}
           else
-            {:error, "threshold must be at least 98, got: #{threshold}"}
+            {:error, "threshold must be 100, got: #{threshold}"}
           end
         end
       ]
@@ -390,9 +390,7 @@
     ]
   ],
   test_coverage: [
-    allow_failure: [:workspace],
-    threshold: 98,
-    warning_threshold: 99,
+    threshold: 100,
     exporters: [
       lcov: fn workspace, coverage_stats ->
         Workspace.Coverage.LCOV.export(workspace, coverage_stats,

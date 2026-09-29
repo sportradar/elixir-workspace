@@ -20,7 +20,7 @@ defmodule Workspace.MixProject do
       test_ignore_filters: [&String.contains?(&1, "test/fixtures/")],
       test_coverage: [
         ignore_modules: [Workspace.TestUtils],
-        threshold: 97,
+        threshold: 100,
         export: "workspace",
         output: "../artifacts/coverdata/workspace"
       ],
