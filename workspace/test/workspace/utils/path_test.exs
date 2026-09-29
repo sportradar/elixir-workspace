@@ -88,8 +88,15 @@ defmodule Workspace.Utils.Path.PathTest do
       refute match?("/ws[1]/native/**/*.rs", "/ws[1]/bar", "/ws[1]/native/src/lib.ex")
     end
 
-    test "unbalanced braces are matched literally" do
+    test "unbalanced braces and brackets are matched literally" do
       assert Utils.Path.glob_match?("/ws/foo{bar", "/ws/foo{bar/a.ex")
+      assert Utils.Path.glob_match?("/ws/foo[bar", "/ws/foo[bar/a.ex")
+      refute Utils.Path.glob_match?("/ws/foo[bar", "/ws/foob/a.ex")
+    end
+
+    test "a pattern within the base is matched literally" do
+      assert match?("/ws[1]", "/ws[1]/bar", "/ws[1]/shared/a.ex")
+      refute match?("/ws[1]", "/ws[1]/bar", "/ws1/shared/a.ex")
     end
   end
 end

@@ -102,4 +102,26 @@ defmodule Workspace.Checks.ValidateAffectedByTest do
 
     assert_check_status(results, :bar, :ok)
   end
+
+  test "error if the git files cannot be listed", %{check: check} do
+    workspace =
+      Workspace.Test.workspace_fixture([{:foo, "foo", [workspace: [affected_by: ["../shared"]]]}])
+
+    # the git root is not a git repository, we need a path outside of the current repo
+    no_git_path = Path.join(Workspace.TestUtils.tmp_path(), "affected_by_no_git")
+    File.mkdir_p!(no_git_path)
+    on_exit(fn -> File.rm_rf!(no_git_path) end)
+
+    workspace = %{workspace | git_root_path: no_git_path}
+
+    results = ValidateAffectedBy.check(workspace, check)
+
+    assert_check_status(results, :foo, :error)
+
+    assert_plain_result(
+      results,
+      :foo,
+      "cannot validate :affected_by paths, the workspace is not in a git repository"
+    )
+  end
 end
