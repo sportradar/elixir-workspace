@@ -185,15 +185,18 @@ defmodule Mix.Tasks.Workspace.List do
   end
 
   defp maybe_search_projects(workspace, opts) do
-    search_by_maintainer(workspace, opts[:maintainer])
+    included = Enum.map(opts[:include] || [], &String.to_atom/1)
+
+    search_by_maintainer(workspace, opts[:maintainer], included)
   end
 
-  defp search_by_maintainer(workspace, nil), do: workspace
+  defp search_by_maintainer(workspace, nil, _included), do: workspace
 
-  defp search_by_maintainer(workspace, maintainer) do
+  # included projects are always kept, as with the rest filtering options
+  defp search_by_maintainer(workspace, maintainer, included) do
     projects =
       Enum.map(workspace.projects, fn {_name, project} ->
-        case matches_maintainer?(project, maintainer) do
+        case project.app in included or matches_maintainer?(project, maintainer) do
           true -> project
           false -> Map.put(project, :skip, true)
         end

@@ -242,6 +242,23 @@ defmodule Mix.Tasks.Workspace.ListTest do
                    "jack"
                  ])
                end) == expected
+
+        # included projects are always listed
+        output =
+          capture_io(fn ->
+            ListTask.run([
+              "--workspace-path",
+              tmp_dir,
+              "--maintainer",
+              "jack",
+              "--include",
+              "package_b"
+            ])
+          end)
+
+        assert output =~ "Found 2 workspace projects matching the given options."
+        assert output =~ "* :package_a"
+        assert output =~ "* :package_b"
       end
     )
   end

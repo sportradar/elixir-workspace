@@ -57,6 +57,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+* Fix `workspace.list --maintainer` skipping projects added with `--include`
 * Fix `workspace.graph --format dot` omitting projects without any dependency or dependent
 * Fix `workspace.graph --focus` silently printing an empty graph for unknown or excluded projects
 * Fix invalid `workspace.graph --format dot` output for projects named after DOT keywords, ids are now quoted
