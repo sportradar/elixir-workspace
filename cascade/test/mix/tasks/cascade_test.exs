@@ -24,6 +24,27 @@ defmodule Mix.Tasks.CascadeTest do
     end)
   end
 
+  test "new template module is derived from the app name", %{tmp_dir: tmp_dir} do
+    in_tmp(tmp_dir, "my-lib", fn ->
+      capture_io(fn -> Mix.Tasks.Cascade.run(["template", "--", "--name", "foo"]) end)
+
+      assert_file(tmp_dir, "my-lib/lib/cascade/templates/foo.ex", fn file ->
+        assert file =~ "defmodule Cascade.Templates.Foo do"
+      end)
+
+      assert_raise Mix.Error, ~r/invalid module name "My-lib.Templates.Bar"/, fn ->
+        Mix.Tasks.Cascade.run([
+          "template",
+          "--",
+          "--name",
+          "bar",
+          "--templates-path",
+          "my-lib/templates"
+        ])
+      end
+    end)
+  end
+
   test "new template with an invalid name", %{tmp_dir: tmp_dir} do
     in_tmp(tmp_dir, "invalid_name", fn ->
       for name <- ["../../evil", "Foo", "foo-bar", "1foo", "foo\n"] do

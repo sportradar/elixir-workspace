@@ -50,31 +50,54 @@ defmodule Cascade.Templates.Template do
 
   @impl Cascade.Template
   def validate_cli_opts(opts) do
-    # the name is used in paths and module names
-    if opts[:name] =~ ~r/\A[a-z][a-z0-9_]*\z/ do
-      {:ok, augment_opts(opts)}
+    with :ok <- validate_name(opts[:name]),
+         {:ok, templates_path} <- templates_path(opts[:templates_path]),
+         {:ok, module} <- module(templates_path, opts[:name]) do
+      relative_assets_to_templates_path =
+        Path.relative_to(
+          Path.expand(opts[:assets_path]),
+          Path.expand(Path.join("lib", templates_path)),
+          force: true
+        )
+
+      opts =
+        opts
+        |> Keyword.put(:templates_path, templates_path)
+        |> Keyword.put(:module, module)
+        |> Keyword.put(:relative_assets_to_templates_path, relative_assets_to_templates_path)
+
+      {:ok, opts}
+    end
+  end
+
+  # the name is used in paths and module names
+  defp validate_name(name) do
+    if name =~ ~r/\A[a-z][a-z0-9_]*\z/ do
+      :ok
     else
       {:error,
-       "invalid template name #{inspect(opts[:name])}, it must start with a lowercase letter " <>
+       "invalid template name #{inspect(name)}, it must start with a lowercase letter " <>
          "and contain only lowercase letters, numbers and underscores"}
     end
   end
 
-  defp augment_opts(opts) do
-    templates_path = opts[:templates_path] || default_templates_path()
-    module = Path.join(templates_path, opts[:name]) |> Macro.camelize()
+  defp templates_path(nil) do
+    case Mix.Project.config()[:app] do
+      nil -> {:error, "could not detect the application name, please set --templates-path"}
+      app -> {:ok, Path.join(Atom.to_string(app), "templates")}
+    end
+  end
 
-    relative_assets_to_templates_path =
-      Path.relative_to(
-        Path.expand(opts[:assets_path]),
-        Path.expand(Path.join("lib", templates_path)),
-        force: true
-      )
+  defp templates_path(templates_path), do: {:ok, templates_path}
 
-    opts
-    |> Keyword.put(:templates_path, templates_path)
-    |> Keyword.put(:module, module)
-    |> Keyword.put(:relative_assets_to_templates_path, relative_assets_to_templates_path)
+  defp module(templates_path, name) do
+    module = Path.join(templates_path, name) |> Macro.camelize()
+
+    if module =~ ~r/\A[A-Z]\w*(\.[A-Z]\w*)*\z/ do
+      {:ok, module}
+    else
+      {:error, "invalid module name #{inspect(module)}, please check the --templates-path"}
+    end
   end
 
   @impl Cascade.Template
@@ -86,11 +109,5 @@ defmodule Cascade.Templates.Template do
       "template.ex" ->
         Path.join([root_path, "lib", opts[:templates_path], "#{opts[:name]}.ex"])
     end
-  end
-
-  defp default_templates_path do
-    File.cwd!()
-    |> Path.basename()
-    |> Path.join("templates")
   end
 end
