@@ -210,7 +210,7 @@ defmodule Cascade.Template do
     extension = Path.extname(path)
 
     case extension in @elixir_extensions do
-      true -> Code.format_string!(body)
+      true -> [Code.format_string!(body), "\n"]
       false -> body
     end
   end

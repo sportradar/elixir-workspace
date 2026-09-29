@@ -30,6 +30,9 @@ defmodule Mix.Tasks.CascadeTest do
 
       assert_file(tmp_dir, "my-lib/lib/cascade/templates/foo.ex", fn file ->
         assert file =~ "defmodule Cascade.Templates.Foo do"
+
+        # generated elixir files are formatted, including the trailing newline
+        assert file == IO.iodata_to_binary([Code.format_string!(file), "\n"])
       end)
 
       assert_raise Mix.Error, ~r/invalid module name "My-lib.Templates.Bar"/, fn ->
