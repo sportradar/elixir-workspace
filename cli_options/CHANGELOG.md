@@ -28,6 +28,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Reject `multiple: true` for `:boolean` and `:counter` options, which crashed while parsing
 * Raise a clear error if the `:sections` of `CliOptions.docs/2` are not a keyword list
 * Reject `:short` and `:short_aliases` longer than a single character, which could never be used
+* Treat a single `-` as a positional argument instead of returning an invalid alias error
 
 ## [v0.1.7](https://github.com/sportradar/elixir-workspace/tree/cli_options/v0.1.6) (2025-10-31)
 

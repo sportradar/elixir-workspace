@@ -553,6 +553,15 @@ defmodule CliOptionsTest do
       assert opts == [number: -999]
     end
 
+    test "a single dash is a positional argument" do
+      schema = [file: [type: :string], verbose: [type: :boolean, short: "v"]]
+
+      assert CliOptions.parse(["-"], schema) == {:ok, {[verbose: false], ["-"], []}}
+
+      assert CliOptions.parse(["-v", "-", "--file", "-"], schema) ==
+               {:ok, {[file: "-", verbose: true], ["-"], []}}
+    end
+
     test "negative float values" do
       schema = [temperature: [type: :float]]
 

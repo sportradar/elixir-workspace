@@ -81,6 +81,9 @@ defmodule CliOptions.Parser do
   # if it starts with -- or - it must be an option
   defp next(["--" <> option | rest], schema), do: parse_option(option, :long, rest, schema)
 
+  # a single dash is a positional argument, conventionally denoting stdin or stdout
+  defp next(["-" | rest], _schema), do: {:arg, "-", rest}
+
   defp next(["-" <> option_alias | rest], schema),
     do: parse_option_alias(option_alias, rest, schema)
 
