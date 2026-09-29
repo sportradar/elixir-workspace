@@ -24,16 +24,35 @@ defmodule Workspace.Graph.Formatter do
             formatter.render(graph, workspace, opts)
 
           project ->
-            proximity = Keyword.fetch!(opts, :proximity)
-            subgraph = Workspace.Graph.subgraph(graph, String.to_atom(project), proximity)
+            project = String.to_atom(project)
+            ensure_in_graph!(graph, project)
 
-            formatter.render(subgraph, workspace, opts)
+            proximity = Keyword.fetch!(opts, :proximity)
+            subgraph = Workspace.Graph.subgraph(graph, project, proximity)
+
+            try do
+              formatter.render(subgraph, workspace, opts)
+            after
+              :digraph.delete(subgraph)
+            end
         end
       end,
       external: opts[:external] || false,
       exclude: opts[:exclude] || [],
       paths: true
     )
+  end
+
+  # the project may be unknown or excluded from the graph
+  defp ensure_in_graph!(graph, project) do
+    in_graph? =
+      graph
+      |> :digraph.vertices()
+      |> Enum.any?(&(not Workspace.Graph.Node.path?(&1) and &1.app == project))
+
+    if not in_graph? do
+      Mix.raise("the --focus project #{inspect(project)} is not part of the workspace graph")
+    end
   end
 
   @doc """

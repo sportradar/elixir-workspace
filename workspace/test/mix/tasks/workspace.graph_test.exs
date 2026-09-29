@@ -76,6 +76,30 @@ defmodule Mix.Tasks.Workspace.GraphTest do
   end
 
   @tag :tmp_dir
+  test "with focus set to a project not in the graph", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
+      message = "the --focus project :unknown is not part of the workspace graph"
+
+      assert_raise Mix.Error, message, fn ->
+        GraphTask.run(["--workspace-path", tmp_dir, "--focus", "unknown"])
+      end
+
+      message = "the --focus project :package_c is not part of the workspace graph"
+
+      assert_raise Mix.Error, message, fn ->
+        GraphTask.run([
+          "--workspace-path",
+          tmp_dir,
+          "--focus",
+          "package_c",
+          "--exclude",
+          "package_c"
+        ])
+      end
+    end)
+  end
+
+  @tag :tmp_dir
   test "with plain output format", %{tmp_dir: tmp_dir} do
     Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
       expected = """
