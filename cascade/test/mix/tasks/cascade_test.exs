@@ -24,6 +24,19 @@ defmodule Mix.Tasks.CascadeTest do
     end)
   end
 
+  test "new template with an invalid name", %{tmp_dir: tmp_dir} do
+    in_tmp(tmp_dir, "invalid_name", fn ->
+      for name <- ["../../evil", "Foo", "foo-bar", "1foo", "foo\n"] do
+        assert_raise Mix.Error, ~r/invalid template name/, fn ->
+          Mix.Tasks.Cascade.run(["template", "--", "--name", name])
+        end
+      end
+
+      assert File.ls!(tmp_dir) == ["invalid_name"]
+      assert File.ls!(Path.join(tmp_dir, "invalid_name")) == []
+    end)
+  end
+
   test "with invalid template name" do
     assert_raise Mix.Error,
                  ~r"no template :unknown found",

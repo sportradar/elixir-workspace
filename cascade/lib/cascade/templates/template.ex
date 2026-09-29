@@ -50,6 +50,17 @@ defmodule Cascade.Templates.Template do
 
   @impl Cascade.Template
   def validate_cli_opts(opts) do
+    # the name is used in paths and module names
+    if opts[:name] =~ ~r/\A[a-z][a-z0-9_]*\z/ do
+      {:ok, augment_opts(opts)}
+    else
+      {:error,
+       "invalid template name #{inspect(opts[:name])}, it must start with a lowercase letter " <>
+         "and contain only lowercase letters, numbers and underscores"}
+    end
+  end
+
+  defp augment_opts(opts) do
     templates_path = opts[:templates_path] || default_templates_path()
     module = Path.join(templates_path, opts[:name]) |> Macro.camelize()
 
@@ -60,13 +71,10 @@ defmodule Cascade.Templates.Template do
         force: true
       )
 
-    opts =
-      opts
-      |> Keyword.put(:templates_path, templates_path)
-      |> Keyword.put(:module, module)
-      |> Keyword.put(:relative_assets_to_templates_path, relative_assets_to_templates_path)
-
-    {:ok, opts}
+    opts
+    |> Keyword.put(:templates_path, templates_path)
+    |> Keyword.put(:module, module)
+    |> Keyword.put(:relative_assets_to_templates_path, relative_assets_to_templates_path)
   end
 
   @impl Cascade.Template
