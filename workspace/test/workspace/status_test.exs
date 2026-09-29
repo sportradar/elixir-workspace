@@ -455,23 +455,26 @@ defmodule Workspace.StatusTest do
     real_path = Path.join(repo_path, "sub/ws")
     link_path = Path.join(tmp_dir, "link")
 
-    Workspace.Test.create_workspace(real_path, [], [
-      {:foo, "foo", [workspace: [affected_by: ["../../shared"]]]},
-      {:bar, "bar", []}
-    ])
+    # in_fixture purges the loaded projects modules afterwards
+    Workspace.Test.in_fixture(tmp_dir, fn ->
+      Workspace.Test.create_workspace(real_path, [], [
+        {:foo, "foo", [workspace: [affected_by: ["../../shared"]]]},
+        {:bar, "bar", []}
+      ])
 
-    Workspace.Test.init_git_project(repo_path)
-    File.ln_s!(real_path, link_path)
+      Workspace.Test.init_git_project(repo_path)
+      File.ln_s!(real_path, link_path)
 
-    Workspace.Test.modify_project(link_path, "bar")
-    File.mkdir_p!(Path.join(repo_path, "sub/shared"))
-    File.write!(Path.join(repo_path, "sub/shared/config.exs"), "[]")
+      Workspace.Test.modify_project(link_path, "bar")
+      File.mkdir_p!(Path.join(repo_path, "sub/shared"))
+      File.write!(Path.join(repo_path, "sub/shared/config.exs"), "[]")
 
-    workspace = Workspace.new!(link_path) |> Workspace.Status.update()
+      workspace = Workspace.new!(link_path) |> Workspace.Status.update()
 
-    assert workspace.projects[:bar].status == :modified
-    assert workspace.projects[:bar].changes == [{"sub/ws/bar/lib/file.ex", :untracked}]
-    assert workspace.projects[:foo].status == :affected
+      assert workspace.projects[:bar].status == :modified
+      assert workspace.projects[:bar].changes == [{"sub/ws/bar/lib/file.ex", :untracked}]
+      assert workspace.projects[:foo].status == :affected
+    end)
   end
 
   @tag :tmp_dir
