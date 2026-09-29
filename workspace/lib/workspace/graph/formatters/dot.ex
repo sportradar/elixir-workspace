@@ -11,6 +11,14 @@ defmodule Workspace.Graph.Formatters.Dot do
       |> Enum.map(&"  #{node_id(&1)} [shape=folder];")
       |> Enum.sort()
 
+    # projects without any edge must be declared explicitly, otherwise they
+    # are not included in the graph
+    isolated =
+      :digraph.vertices(graph)
+      |> Enum.filter(&(:digraph.in_degree(graph, &1) + :digraph.out_degree(graph, &1) == 0))
+      |> Enum.map(&"  #{node_id(&1)};")
+      |> Enum.sort()
+
     edges =
       :digraph.edges(graph)
       |> Enum.map(fn edge ->
@@ -21,7 +29,7 @@ defmodule Workspace.Graph.Formatters.Dot do
 
     """
     digraph G {
-    #{Enum.join(paths ++ edges, "\n")}
+    #{Enum.join(paths ++ isolated ++ edges, "\n")}
     }
     """
     |> String.trim()

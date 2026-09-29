@@ -333,6 +333,8 @@ defmodule Mix.Tasks.Workspace.GraphTest do
     Workspace.Test.with_workspace(tmp_dir, [], :default, fn ->
       expected = """
       digraph G {
+        "package_g";
+        "package_k";
         "package_a" -> "package_c";
         "package_a" -> "package_d";
         "package_c" -> "package_e";
