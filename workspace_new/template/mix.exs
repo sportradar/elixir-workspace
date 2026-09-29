@@ -26,7 +26,7 @@ defmodule <%= mod %>.MixWorkspace do
     # Run "mix help deps" to learn about dependencies.
     defp deps do
       [
-        {:workspace, "~> 0.2.0"}
+        {:workspace, "~> 0.3"}
       ]
     end
   end
