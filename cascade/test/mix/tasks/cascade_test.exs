@@ -45,6 +45,24 @@ defmodule Mix.Tasks.CascadeTest do
     end)
   end
 
+  test "new template outside of an application", %{tmp_dir: tmp_dir} do
+    path = Path.join(tmp_dir, "no_app")
+    File.mkdir_p!(path)
+
+    File.write!(Path.join(path, "mix.exs"), """
+    defmodule NoApp.MixProject do
+      use Mix.Project
+
+      def project, do: [version: "0.1.0"]
+    end
+    """)
+
+    Mix.Project.in_project(:no_app, path, fn _module ->
+      assert Cascade.generate(:template, path, ["--name", "foo"]) ==
+               {:error, "could not detect the application name, please set --templates-path"}
+    end)
+  end
+
   test "new template with an absolute assets path", %{tmp_dir: tmp_dir} do
     in_tmp(tmp_dir, "absolute_assets", fn ->
       assert_raise Mix.Error, ~r/--assets-path must be relative to the root path/, fn ->

@@ -141,6 +141,19 @@ defmodule CascadeTest do
       assert File.read!(path) == "Hello Elixir false"
     end
 
+    @tag :tmp_dir
+    test "templates can be generated directly", %{tmp_dir: tmp_dir} do
+      capture_io(fn ->
+        Cascade.Template.generate(TemplateWithArgs, tmp_dir,
+          name: "Elixir",
+          greeting: "Hi",
+          loud: false
+        )
+      end)
+
+      assert File.read!(Path.join(tmp_dir, "hello.md")) == "Hi Elixir false"
+    end
+
     test "required arguments are validated" do
       assert Cascade.generate(:with_args, "foo", []) == {:error, "option :name is required"}
 
