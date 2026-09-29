@@ -30,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Reject `:short` and `:short_aliases` longer than a single character, which could never be used
 * Treat a single `-` as a positional argument instead of returning an invalid alias error
 * Document in the generated docs that passing a boolean flag defaulting to `true` sets it to `false`
+* Fix multi byte short options being consumed as values of preceding options
 
 ## [v0.1.7](https://github.com/sportradar/elixir-workspace/tree/cli_options/v0.1.6) (2025-10-31)
 

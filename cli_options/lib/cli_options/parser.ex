@@ -174,7 +174,8 @@ defmodule CliOptions.Parser do
     Map.has_key?(schema.long_mappings, long_name)
   end
 
-  defp is_defined_option?("-" <> short_name, schema) when byte_size(short_name) == 1 do
+  # short names are validated to be a single character, which may be multi byte
+  defp is_defined_option?("-" <> short_name, schema) do
     Map.has_key?(schema.short_mappings, short_name)
   end
 

@@ -553,6 +553,16 @@ defmodule CliOptionsTest do
       assert opts == [number: -999]
     end
 
+    test "multi byte short options are not consumed as values" do
+      schema = [name: [type: :string], accent: [type: :boolean, short: "é"]]
+
+      assert CliOptions.parse(["--name", "-é"], schema) ==
+               {:error, ":name expected at least 1 arguments"}
+
+      assert CliOptions.parse(["-é", "--name", "foo"], schema) ==
+               {:ok, {[name: "foo", accent: true], [], []}}
+    end
+
     test "a single dash is a positional argument" do
       schema = [file: [type: :string], verbose: [type: :boolean, short: "v"]]
 
