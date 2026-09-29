@@ -65,6 +65,30 @@ defmodule Workspace.Checks.ValidateConfigPathTest do
     assert_plain_result(results, :foo, ":a_path is set to ../../artifacts/test")
   end
 
+  test "absolute paths are not joined to the base path" do
+    {:ok, check} =
+      Workspace.Check.validate(
+        id: :test_check,
+        module: ValidateConfigPath,
+        opts: [
+          config_attribute: :a_path,
+          expected_path: fn project -> Path.join(project.workspace_path, "artifacts/test") end
+        ]
+      )
+
+    project =
+      Workspace.Test.project_fixture(:foo, "packages/foo",
+        a_path: "/usr/local/workspace/artifacts/test"
+      )
+
+    workspace = Workspace.Test.workspace_fixture([project])
+
+    results = ValidateConfigPath.check(workspace, check)
+
+    assert_check_status(results, :foo, :ok)
+    assert_plain_result(results, :foo, ":a_path is set to ../../artifacts/test")
+  end
+
   test "works with nested keys" do
     {:ok, check} =
       Workspace.Check.validate(

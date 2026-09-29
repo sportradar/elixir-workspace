@@ -95,11 +95,7 @@ defmodule Workspace.Checks.ValidateConfigPath do
   defp make_absolute(_base_path, nil), do: nil
   defp make_absolute(_base_path, path) when not is_binary(path), do: inspect(path)
 
-  defp make_absolute(base_path, relative) do
-    base_path
-    |> Path.join(relative)
-    |> Path.expand()
-  end
+  defp make_absolute(base_path, path), do: Path.expand(path, base_path)
 
   @impl Workspace.Check
   def format_result(%Workspace.Check.Result{
