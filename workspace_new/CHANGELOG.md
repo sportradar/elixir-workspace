@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Fix `--app` and `--module` values with a trailing newline passing validation
 * Suggest creating projects under `packages`, which are covered by the generated `.formatter.exs`
 * Fix generating a workspace in the current directory when given as `./`
+* Raise if more than one path is given, extra arguments were silently ignored
 
 ## [v0.2.0](https://github.com/sportradar/elixir-workspace/tree/workspace_new/v0.2.0) (2025-02-07)
 

@@ -75,7 +75,10 @@ defmodule Mix.Tasks.Workspace.New do
       [] ->
         Mix.raise("Expected PATH to be given, please use `mix workspace.new PATH`")
 
-      [path | _] ->
+      [_path, _other | _rest] ->
+        Mix.raise("Expected a single PATH to be given, got: #{inspect(argv)}")
+
+      [path] ->
         app = opts[:app] || Path.basename(Path.expand(path))
         check_application_name!(app, !opts[:app])
 

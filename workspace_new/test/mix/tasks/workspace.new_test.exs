@@ -204,6 +204,18 @@ defmodule Mix.Tasks.Workspace.NewTest do
       end)
     end
 
+    test "with multiple paths", %{tmp_dir: tmp_dir} do
+      in_tmp(tmp_dir, "multiple_paths", fn ->
+        assert_raise Mix.Error,
+                     "Expected a single PATH to be given, got: [\"foo\", \"bar\"]",
+                     fn ->
+                       New.run(["foo", "bar"])
+                     end
+
+        assert File.ls!(".") == []
+      end)
+    end
+
     test "new with existing directory", %{tmp_dir: tmp_dir} do
       in_tmp(tmp_dir, "new_with_existent_directory", fn ->
         File.mkdir_p!("my_app")
