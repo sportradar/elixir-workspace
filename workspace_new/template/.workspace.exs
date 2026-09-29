@@ -5,8 +5,8 @@
   ignore_paths: ~w[deps _build],
 
   # Custom workspace checks for linting your mono-repo at a package level. You can
-  # enforce things like common build dirs or required project depenendencies. For
-  # more details chech the `Workspace.Check` documentation.
+  # enforce things like common build dirs or required project dependencies. For
+  # more details check the `Workspace.Check` documentation.
   checks: [],
 
   # Test coverage settings on the workspace level.
