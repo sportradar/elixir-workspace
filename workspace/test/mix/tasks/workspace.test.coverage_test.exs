@@ -251,6 +251,16 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
 
     assert_cli_output_match(captured, expected)
     assert File.exists?(Path.join(fixture_path, "coverage/coverage.lcov"))
+
+    # function counts are plain integers
+    function_counts =
+      Path.join(fixture_path, "coverage/coverage.lcov")
+      |> File.read!()
+      |> String.split("\n")
+      |> Enum.filter(&String.starts_with?(&1, ["FNF:", "FNH:"]))
+
+    assert function_counts != []
+    assert Enum.all?(function_counts, &(&1 =~ ~r/\AFN[FH]:(0|[1-9]\d*)\z/))
   end
 
   test "with missing coverdata files" do
