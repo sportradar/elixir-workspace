@@ -537,10 +537,12 @@ defmodule Mix.Tasks.Workspace.RunTest do
           tmp_dir,
           "--env-var",
           "FOO=bar",
+          "--env-var",
+          "db_url=ecto://host?ssl=true",
           "--",
           maybe_shell(),
           "echo",
-          "$FOO"
+          "$FOO $db_url"
         ]
 
         captured =
@@ -548,11 +550,12 @@ defmodule Mix.Tasks.Workspace.RunTest do
             RunTask.run(args)
           end)
 
+        # values may contain = and the names are case sensitive
         assert_cli_output_match(captured, [
           "Running task in 1 workspace projects",
-          ~r"==> :package_a - mix cmd(?: --shell)?\s+echo \$FOO",
-          "bar",
-          ~r":package_a mix cmd(?: --shell)?\s+echo \$FOO succeeded \["
+          ~r"==> :package_a - mix cmd(?: --shell)?\s+echo \$FOO \$db_url",
+          "bar ecto://host?ssl=true",
+          ~r":package_a mix cmd(?: --shell)?\s+echo \$FOO \$db_url succeeded \["
         ])
 
         assert System.get_env("FOO") == nil

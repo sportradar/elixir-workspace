@@ -386,15 +386,16 @@ defmodule Mix.Tasks.Workspace.Run do
     raise_if_errors(grouped_results[:error] || [])
   end
 
+  # the value may contain = characters, only the first one is the separator
   defp parse_environment_variable(var) do
-    case String.split(var, "=") do
-      [name, value] when value != "" ->
-        {String.upcase(name) |> String.to_charlist(), String.to_charlist(value)}
+    case String.split(var, "=", parts: 2) do
+      [name, value] when name != "" ->
+        {String.to_charlist(name), String.to_charlist(value)}
 
-      other ->
+      _other ->
         Mix.raise(
           "invalid environment variable definition, it should be of the form " <>
-            "ENV_VAR_NAME=value, got: #{other}"
+            "ENV_VAR_NAME=value, got: #{var}"
         )
     end
   end
