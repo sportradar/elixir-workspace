@@ -232,6 +232,20 @@ defmodule CliOptions.SchemaTest do
       end
     end
 
+    test "with short names longer than a single character" do
+      for opts <- [[short: "ab"], [short_aliases: ["a", "bc"]], [short: ""]] do
+        schema = [foo: [type: :string] ++ opts]
+        invalid = opts[:short] || "bc"
+
+        message =
+          "invalid schema for :foo, short names must be a single character, got: #{inspect(invalid)}"
+
+        assert_raise ArgumentError, message, fn ->
+          CliOptions.Schema.new!(schema)
+        end
+      end
+    end
+
     test "with multiple set for boolean or counter options" do
       for type <- [:boolean, :counter] do
         schema = [foo: [type: type, multiple: true]]

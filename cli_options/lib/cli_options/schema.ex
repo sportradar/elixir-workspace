@@ -320,8 +320,19 @@ defmodule CliOptions.Schema do
   defp validate_type_match(:boolean, value), do: is_boolean(value)
 
   defp validate_conflicting_options(opts) do
-    with {:ok, opts} <- validate_separator(opts) do
-      validate_multiple(opts)
+    with {:ok, opts} <- validate_separator(opts),
+         {:ok, opts} <- validate_multiple(opts) do
+      validate_short_names(opts)
+    end
+  end
+
+  # longer short names would never match, since -ab is parsed as an alias
+  defp validate_short_names(opts) do
+    short_names = Enum.reject([opts[:short] | opts[:short_aliases] || []], &is_nil/1)
+
+    case Enum.find(short_names, &(String.length(&1) != 1)) do
+      nil -> {:ok, opts}
+      invalid -> {:error, "short names must be a single character, got: #{inspect(invalid)}"}
     end
   end
 
