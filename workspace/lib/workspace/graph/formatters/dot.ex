@@ -40,5 +40,9 @@ defmodule Workspace.Graph.Formatters.Dot do
   defp node_id(%Workspace.Graph.Node{type: :path, label: label}), do: quote_id(label)
   defp node_id(node), do: quote_id(to_string(node.app))
 
-  defp quote_id(id), do: ~s("#{String.replace(id, "\"", "\\\"")}")
+  # backslashes are escaped first, otherwise the escaped quotes would be affected
+  defp quote_id(id) do
+    escaped = id |> String.replace("\\", "\\\\") |> String.replace("\"", "\\\"")
+    ~s("#{escaped}")
+  end
 end

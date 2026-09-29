@@ -153,6 +153,21 @@ defmodule Workspace.GraphTest do
       assert mermaid =~ "  api --> path_1"
     end
 
+    test "dot ids escape quotes and backslashes" do
+      workspace =
+        Workspace.Test.workspace_fixture([
+          {:api, "api", [workspace: [affected_by: ["../shared/a\"b", "../shared/c\\"]]]}
+        ])
+
+      output =
+        ExUnit.CaptureIO.capture_io(fn ->
+          Workspace.Graph.Formatters.Dot.render(workspace.graph, workspace, [])
+        end)
+
+      assert output =~ ~S("shared/a\"b" [shape=folder];)
+      assert output =~ ~S("shared/c\\" [shape=folder];)
+    end
+
     test "are never returned by the project helpers" do
       workspace = paths_workspace()
 
