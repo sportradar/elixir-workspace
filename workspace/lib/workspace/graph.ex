@@ -12,6 +12,11 @@ defmodule Workspace.Graph do
   other hand `:external` dependencies will be included only if the `:external`
   option is set to `true` during graph's construction.
 
+  Similarly, `:path` nodes are included only if the `:paths` option is set. A `:path`
+  node represents a path pattern declared in a project's `:affected_by` config. Each
+  distinct pattern is a single node, with an edge from every project declaring it.
+  Helpers returning project names never include `:path` nodes.
+
   ## Usage
 
   This module provides `with_digraph/3` and `digraph/2` for constructing the
@@ -61,6 +66,8 @@ defmodule Workspace.Graph do
   ## Options
 
     * `:external` - if set external dependencies will be included as well
+    * `:paths` - if set the `:affected_by` paths of the projects will be included
+    as `:path` nodes
     * `:exclude` - if set the specified workspace projects will not be included
     in the graph
   """
@@ -101,7 +108,21 @@ defmodule Workspace.Graph do
       :digraph.add_edge(graph, from_node, to_node)
     end
 
+    if opts[:paths] do
+      add_path_nodes(graph, projects, graph_apps)
+    end
+
     graph
+  end
+
+  defp add_path_nodes(graph, projects, graph_apps) do
+    for project <- projects,
+        project.app in graph_apps,
+        path <- Enum.uniq(project.affected_by) do
+      path_node = Workspace.Graph.Node.path(path, project.workspace_path)
+      :digraph.add_vertex(graph, path_node)
+      :digraph.add_edge(graph, node_by_app(graph, project.app), path_node)
+    end
   end
 
   defp maybe_to_atom(item) when is_atom(item), do: item
@@ -164,7 +185,7 @@ defmodule Workspace.Graph do
   def source_projects(graph) do
     graph
     |> :digraph.source_vertices()
-    |> Enum.map(& &1.app)
+    |> project_names()
   end
 
   @doc """
@@ -182,7 +203,7 @@ defmodule Workspace.Graph do
   def sink_projects(graph) do
     graph
     |> :digraph.sink_vertices()
-    |> Enum.map(& &1.app)
+    |> project_names()
   end
 
   @doc """
@@ -207,6 +228,12 @@ defmodule Workspace.Graph do
     Enum.find(:digraph.vertices(graph), &(&1.app == app))
   end
 
+  defp project_names(nodes) do
+    nodes
+    |> Enum.reject(&Workspace.Graph.Node.path?/1)
+    |> Enum.map(& &1.app)
+  end
+
   @doc """
   Returns the direct dependencies of the given `project`
 
@@ -218,7 +245,7 @@ defmodule Workspace.Graph do
     node = node_by_app(workspace.graph, project)
 
     :digraph.out_neighbours(workspace.graph, node)
-    |> Enum.map(& &1.app)
+    |> project_names()
   end
 
   @doc """
@@ -231,7 +258,7 @@ defmodule Workspace.Graph do
     node = node_by_app(workspace.graph, project)
 
     :digraph_utils.reachable_neighbours([node], workspace.graph)
-    |> Enum.map(& &1.app)
+    |> project_names()
   end
 
   @doc """

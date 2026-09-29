@@ -47,6 +47,98 @@ defmodule Workspace.GraphTest do
     end
   end
 
+  describe "path nodes" do
+    defp paths_workspace do
+      Workspace.Test.workspace_fixture([
+        {:nif_a, "nif_a",
+         [
+           deps: [{:utils, path: "../utils"}],
+           workspace: [affected_by: ["../native/common", "../native/nif_a/**/*.rs"]]
+         ]},
+        {:nif_b, "nif_b", [workspace: [affected_by: ["../native/common/"]]]},
+        {:utils, "utils", []}
+      ])
+    end
+
+    defp path_nodes(graph) do
+      graph
+      |> :digraph.vertices()
+      |> Enum.filter(&Workspace.Graph.Node.path?/1)
+      |> Enum.map(& &1.label)
+      |> Enum.sort()
+    end
+
+    defp path_edges(graph) do
+      for edge <- :digraph.edges(graph),
+          {_e, from, to, _l} = :digraph.edge(graph, edge),
+          Workspace.Graph.Node.path?(to) do
+        {from.app, to.label}
+      end
+      |> Enum.sort()
+    end
+
+    test "are not included by default" do
+      workspace = paths_workspace()
+
+      Graph.with_digraph(workspace, fn graph ->
+        assert path_nodes(graph) == []
+        assert length(:digraph.vertices(graph)) == 3
+      end)
+    end
+
+    test "are shared across the projects declaring the same path" do
+      workspace = paths_workspace()
+
+      Graph.with_digraph(
+        workspace,
+        fn graph ->
+          assert path_nodes(graph) == ["native/common", "native/nif_a/**/*.rs"]
+
+          assert [%Workspace.Graph.Node{path: "/usr/local/workspace/native/common"}] =
+                   Enum.filter(:digraph.vertices(graph), &(&1.label == "native/common"))
+
+          assert path_edges(graph) == [
+                   {:nif_a, "native/common"},
+                   {:nif_a, "native/nif_a/**/*.rs"},
+                   {:nif_b, "native/common"}
+                 ]
+        end,
+        paths: true
+      )
+    end
+
+    test "are not added for excluded projects" do
+      workspace = paths_workspace()
+
+      Graph.with_digraph(
+        workspace,
+        fn graph ->
+          assert path_nodes(graph) == ["native/common"]
+          assert path_edges(graph) == [{:nif_b, "native/common"}]
+        end,
+        paths: true,
+        exclude: [:nif_a]
+      )
+    end
+
+    test "are included in the workspace graph" do
+      workspace = paths_workspace()
+
+      assert path_nodes(workspace.graph) == ["native/common", "native/nif_a/**/*.rs"]
+    end
+
+    test "are never returned by the project helpers" do
+      workspace = paths_workspace()
+
+      assert Enum.sort(Graph.source_projects(workspace)) == [:nif_a, :nif_b]
+      assert Enum.sort(Graph.sink_projects(workspace)) == [:utils]
+      assert Graph.dependencies(workspace, :nif_a) == [:utils]
+      assert Graph.dependencies(workspace, :nif_b) == []
+      assert Graph.all_dependencies(workspace, :nif_a) == [:utils]
+      assert Graph.all_dependents(workspace, :utils) == [:nif_a]
+    end
+  end
+
   describe "with_digraph/2" do
     test "runs a function on the graph" do
       workspace = Workspace.Test.workspace_fixture(:default)

@@ -33,7 +33,8 @@ defmodule Workspace.State do
   * `:workspace_path` - The workspace root path.
   * `:git_root_path` - The git root path, of the repository containing the workspace.
   * `:cwd` - The directory from which the workspace was generated.
-  * `:graph` - The DAG (directed acyclic graph) of the workspace.
+  * `:graph` - The DAG (directed acyclic graph) of the workspace, including the
+  `:affected_by` paths of the projects as `:path` nodes.
   * `:status_updated?` - Set to `true` if the workspace status has been updated.
   """
   @type t :: %Workspace.State{
@@ -77,7 +78,7 @@ defmodule Workspace.State do
         ) :: t()
   def new(path, mix_path, config, projects) do
     git_root_path = git_root_path(path)
-    graph = Workspace.Graph.digraph(projects)
+    graph = Workspace.Graph.digraph(projects, paths: true)
     projects = update_projects_topology(projects, graph)
 
     %__MODULE__{
