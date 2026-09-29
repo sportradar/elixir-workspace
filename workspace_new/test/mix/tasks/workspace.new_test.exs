@@ -10,7 +10,10 @@ defmodule Mix.Tasks.Workspace.NewTest do
   describe "valid options" do
     test "new workspace", %{tmp_dir: tmp_dir} do
       in_tmp(tmp_dir, fn ->
-        capture_io(fn -> New.run(["hello_workspace"]) end)
+        output = capture_io(fn -> New.run(["hello_workspace"]) end)
+
+        # projects are suggested under the formatter's subdirectories
+        assert output =~ "mix new packages/package_a"
 
         assert_file(tmp_dir, "hello_workspace/mix.exs", fn file ->
           assert file =~ "defmodule HelloWorkspace.MixWorkspace do"
