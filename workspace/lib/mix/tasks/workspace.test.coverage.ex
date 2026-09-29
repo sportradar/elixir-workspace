@@ -416,51 +416,18 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     #
     # would cause problems to the cover process started by mix test.
     #
-    # this seems to work without issues for now
-    pid =
-      case :cover.start() do
-        {:ok, pid} -> pid
-        {:error, {:already_started, pid}} -> pid
-      end
+    # this seems to work without issues for now, it is either started or
+    # already running
+    _ = :cover.start()
 
     for compile_path <- compile_paths do
-      case :cover.compile_beam(beams(compile_path)) do
-        results when is_list(results) ->
-          :ok
-
-        {:error, reason} ->
-          Mix.raise(
-            "Failed to cover compile directory #{inspect(Path.relative_to_cwd(compile_path))} " <>
-              "with reason: #{inspect(reason)}"
-          )
-      end
+      compile_path
+      |> Workspace.Coverage.beams(Mix.Project.consolidation_path())
+      |> :cover.compile_beam()
+      |> Workspace.Coverage.ensure_cover_compiled!(compile_path)
     end
 
-    pid
-  end
-
-  # Pick beams from the compile_path but if by any chance it is a protocol,
-  # gets its path from the code server (which will most likely point to
-  # the consolidation directory as long as it is enabled).
-  #
-  # This is copied from the default elixir test.coverage implementation
-  defp beams(dir) do
-    consolidation_dir = Mix.Project.consolidation_path()
-
-    consolidated =
-      case File.ls(consolidation_dir) do
-        {:ok, files} -> files
-        _ -> []
-      end
-
-    for file <- File.ls!(dir), Path.extname(file) == ".beam" do
-      with true <- file in consolidated,
-           [_ | _] = path <- :code.which(file |> Path.rootname() |> String.to_atom()) do
-        path
-      else
-        _ -> String.to_charlist(Path.join(dir, file))
-      end
-    end
+    Process.whereis(:cover_server)
   end
 
   defp import_cover_results(project, cover_paths, workspace_path) do

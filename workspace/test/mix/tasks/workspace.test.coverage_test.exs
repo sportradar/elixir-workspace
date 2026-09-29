@@ -263,6 +263,65 @@ defmodule Mix.Tasks.Workspace.Test.CoverageTest do
     assert Enum.all?(function_counts, &(&1 =~ ~r/\AFN[FH]:(0|[1-9]\d*)\z/))
   end
 
+  test "with thresholds, ignored modules and modules outside of projects" do
+    fixture_path = test_fixture_path()
+
+    in_fixture("test_coverage", fn ->
+      mix_path = Path.join(fixture_path, "package_c/mix.exs")
+
+      mix_content =
+        mix_path
+        |> File.read!()
+        |> String.replace(
+          ~s(export: "package_c"),
+          ~s(export: "package_c", threshold: 20, warning_threshold: 30, ) <>
+            ~s(ignore_modules: [PackageC.Missing, ~r/Ignored$/])
+        )
+        |> String.replace(
+          "deps: deps(),",
+          "deps: deps(),\n      elixirc_paths: [\"lib\", Path.expand(\"../shared\", __DIR__)],"
+        )
+
+      File.write!(mix_path, mix_content)
+
+      File.write!(
+        Path.join(fixture_path, "package_c/lib/package_c_ignored.ex"),
+        "defmodule PackageC.Ignored do\n  def hello, do: :ignored\nend\n"
+      )
+
+      File.mkdir_p!(Path.join(fixture_path, "shared"))
+
+      File.write!(
+        Path.join(fixture_path, "shared/shared.ex"),
+        "defmodule PackageC.Shared do\n  def hello, do: :shared\nend\n"
+      )
+
+      make_fixture_unique(fixture_path, 7)
+    end)
+
+    capture_io(fn ->
+      RunTask.run(["-t", "test", "--workspace-path", fixture_path, "--", "--cover"])
+    end)
+
+    captured =
+      capture_io(fn ->
+        # the overall workspace coverage is below the default threshold
+        assert_raise Mix.Error, ~r/below the required threshold/, fn ->
+          TestCoverageTask.run(["--workspace-path", fixture_path, "--project", "package_7c"])
+        end
+      end)
+
+    # modules outside of any project are ignored
+    assert captured =~ "Package7C.Shared could not find associated project"
+
+    # the project coverage is between the error and warning thresholds
+    assert captured =~ ":package_7c - total coverage 25.00% [threshold 20%]"
+    assert captured =~ "25.00%   Package7C (1/4 lines)"
+
+    # ignored modules are not included
+    refute captured =~ "Package7C.Ignored"
+  end
+
   test "with missing coverdata files" do
     fixture_path = test_fixture_path()
 
