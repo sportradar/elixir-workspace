@@ -46,9 +46,12 @@ defmodule Workspace.Status do
 
         modifications = Enum.filter(changes, fn {project, _changes} -> project != nil end)
 
+        # Reset any previous status, since the update may be forced
+        projects = Map.new(workspace.projects, fn {name, project} -> {name, reset(project)} end)
+
         # Mark modified projects
         projects =
-          Enum.reduce(modifications, workspace.projects, fn {project, changes}, projects ->
+          Enum.reduce(modifications, projects, fn {project, changes}, projects ->
             Map.update!(projects, project, fn project ->
               Workspace.Project.modified(project, changes)
             end)
@@ -108,6 +111,10 @@ defmodule Workspace.Status do
     |> Enum.map(fn {path, _files} -> path end)
     |> Enum.uniq()
     |> Enum.sort()
+  end
+
+  defp reset(project) do
+    %{Workspace.Project.set_status(project, :undefined) | changes: nil, affected_by_changes: nil}
   end
 
   defp should_update_status?(_workspace, true), do: true

@@ -266,6 +266,35 @@ defmodule Workspace.StatusTest do
     end
   end
 
+  @tag :tmp_dir
+  test "force update resets the previous statuses", %{tmp_dir: tmp_dir} do
+    Workspace.Test.with_workspace(
+      tmp_dir,
+      [],
+      [
+        {:foo, "foo", [deps: [{:bar, path: "../bar"}]]},
+        {:bar, "bar", []}
+      ],
+      fn ->
+        Workspace.Test.modify_project(tmp_dir, "bar")
+
+        workspace = Workspace.new!(tmp_dir) |> Workspace.Status.update()
+        assert workspace.projects[:bar].status == :modified
+        assert workspace.projects[:bar].changes == [{"bar/lib/file.ex", :untracked}]
+        assert workspace.projects[:foo].status == :affected
+
+        # revert the change
+        File.rm!(Path.join(tmp_dir, "bar/lib/file.ex"))
+
+        workspace = Workspace.Status.update(workspace, force: true)
+        assert workspace.projects[:bar].status == :undefined
+        assert workspace.projects[:bar].changes == nil
+        assert workspace.projects[:foo].status == :undefined
+      end,
+      git: true
+    )
+  end
+
   describe "affected_by paths" do
     @tag :tmp_dir
     test "marks project as affected when affected_by files change", %{tmp_dir: tmp_dir} do

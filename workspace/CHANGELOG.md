@@ -57,6 +57,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
+* Reset previous statuses on a forced `Workspace.Status.update/2`
+
+  A forced status update only marked the currently modified and affected
+  projects, so statuses and changes from a previous update were kept, e.g. a
+  project stayed modified after its changes were reverted, or when re-running
+  the update against a different `:base`.
+
 * Detect changes of workspaces under symlinked paths
 
   The git root was resolved to its real path, while project paths kept the
