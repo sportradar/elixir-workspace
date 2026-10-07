@@ -130,6 +130,32 @@ defmodule Workspace.StatusTest do
         git: true
       )
     end
+
+    @tag :tmp_dir
+    test "with changed lockfile outside of the projects", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        [
+          {:foo, "foo", [lockfile: "../mix.lock"]},
+          {:bar, "bar", [lockfile: "../mix.lock"]},
+          {:baz, "baz", []}
+        ],
+        fn ->
+          workspace = Workspace.new!(tmp_dir)
+
+          File.write!(Path.join(tmp_dir, "mix.lock"), "%{}")
+
+          assert Workspace.Status.changed(workspace) == %{
+                   foo: [{"mix.lock", :untracked}],
+                   bar: [{"mix.lock", :untracked}]
+                 }
+
+          assert Workspace.Status.modified(workspace) == [:bar, :foo]
+        end,
+        git: true
+      )
+    end
   end
 
   describe "modified/2" do

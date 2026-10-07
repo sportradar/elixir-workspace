@@ -147,8 +147,10 @@ defmodule Workspace.Status do
            head: opts[:head]
          ) do
       {:ok, changed_files} ->
+        external_lockfiles = external_lockfiles(workspace)
+
         changed_files
-        |> Enum.map(fn {file, type} ->
+        |> Enum.flat_map(fn {file, type} ->
           full_path = Workspace.State.git_file_path(workspace, file)
 
           parent_project =
@@ -157,7 +159,15 @@ defmodule Workspace.Status do
               project -> project.app
             end
 
-          {parent_project, {file, type}}
+          # a lockfile outside of the project's path belongs to every project using it
+          projects =
+            case {parent_project, Map.get(external_lockfiles, full_path, [])} do
+              {nil, []} -> [nil]
+              {nil, projects} -> projects
+              {parent_project, projects} -> [parent_project | projects]
+            end
+
+          Enum.map(projects, fn project -> {project, {file, type}} end)
         end)
         |> Enum.group_by(fn {project, _file_info} -> project end, fn {_project, file_info} ->
           file_info
@@ -166,6 +176,21 @@ defmodule Workspace.Status do
       {:error, reason} ->
         raise ArgumentError, "failed to get changed files: #{reason}"
     end
+  end
+
+  # lockfile path => projects using it, for lockfiles outside of the project's path
+  defp external_lockfiles(workspace) do
+    workspace.projects
+    |> Map.values()
+    |> Enum.map(fn project ->
+      {Path.expand(project.config[:lockfile] || "mix.lock", project.path), project}
+    end)
+    |> Enum.reject(fn {lockfile, project} ->
+      Workspace.Utils.Path.parent_dir?(project.path, lockfile)
+    end)
+    |> Enum.group_by(fn {lockfile, _project} -> lockfile end, fn {_lockfile, project} ->
+      project.app
+    end)
   end
 
   @doc """

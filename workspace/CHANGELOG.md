@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## Unreleased
+
+### Fixed
+
+* Mark projects as modified when their lockfile changes, even if it is outside of the project's path
+
 ## [v0.4.0](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.4.0) (2026-09-29)
 
 ### Added
