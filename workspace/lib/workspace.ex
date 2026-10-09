@@ -60,7 +60,8 @@ defmodule Workspace do
     * All mix projects under `my_workspace` are by default considered
     workspace packages. In the above example it will include the
     `:api`, `:ui`, `:package_a`, `:package_b` and `:package_c`
-    packages.
+    packages. If the workspace is in a git repository, projects ignored
+    by git, e.g. through a `.gitignore`, are excluded.
 
   > #### Ignoring a package or a path {: .info}
   >

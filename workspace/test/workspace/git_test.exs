@@ -97,6 +97,41 @@ defmodule Workspace.GitTest do
     end
   end
 
+  describe "submodules/1" do
+    @tag :tmp_dir
+    test "returns the submodules of the repository", %{tmp_dir: tmp_dir} do
+      sub = Path.join(tmp_dir, "sub")
+      File.mkdir_p!(sub)
+      File.write!(Path.join(sub, "README.md"), "")
+      File.cd!(sub, fn -> init_git_project() end)
+
+      repo = Path.join(tmp_dir, "repo")
+      File.mkdir_p!(Path.join(repo, "packages"))
+
+      File.cd!(repo, fn ->
+        init_git_project()
+        assert Workspace.Git.submodules() == {:ok, []}
+
+        for path <- ["sub", "packages/sub"] do
+          {_output, 0} =
+            System.cmd(
+              "git",
+              ~w[-c protocol.file.allow=always submodule add --quiet] ++ [sub, path],
+              stderr_to_stdout: true
+            )
+        end
+
+        assert Workspace.Git.submodules() == {:ok, ["packages/sub", "sub"]}
+        System.cmd("git", ~w[commit --quiet -m submodules], stderr_to_stdout: true)
+
+        # relative to the given path, uninitialized submodules are included
+        System.cmd("git", ~w[submodule deinit --quiet -f sub], stderr_to_stdout: true)
+        assert Workspace.Git.submodules(cd: "packages") == {:ok, ["sub"]}
+        assert Workspace.Git.submodules() == {:ok, ["packages/sub", "sub"]}
+      end)
+    end
+  end
+
   describe "changed files" do
     @tag :tmp_dir
     test "with base only changes since the merge base are included", %{tmp_dir: tmp_dir} do

@@ -175,12 +175,43 @@ defmodule Workspace.Git do
   ## Options
 
     * `:cd` (`t:binary/0`) - The git repo path, defaults to the current working directory.
+    * `:pathspec` (`t:list/0`) - Only the files matching any of the given git
+    pathspecs are returned, defaults to all files.
   """
   @spec files(opts :: keyword()) :: {:ok, [binary()]} | {:error, binary()}
   def files(opts \\ []) do
     cd = opts[:cd] || File.cwd!()
+    pathspec = opts[:pathspec] || []
 
-    git_files(cd, ~w[ls-files --cached --others --exclude-standard])
+    git_files(cd, ~w[ls-files --cached --others --exclude-standard --] ++ pathspec)
+  end
+
+  @doc """
+  Returns the submodules of the repository
+
+  The paths of the submodules registered in the index are returned, relative
+  to the `:cd` path, whether they are initialized or not. Nested submodules
+  are not included.
+
+  ## Options
+
+    * `:cd` (`t:binary/0`) - The git repo path, defaults to the current working directory.
+  """
+  @spec submodules(opts :: keyword()) :: {:ok, [binary()]} | {:error, binary()}
+  def submodules(opts \\ []) do
+    cd = opts[:cd] || File.cwd!()
+
+    # each entry is "<mode> <object> <stage>\t<path>", submodules have the gitlink mode
+    with {:ok, entries} <- git_files(cd, ~w[ls-files --stage]) do
+      submodules =
+        for entry <- entries,
+            [info, path] = String.split(entry, "\t", parts: 2),
+            String.starts_with?(info, "160000 "),
+            uniq: true,
+            do: path
+
+      {:ok, submodules}
+    end
   end
 
   @doc """
