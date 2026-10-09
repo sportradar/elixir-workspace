@@ -240,7 +240,7 @@ defmodule WorkspaceTest do
     end
 
     @tag :tmp_dir
-    test "uninitialized submodules are skipped", %{tmp_dir: tmp_dir} do
+    test "uninitialized submodules are skipped with a warning", %{tmp_dir: tmp_dir} do
       workspace_path = Path.join(tmp_dir, "workspace")
       sub = create_repo(Path.join(tmp_dir, "sub"), :sub, "sub")
 
@@ -253,9 +253,15 @@ defmodule WorkspaceTest do
           git!(workspace_path, ~w[commit --quiet -m submodule])
           git!(workspace_path, ~w[submodule deinit --quiet -f libs])
 
-          {:ok, workspace} = Workspace.new(workspace_path)
+          warning =
+            ExUnit.CaptureIO.capture_io(:stderr, fn ->
+              {:ok, workspace} = Workspace.new(workspace_path)
 
-          assert project_names(workspace) == [:foo]
+              assert project_names(workspace) == [:foo]
+            end)
+
+          assert warning =~ "libs is not initialized"
+          assert warning =~ "git submodule update --init --recursive"
         end,
         git: true
       )

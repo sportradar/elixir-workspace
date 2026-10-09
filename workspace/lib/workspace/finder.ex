@@ -76,7 +76,10 @@ defmodule Workspace.Finder do
         # deleted files that are not staged yet are still listed
         |> Enum.filter(&File.regular?/1)
 
-      submodules = submodules |> Enum.map(&Path.join(path, &1)) |> Enum.filter(&repo_root?/1)
+      {submodules, uninitialized} =
+        submodules |> Enum.map(&Path.join(path, &1)) |> Enum.split_with(&repo_root?/1)
+
+      Enum.each(uninitialized, &warn_uninitialized_submodule/1)
       nested_repos = Enum.map(nested_repos, &Path.join(path, &1))
 
       nested_mix_files =
@@ -103,6 +106,14 @@ defmodule Workspace.Finder do
   # parent repository
   defp repo_root?(path) do
     File.dir?(path) and Workspace.Git.prefix(cd: path) == {:ok, ""}
+  end
+
+  defp warn_uninitialized_submodule(path) do
+    IO.warn(
+      "submodule #{Path.relative_to_cwd(path)} is not initialized, its projects are not " <>
+        "detected, run `git submodule update --init --recursive` to include them",
+      []
+    )
   end
 
   # projects nested in other projects, e.g. test fixtures, are not workspace

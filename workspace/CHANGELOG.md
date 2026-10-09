@@ -14,8 +14,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   Projects ignored by git, e.g. through a `.gitignore`, are no longer
   considered workspace projects, and the workspace tree is not scanned
   recursively. Projects in initialized git submodules and in nested git
-  repositories, unless ignored, are included. If the workspace is not in a
-  git repository, or it is ignored, the directories are scanned as before.
+  repositories, unless ignored, are included, and a warning is printed for
+  uninitialized submodules. If the workspace is not in a git repository, or
+  it is ignored, the directories are scanned as before.
 
 ## [v0.4.1](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.4.1) (2026-10-07)
 
