@@ -288,6 +288,24 @@ defmodule WorkspaceTest do
         git: true
       )
     end
+
+    @tag :tmp_dir
+    test "nested repositories that cannot be listed are skipped", %{tmp_dir: tmp_dir} do
+      Workspace.Test.with_workspace(
+        tmp_dir,
+        [],
+        [{:foo, "foo", []}],
+        fn ->
+          bar = create_repo(Path.join(tmp_dir, "bar"), :bar, "bar")
+          File.write!(Path.join(bar, ".git/index"), "corrupted")
+
+          {:ok, workspace} = Workspace.new(tmp_dir)
+
+          assert project_names(workspace) == [:foo]
+        end,
+        git: true
+      )
+    end
   end
 
   # a git repository with a project under project_path
