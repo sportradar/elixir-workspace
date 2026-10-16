@@ -224,7 +224,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     compile_paths = Enum.map(paths, &elem(&1, 2)) |> List.flatten()
 
-    pid = cover_compile(compile_paths)
+    {pid, quote_lines} = cover_compile(compile_paths)
 
     # Silence analyse import messages emitted by cover
     {:ok, string_io} = StringIO.open("")
@@ -241,7 +241,7 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
 
     coverage_stats =
       workspace
-      |> calculate_coverage()
+      |> calculate_coverage(quote_lines)
       |> List.flatten()
 
     project_statuses =
@@ -420,14 +420,22 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     # already running
     _ = :cover.start()
 
-    for compile_path <- compile_paths do
-      compile_path
-      |> Workspace.Coverage.beams(Mix.Project.consolidation_path())
-      |> :cover.compile_beam()
-      |> Workspace.Coverage.ensure_cover_compiled!(compile_path)
-    end
+    quote_lines =
+      for compile_path <- compile_paths, reduce: %{} do
+        quote_lines ->
+          beams = Workspace.Coverage.beams(compile_path, Mix.Project.consolidation_path())
 
-    Process.whereis(:cover_server)
+          beams
+          |> :cover.compile_beam()
+          |> Workspace.Coverage.ensure_cover_compiled!(compile_path)
+
+          Enum.reduce(beams, quote_lines, fn beam, quote_lines ->
+            module = beam |> Path.basename(".beam") |> String.to_atom()
+            Map.put(quote_lines, module, Workspace.Coverage.quote_only_lines(beam))
+          end)
+      end
+
+    {Process.whereis(:cover_server), quote_lines}
   end
 
   defp import_cover_results(project, cover_paths, workspace_path) do
@@ -460,14 +468,14 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
     :ok = :cover.import(String.to_charlist(cover_path))
   end
 
-  defp calculate_coverage(workspace) do
+  defp calculate_coverage(workspace, quote_lines) do
     :cover.modules()
     |> Enum.sort()
-    |> Enum.map(&calculate_module_coverage(&1, workspace))
+    |> Enum.map(&calculate_module_coverage(&1, workspace, Map.get(quote_lines, &1, MapSet.new())))
     |> Enum.filter(fn data -> data != nil end)
   end
 
-  defp calculate_module_coverage(module, workspace) do
+  defp calculate_module_coverage(module, workspace, quote_lines) do
     module_path = module.module_info(:compile)[:source]
 
     path =
@@ -501,6 +509,10 @@ defmodule Mix.Tasks.Workspace.Test.Coverage do
             else
               {:ok, function_data} = :cover.analyze(module, :calls, :function)
               {:ok, line_data} = :cover.analyze(module, :calls, :line)
+
+              line_data =
+                Enum.reject(line_data, fn {{_module, line}, _count} -> line in quote_lines end)
+
               {module, project.app, function_data, line_data}
             end
         end

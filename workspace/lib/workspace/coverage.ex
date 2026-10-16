@@ -123,6 +123,62 @@ defmodule Workspace.Coverage do
   end
 
   @doc false
+  # Returns the lines of the given beam whose only executable code is the
+  # `:elixir_quote.validate_quote/1` call that Elixir 1.20+ wraps around every
+  # `quote`.
+  #
+  # Before 1.20 a `quote` compiled to a literal, and its line was not executable.
+  # Now it is, but a macro used only by other modules of the project is expanded
+  # while they compile, before the cover compilation, so its `quote` lines can
+  # never be covered by the tests.
+  @spec quote_only_lines(beam :: charlist() | binary()) :: MapSet.t(pos_integer())
+  def quote_only_lines(beam) do
+    case :beam_lib.chunks(beam, [:abstract_code]) do
+      {:ok, {_module, [abstract_code: {:raw_abstract_v1, forms}]}} ->
+        forms
+        |> body_expressions([])
+        |> Enum.group_by(&elem(&1, 0), &elem(&1, 1))
+        |> Enum.filter(fn {line, quotes} -> line > 0 and Enum.all?(quotes) end)
+        |> MapSet.new(&elem(&1, 0))
+
+      _no_abstract_code ->
+        MapSet.new()
+    end
+  end
+
+  # Cover counts a line for every expression of a body (clause, block or try
+  # body), so these are the expressions that make a line executable.
+  defp body_expressions({:clause, _anno, _patterns, _guards, body} = node, acc),
+    do: node |> Tuple.to_list() |> body_expressions(collect_body(body, acc))
+
+  defp body_expressions({:block, _anno, body} = node, acc),
+    do: node |> Tuple.to_list() |> body_expressions(collect_body(body, acc))
+
+  defp body_expressions({:try, _anno, body, _of, _catch, after_body} = node, acc),
+    do: node |> Tuple.to_list() |> body_expressions(collect_body(body ++ after_body, acc))
+
+  defp body_expressions(node, acc) when is_tuple(node),
+    do: node |> Tuple.to_list() |> body_expressions(acc)
+
+  defp body_expressions(nodes, acc) when is_list(nodes),
+    do: Enum.reduce(nodes, acc, &body_expressions/2)
+
+  defp body_expressions(_leaf, acc), do: acc
+
+  defp collect_body(body, acc) do
+    Enum.reduce(body, acc, fn expression, acc ->
+      [{:erl_anno.line(elem(expression, 1)), validate_quote?(expression)} | acc]
+    end)
+  end
+
+  defp validate_quote?(
+         {:call, _, {:remote, _, {:atom, _, :elixir_quote}, {:atom, _, :validate_quote}}, _args}
+       ),
+       do: true
+
+  defp validate_quote?(_expression), do: false
+
+  @doc false
   @spec ensure_cover_compiled!(result :: list() | {:error, term()}, compile_path :: Path.t()) ::
           :ok
   def ensure_cover_compiled!(results, _compile_path) when is_list(results), do: :ok

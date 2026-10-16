@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   uninitialized submodules. If the workspace is not in a git repository, or
   it is ignored, the directories are scanned as before.
 
+### Fixed
+
+* Do not count `quote` lines as uncovered on Elixir 1.20+
+
+  Elixir 1.20 wraps every `quote` in an `:elixir_quote.validate_quote/1` call,
+  so its line became executable. A macro used only by other modules of its
+  project is expanded before the cover compilation, so its `quote` lines could
+  never be covered and the coverage of such projects dropped. Lines whose only
+  code is that call are now excluded, as they were on earlier Elixir versions.
+
 ## [v0.4.1](https://github.com/sportradar/elixir-workspace/tree/workspace/v0.4.1) (2026-10-07)
 
 ### Fixed

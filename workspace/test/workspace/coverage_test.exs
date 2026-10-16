@@ -35,6 +35,61 @@ defmodule Workspace.CoverageTest do
     end
   end
 
+  describe "quote_only_lines/1" do
+    test "returns the lines whose only code is a quote" do
+      # mix test compiles without debug info, and the lines are read from it
+      debug_info = Code.get_compiler_option(:debug_info)
+      Code.put_compiler_option(:debug_info, true)
+      on_exit(fn -> Code.put_compiler_option(:debug_info, debug_info) end)
+
+      [{_module, beam}] =
+        Code.compile_string("""
+        defmodule Workspace.CoverageTest.Quotes do
+          defmacro __using__(_opts) do
+            quote do
+              import Enum
+            end
+          end
+
+          def assigned do
+            ast = quote do: :ok
+            ast
+          end
+
+          def runtime(x), do: x + 1
+
+          def guarded do
+            try do
+              quote do: import(Enum)
+            after
+              quote do: import(Map)
+            end
+          end
+
+          def nested(x) do
+            y =
+              (
+                z = x + 1
+                quote do: unquote(z)
+              )
+
+            y
+          end
+        end
+        """)
+
+      if Version.match?(System.version(), ">= 1.20.0") do
+        assert Workspace.Coverage.quote_only_lines(beam) == MapSet.new([3, 17, 19, 27])
+      else
+        assert Workspace.Coverage.quote_only_lines(beam) == MapSet.new()
+      end
+    end
+
+    test "returns no lines for a beam without abstract code" do
+      assert Workspace.Coverage.quote_only_lines(~c"missing.beam") == MapSet.new()
+    end
+  end
+
   test "ensure_cover_compiled!/2" do
     assert Coverage.ensure_cover_compiled!([], "ebin") == :ok
 
