@@ -1,8 +1,6 @@
 defmodule Mix.Tasks.Workspace.RunTest do
   use ExUnit.Case
 
-  require Workspace.TestUtils
-
   import ExUnit.CaptureIO
   import Workspace.TestUtils
 

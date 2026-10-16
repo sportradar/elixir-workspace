@@ -6,7 +6,8 @@ defmodule CliOptions.SchemaTest do
   describe "new!" do
     test "with non keyword schema" do
       assert_raise ArgumentError, "schema was expected to be a keyword list, got: \"foo\"", fn ->
-        CliOptions.Schema.new!("foo")
+        # apply/3 keeps the type checker from rejecting the invalid schema
+        apply(CliOptions.Schema, :new!, ["foo"])
       end
     end
 
